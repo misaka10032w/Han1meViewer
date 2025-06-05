@@ -21,3 +21,4 @@
 #-renamesourcefileattribute SourceFile
 
 -keepattributes SourceFile, LineNumberTable
+-dontwarn java.lang.invoke.StringConcatFactory
