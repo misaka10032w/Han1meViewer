@@ -9,7 +9,9 @@ import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
 import android.view.Surface
+import android.view.TextureView
 import androidx.annotation.OptIn
+import androidx.lifecycle.AtomicReference
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
@@ -32,8 +34,12 @@ import cn.jzvd.JZMediaInterface
 import cn.jzvd.JZMediaSystem
 import cn.jzvd.Jzvd
 import kotlin.math.absoluteValue
-
-
+import kotlinx.coroutines.suspendCancellableCoroutine
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 /**
  * @project Han1meViewer
  * @author Yenaly Liew
@@ -57,6 +63,27 @@ sealed interface HMediaKernel {
 }
 
 class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMediaKernel {
+    private var isActuallyPlaying = false
+    private var lastBufferedPercent = -1
+    private val playerListener = object : Player.Listener {
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            isActuallyPlaying = isPlaying
+        }
+        override fun onIsLoadingChanged(isLoading: Boolean) {
+            val per = _exoPlayer?.bufferedPercentage ?: return
+            if (per != lastBufferedPercent) {
+                lastBufferedPercent = per
+                jzvd.setBufferProgress(per)
+            }
+        }
+
+        override fun onPlaybackStateChanged(state: Int) {
+            // 这里也可以加上更新，确保播放器状态变更时刷新 UI
+            val per = _exoPlayer?.bufferedPercentage ?: return
+            jzvd.setBufferProgress(per)
+        }
+    }
+
     companion object {
         const val TAG = "ExoMediaKernel"
     }
@@ -99,7 +126,10 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
                 .setTrackSelector(trackSelector)
                 .setLoadControl(loadControl)
                 .setBandwidthMeter(bandwidthMeter)
-                .build()
+                .build().apply {
+                    addListener(playerListener)
+                }
+
             // Produces DataSource instances through which media data is loaded.
             val dataSourceFactory = DefaultDataSource.Factory(
                 context,
@@ -129,9 +159,12 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
             exoPlayer.setMediaSource(videoSource)
             exoPlayer.prepare()
             exoPlayer.playWhenReady = true
-            callback = OnBufferingUpdate()
+//            callback = OnBufferingUpdate()
 
             val surfaceTexture = jzvd.textureView?.surfaceTexture
+            if (surfaceTexture == null) {
+                Log.e(TAG, "❌ surfaceTexture is null, video surface not set")
+            }
             surfaceTexture?.let { exoPlayer.setVideoSurface(Surface(it)) }
         }
     }
@@ -167,7 +200,11 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
     }
 
     override fun isPlaying(): Boolean {
-        return _exoPlayer?.playWhenReady ?: false
+        return runOnPlayerThread{
+            _exoPlayer?.playWhenReady ?: false
+        }
+
+      //  return isActuallyPlaying
     }
 
     override fun seekTo(time: Long) {
@@ -178,6 +215,7 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
                         jzvd.onStatePreparingPlaying()
                     }
                     exoPlayer.seekTo(time)
+                    exoPlayer.playWhenReady = true
                     prevSeek = time
                     jzvd.seekToInAdvance = time
                 }
@@ -198,13 +236,46 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
         }
     }
 
+
+
+    // 在类里加一个工具方法，用来在线程里同步访问ExoPlayer
+
+    inline fun <T> runOnPlayerThread(crossinline block: () -> T): T {
+        if (Looper.myLooper() == mMediaHandler?.looper) {
+            // 当前已在播放器线程，直接执行
+            return block()
+        }
+
+        val result = AtomicReference<T>()
+        val latch = CountDownLatch(1)
+
+        mMediaHandler?.post {
+            try {
+                result.set(block())
+            } finally {
+                latch.countDown()
+            }
+        }
+
+        latch.await(300, TimeUnit.MILLISECONDS) // 避免卡死线程，可调整超时时间
+        return result.get()
+    }
+
+
     override fun getCurrentPosition(): Long {
-        return _exoPlayer?.currentPosition ?: 0L
+        return runOnPlayerThread {
+            _exoPlayer?.currentPosition ?: 0L
+        }
+
     }
 
     override fun getDuration(): Long {
-        return _exoPlayer?.duration ?: 0L
+        return runOnPlayerThread {
+            _exoPlayer?.duration ?: 0L
+        }
     }
+
+
 
     override fun setVolume(leftVolume: Float, rightVolume: Float) {
         mMediaHandler?.post {
@@ -228,14 +299,19 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
     }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+        Log.e(TAG, "onPlayWhenReadyChanged: $playWhenReady, reason: $reason, " +
+                "playbackState=${_exoPlayer?.playbackState}")
         if (playWhenReady && _exoPlayer?.playbackState == Player.STATE_READY) {
             handler?.post {
+                Log.e(TAG,"onPlayWhenReadyChanged_ready")
                 jzvd.onStatePlaying()
             }
         }
+        Log.e(TAG,"onPlayWhenReadyChanged")
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {
+        Log.e(TAG, "onPlaybackStateChanged: $playbackState")
         handler?.post {
             when (playbackState) {
                 Player.STATE_BUFFERING -> {
@@ -244,7 +320,13 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
                 }
 
                 Player.STATE_READY -> {
-                    jzvd.onStatePlaying()
+
+                    runOnPlayerThread {
+                        Log.e(TAG, "STATE_READY, playWhenReady=${_exoPlayer?.playWhenReady}")
+                        if (_exoPlayer?.playWhenReady == true){
+                            jzvd.onStatePlaying()
+                        }
+                    }
                 }
 
                 Player.STATE_ENDED -> {
@@ -263,13 +345,30 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
         handler?.post { jzvd.onError(1000, 1000) }
     }
 
+//    override fun onPositionDiscontinuity(
+//        oldPosition: Player.PositionInfo,
+//        newPosition: Player.PositionInfo,
+//        reason: Int,
+//    ) {
+//        if (reason == Player.DISCONTINUITY_REASON_SEEK) {
+//            handler?.post { jzvd.onSeekComplete() }
+//        }
+//    }
     override fun onPositionDiscontinuity(
         oldPosition: Player.PositionInfo,
         newPosition: Player.PositionInfo,
         reason: Int,
     ) {
         if (reason == Player.DISCONTINUITY_REASON_SEEK) {
-            handler?.post { jzvd.onSeekComplete() }
+            handler?.post {
+                jzvd.onSeekComplete()
+                runOnPlayerThread {
+                    if (_exoPlayer?.playWhenReady==true) {
+                        jzvd.onStatePlaying()
+                    }
+                }
+
+            }
         }
     }
 
@@ -293,23 +392,24 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
     override fun onSurfaceTextureUpdated(surface: SurfaceTexture) = Unit
 
 
-    private inner class OnBufferingUpdate : Runnable {
-        override fun run() {
-            _exoPlayer?.bufferedPercentage?.let { per ->
-                handler.post {
-                    jzvd.setBufferProgress(per)
-                }
-                if (per < 100) {
-                    handler.postDelayed(this, 300)
-                } else {
-                    handler.removeCallbacks(this)
-                }
-                return
-            }
-            handler.removeCallbacks(this)
-        }
-    }
+//    private inner class OnBufferingUpdate : Runnable {
+//        override fun run() {
+//            _exoPlayer?.bufferedPercentage?.let { per ->
+//                handler.post {
+//                    jzvd.setBufferProgress(per)
+//                }
+//                if (per < 100) {
+//                    handler.postDelayed(this, 300)
+//                } else {
+//                    handler.removeCallbacks(this)
+//                }
+//                return
+//            }
+//            handler.removeCallbacks(this)
+//        }
+//    }
 }
+
 
 class SystemMediaKernel(jzvd: Jzvd) : JZMediaSystem(jzvd), HMediaKernel {
     // #issue-26: 有的手機長按快進會報錯，合理懷疑是不是因爲沒有加 post
