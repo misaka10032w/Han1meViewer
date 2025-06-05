@@ -13,3 +13,55 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+
+# Android Studio 项目文件
+/.idea/
+/.gradle/
+/build/
+/app/build/
+/captures/
+
+# Gradle 缓存
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# 构建输出
+**/build/
+**/outputs/
+
+# 本地配置文件
+**/*.keystore
+**/*.jks
+**/google-services.json
+**/app/google-services.json
+
+# 系统文件
+Thumbs.db
+
+# 日志和临时文件
+*.log
+*.tmp
+*.swp
+
+# 开发环境文件
+.env
+.secrets/
+
+# Kotlin 相关
+.kotlin/
+.kotlin_dependencies
+
+# 其他忽略项
+**/extra/
+**/test-output/
+**/reports/
+**/profiles/
+
+# 特定项目忽略
+/yenaly_libs/local/
+/icon/temp/
+
+# 但保留gradle wrapper
+!gradle/wrapper/gradle-wrapper.jar
