@@ -65,3 +65,10 @@ Thumbs.db
 
 # 但保留gradle wrapper
 !gradle/wrapper/gradle-wrapper.jar
+
+# 忽略所有构建输出的 APK 文件
+**/build/outputs/apk/
+**/*.apk
+
+# 忽略 debug 测试构建
+/app/build/outputs/apk/debug/
