@@ -29,4 +29,3 @@
 
 -keep class com.google.android.gms.** { *; }
 -keep interface com.google.android.gms.** { *; }
--dontwarn java.lang.invoke.StringConcatFactory

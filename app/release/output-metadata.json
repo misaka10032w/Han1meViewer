@@ -1,0 +1,37 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "com.yenaly.han1meviewer",
+  "variantName": "release",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 25060515,
+      "versionName": "0.15.5-release+25060515",
+      "outputFile": "Han1meViewer-v0.15.5-release+25060515.apk"
+    }
+  ],
+  "elementType": "File",
+  "baselineProfiles": [
+    {
+      "minApi": 28,
+      "maxApi": 30,
+      "baselineProfiles": [
+        "baselineProfiles/1/Han1meViewer-v0.15.5-release+25060515.dm"
+      ]
+    },
+    {
+      "minApi": 31,
+      "maxApi": 2147483647,
+      "baselineProfiles": [
+        "baselineProfiles/0/Han1meViewer-v0.15.5-release+25060515.dm"
+      ]
+    }
+  ],
+  "minSdkVersionForDexing": 24
+}
