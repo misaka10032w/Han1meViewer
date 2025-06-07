@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.provider.Settings
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.core.net.toUri
 
 /**
  *  快捷启动Activity
@@ -335,7 +336,7 @@ fun <Bekki> Fragment.safeArguments(name: String) = lazy(LazyThreadSafetyMode.NON
  * @param uri uri地址
  */
 infix fun Activity.browse(uri: String) {
-    val mUri = Uri.parse(uri)
+    val mUri = uri.toUri()
     val intent = Intent(Intent.ACTION_VIEW, mUri)
     startActivity(intent)
 }
@@ -346,13 +347,13 @@ infix fun Activity.browse(uri: String) {
  * @param uri uri地址
  */
 infix fun Fragment.browse(uri: String) {
-    val mUri = Uri.parse(uri)
+    val mUri = uri.toUri()
     val intent = Intent(Intent.ACTION_VIEW, mUri)
     startActivity(intent)
 }
 
 infix fun Context.browse(uri: String) {
-    val mUri = Uri.parse(uri)
+    val mUri = uri.toUri()
     val intent = Intent(Intent.ACTION_VIEW, mUri)
     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
     startActivity(intent)
@@ -379,11 +380,11 @@ fun <F : Fragment> F.makeBundle(vararg params: Pair<String, Any?>): F {
 fun Context.openInAppStore(packageName: String = this.packageName) {
     val intent = Intent(Intent.ACTION_VIEW)
     try {
-        intent.data = Uri.parse("market://details?id=$packageName")
+        intent.data = "market://details?id=$packageName".toUri()
         startActivity(intent)
     } catch (ifPlayStoreNotInstalled: ActivityNotFoundException) {
         intent.data =
-            Uri.parse("https://play.google.com/store/apps/details?id=$packageName")
+            "https://play.google.com/store/apps/details?id=$packageName".toUri()
         startActivity(intent)
     }
 }
@@ -402,7 +403,7 @@ fun Context.openApp(packageName: String) =
  * @param text a constant CharSequence that is associated with the Intent, @see [Intent.EXTRA_TEXT]
  */
 fun Context.sendEmail(email: String, subject: String?, text: String?) {
-    Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$email")).run {
+    Intent(Intent.ACTION_SENDTO, "mailto:$email".toUri()).run {
         subject?.let { putExtra(Intent.EXTRA_SUBJECT, subject) }
         text?.let { putExtra(Intent.EXTRA_TEXT, text) }
         startActivity(this)

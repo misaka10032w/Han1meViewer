@@ -1,39 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <data>
-
-    </data>
+    <data />
 
     <androidx.drawerlayout.widget.DrawerLayout
         android:id="@+id/dl_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fitsSystemWindows="true">
+        android:fitsSystemWindows="true"
+        android:background="?attr/colorSurface">
+        <!-- 主内容部分 -->
 
-
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/fcv_main"
-            android:name="androidx.navigation.fragment.NavHostFragment"
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fitsSystemWindows="true"
-            app:defaultNavHost="true"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            app:navGraph="@navigation/nav_main" />
+            android:fitsSystemWindows="true">
 
+
+            <com.google.android.material.appbar.AppBarLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/colorSurface"
+                android:fitsSystemWindows="true"
+                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    android:background="?attr/colorSurface"
+                    app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+            </com.google.android.material.appbar.AppBarLayout>
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/fcv_main"
+                android:name="androidx.navigation.fragment.NavHostFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                app:defaultNavHost="true"
+                app:navGraph="@navigation/nav_main" />
+
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+        <!-- 侧边导航栏 -->
         <com.google.android.material.navigation.NavigationView
             android:id="@+id/nv_main"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="start"
-            android:background="@color/per80_transparent_black"
             android:fitsSystemWindows="true"
             app:headerLayout="@layout/nav_header_ability"
-            app:menu="@menu/menu_main_nv" />
+            app:menu="@menu/menu_main_nv"
+            android:background="?attr/colorSurface"
+            app:itemTextColor="@color/nav_item_text_color"
+            app:itemIconTint="@color/nav_item_icon_color" />
 
     </androidx.drawerlayout.widget.DrawerLayout>
+
+
 
 </layout>

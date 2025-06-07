@@ -3,6 +3,7 @@ package com.yenaly.han1meviewer.ui.fragment.settings
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.flowWithLifecycle
@@ -15,6 +16,7 @@ import com.yenaly.han1meviewer.ui.StateLayoutMixin
 import com.yenaly.han1meviewer.ui.activity.SettingsActivity
 import com.yenaly.han1meviewer.ui.adapter.HKeyframesRvAdapter
 import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
+import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.viewmodel.SettingsViewModel
 import com.yenaly.han1meviewer.util.setStateViewLayout
 import com.yenaly.han1meviewer.util.showAlertDialog
@@ -33,7 +35,7 @@ import kotlin.concurrent.thread
  * @time 2023/11/13 013 18:46
  */
 class HKeyframesFragment : YenalyFragment<FragmentHKeyframesBinding>(),
-    IToolbarFragment<SettingsActivity>, StateLayoutMixin {
+    StateLayoutMixin {
 
     val viewModel by activityViewModels<SettingsViewModel>()
 
@@ -50,7 +52,10 @@ class HKeyframesFragment : YenalyFragment<FragmentHKeyframesBinding>(),
 
     override fun onStart() {
         super.onStart()
-        (activity as SettingsActivity).setupToolbar()
+        (activity as? ToolbarHost)?.setupToolbar(
+            getString(R.string.h_keyframe),
+            canNavigateBack = true
+        )
     }
 
     override fun initData(savedInstanceState: Bundle?) {
@@ -103,18 +108,6 @@ class HKeyframesFragment : YenalyFragment<FragmentHKeyframesBinding>(),
                 }
             } ?: activity?.runOnUiThread {
                 showShortToast(R.string.h_keyframes_shared_by_other_not_detected)
-            }
-        }
-    }
-
-    override fun SettingsActivity.setupToolbar() {
-        supportActionBar!!.setTitle(R.string.h_keyframe_manage)
-        this@HKeyframesFragment.apply {
-            addMenu(R.menu.menu_h_keyframes_toolbar, viewLifecycleOwner) {
-                when (it.itemId) {
-                    R.id.tb_add -> addHKeyframes()
-                }
-                return@addMenu true
             }
         }
     }

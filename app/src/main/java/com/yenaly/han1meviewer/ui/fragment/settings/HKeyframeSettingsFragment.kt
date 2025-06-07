@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.ui.fragment.settings
 
 import android.os.Bundle
 import androidx.annotation.IntRange
+import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.SeekBarPreference
@@ -10,6 +11,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.activity.SettingsActivity
 import com.yenaly.han1meviewer.ui.activity.SettingsRouter
 import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
+import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
 import com.yenaly.han1meviewer.util.setSummaryConverter
 import com.yenaly.yenaly_libs.base.settings.YenalySettingsFragment
@@ -19,8 +21,7 @@ import com.yenaly.yenaly_libs.base.settings.YenalySettingsFragment
  * @author Yenaly Liew
  * @time 2023/11/15 015 10:59
  */
-class HKeyframeSettingsFragment : YenalySettingsFragment(R.xml.settings_h_keyframe),
-    IToolbarFragment<SettingsActivity> {
+class HKeyframeSettingsFragment : YenalySettingsFragment(R.xml.settings_h_keyframe) {
 
     companion object {
         const val H_KEYFRAMES_ENABLE = "h_keyframes_enable"
@@ -62,7 +63,10 @@ class HKeyframeSettingsFragment : YenalySettingsFragment(R.xml.settings_h_keyfra
 
     override fun onStart() {
         super.onStart()
-        (activity as SettingsActivity).setupToolbar()
+        (activity as? ToolbarHost)?.setupToolbar(
+            getString(R.string.h_keyframe_settings),
+            canNavigateBack = true
+        )
     }
 
     override fun onPreferencesCreated(savedInstanceState: Bundle?) {
@@ -124,9 +128,5 @@ class HKeyframeSettingsFragment : YenalySettingsFragment(R.xml.settings_h_keyfra
         getString(R.string.h_keyframes_enable_tip)
     } else {
         getString(R.string.h_keyframes_disable_tip)
-    }
-
-    override fun SettingsActivity.setupToolbar() {
-        supportActionBar!!.setTitle(R.string.h_keyframe_settings)
     }
 }

@@ -6,6 +6,7 @@ import android.view.View
 import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.preference.Preference
 import com.google.android.material.chip.ChipGroup
@@ -22,6 +23,7 @@ import com.yenaly.han1meviewer.logic.network.HanimeNetwork
 import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.activity.SettingsActivity
 import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
+import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
 import com.yenaly.han1meviewer.util.createAlertDialog
 import com.yenaly.han1meviewer.util.showAlertDialog
@@ -37,8 +39,7 @@ import com.yenaly.yenaly_libs.utils.unsafeLazy
  * @author Yenaly Liew
  * @time 2024/03/10 010 18:30
  */
-class NetworkSettingsFragment : YenalySettingsFragment(R.xml.settings_network),
-    IToolbarFragment<SettingsActivity> {
+class NetworkSettingsFragment : YenalySettingsFragment(R.xml.settings_network) {
 
     companion object {
         const val PROXY = "proxy"
@@ -62,7 +63,10 @@ class NetworkSettingsFragment : YenalySettingsFragment(R.xml.settings_network),
 
     override fun onStart() {
         super.onStart()
-        (activity as SettingsActivity).setupToolbar()
+        (activity as? ToolbarHost)?.setupToolbar(
+            getString(R.string.network_settings),
+            canNavigateBack = true
+        )
     }
 
     override fun onPreferencesCreated(savedInstanceState: Bundle?) {
@@ -247,9 +251,5 @@ class NetworkSettingsFragment : YenalySettingsFragment(R.xml.settings_network),
             initView()
             dialog.showWithBlurEffect()
         }
-    }
-
-    override fun SettingsActivity.setupToolbar() {
-        supportActionBar!!.setTitle(R.string.network_settings)
     }
 }
