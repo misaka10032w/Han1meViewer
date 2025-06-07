@@ -11,9 +11,9 @@
       "type": "SINGLE",
       "filters": [],
       "attributes": [],
-      "versionCode": 25060515,
-      "versionName": "0.15.5-release+25060515",
-      "outputFile": "Han1meViewer-v0.15.5-release+25060515.apk"
+      "versionCode": 25060711,
+      "versionName": "0.15.5-release+25060711",
+      "outputFile": "Han1meViewer-v0.15.5-release+25060711.apk"
     }
   ],
   "elementType": "File",
@@ -22,14 +22,14 @@
       "minApi": 28,
       "maxApi": 30,
       "baselineProfiles": [
-        "baselineProfiles/1/Han1meViewer-v0.15.5-release+25060515.dm"
+        "baselineProfiles/1/Han1meViewer-v0.15.5-release+25060711.dm"
       ]
     },
     {
       "minApi": 31,
       "maxApi": 2147483647,
       "baselineProfiles": [
-        "baselineProfiles/0/Han1meViewer-v0.15.5-release+25060515.dm"
+        "baselineProfiles/0/Han1meViewer-v0.15.5-release+25060711.dm"
       ]
     }
   ],

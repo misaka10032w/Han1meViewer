@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
     paths-ignore:
       - "**.md"
 
@@ -24,7 +24,7 @@ jobs:
 
       - name: Load Google Services File
         env:
-          DATA: ${{ secrets.HA1_GOOGLE_SERVICES_JSON_BASE64 }}
+          DATA: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
         run: echo $DATA | base64 -di > app/google-services.json
 
       - name: Grant execute permission for gradlew
@@ -33,8 +33,8 @@ jobs:
       - name: Build and sign APK with Gradle
         run: ./gradlew assembleRelease
         env:
-          HA1_KEYSTORE_PASSWORD: ${{ secrets.HA1_KEYSTORE_PASSWORD }}
-          HA1_GITHUB_TOKEN: ${{ secrets.HA1_GITHUB_TOKEN }}
+          HA1_KEYSTORE_PASSWORD: ${{ secrets.YOUR_KEYSTORE_PASSWORD }}
+          HA1_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HA1_VERSION_SOURCE: 'ci'
 
       - name: Upload APK Zip
