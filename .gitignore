@@ -32,8 +32,6 @@ gradle-app.setting
 **/outputs/
 
 # 本地配置文件
-**/*.keystore
-**/*.jks
 **/google-services.json
 **/app/google-services.json
 

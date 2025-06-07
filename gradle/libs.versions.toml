@@ -1,6 +1,7 @@
 [versions]
 # Plugins
 androidGradle = "8.9.0"
+appcompatVersion = "1.6.1"
 kotlin = "2.0.21"
 serializationPlugin = "2.0.21"
 ksp = "2.0.21-1.0.27"
@@ -31,6 +32,8 @@ roomCompiler = "2.6.1"
 navigationFragmentKtx = "2.8.8"
 navigationUiKtx = "2.8.8"
 preferenceKtx = "1.2.1"
+windowJava = "1.2.0"
+window = "1.2.0"
 workRuntime = "2.10.0"
 workRuntimeKtx = "2.10.0"
 startupRuntime = "1.2.0"
@@ -68,6 +71,9 @@ composeBom = "2025.02.00"
 
 [libraries]
 # Android
+androidx-appcompat-v161 = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
+androidx-window = { module = "androidx.window:window", version.ref = "window" }
+androidx-window-java = { module = "androidx.window:window-java", version.ref = "windowJava" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appCompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
