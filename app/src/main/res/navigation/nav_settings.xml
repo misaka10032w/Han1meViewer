@@ -31,5 +31,10 @@
     <fragment
         android:id="@+id/downloadSettingsFragment"
         android:name="com.yenaly.han1meviewer.ui.fragment.settings.DownloadSettingsFragment" />
+    <action
+        android:id="@+id/action_back_to_main"
+        app:destination="@id/nv_home_page"
+        app:popUpTo="@id/nav_main"
+        app:popUpToInclusive="true" />
 
 </navigation>

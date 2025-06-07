@@ -3,6 +3,7 @@ package com.yenaly.han1meviewer.ui.adapter
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -29,6 +30,7 @@ import com.yenaly.han1meviewer.ui.fragment.home.HomePageFragment
 import com.yenaly.yenaly_libs.utils.activity
 import com.yenaly.yenaly_libs.utils.copyTextToClipboard
 import com.yenaly.yenaly_libs.utils.dp
+import com.yenaly.yenaly_libs.utils.requireActivity
 import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.startActivity
 
@@ -214,14 +216,36 @@ class HanimeVideoRvAdapter(private val videoWidthType: Int = -1) : // videoWidth
         )
     }
 
+    //    private fun Context.startVideoActivity(videoCode: String) {
+//        if (this is SearchActivity) {
+//            val intent = Intent(this, VideoActivity::class.java).apply {
+//                putExtra(VIDEO_CODE, videoCode)
+//            }
+//            this.subscribeLauncher.launch(intent)
+//            Log.e("video play","搜索页播放,视频代码:$videoCode")
+//            return
+//        }
+//        activity?.startActivity<VideoActivity>(VIDEO_CODE to videoCode)
+//        Log.e("video play","视频代码:$videoCode")
+//    }
     private fun Context.startVideoActivity(videoCode: String) {
-        if (this is SearchActivity) {
-            val intent = Intent(this, VideoActivity::class.java).apply {
-                putExtra(VIDEO_CODE, videoCode)
+        if (resources.getBoolean(R.bool.isTablet)) {
+            if (this is MainActivity) {
+                (requireActivity() as? MainActivity)?.showVideoDetailFragment(videoCode)
+            }else{
+
+                activity?.startActivity<VideoActivity>(VIDEO_CODE to videoCode)
             }
-            this.subscribeLauncher.launch(intent)
-            return
+        } else {
+            if (this is SearchActivity) {
+                val intent = Intent(this, VideoActivity::class.java).apply {
+                    putExtra(VIDEO_CODE, videoCode)
+                }
+                this.subscribeLauncher.launch(intent)
+                return
+            }
+            activity?.startActivity<VideoActivity>(VIDEO_CODE to videoCode)
         }
-        activity?.startActivity<VideoActivity>(VIDEO_CODE to videoCode)
     }
+
 }

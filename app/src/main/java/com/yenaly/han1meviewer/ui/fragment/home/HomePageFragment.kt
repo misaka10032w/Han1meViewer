@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.fragment.home
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Color
@@ -11,10 +12,13 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
@@ -47,6 +51,7 @@ import com.yenaly.han1meviewer.ui.adapter.HanimeVideoRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.RvWrapper.Companion.wrappedWith
 import com.yenaly.han1meviewer.ui.adapter.VideoColumnTitleAdapter
 import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
+import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
 import com.yenaly.han1meviewer.util.addUpdateListener
 import com.yenaly.han1meviewer.util.colorTransition
@@ -171,7 +176,6 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
      * 初始化数据
      */
     override fun initData(savedInstanceState: Bundle?) {
-
         (activity as MainActivity).setupToolbar()
         binding.state.init()
 
@@ -194,6 +198,15 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                 viewModel.getHomePage()
             }
             setEnableLoadMore(false)
+        }
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as? ToolbarHost)?.hideToolbar()
+        binding.btnSwap.setOnClickListener {
+            (requireActivity() as? MainActivity)?.swapFragments(1)
         }
     }
 

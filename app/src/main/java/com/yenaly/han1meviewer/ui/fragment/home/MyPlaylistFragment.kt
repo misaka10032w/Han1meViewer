@@ -114,10 +114,10 @@ class MyPlaylistFragment : YenalyFragment<FragmentPlaylistBinding>(),
             layoutManager = GridLayoutManager(context, VideoCoverSize.Simplified.videoInOneLine)
             adapter = this@MyPlaylistFragment.adapter
         }
-
         initPlaylistHeader()
 
         viewModel.playlist.getPlaylists()
+
 
         adapter.setOnItemLongClickListener { _, _, position ->
             val item = adapter.getItem(position) ?: return@setOnItemLongClickListener true
