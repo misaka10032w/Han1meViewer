@@ -47,7 +47,8 @@
                 android:minLines="2"
                 android:paddingStart="4dp"
                 android:paddingEnd="4dp"
-                tools:text="123123123abc, abc, abc" />
+                tools:text="123123123abc, abc, abc"
+                android:scrollbars="none"/>
 
         </LinearLayout>
 

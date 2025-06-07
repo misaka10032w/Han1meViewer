@@ -367,5 +367,8 @@
     <string name="no_limit">無限制</string>
     <string name="check_video_exists_in_download">我注意到你好像下載過畫質為 %s 的該影片</string>
     <string name="retry">重試</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
+    <string name="switch_layout">切換佈局</string>
 
 </resources>

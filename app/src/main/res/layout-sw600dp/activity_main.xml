@@ -1,36 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:targetApi="lollipop">
     <data />
 
-    <androidx.drawerlayout.widget.DrawerLayout
-        android:id="@+id/dl_main"
+    <LinearLayout
+        android:id="@+id/main_layout"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fitsSystemWindows="true"
-        android:background="?attr/colorSurface">
-        <!-- 主内容部分 -->
+        android:layout_height="match_parent">
 
+        <!-- 左侧导航栏，固定展示 -->
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/nv_main"
+            android:layout_width="280dp"
+            android:layout_height="match_parent"
+            android:background="?attr/colorSurface"
+            app:headerLayout="@layout/nav_header_ability"
+            app:menu="@menu/menu_main_nv"
+            app:itemTextColor="@color/nav_item_text_color"
+            app:itemIconTint="@color/nav_item_icon_color" />
+
+        <!-- 右侧主内容区域 -->
         <androidx.coordinatorlayout.widget.CoordinatorLayout
-            android:layout_width="match_parent"
+            android:id="@+id/right_pan"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="match_parent"
             android:fitsSystemWindows="true">
 
-
             <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/appbar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/colorSurface"
                 android:fitsSystemWindows="true"
-                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+                android:background="?attr/colorPrimary">
 
                 <androidx.appcompat.widget.Toolbar
                     android:id="@+id/toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
-                    android:background="?attr/colorSurface"
-                    app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+                    app:menu="@menu/menu_main_toolbar"/>
             </com.google.android.material.appbar.AppBarLayout>
 
             <androidx.fragment.app.FragmentContainerView
@@ -44,21 +55,6 @@
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-        <!-- 侧边导航栏 -->
-        <com.google.android.material.navigation.NavigationView
-            android:id="@+id/nv_main"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="start"
-            android:fitsSystemWindows="true"
-            app:headerLayout="@layout/nav_header_ability"
-            app:menu="@menu/menu_main_nv"
-            android:background="?attr/colorSurface"
-            app:itemTextColor="@color/nav_item_text_color"
-            app:itemIconTint="@color/nav_item_icon_color" />
-
-    </androidx.drawerlayout.widget.DrawerLayout>
-
-
+    </LinearLayout>
 
 </layout>
