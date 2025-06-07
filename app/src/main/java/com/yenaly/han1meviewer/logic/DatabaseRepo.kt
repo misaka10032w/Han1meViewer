@@ -169,6 +169,7 @@ object DatabaseRepo {
             HanimeDownloadEntity.SortedBy.ID ->
                 hanimeDownloadDao.loadAllDownloadedHanimeById(ascending)
         }
+
         suspend fun delete(videoCode: String, quality: String) =
             hanimeDownloadDao.delete(videoCode, quality)
 

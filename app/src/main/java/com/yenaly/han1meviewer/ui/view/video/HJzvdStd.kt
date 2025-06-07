@@ -26,8 +26,6 @@ import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
-import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cn.jzvd.JZDataSource
@@ -38,7 +36,6 @@ import com.itxca.spannablex.spannable
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
-import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.adapter.HKeyframeRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.VideoSpeedAdapter
 import com.yenaly.han1meviewer.util.setStateViewLayout
@@ -441,12 +438,9 @@ class HJzvdStd @JvmOverloads constructor(
         tvTimer.updatePadding(left = statusBarHeight)
         bottomProgressBar.updatePadding(left = statusBarHeight, right = navBarHeight)
     }
+
     override fun clickBack() {
         Log.i(TAG, "backPress")
-        if ( context is MainActivity && resources.getBoolean(R.bool.isTablet)){
-            findNavController().popBackStack()
-            return
-        }
         when {
             CONTAINER_LIST.isNotEmpty() && CURRENT_JZVD != null -> { //判断条件，因为当前所有goBack都是回到普通窗口
                 CURRENT_JZVD.gotoNormalScreen()
@@ -458,7 +452,6 @@ class HJzvdStd @JvmOverloads constructor(
 
             else -> { //剩餘情況直接退出
                 context.activity?.finish()
-
             }
         }
     }

@@ -2,13 +2,11 @@ package com.yenaly.han1meviewer.ui.fragment.settings
 
 import android.os.Bundle
 import androidx.annotation.IntRange
-import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.SeekBarPreference
 import androidx.preference.SwitchPreferenceCompat
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.activity.SettingsActivity
 import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
-import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
 import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
 import com.yenaly.han1meviewer.ui.view.video.HMediaKernel
@@ -21,7 +19,9 @@ import com.yenaly.yenaly_libs.utils.toStringArray
  * @author Yenaly Liew
  * @time 2023/09/04 004 16:28
  */
-class PlayerSettingsFragment : YenalySettingsFragment(R.xml.settings_player) {
+class PlayerSettingsFragment : YenalySettingsFragment(R.xml.settings_player),
+    IToolbarFragment<SettingsActivity> {
+
     companion object {
         const val SWITCH_PLAYER_KERNEL = "switch_player_kernel"
         const val SHOW_BOTTOM_PROGRESS = "show_bottom_progress"
@@ -43,10 +43,7 @@ class PlayerSettingsFragment : YenalySettingsFragment(R.xml.settings_player) {
 
     override fun onStart() {
         super.onStart()
-        (activity as? ToolbarHost)?.setupToolbar(
-            getString(R.string.player_settings),
-            canNavigateBack = true
-        )
+        (activity as SettingsActivity).setupToolbar()
     }
 
     override fun onPreferencesCreated(savedInstanceState: Bundle?) {
@@ -104,5 +101,9 @@ class PlayerSettingsFragment : YenalySettingsFragment(R.xml.settings_player) {
             else -> throw IllegalStateException("Invalid sensitivity value: $this")
         }
         return getString(R.string.current_slide_sensitivity, pretty)
+    }
+
+    override fun SettingsActivity.setupToolbar() {
+        supportActionBar!!.setTitle(R.string.player_settings)
     }
 }

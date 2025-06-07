@@ -7,16 +7,15 @@
         <item
             android:id="@+id/nv_home_page"
             android:icon="@drawable/ic_baseline_home_24"
-            android:title="@string/home_page"
-            android:checked="true"/>
+            android:title="@string/home_page" />
         <item
             android:id="@+id/nv_settings"
             android:icon="@drawable/ic_baseline_settings_24"
             android:title="@string/settings" />
-<!--        <item-->
-<!--            android:id="@+id/nv_h_keyframe_settings"-->
-<!--            android:icon="@drawable/baseline_h_24"-->
-<!--            android:title="@string/h_keyframe_settings" />-->
+        <item
+            android:id="@+id/nv_h_keyframe_settings"
+            android:icon="@drawable/baseline_h_24"
+            android:title="@string/h_keyframe_settings" />
 
     </group>
 

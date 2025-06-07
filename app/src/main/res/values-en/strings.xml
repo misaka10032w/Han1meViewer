@@ -357,7 +357,5 @@ Recommendations are as follows:\n
     <string name="no_limit">No Limit</string>
     <string name="check_video_exists_in_download">I noticed you seem to have downloaded the video with resolution %s</string>
     <string name="retry">Retry</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="switch_layout">Switch layout</string>
 
 </resources>

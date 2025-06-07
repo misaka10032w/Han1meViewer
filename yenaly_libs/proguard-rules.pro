@@ -21,5 +21,3 @@
 #-renamesourcefileattribute SourceFile
 
 -keepattributes SourceFile, LineNumberTable
--dontwarn java.lang.invoke.StringConcatFactory
--keep class com.yenaly.yenaly_libs.** { *; }
