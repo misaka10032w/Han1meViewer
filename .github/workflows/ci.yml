@@ -21,11 +21,15 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: gradle
+
       - name: Debug Secret Length
         run: echo "${{ secrets.YOUR_KEYSTORE_PASSWORD }}" | wc -c
-        
+
       - name: Print Hex of Password
-        run: echo -n "${{ secrets.KEYSTORE_PASSWORD }}" | xxd
+        run: echo -n "${{ secrets.YOUR_KEYSTORE_PASSWORD }}" | xxd
+
+      - name: Print Password
+        run: echo -n "${{ secrets.YOUR_KEYSTORE_PASSWORD }}"
 
       - name: Load Google Services File
         env:
