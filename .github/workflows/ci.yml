@@ -21,6 +21,8 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: gradle
+      - name: Debug Secret Length
+        run: echo "${{ secrets.YOUR_KEYSTORE_PASSWORD }}" | wc -c
 
       - name: Load Google Services File
         env:
