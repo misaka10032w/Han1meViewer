@@ -91,7 +91,7 @@ object ServiceCreator {
             .dns(GitHubDns)
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder().addHeader(
-                    "Authorization", "Bearer ${BuildConfig.HA1_GITHUB_TOKEN}"
+                    "Authorization", "Bearer ${BuildConfig.GITHUB_TOKEN}"
                 ).build()
                 return@addInterceptor chain.proceed(request)
             }

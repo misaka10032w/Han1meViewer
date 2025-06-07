@@ -64,7 +64,7 @@ class HanimeApplication : YenalyApplication() {
                 )
                 key(
                     FirebaseConstants.VERSION_SOURCE,
-                    BuildConfig.HA1_VERSION_SOURCE
+                    BuildConfig.VERSION_SOURCE
                 )
             }
         }
