@@ -24,18 +24,18 @@ android {
     val commitSha = if (isRelease) lastCommitSha else "b8eace8" // 方便调试
 
     // 先 Github Secrets 再读取环境变量，若没有则读取本地文件
-    val signPwd = System.getenv("HA1_KEYSTORE_PASSWORD") ?: File(
+    val signPwd = System.getenv("YOUR_KEYSTORE_PASSWORD") ?: File(
         projectDir, "keystore/ha1_keystore_password.txt"
     ).checkIfExists()?.readText().orEmpty()
 
-    val githubToken = System.getenv("HA1_GITHUB_TOKEN") ?: File(
+    val githubToken = System.getenv("GITHUB_TOKEN") ?: File(
         projectDir, "ha1_github_token.txt"
     ).checkIfExists()?.readText().orEmpty()
 
     val signConfig = if (isRelease) signingConfigs.create("release") {
         storeFile = File(projectDir, "keystore/Han1meViewerKeystore.jks").checkIfExists()
         storePassword = signPwd
-        keyAlias = "yenaly"
+        keyAlias = "top.nekotofu"
         keyPassword = signPwd
         enableV3Signing = true
         enableV4Signing = true
@@ -54,8 +54,8 @@ android {
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
         buildConfigField("String", "VERSION_NAME", "\"${versionName}\"")
         buildConfigField("int", "VERSION_CODE", "$versionCode")
-        buildConfigField("String", "HA1_GITHUB_TOKEN", "\"${githubToken}\"")
-        buildConfigField("String", "HA1_VERSION_SOURCE", "\"${source}\"")
+        buildConfigField("String", "GITHUB_TOKEN", "\"${githubToken}\"")
+        buildConfigField("String", "VERSION_SOURCE", "\"${source}\"")
 
         buildConfigField("int", "SEARCH_YEAR_RANGE_END", "${Config.thisYear}")
     }
@@ -106,6 +106,9 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.appcompat.v161)
+    implementation(libs.androidx.window)
+    implementation(libs.androidx.window.java)
 
     implementation(project(":yenaly_libs"))
 

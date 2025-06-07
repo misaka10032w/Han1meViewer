@@ -29,3 +29,5 @@
 
 -keep class com.google.android.gms.** { *; }
 -keep interface com.google.android.gms.** { *; }
+-keep class androidx.appcompat.view.** { *; }
+-keep class androidx.window.extensions.embedding.** { *; }
