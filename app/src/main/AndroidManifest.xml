@@ -13,7 +13,7 @@
         android:name=".HanimeApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
-        android:enableOnBackInvokedCallback="false"
+        android:enableOnBackInvokedCallback="true"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/hanime_app_name"
@@ -112,13 +112,6 @@
             android:name=".ui.activity.LoginActivity"
             android:configChanges="screenSize|orientation"
             android:exported="true">
-
-        </activity>
-        <activity
-            android:name=".ui.activity.AboutActivity"
-            android:configChanges="orientation|screenSize"
-            android:exported="true"
-            android:theme="@style/Theme.Hanime1.About">
 
         </activity>
         <activity

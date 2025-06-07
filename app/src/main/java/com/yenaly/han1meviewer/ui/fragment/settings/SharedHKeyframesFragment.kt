@@ -3,6 +3,7 @@ package com.yenaly.han1meviewer.ui.fragment.settings
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,6 +16,7 @@ import com.yenaly.han1meviewer.ui.StateLayoutMixin
 import com.yenaly.han1meviewer.ui.activity.SettingsActivity
 import com.yenaly.han1meviewer.ui.adapter.SharedHKeyframesRvAdapter
 import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
+import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.view.LinearSmoothToStartScroller
 import com.yenaly.han1meviewer.ui.viewmodel.SettingsViewModel
 import com.yenaly.han1meviewer.util.setStateViewLayout
@@ -28,7 +30,7 @@ import kotlinx.coroutines.launch
  * @time 2023/11/18 018 17:38
  */
 class SharedHKeyframesFragment : YenalyFragment<FragmentHKeyframesBinding>(),
-    IToolbarFragment<SettingsActivity>, StateLayoutMixin {
+    StateLayoutMixin {
 
     val viewModel by activityViewModels<SettingsViewModel>()
 
@@ -36,7 +38,10 @@ class SharedHKeyframesFragment : YenalyFragment<FragmentHKeyframesBinding>(),
 
     override fun onStart() {
         super.onStart()
-        (activity as SettingsActivity).setupToolbar()
+        (activity as? ToolbarHost)?.setupToolbar(
+            getString(R.string.h_keyframe_settings),
+            canNavigateBack = true
+        )
     }
 
     override fun getViewBinding(
@@ -92,9 +97,5 @@ class SharedHKeyframesFragment : YenalyFragment<FragmentHKeyframesBinding>(),
                 adapter.submitList(it)
             }
         }
-    }
-
-    override fun SettingsActivity.setupToolbar() {
-        supportActionBar!!.setTitle(R.string.shared_h_keyframe_manage)
     }
 }

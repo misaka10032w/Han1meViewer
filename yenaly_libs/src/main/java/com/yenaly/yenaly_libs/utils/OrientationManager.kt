@@ -1,19 +1,21 @@
 package com.yenaly.yenaly_libs.utils
 
+import android.content.Context
 import android.provider.Settings
 import android.view.OrientationEventListener
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 
-
 /**
  * @project Han1meViewer
  * @author Yenaly Liew
  * @time 2024/04/10 010 20:49
  */
-class OrientationManager(private var orientationChangeListener: OrientationChangeListener? = null) :
-    OrientationEventListener(applicationContext), LifecycleEventObserver {
+class OrientationManager(
+    private val context: Context,
+    private var orientationChangeListener: OrientationChangeListener? = null
+) : OrientationEventListener(context), LifecycleEventObserver {
 
     private var screenOrientation: ScreenOrientation = ScreenOrientation.PORTRAIT
 
@@ -31,7 +33,7 @@ class OrientationManager(private var orientationChangeListener: OrientationChang
         }
         try {
             val isRotateEnabled = Settings.System.getInt(
-                applicationContext.contentResolver,
+                context.contentResolver,
                 Settings.System.ACCELEROMETER_ROTATION
             )
             if (isRotateEnabled == 0) return
@@ -44,7 +46,7 @@ class OrientationManager(private var orientationChangeListener: OrientationChang
             in 220..300 -> ScreenOrientation.LANDSCAPE
             else -> ScreenOrientation.PORTRAIT
         }
-        if (newOrientation !== screenOrientation) {
+        if (newOrientation != screenOrientation) {
             screenOrientation = newOrientation
             orientationChangeListener?.onOrientationChanged(screenOrientation)
         }

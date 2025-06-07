@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.core.text.parseAsHtml
 import androidx.lifecycle.Lifecycle
@@ -24,10 +25,10 @@ import com.yenaly.han1meviewer.HA1_GITHUB_RELEASES_URL
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.activity.AboutActivity
 import com.yenaly.han1meviewer.ui.activity.SettingsActivity
 import com.yenaly.han1meviewer.ui.activity.SettingsRouter
 import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
+import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.view.pref.HPrivacyPreference
 import com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
@@ -41,7 +42,6 @@ import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.folderSize
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
 import com.yenaly.yenaly_libs.utils.showShortToast
-import com.yenaly.yenaly_libs.utils.startActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -57,8 +57,7 @@ import kotlinx.datetime.toLocalDateTime
  * @author Yenaly Liew
  * @time 2022/07/01 001 14:25
  */
-class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home),
-    IToolbarFragment<SettingsActivity> {
+class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
 
     companion object {
         const val VIDEO_LANGUAGE = "video_language"
@@ -113,8 +112,13 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home),
 
     override fun onStart() {
         super.onStart()
-        (activity as SettingsActivity).setupToolbar()
-    }
+        (activity as? ToolbarHost)?.showToolbar()
+        (activity as? ToolbarHost)?.setupToolbar(
+            getString(R.string.settings),
+            canNavigateBack = true
+        )
+
+}
 
     override fun onPreferencesCreated(savedInstanceState: Bundle?) {
         videoLanguage.apply {
@@ -167,10 +171,6 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home),
                 append(getString(R.string.hanime_app_name))
             }
             summary = getString(R.string.current_version, "v${BuildConfig.VERSION_NAME}")
-            setOnPreferenceClickListener {
-                startActivity<AboutActivity>()
-                return@setOnPreferenceClickListener true
-            }
         }
         clearCache.apply {
             val cacheDir = context.cacheDir
@@ -370,9 +370,5 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home),
             0 -> getString(R.string.at_any_time)
             else -> getString(R.string.which_days, value)
         } + "\n" + msg
-    }
-
-    override fun SettingsActivity.setupToolbar() {
-        supportActionBar!!.setTitle(R.string.settings)
     }
 }

@@ -9,6 +9,7 @@ import androidx.core.net.toFile
 import androidx.core.net.toUri
 import com.yenaly.han1meviewer.FILE_PROVIDER_AUTHORITY
 import com.yenaly.han1meviewer.FROM_DOWNLOAD
+import com.yenaly.han1meviewer.HFileManager
 import com.yenaly.han1meviewer.HJson
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VIDEO_CODE
@@ -60,12 +61,12 @@ fun createDownloadName(title: String, quality: String, suffix: String = DEF_VIDE
     )
 )
 fun getDownloadedHanimeFile(title: String, quality: String, suffix: String = DEF_VIDEO_TYPE): File {
-    return File(hanimeVideoLocalFolder, createDownloadName(title, quality, suffix))
+    return File(HFileManager.appDownloadFolder, createDownloadName(title, quality, suffix))
 }
 
 @Deprecated("不用了")
 fun checkDownloadedHanimeFile(startsWith: String): Boolean {
-    return hanimeVideoLocalFolder?.let { folder ->
+    return HFileManager.appDownloadFolder?.let { folder ->
         folder.listFiles()?.any { it.name.startsWith(startsWith) }
     } == true
 }

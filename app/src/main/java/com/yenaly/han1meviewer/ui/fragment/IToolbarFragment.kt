@@ -17,4 +17,3 @@ interface IToolbarFragment<T : AppCompatActivity> {
     fun T.setupToolbar()
 
 }
-
