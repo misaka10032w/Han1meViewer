@@ -2,12 +2,11 @@
     <!-- Base application theme. -->
     <style name="Theme.Hanime1" parent="Theme.Material3.Dark.NoActionBar">
         <!-- Status bar color. -->
-        <!--        <item name="android:statusBarColor">?android:colorBackground</item>-->
-        <!--        <item name="android:navigationBarColor">?android:colorBackground</item>-->
+        <item name="android:statusBarColor">?android:colorBackground</item>
+        <item name="android:navigationBarColor">?android:colorBackground</item>
         <item name="android:windowTranslucentStatus">false</item>
         <!-- Customize your theme here. -->
     </style>
-
 
     <style name="Theme.Hanime1.Main" parent="Theme.Hanime1">
         <item name="android:windowTranslucentStatus">true</item>

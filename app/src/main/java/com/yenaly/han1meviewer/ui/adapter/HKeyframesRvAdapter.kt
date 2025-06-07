@@ -262,12 +262,12 @@ class HKeyframeRvAdapter(
                                 }
 
                                 is VideoActivity -> {
-//                                    context.viewModel.modifyHKeyframe(
-//                                        videoCode, item, HKeyframeEntity.Keyframe(
-//                                            position = pos,
-//                                            prompt = prompt
-//                                        )
-//                                    )
+                                    context.viewModel.modifyHKeyframe(
+                                        videoCode, item, HKeyframeEntity.Keyframe(
+                                            position = pos,
+                                            prompt = prompt
+                                        )
+                                    )
                                     // showShortToast("修改成功") // 這裏不用提示，因為 VideoActivity 有 Flow 操控
                                 }
                             }
@@ -291,7 +291,7 @@ class HKeyframeRvAdapter(
                                 }
 
                                 is VideoActivity -> {
-//                                    context.viewModel.removeHKeyframe(videoCode, item)
+                                    context.viewModel.removeHKeyframe(videoCode, item)
                                     // showShortToast("刪除成功") // 這裏不用提示，因為 VideoActivity 有 Flow 操控
                                 }
                             }

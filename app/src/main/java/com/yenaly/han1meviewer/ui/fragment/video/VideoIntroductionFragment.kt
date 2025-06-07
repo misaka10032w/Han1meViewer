@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Typeface
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ViewGroup
@@ -14,7 +13,6 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -58,7 +56,6 @@ import com.yenaly.han1meviewer.ui.adapter.BaseSingleDifferAdapter
 import com.yenaly.han1meviewer.ui.adapter.HanimeVideoRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.RvWrapper.Companion.wrappedWith
 import com.yenaly.han1meviewer.ui.adapter.VideoColumnTitleAdapter
-import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.requestPostNotificationPermission
 import com.yenaly.han1meviewer.util.setDrawableTop
@@ -114,8 +111,7 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
         }
     }
 
-    val viewModel: VideoViewModel by viewModels({ requireParentFragment() })
-
+    val viewModel by activityViewModels<VideoViewModel>()
 
     private var checkedQuality: String? = null
 
@@ -173,7 +169,6 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 viewModel.hanimeVideoStateFlow.collect { state ->
-                    Log.i("video_ui", "bindDataObservers: $state", )
                     binding.rvVideoIntro.isVisible = state is VideoLoadingState.Success
                     when (state) {
                         is VideoLoadingState.Error -> Unit

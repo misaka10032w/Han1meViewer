@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginHorizontal="8dp"
-    android:background="?attr/colorSecondary"
+    android:background="@drawable/search_bar"
     android:elevation="16dp"
     android:gravity="center_horizontal"
     android:orientation="vertical">
@@ -14,7 +14,6 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:layout_margin="15dp"
         android:gravity="center"
         android:orientation="horizontal">
 
@@ -29,7 +28,7 @@
             android:minHeight="0dp"
             android:padding="12dp"
             app:icon="@drawable/ic_baseline_arrow_back_24"
-            app:iconTint="?attr/colorTertiaryContainer" />
+            app:iconTint="@color/black" />
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/et_search"
@@ -42,7 +41,7 @@
             android:imeOptions="actionSearch"
             android:inputType="text"
             android:singleLine="true"
-            android:textColor="?attr/colorSurface"
+            android:textColor="@color/black"
             android:textColorHint="@color/grey_700" />
 
         <com.google.android.material.button.MaterialButton
@@ -53,18 +52,18 @@
             android:minWidth="0dp"
             android:minHeight="0dp"
             app:icon="@drawable/baseline_advanced_search_24"
-            app:iconTint="?attr/colorTertiaryContainer" />
+            app:iconTint="@color/search_bar_icon_color" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_search"
             style="@style/Widget.Material3.Button.IconButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="?attr/colorTertiaryContainer"
+            android:backgroundTint="@color/search_bar_icon_color"
             android:insetLeft="0dp"
             android:minWidth="0dp"
             android:minHeight="0dp"
-            app:cornerRadius="999dp"
+            app:cornerRadius="8dp"
             app:icon="@drawable/ic_baseline_search_24"
             app:iconTint="@color/white" />
 
@@ -75,7 +74,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
-        android:background="?attr/colorPrimary"
         tools:visibility="visible" />
 
 </LinearLayout>

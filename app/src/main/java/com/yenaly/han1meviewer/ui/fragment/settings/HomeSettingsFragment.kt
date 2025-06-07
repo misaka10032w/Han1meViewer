@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.core.text.parseAsHtml
 import androidx.lifecycle.Lifecycle
@@ -28,7 +27,6 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.SettingsActivity
 import com.yenaly.han1meviewer.ui.activity.SettingsRouter
 import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
-import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.view.pref.HPrivacyPreference
 import com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
@@ -57,7 +55,8 @@ import kotlinx.datetime.toLocalDateTime
  * @author Yenaly Liew
  * @time 2022/07/01 001 14:25
  */
-class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
+class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home),
+    IToolbarFragment<SettingsActivity> {
 
     companion object {
         const val VIDEO_LANGUAGE = "video_language"
@@ -112,13 +111,8 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
 
     override fun onStart() {
         super.onStart()
-        (activity as? ToolbarHost)?.showToolbar()
-        (activity as? ToolbarHost)?.setupToolbar(
-            getString(R.string.settings),
-            canNavigateBack = true
-        )
-
-}
+        (activity as SettingsActivity).setupToolbar()
+    }
 
     override fun onPreferencesCreated(savedInstanceState: Bundle?) {
         videoLanguage.apply {
@@ -370,5 +364,9 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
             0 -> getString(R.string.at_any_time)
             else -> getString(R.string.which_days, value)
         } + "\n" + msg
+    }
+
+    override fun SettingsActivity.setupToolbar() {
+        supportActionBar!!.setTitle(R.string.settings)
     }
 }

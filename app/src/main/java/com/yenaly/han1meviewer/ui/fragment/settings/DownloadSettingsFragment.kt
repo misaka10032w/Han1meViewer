@@ -1,14 +1,12 @@
 package com.yenaly.han1meviewer.ui.fragment.settings
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.SeekBarPreference
 import com.yenaly.han1meviewer.HFileManager
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.network.interceptor.SpeedLimitInterceptor
 import com.yenaly.han1meviewer.ui.activity.SettingsActivity
 import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
-import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.util.setSummaryConverter
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
@@ -18,7 +16,8 @@ import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.formatBytesPerSecond
 import com.yenaly.yenaly_libs.utils.showShortToast
 
-class DownloadSettingsFragment : YenalySettingsFragment(R.xml.settings_download){
+class DownloadSettingsFragment : YenalySettingsFragment(R.xml.settings_download),
+    IToolbarFragment<SettingsActivity> {
 
     companion object {
         const val DOWNLOAD_PATH = "download_path"
@@ -35,11 +34,7 @@ class DownloadSettingsFragment : YenalySettingsFragment(R.xml.settings_download)
 
     override fun onStart() {
         super.onStart()
- //       (activity as SettingsActivity).setupToolbar()
-        (activity as? ToolbarHost)?.setupToolbar(
-            getString(R.string.download_settings),
-            canNavigateBack = true
-        )
+        (activity as SettingsActivity).setupToolbar()
     }
 
     override fun onPreferencesCreated(savedInstanceState: Bundle?) {
@@ -97,5 +92,7 @@ class DownloadSettingsFragment : YenalySettingsFragment(R.xml.settings_download)
         }
     }
 
-
+    override fun SettingsActivity.setupToolbar() {
+        supportActionBar!!.setTitle(R.string.download_settings)
+    }
 }

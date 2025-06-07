@@ -33,9 +33,7 @@ import com.yenaly.yenaly_libs.utils.showShortToast
  * @author Yenaly Liew
  * @time 2023/11/26 026 16:19
  */
-class VideoCommentRvAdapter(
-    private val fragment: Fragment? = null
-) :
+class VideoCommentRvAdapter(private val fragment: Fragment? = null) :
     BaseDifferAdapter<VideoComments.VideoComment, DataBindingHolder<ItemVideoCommentBinding>>(
         COMPARATOR
     ) {

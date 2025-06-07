@@ -86,8 +86,6 @@ android {
         //noinspection DataBindingWithoutKapt
         dataBinding = true
         buildConfig = true
-
-
         // compose = true
     }
     compileOptions {

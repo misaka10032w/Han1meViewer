@@ -363,6 +363,5 @@
     <string name="no_limit">无限制</string>
     <string name="check_video_exists_in_download">我注意到你好像下载过分辨率为 %s 的该影片</string>
     <string name="retry">重试</string>
-    <string name="switch_layout">切换布局</string>
 
 </resources>

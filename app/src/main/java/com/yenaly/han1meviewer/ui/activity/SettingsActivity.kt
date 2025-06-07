@@ -4,11 +4,9 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
@@ -17,7 +15,6 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.ActivitySettingsBinding
-import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.viewmodel.SettingsViewModel
 import com.yenaly.han1meviewer.util.logScreenViewEvent
 import com.yenaly.yenaly_libs.base.YenalyActivity
@@ -27,12 +24,14 @@ import com.yenaly.yenaly_libs.base.YenalyActivity
  * @author Yenaly Liew
  * @time 2022/07/01 001 13:40
  */
-class SettingsActivity : YenalyActivity<ActivitySettingsBinding>() ,ToolbarHost{
+class SettingsActivity : YenalyActivity<ActivitySettingsBinding>() {
 
     val viewModel by viewModels<SettingsViewModel>()
 
     private lateinit var navHostFragment: NavHostFragment
     private lateinit var navController: NavController
+
+    val currentFragment get() = navHostFragment.childFragmentManager.primaryNavigationFragment
 
     override fun getViewBinding(layoutInflater: LayoutInflater): ActivitySettingsBinding =
         ActivitySettingsBinding.inflate(layoutInflater)
@@ -47,13 +46,9 @@ class SettingsActivity : YenalyActivity<ActivitySettingsBinding>() ,ToolbarHost{
             navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
         )
     }
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setSupportActionBar(findViewById(R.id.toolbar))
-    }
 
     override fun initData(savedInstanceState: Bundle?) {
- //       setSupportActionBar(binding.toolbar)
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.let {
             it.setDisplayHomeAsUpEnabled(true)
             it.setHomeActionContentDescription(R.string.back)
@@ -95,24 +90,4 @@ class SettingsActivity : YenalyActivity<ActivitySettingsBinding>() ,ToolbarHost{
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
         }
     }
-
-    override fun setupToolbar(title: CharSequence, canNavigateBack: Boolean) {
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        supportActionBar?.apply {
-            this.title = title
-            setDisplayHomeAsUpEnabled(canNavigateBack)
-        }
-        toolbar.setNavigationOnClickListener {
-            onBackPressedDispatcher.onBackPressed()
-        }
-    }
-    override fun hideToolbar() {
-        binding.toolbar.visibility = View.GONE
-    }
-
-    override fun showToolbar() {
-        binding.toolbar.visibility = View.VISIBLE
-    }
-
 }

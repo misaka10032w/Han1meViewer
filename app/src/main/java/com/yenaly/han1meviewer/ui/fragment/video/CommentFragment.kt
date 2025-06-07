@@ -9,7 +9,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
-import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -216,11 +215,7 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
     }
 
     private fun showRedDotCount(count: Int) {
-//        val parent = context as? VideoActivity
-//        parent?.showRedDotCount(count)
-        val activity = activity as? FragmentActivity ?: return
-        val videoFragment = activity.supportFragmentManager
-            .findFragmentById(R.id.fragment_container) as? VideoFragment  // 替换为你的 Fragment ID
-        videoFragment?.showRedDotCount(count)
+        val parent = context as? VideoActivity
+        parent?.showRedDotCount(count)
     }
 }
