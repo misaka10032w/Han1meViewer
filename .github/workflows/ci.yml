@@ -45,8 +45,10 @@ jobs:
       - name: Build and sign APK with Gradle
         run: ./gradlew assembleRelease
         env:
-          HA1_KEYSTORE_PASSWORD: ${{ secrets.YOUR_KEYSTORE_PASSWORD }}
-          HA1_GITHUB_TOKEN: ${{ secrets.HA_GITHUB_TOKEN }}
+          KEYSTORE_PASSWORD: ${{ secrets.YOUR_KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.YOUR_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          HA_GITHUB_TOKEN: ${{ secrets.HA_GITHUB_TOKEN }}
           HA1_VERSION_SOURCE: 'ci'
 
       - name: Upload APK Zip
