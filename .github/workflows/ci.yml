@@ -33,6 +33,15 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.YOUR_KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
+
+      - name: Set up keystore for signing
+        run: |
+          mkdir -p $HOME/.android
+          mv keystore.jks $HOME/.android/keystore.jks
+
       - name: Build and sign APK with Gradle
         run: ./gradlew assembleRelease
         env:

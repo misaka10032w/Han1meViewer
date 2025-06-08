@@ -8,18 +8,16 @@
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
 .DS_Store
-/build
 /captures
 .externalNativeBuild
 .cxx
 local.properties
-
+/app/ha1_github_token.txt
 
 # Android Studio 项目文件
 /.idea/
 /.gradle/
 /build/
-/app/build/
 /captures/
 
 # Gradle 缓存
