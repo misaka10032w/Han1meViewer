@@ -1,9 +1,7 @@
 package com.yenaly.han1meviewer.ui.fragment.home
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.res.ColorStateList
-import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
@@ -12,13 +10,10 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
@@ -256,9 +251,9 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         super.onDestroyView()
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-    }
+//    override fun onConfigurationChanged(newConfig: Configuration) {
+//        super.onConfigurationChanged(newConfig)
+//    }
 
     private fun initBanner(info: HomePage) {
         info.banner?.let { banner ->

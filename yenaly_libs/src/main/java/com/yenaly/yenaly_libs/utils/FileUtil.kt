@@ -2,8 +2,10 @@
 
 package com.yenaly.yenaly_libs.utils
 
+import android.util.Log
 import androidx.annotation.WorkerThread
 import java.io.File
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.math.BigInteger
@@ -40,17 +42,39 @@ val File?.folderSize: Long
  *
  * 为了防止媒体库扫描到文件夹内的文件
  */
+//fun File.makeFolderNoMedia() {
+//    if (!exists()) {
+//        mkdirs()
+//    } else if (!isDirectory) {
+//        return
+//    }
+//    val noMedia = File(this, ".nomedia")
+//    if (!noMedia.exists()) {
+//        noMedia.createNewFile()
+//    }
+//}
+
 fun File.makeFolderNoMedia() {
     if (!exists()) {
-        mkdirs()
+        if (!mkdirs()) {
+            Log.w("FileUtil", "⚠️ 无法创建目录: $absolutePath")
+            return
+        }
     } else if (!isDirectory) {
+        Log.w("FileUtil", "⚠️ 路径已存在但不是文件夹: $absolutePath")
         return
     }
+
     val noMedia = File(this, ".nomedia")
     if (!noMedia.exists()) {
-        noMedia.createNewFile()
+        try {
+            noMedia.createNewFile()
+        } catch (e: IOException) {
+            Log.w("FileUtil", "⚠️ 创建 .nomedia 失败: ${e.message}")
+        }
     }
 }
+
 
 fun File.createFileIfNotExists(): Boolean {
     return if (!exists()) {

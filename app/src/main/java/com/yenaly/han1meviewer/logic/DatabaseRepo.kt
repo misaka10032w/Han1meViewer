@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.logic
 
+import android.util.Log
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
 import com.yenaly.han1meviewer.logic.dao.HistoryDatabase
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import java.io.FileNotFoundException
 
 /**
  * @project Hanime1
@@ -69,12 +71,21 @@ object DatabaseRepo {
                 return flow t@{
                     val find = hKeyframeDao.findBy(videoCode)
                     if (find == null || Preferences.sharedHKeyframesUseFirst) {
-                        applicationContext.assets
-                            .open("h_keyframes/$videoCode.json")
-                            .use { inputStream ->
-                                val entity = Json.decodeFromStream<HKeyframeEntity>(inputStream)
-                                this@t.emit(entity)
+                        kotlin.runCatching {
+                            applicationContext.assets
+                                .open("h_keyframes/$videoCode.json")
+                                .use { inputStream ->
+                                    val entity = Json.decodeFromStream<HKeyframeEntity>(inputStream)
+                                    this@t.emit(entity)
+                                }
+                        }.onFailure { e ->
+                            // 文件不存在或解析错误
+                            if (e is FileNotFoundException) {
+                                Log.w("HKeyframe", "未找到关键帧文件: $videoCode.json")
+                            } else {
+                                Log.e("HKeyframe", "读取关键帧失败: ${e.message}", e)
                             }
+                        }
                     } else {
                         hKeyframeDao.observe(videoCode).collect {
                             this@t.emit(it)
@@ -193,7 +204,7 @@ object DatabaseRepo {
         suspend fun find(videoCode: String) =
             hanimeDownloadDao.find(videoCode)
 
-        @Deprecated("查屁")
+//        @Deprecated("查屁")
         suspend fun countBy(videoCode: String) =
             hanimeDownloadDao.countBy(videoCode)
     }

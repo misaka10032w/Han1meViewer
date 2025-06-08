@@ -151,10 +151,10 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
                             showShortToast(R.string.video_might_not_exist)
                         }
 
-                        is VideoLoadingState.Error -> TODO()
-                        VideoLoadingState.Loading -> TODO()
-                        VideoLoadingState.NoContent -> TODO()
-                        is VideoLoadingState.Success<*> -> TODO()
+//                        is VideoLoadingState.Error -> TODO()
+//                        VideoLoadingState.Loading -> TODO()
+//                        VideoLoadingState.NoContent -> TODO()
+//                        is VideoLoadingState.Success<*> -> TODO()
                     }
                 }
             }

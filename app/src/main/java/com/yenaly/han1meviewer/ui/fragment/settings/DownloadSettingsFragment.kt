@@ -1,13 +1,16 @@
 package com.yenaly.han1meviewer.ui.fragment.settings
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import android.provider.Settings
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.preference.SeekBarPreference
 import com.yenaly.han1meviewer.HFileManager
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.network.interceptor.SpeedLimitInterceptor
-import com.yenaly.han1meviewer.ui.activity.SettingsActivity
-import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
+import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.util.setSummaryConverter
 import com.yenaly.han1meviewer.util.showAlertDialog
@@ -17,6 +20,7 @@ import com.yenaly.yenaly_libs.base.settings.YenalySettingsFragment
 import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.formatBytesPerSecond
 import com.yenaly.yenaly_libs.utils.showShortToast
+import androidx.core.net.toUri
 
 class DownloadSettingsFragment : YenalySettingsFragment(R.xml.settings_download){
 
@@ -32,6 +36,9 @@ class DownloadSettingsFragment : YenalySettingsFragment(R.xml.settings_download)
             by safePreference<SeekBarPreference>(DOWNLOAD_COUNT_LIMIT)
     private val downloadSpeedLimit
             by safePreference<SeekBarPreference>(DOWNLOAD_SPEED_LIMIT)
+    private val storagePermissionRequester: PermissionRequester?
+        get() = activity as? PermissionRequester
+
 
     override fun onStart() {
         super.onStart()
@@ -40,11 +47,41 @@ class DownloadSettingsFragment : YenalySettingsFragment(R.xml.settings_download)
             getString(R.string.download_settings),
             canNavigateBack = true
         )
+        storagePermissionRequester?.requestStoragePermission(
+            onGranted = {
+                // 用户已授权，可以继续
+                Toast.makeText(requireContext(), "可以下载了喵\uD83D\uDC7F", Toast.LENGTH_SHORT).show()
+            },
+            onDenied = {
+                // 拒绝授权，返回上一层
+                Toast.makeText(requireContext(), "拒绝？拒绝就不好办了喵👿", Toast.LENGTH_LONG).show()
+                parentFragmentManager.popBackStack()
+            },
+            onPermanentlyDenied = {
+                // 用户选择“不再询问”，引导去设置页
+                showGoToSettingsDialog()
+            }
+        )
+    }
+    private fun showGoToSettingsDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("权限被永久拒绝")
+            .setMessage("请前往设置开启存储权限，以便保存下载内容。")
+            .setPositiveButton("去设置") { _, _ ->
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = "package:${requireContext().packageName}".toUri()
+                }
+                startActivity(intent)
+            }
+            .setNegativeButton("取消") { _, _ ->
+                parentFragmentManager.popBackStack()
+            }
+            .show()
     }
 
     override fun onPreferencesCreated(savedInstanceState: Bundle?) {
         downloadPath.apply {
-            val path = HFileManager.appDownloadFolder.path
+            val path = HFileManager.getAppDownloadFolder(context).path
             summary = path
             setOnPreferenceClickListener {
                 requireContext().showAlertDialog {

@@ -28,7 +28,7 @@ android {
         projectDir, "keystore/ha1_keystore_password.txt"
     ).checkIfExists()?.readText().orEmpty()
 
-    val githubToken = System.getenv("GITHUB_TOKEN") ?: File(
+    val githubToken = System.getenv("HA_GITHUB_TOKEN") ?: File(
         projectDir, "ha1_github_token.txt"
     ).checkIfExists()?.readText().orEmpty()
 
@@ -54,7 +54,7 @@ android {
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
         buildConfigField("String", "VERSION_NAME", "\"${versionName}\"")
         buildConfigField("int", "VERSION_CODE", "$versionCode")
-        buildConfigField("String", "GITHUB_TOKEN", "\"${githubToken}\"")
+        buildConfigField("String", "HA_GITHUB_TOKEN", "\"${githubToken}\"")
         buildConfigField("String", "VERSION_SOURCE", "\"${source}\"")
 
         buildConfigField("int", "SEARCH_YEAR_RANGE_END", "${Config.thisYear}")

@@ -2,12 +2,17 @@ package com.yenaly.han1meviewer.ui.fragment.video
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isGone
@@ -58,6 +63,7 @@ import com.yenaly.han1meviewer.ui.adapter.BaseSingleDifferAdapter
 import com.yenaly.han1meviewer.ui.adapter.HanimeVideoRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.RvWrapper.Companion.wrappedWith
 import com.yenaly.han1meviewer.ui.adapter.VideoColumnTitleAdapter
+import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.requestPostNotificationPermission
@@ -173,7 +179,7 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 viewModel.hanimeVideoStateFlow.collect { state ->
-                    Log.i("video_ui", "bindDataObservers: $state", )
+                    Log.i("video_ui", "bindDataObservers: $state")
                     binding.rvVideoIntro.isVisible = state is VideoLoadingState.Success
                     when (state) {
                         is VideoLoadingState.Error -> Unit
@@ -360,7 +366,7 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
     private suspend fun enqueueDownloadWork(videoData: HanimeVideo, redownload: Boolean = false) {
         requireContext().requestPostNotificationPermission()
         val checkedQuality = requireNotNull(checkedQuality)
-        HCacheManager.saveHanimeVideoInfo(viewModel.videoCode, videoData)
+        context?.let { HCacheManager.saveHanimeVideoInfo(it, viewModel.videoCode, videoData) }
         // HanimeDownloadManager.addTask(
         HanimeDownloadManagerV2.addTask(
             HanimeDownloadWorker.Args(
@@ -659,22 +665,58 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
             }
         }
 
+        private val storagePermissionRequester: PermissionRequester?
+            get() = activity as? PermissionRequester
+
         private fun ItemVideoIntroductionBinding.initDownloadButton(videoData: HanimeVideo) {
+
             if (videoData.videoUrls.isEmpty()) {
                 showShortToast(R.string.no_video_links_found)
             } else btnDownload.clickTrigger(viewLifecycleOwner.lifecycle) {
-                XPopup.Builder(context)
-                    .atView(it)
-                    .asAttachList(videoData.videoUrls.keys.toTypedArray(), null) { _, key ->
-                        if (key == HanimeResolution.RES_UNKNOWN) {
-                            showShortToast(R.string.cannot_download_here)
-                            browse(getHanimeVideoDownloadLink(viewModel.videoCode))
-                        } else {
-                            checkedQuality = key
-                            viewModel.findDownloadedHanime(viewModel.videoCode)
-                        }
-                    }.show()
+                storagePermissionRequester?.requestStoragePermission(
+                    onGranted = {
+                        XPopup.Builder(context)
+                            .atView(it)
+                            .asAttachList(videoData.videoUrls.keys.toTypedArray(), null) { _, key ->
+                                if (key == HanimeResolution.RES_UNKNOWN) {
+                                    showShortToast(R.string.cannot_download_here)
+                                    browse(getHanimeVideoDownloadLink(viewModel.videoCode))
+                                } else {
+                                    checkedQuality = key
+                                    viewModel.findDownloadedHanime(viewModel.videoCode)
+                                }
+                            }.show()
+                    },
+                    onDenied = {
+                        Toast.makeText(
+                            requireContext(),
+                            "拒绝？拒绝就不好办了喵👿",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        parentFragmentManager.popBackStack()
+                    },
+                    onPermanentlyDenied = {
+                        showGoToSettingsDialog()
+                    }
+                )
+
             }
         }
+    }
+
+    private fun showGoToSettingsDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("权限被永久拒绝")
+            .setMessage("请前往设置开启存储权限，以便保存下载内容。")
+            .setPositiveButton("去设置") { _, _ ->
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = "package:${requireContext().packageName}".toUri()
+                }
+                startActivity(intent)
+            }
+            .setNegativeButton("取消") { _, _ ->
+                parentFragmentManager.popBackStack()
+            }
+            .show()
     }
 }

@@ -56,7 +56,7 @@ abstract class HanimeDownloadDao {
     abstract fun loadAllDownloadedHanimeById(ascending: Boolean): Flow<MutableList<VideoWithCategories>>
 
     @Query("DELETE FROM HanimeDownloadEntity WHERE (`videoCode` = :videoCode AND `quality` = :quality)")
-    @Deprecated("查屁")
+//    @Deprecated("查屁")
     abstract suspend fun delete(videoCode: String, quality: String)
 
     @Query("DELETE FROM HanimeDownloadEntity WHERE (`videoCode` = :videoCode)")
@@ -82,6 +82,6 @@ abstract class HanimeDownloadDao {
     abstract suspend fun find(videoCode: String): HanimeDownloadEntity?
 
     @Query("SELECT COUNT(*) FROM HanimeDownloadEntity WHERE (`videoCode` = :videoCode)")
-    @Deprecated("查屁")
+//    @Deprecated("查屁")
     abstract suspend fun countBy(videoCode: String): Int
 }

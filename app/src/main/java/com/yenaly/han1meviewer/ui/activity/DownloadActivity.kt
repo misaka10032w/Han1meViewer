@@ -1,12 +1,18 @@
 package com.yenaly.han1meviewer.ui.activity
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.text.parseAsHtml
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.ActivityDownloadBinding
+import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
 import com.yenaly.han1meviewer.ui.fragment.home.download.DownloadedFragment
 import com.yenaly.han1meviewer.ui.fragment.home.download.DownloadingFragment
 import com.yenaly.han1meviewer.ui.view.funcbar.Hanidokitem
@@ -19,7 +25,7 @@ class DownloadActivity : YenalyActivity<ActivityDownloadBinding>() {
 
     companion object {
         const val TAG = "HoppinByte"
-
+        private const val REQUEST_WRITE_EXTERNAL_STORAGE = 1001
         private const val HB = """<span style="color: #FF0000;"><b>H</b></span>oppin<b>Byte</b>"""
         val hbSpannedTitle = HB.parseAsHtml()
     }

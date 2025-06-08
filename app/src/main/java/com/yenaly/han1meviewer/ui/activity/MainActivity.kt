@@ -1,19 +1,18 @@
 package com.yenaly.han1meviewer.ui.activity
 
+import android.Manifest
 import android.annotation.SuppressLint
-import android.content.ClipData.Item
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -24,6 +23,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
@@ -53,9 +54,8 @@ import com.yenaly.han1meviewer.hanimeSpannedTitle
 import com.yenaly.han1meviewer.logic.exception.CloudFlareBlockedException
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.logout
+import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
-import com.yenaly.han1meviewer.ui.fragment.home.HomePageFragment
-import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
 import com.yenaly.han1meviewer.util.logScreenViewEvent
@@ -70,21 +70,22 @@ import com.yenaly.yenaly_libs.utils.startActivity
 import com.yenaly.yenaly_libs.utils.textFromClipboard
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import kotlinx.serialization.descriptors.PrimitiveKind
 
 /**
  * @project Hanime1
  * @author Yenaly Liew
  * @time 2022/06/08 008 17:35
  */
-class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, ToolbarHost {
+class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, ToolbarHost,PermissionRequester {
 
     val viewModel by viewModels<MainViewModel>()
 
     private lateinit var navHostFragment: NavHostFragment
     lateinit var navController: NavController
     private var detailNavController: NavController? = null
-
+    companion object {
+        private const val REQUEST_WRITE_EXTERNAL_STORAGE = 1234
+    }
     val currentFragment get() = navHostFragment.childFragmentManager.primaryNavigationFragment
     private val isTabletMode by lazy {
         resources.getBoolean(R.bool.isTablet)
@@ -154,6 +155,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             detailNavController = navHostFragment?.navController
         }
     }
+
 
 
     // 处理菜单项点击
@@ -557,6 +559,63 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                 )
                 currentMode = LayoutMode.NAV_LEFT
                 Toast.makeText(this, "$currentMode", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    private var onGranted: (() -> Unit)? = null
+    private var onDenied: (() -> Unit)? = null
+    private var onPermanentlyDenied: (() -> Unit)? = null
+    override fun requestStoragePermission(
+        onGranted: () -> Unit,
+        onDenied: () -> Unit,
+        onPermanentlyDenied: () -> Unit) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
+            if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
+                onGranted()
+            } else {
+                this.onGranted = onGranted
+                this.onDenied = onDenied
+                this.onPermanentlyDenied = onPermanentlyDenied
+                ActivityCompat.requestPermissions(this, arrayOf(permission), REQUEST_WRITE_EXTERNAL_STORAGE)
+            }
+        } else {
+            onGranted() // Android 10+ 不需要权限
+        }
+    }
+
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == REQUEST_WRITE_EXTERNAL_STORAGE) {
+            val permission = permissions.getOrNull(0)
+            val grantResult = grantResults.getOrNull(0)
+
+            if (permission == Manifest.permission.WRITE_EXTERNAL_STORAGE) {
+                when {
+                    grantResult == PackageManager.PERMISSION_GRANTED -> {
+                        onGranted?.invoke()
+                    }
+
+                    shouldShowRequestPermissionRationale(permission) -> {
+                        onDenied?.invoke()
+                    }
+
+                    else -> {
+                        // 永久拒绝（勾选“不再询问”）
+                        onPermanentlyDenied?.invoke()
+                    }
+                }
+
+                // 清除引用，防止内存泄露
+                onGranted = null
+                onDenied = null
+                onPermanentlyDenied = null
             }
         }
     }

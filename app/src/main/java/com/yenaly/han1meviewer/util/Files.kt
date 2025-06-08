@@ -14,6 +14,7 @@ import com.yenaly.han1meviewer.HJson
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.ui.activity.VideoActivity
+import com.yenaly.yenaly_libs.utils.application
 import com.yenaly.yenaly_libs.utils.applicationContext
 import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +51,7 @@ const val DEF_VIDEO_TYPE = "mp4"
         imports = ["com.yenaly.han1meviewer.HFileManager"]
     )
 )
-fun createDownloadName(title: String, quality: String, suffix: String = DEF_VIDEO_TYPE) =
+fun createDownloadName(title: String, quality: String, suffix: String = HFileManager.DEF_VIDEO_TYPE) =
     "${title}_${quality}.${suffix}"
 
 @Deprecated(
@@ -60,13 +61,15 @@ fun createDownloadName(title: String, quality: String, suffix: String = DEF_VIDE
         imports = ["com.yenaly.han1meviewer.HFileManager"]
     )
 )
-fun getDownloadedHanimeFile(title: String, quality: String, suffix: String = DEF_VIDEO_TYPE): File {
-    return File(HFileManager.appDownloadFolder, createDownloadName(title, quality, suffix))
+fun getDownloadedHanimeFile(title: String, quality: String, suffix: String = HFileManager.DEF_VIDEO_TYPE): File {
+    return File(HFileManager.getAppDownloadFolder(application),
+        HFileManager.createVideoName(title, quality, suffix)
+    )
 }
 
 @Deprecated("不用了")
 fun checkDownloadedHanimeFile(startsWith: String): Boolean {
-    return HFileManager.appDownloadFolder?.let { folder ->
+    return HFileManager.getAppDownloadFolder(application)?.let { folder ->
         folder.listFiles()?.any { it.name.startsWith(startsWith) }
     } == true
 }

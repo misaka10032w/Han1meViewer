@@ -47,8 +47,8 @@ const val FROM_DOWNLOAD = "FROM_DOWNLOAD"
 
 const val VIDEO_CODE = "VIDEO_CODE"
 
-@Deprecated("Use [ADVANCED_SEARCH_MAP] instead")
-const val FROM_VIDEO_TAG = "FROM_VIDEO_TAG"
+//@Deprecated("Use [ADVANCED_SEARCH_MAP] instead")
+//const val FROM_VIDEO_TAG = "FROM_VIDEO_TAG"
 
 /**
  * 接受类型 [AdvancedSearchMap] 或者 [String]
@@ -61,11 +61,11 @@ const val COMMENT_TYPE = "COMMENT_TYPE"
 
 const val DATE_CODE = "DATE_CODE"
 
-const val CSRF_TOKEN = "CSRF_TOKEN"
+//const val CSRF_TOKEN = "CSRF_TOKEN"
 
 // Result Code
 
-const val LOGIN_TO_MAIN_ACTIVITY = 0
+//const val LOGIN_TO_MAIN_ACTIVITY = 0
 
 // 给rv传值，判断布局需要wrap_content还是match_parent，不填则为默认
 // 设置布局为MATCH_PARENT可以使rv在GridLayoutManager下能居中，反之不能

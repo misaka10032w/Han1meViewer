@@ -1,6 +1,8 @@
 package com.yenaly.han1meviewer
 
+import android.content.Context
 import androidx.annotation.WorkerThread
+import androidx.core.content.ContentProviderCompat.requireContext
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.yenaly_libs.utils.createFileIfNotExists
@@ -27,8 +29,8 @@ object HCacheManager {
      */
     @OptIn(ExperimentalSerializationApi::class)
     @WorkerThread
-    fun saveHanimeVideoInfo(videoCode: String, info: HanimeVideo) {
-        val folder = HFileManager.getDownloadVideoFolder(videoCode)
+    fun saveHanimeVideoInfo(context: Context, videoCode: String, info: HanimeVideo) {
+        val folder = HFileManager.getDownloadVideoFolder(context, videoCode)
         val file = File(folder, CACHE_INFO_FILE)
         file.createFileIfNotExists()
         HJson.encodeToStream(info, file.outputStream())
@@ -38,11 +40,11 @@ object HCacheManager {
      * 加载 HanimeVideo 信息，用于下载后直接在 APP 内观看
      */
     @OptIn(ExperimentalSerializationApi::class)
-    fun loadHanimeVideoInfo(videoCode: String): Flow<HanimeVideo?> {
+    fun loadHanimeVideoInfo(context: Context,videoCode: String): Flow<HanimeVideo?> {
         return flow {
             val entity = DatabaseRepo.HanimeDownload.find(videoCode)
             if (entity != null) {
-                val folder = HFileManager.getDownloadVideoFolder(videoCode)
+                val folder = HFileManager.getDownloadVideoFolder(context,videoCode)
                 val cacheFile = File(folder, CACHE_INFO_FILE)
                 val info = kotlin.runCatching {
                     if (cacheFile.exists()) HJson.decodeFromStream<HanimeVideo?>(cacheFile.inputStream()) else null

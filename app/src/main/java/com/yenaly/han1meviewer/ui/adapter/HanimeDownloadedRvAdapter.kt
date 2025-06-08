@@ -134,6 +134,7 @@ class HanimeDownloadedRvAdapter(private val fragment: DownloadedFragment) :
                         setPositiveButton(R.string.confirm) { _, _ ->
                             // if (file.exists()) file.delete()
                             HFileManager.getDownloadVideoFolder(
+                                context,
                                 it.video.videoCode
                             ).deleteRecursively()
                             fragment.viewModel.deleteDownloadHanimeBy(
