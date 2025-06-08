@@ -24,22 +24,11 @@ android {
     val commitSha = if (isRelease) lastCommitSha else "b8eace8" // 方便调试
 
     // 先 Github Secrets 再读取环境变量，若没有则读取本地文件
-    val signPwd = System.getenv("YOUR_KEYSTORE_PASSWORD") ?: File(
-        projectDir, "keystore/ha1_keystore_password.txt"
-    ).checkIfExists()?.readText().orEmpty()
 
     val githubToken = System.getenv("HA_GITHUB_TOKEN") ?: File(
         projectDir, "ha1_github_token.txt"
     ).checkIfExists()?.readText().orEmpty()
 
-    val signConfig = if (isRelease) signingConfigs.create("release") {
-        storeFile = File(projectDir, "keystore/Han1meViewerKeystore.jks").checkIfExists()
-        storePassword = signPwd
-        keyAlias = "top.nekotofu"
-        keyPassword = signPwd
-        enableV3Signing = true
-        enableV4Signing = true
-    } else null
 
     defaultConfig {
         applicationId = "com.yenaly.han1meviewer"
@@ -59,14 +48,22 @@ android {
 
         buildConfigField("int", "SEARCH_YEAR_RANGE_END", "${Config.thisYear}")
     }
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("HOME") + "/.android/keystore.jks")
+            storePassword = System.getenv("YOUR_KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("KEY_ALIAS")
+            keyPassword = System.getenv("YOUR_KEYSTORE_PASSWORD")
+        }
+    }
 
     buildTypes {
         release {
             isMinifyEnabled = true
-            signingConfig = signConfig
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
             applicationVariants.all variant@{
                 this@variant.outputs.all output@{
                     val output = this@output as BaseVariantOutputImpl
