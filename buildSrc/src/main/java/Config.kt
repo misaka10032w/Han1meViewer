@@ -19,7 +19,7 @@ object Config {
 
         const val DEBUG = "debug"
         const val RELEASE = "release"
-        const val CI = "ci"
+//        const val CI = "ci"
 
         /**
          * 创建版本号
@@ -60,6 +60,7 @@ object Config {
          *
          * @return ci 或 release 或 debug
          */
+
         val Project.source: String
             get() = System.getenv("HA1_VERSION_SOURCE") ?: kotlin.run {
                 return if (isRelease) RELEASE else DEBUG

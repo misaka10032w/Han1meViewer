@@ -86,11 +86,19 @@ class HanimeDownloadingRvAdapter(private val fragment: DownloadingFragment) :
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.S)
-    private val renderEffect = RenderEffect.createBlurEffect(
-        8.dpF, 8.dpF,
-        Shader.TileMode.CLAMP
-    )
+//    @RequiresApi(Build.VERSION_CODES.S)
+//    private val renderEffect = RenderEffect.createBlurEffect(
+//        8.dpF, 8.dpF,
+//        Shader.TileMode.CLAMP
+//    )
+    //renderEffect安卓12才有，低于此版本会NULL CLASS崩溃
+    private val renderEffect by lazy {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            RenderEffect.createBlurEffect(8.dpF, 8.dpF, Shader.TileMode.CLAMP)
+        } else {
+            null // 低版本返回 null
+        }
+    }
 
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(

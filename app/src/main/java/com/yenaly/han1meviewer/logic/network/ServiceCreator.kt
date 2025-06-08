@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit
  */
 object ServiceCreator {
 
-    val cache = Cache(
+    private val cache = Cache(
         directory = File(applicationContext.cacheDir, "http_cache"),
         maxSize = 10 * 1024 * 1024
     )
@@ -91,7 +91,7 @@ object ServiceCreator {
             .dns(GitHubDns)
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder().addHeader(
-                    "Authorization", "Bearer ${BuildConfig.GITHUB_TOKEN}"
+                    "Authorization", "Bearer ${BuildConfig.HA_GITHUB_TOKEN}"
                 ).build()
                 return@addInterceptor chain.proceed(request)
             }

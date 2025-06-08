@@ -29,8 +29,7 @@ object ActivityManager {
                 val activityThread = activityThreadCls.getMethod("currentActivityThread")(null)
                 val activitiesField = activityThreadCls.getDeclaredField("mActivities")
                 activitiesField.isAccessible = true
-                val activities = activitiesField[activityThread] as Map<*, *>?
-                if (activities == null) return null
+                val activities = activitiesField[activityThread] as Map<*, *>? ?: return null
                 activities.values.forEach { activityRecord ->
                     val activityRecordCls = activityRecord?.javaClass
                     activityRecordCls?.getDeclaredField("paused")?.also { pausedField ->

@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.ui.viewmodel
 
 import android.app.Application
 import android.util.Log
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.EMPTY_STRING
 import com.yenaly.han1meviewer.HCacheManager
@@ -63,7 +64,7 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
     fun getHanimeVideo(videoCode: String) {
         viewModelScope.launch {
             val flow = if (fromDownload) {
-                HCacheManager.loadHanimeVideoInfo(videoCode).map { hv ->
+                HCacheManager.loadHanimeVideoInfo(application,videoCode).map { hv ->
                     if (hv == null) {
                         VideoLoadingState.NoContent
                     } else {

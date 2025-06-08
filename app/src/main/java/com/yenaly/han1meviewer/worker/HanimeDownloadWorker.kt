@@ -205,7 +205,7 @@ class HanimeDownloadWorker(
                     dbScope.launch {
 //                        val count = DatabaseRepo.HanimeDownload.countBy(videoCode)
 //                        HFileManager.deleteDownload(videoCode, count, file)
-                        HFileManager.getDownloadVideoFolder(videoCode).deleteRecursively()
+                        HFileManager.getDownloadVideoFolder(context,videoCode).deleteRecursively()
                     }
                 }
                 e.printStackTrace()
@@ -220,14 +220,14 @@ class HanimeDownloadWorker(
     private suspend fun download(): Result {
         return withContext(Dispatchers.IO) {
             val file = HFileManager.getDownloadVideoFile(
-                videoCode, hanimeName, quality, suffix = videoType
+                context=context, title = hanimeName, quality=quality, suffix = videoType, videoCode = videoCode
             )
             // redownload 不一定要删除全部文件夹，因为可能有不同分辨率
             if (shouldRedownload || shouldDelete) {
                 // 注意顺序
 //                val count = DatabaseRepo.HanimeDownload.countBy(videoCode)
 //                HFileManager.deleteDownload(videoCode, count, file)
-                HFileManager.getDownloadVideoFolder(videoCode).deleteRecursively()
+                HFileManager.getDownloadVideoFolder(context,videoCode).deleteRecursively()
                 DatabaseRepo.HanimeDownload.delete(videoCode)
                 if (shouldDelete) {
                     return@withContext Result.success()
@@ -364,7 +364,7 @@ class HanimeDownloadWorker(
     private fun CoroutineScope.updateCoverImage(entity: HanimeDownloadEntity) {
         launch {
             val imgRes = HImageMeower.execute(entity.coverUrl)
-            val file = HFileManager.getDownloadVideoCoverFile(videoCode, hanimeName)
+            val file = HFileManager.getDownloadVideoCoverFile(context, videoCode, hanimeName)
             val isSuccess = imgRes.drawable?.saveTo(file) == true
             if (isSuccess) {
                 val coverUri = file.toUri().toString()
