@@ -13,8 +13,8 @@
 .cxx
 local.properties
 /app/ha1_github_token.txt
-/release/
-/debug/
+/app/release/
+/app/debug/
 # Android Studio 项目文件
 /.idea/
 /.gradle/
