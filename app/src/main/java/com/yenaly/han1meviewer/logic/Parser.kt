@@ -205,7 +205,6 @@ object Parser {
         val durationAndViews = hanimeSearchItem.select("div[class=card-mobile-duration]")
         val mDuration = durationAndViews.getOrNull(0)?.text() // 改了
         val views = durationAndViews.getOrNull(2)?.text() // 改了
-        Log.i("video_inf","durationAndViews:$durationAndViews\nduration:$mDuration\nViews:$views")
         return HanimeInfo(
             title = title,
             coverUrl = coverUrl,
@@ -291,7 +290,6 @@ object Parser {
         val uploadTimeWithViewsGroups = uploadTimeWithViews?.let {
             Regex.viewAndUploadTime.find(it)?.groups
         }
-        Log.i("video_inf","$uploadTimeWithViewsGroups\n$uploadTimeWithViews")
         val uploadTime = uploadTimeWithViewsGroups?.get(2)?.value?.let { time ->
             LocalDate.parse(time, LOCAL_DATE_FORMAT)
         }
@@ -307,7 +305,6 @@ object Parser {
             }
         }
         val tagList=tagListWithLikeNum.map { it.substringBefore(" (") }
-        Log.i("video_inf","tagList:$tagList")
         val myListCheckboxWrapper = parseBody.select("div[class~=playlist-checkbox-wrapper]")
         val myListInfo = mutableListOf<HanimeVideo.MyList.MyListInfo>()
         myListCheckboxWrapper.forEach {
