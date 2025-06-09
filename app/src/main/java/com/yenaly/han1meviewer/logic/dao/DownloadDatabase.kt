@@ -20,7 +20,7 @@ import com.yenaly.yenaly_libs.utils.applicationContext
  */
 @Database(
     entities = [HanimeDownloadEntity::class, DownloadCategoryEntity::class, HanimeCategoryCrossRef::class],
-    version = 3, exportSchema = false
+    version = 4, exportSchema = false
 )
 abstract class DownloadDatabase : RoomDatabase() {
 
@@ -33,7 +33,7 @@ abstract class DownloadDatabase : RoomDatabase() {
                 applicationContext,
                 DownloadDatabase::class.java,
                 "download.db"
-            ).addMigrations(Migration1To2, Migration2To3).build()
+            ).addMigrations(Migration1To2, Migration2To3, Migration3To4).build()
         }
     }
 
@@ -89,4 +89,43 @@ abstract class DownloadDatabase : RoomDatabase() {
             )
         }
     }
+    object Migration3To4 : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+            CREATE TABLE IF NOT EXISTS `HanimeDownloadEntity_new` (
+                `coverUrl` TEXT NOT NULL,
+                `coverUri` TEXT,
+                `title` TEXT NOT NULL,
+                `addDate` INTEGER NOT NULL,
+                `videoCode` TEXT NOT NULL,
+                `videoUri` TEXT NOT NULL,
+                `quality` TEXT NOT NULL,
+                `videoUrl` TEXT NOT NULL DEFAULT '',
+                `length` INTEGER NOT NULL DEFAULT 1,
+                `downloadedLength` INTEGER NOT NULL DEFAULT 0,
+                `state` INTEGER NOT NULL DEFAULT ${DownloadState.Mask.UNKNOWN},
+                `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL
+            )
+            """.trimIndent()
+            )
+            db.execSQL(
+                """
+            INSERT INTO `HanimeDownloadEntity_new` (
+                coverUrl, coverUri, title, addDate,
+                videoCode, videoUri, quality, videoUrl,
+                length, downloadedLength, state, id
+            )
+            SELECT 
+                coverUrl, coverUri, title, addDate,
+                videoCode, videoUri, quality,
+                videoUrl, length, downloadedLength, state, id
+            FROM `HanimeDownloadEntity`
+            """.trimIndent()
+            )
+            db.execSQL("DROP TABLE `HanimeDownloadEntity`")
+            db.execSQL("ALTER TABLE `HanimeDownloadEntity_new` RENAME TO `HanimeDownloadEntity`")
+        }
+    }
+
 }

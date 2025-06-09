@@ -204,7 +204,7 @@ object Parser {
         if (title == null || coverUrl == null || videoCode == null) return null
         val durationAndViews = hanimeSearchItem.select("div[class=card-mobile-duration]")
         val mDuration = durationAndViews.getOrNull(0)?.text() // 改了
-        val views = durationAndViews.getOrNull(1)?.text() // 改了
+        val views = durationAndViews.getOrNull(2)?.text() // 改了
         return HanimeInfo(
             title = title,
             coverUrl = coverUrl,
@@ -297,14 +297,14 @@ object Parser {
         val views = uploadTimeWithViewsGroups?.get(1)?.value
 
         val tags = parseBody.getElementsByClass("single-video-tag")
-        val tagList = mutableListOf<String>()
+        val tagListWithLikeNum = mutableListOf<String>()
         tags.forEach { tag ->
             val child = tag.childOrNull(0)
             if (child != null && child.hasAttr("href")) {
-                tagList.add(child.text())
+                tagListWithLikeNum.add(child.text())
             }
         }
-
+        val tagList=tagListWithLikeNum.map { it.substringBefore(" (") }
         val myListCheckboxWrapper = parseBody.select("div[class~=playlist-checkbox-wrapper]")
         val myListInfo = mutableListOf<HanimeVideo.MyList.MyListInfo>()
         myListCheckboxWrapper.forEach {
@@ -346,7 +346,7 @@ object Parser {
                     ?.contains("播放") == true
                 val cardMobileDuration = cardMobilePanel?.select("div[class*=card-mobile-duration]")
                 val eachDuration = cardMobileDuration?.firstOrNull()?.text()
-                val eachViews = cardMobileDuration?.getOrNull(1)?.text()
+                val eachViews = cardMobileDuration?.getOrNull(2)?.text()
                     ?.substringBefore("次")
                 val playlistEachCoverUrl = eachTitleCover?.absUrl("src")
                     .throwIfParseNull(Parser::hanimeVideoVer2.name, "playlistEachCoverUrl")
@@ -439,7 +439,9 @@ object Parser {
             }
         }
 
-        val artistAvatarUrl = parseBody.getElementById("video-user-avatar")?.absUrl("src")
+        val artistAvatarUrl = parseBody
+            .select("div.video-details-wrapper > div > a > div > img[style*='position: absolute'][style*='border-radius: 50%']")
+            .attr("src")
         val artistNameCSS = parseBody.getElementById("video-artist-name")
         val artistGenre = artistNameCSS?.nextElementSibling()?.text()?.trim()
         val artistName = artistNameCSS?.text()?.trim()
