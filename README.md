@@ -1,7 +1,20 @@
 # Han1meViewer
 🔞R18警告！
 Han1meViewer 是一个基于 Kotlin 开发的 Android 应用，用于播放和浏览 hanime 视频资源，支持双栏与单栏布局切换、ExoPlayer 自定义播放内核、系列视频导航、播放列表和推荐内容展示等功能。
-原作：https://github.com/YenalyLiew/Han1meViewer
+
+## 📜 项目来源与许可声明
+
+此项目最初 Fork 自 [YenalyLiew/Han1meViewer](https://github.com/YenalyLiew/Han1meViewer)，感谢原作者的贡献。原项目采用 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)。
+
+根据 Apache 2.0 许可证要求：
+- 保留原版权声明
+- 包含许可证文件副本
+- 说明修改内容（如有）
+
+**原始仓库**: [YenalyLiew/Han1meViewer](https://github.com/YenalyLiew/Han1meViewer)  
+**许可证文件**: [本项目 LICENSE 文件](LICENSE)
+
+---
 
 ## ✨ 功能特色
 
@@ -82,9 +95,14 @@ Build AI-243.26053.27.2432.13536105, built on May 22, 2025
 * [✅] 或许有吧
 
 
-## 📄 License
+## 📄 许可证
 
-MIT License - 你可以自由使用和修改本项目。
+本项目继承原始项目的 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)，主要条款包括：
+- 允许商用、修改、分发
+- 要求保留版权声明和许可证文件
+- 提供修改说明（如有）
+- 不提供质量担保
+- 不承担用户使用风险
 
----
+完整条款请参阅项目根目录下的 [LICENSE](LICENSE) 文件。
 
