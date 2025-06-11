@@ -2,6 +2,8 @@ package com.yenaly.han1meviewer
 import android.content.Context
 import android.os.Environment
 import android.util.Log
+import com.yenaly.han1meviewer.util.HStorageModeManager
+import com.yenaly.han1meviewer.util.HStorageModeManager.isUsingPrivateDownloadFolder
 import java.io.File
 import java.io.IOException
 
@@ -14,16 +16,28 @@ object HFileManager {
 
 
     /**
-     * 获取 App 的下载主目录，路径为 Android/data/<package>/files/Downloads/<APP_NAME>
+     * 获取 App 的下载主目录，如写入失败则切换为私有目录，不想写MediaStore，
+     * 好烦，国产定制ROM也是了，滑为报No such file or directory，小米报File exists，NMD
      */
     fun getAppDownloadFolder(context: Context): File {
+        return if (shouldUsePrivateDownloadFolder(context)) {
+            // 私有路径
+            File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), APP_NAME).apply {
+                makeFolderNoMedia()
+            }
+        } else {
+            // 公共路径
+            File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), APP_NAME).apply {
+                makeFolderNoMedia()
+            }
+        }
+    }
+    fun shouldUsePrivateDownloadFolder(context: Context): Boolean {
+        return isUsingPrivateDownloadFolder(context)
+    }
 
-        val dir = File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-            APP_NAME
-        )
-        dir.makeFolderNoMedia()
-        return dir
+    fun setUsePrivateDownloadFolder(context: Context, usePrivate: Boolean) {
+        HStorageModeManager.setUsePrivateDownloadFolder(context,usePrivate)
     }
 
     /**

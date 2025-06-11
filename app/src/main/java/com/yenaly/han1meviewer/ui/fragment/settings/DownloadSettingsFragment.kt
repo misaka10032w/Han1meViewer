@@ -3,7 +3,9 @@ package com.yenaly.han1meviewer.ui.fragment.settings
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.Settings
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.SeekBarPreference
@@ -21,8 +23,12 @@ import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.formatBytesPerSecond
 import com.yenaly.yenaly_libs.utils.showShortToast
 import androidx.core.net.toUri
+import androidx.preference.Preference
+import androidx.preference.SwitchPreferenceCompat
+import com.yenaly.han1meviewer.util.HStorageModeManager
 
-class DownloadSettingsFragment : YenalySettingsFragment(R.xml.settings_download){
+class DownloadSettingsFragment : YenalySettingsFragment(R.xml.settings_download,
+    HStorageModeManager.PREF_NAME){
 
     companion object {
         const val DOWNLOAD_PATH = "download_path"
@@ -38,7 +44,6 @@ class DownloadSettingsFragment : YenalySettingsFragment(R.xml.settings_download)
             by safePreference<SeekBarPreference>(DOWNLOAD_SPEED_LIMIT)
     private val storagePermissionRequester: PermissionRequester?
         get() = activity as? PermissionRequester
-
 
     override fun onStart() {
         super.onStart()
@@ -63,6 +68,7 @@ class DownloadSettingsFragment : YenalySettingsFragment(R.xml.settings_download)
             }
         )
     }
+
     private fun showGoToSettingsDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle("权限被永久拒绝")
@@ -100,6 +106,19 @@ class DownloadSettingsFragment : YenalySettingsFragment(R.xml.settings_download)
                 return@setOnPreferenceLongClickListener true
             }
         }
+        val switchPref = findPreference<SwitchPreferenceCompat>("use_private_storage")
+        switchPref?.setOnPreferenceChangeListener { _, newValue ->
+            val usePrivate = newValue as Boolean
+            HStorageModeManager.setUsePrivateDownloadFolder(requireContext(), usePrivate)
+            updateDownloadPathSummary()
+            Toast.makeText(
+                requireContext(),
+                if (usePrivate) "已切换为应用私有存储路径" else "已切换为公共下载目录（/Download/Han1meViewer）",
+                Toast.LENGTH_SHORT
+            ).show()
+            true
+        }
+
         downloadCountLimit.apply {
             setSummaryConverter(
                 defValue = HanimeDownloadManagerV2.MAX_CONCURRENT_DOWNLOAD_DEF,
@@ -117,6 +136,23 @@ class DownloadSettingsFragment : YenalySettingsFragment(R.xml.settings_download)
             })
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        updateDownloadPathSummary()
+    }
+    private fun updateDownloadPathSummary() {
+        val usePrivate = HStorageModeManager.isUsingPrivateDownloadFolder(requireContext())
+        val path = if (usePrivate) {
+            requireContext().getExternalFilesDir(null)?.absolutePath.orEmpty()
+        } else {
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                .resolve("Han1meViewer").absolutePath
+        }
+        findPreference<Preference>("download_path")?.summary = path
+    }
+
+
 
     private fun Long.toDownloadSpeedPrettyString(): String {
         return if (this == 0L) {

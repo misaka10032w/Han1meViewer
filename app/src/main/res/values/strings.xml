@@ -322,7 +322,7 @@
     <string name="this_data_exists">該檔案已存在！</string>
     <string name="download_failed_s_exists">下載失敗：%1$s 已存在</string>
     <string name="download_task_failed">下載任務失敗！</string>
-    <string name="download_task_failed_s">下載任務失敗：%1$s</string>
+    <string name="download_task_failed_s">下載任務失敗，請檢查下載目錄是否存在該文件：%1$s</string>
     <string name="download_task_failed_s_reason_s">下載失敗：%1$s\n原因為：%2$s</string>
     <string name="custom">自訂</string>
     <string name="show_bottom_progress">顯示底部進度條</string>
