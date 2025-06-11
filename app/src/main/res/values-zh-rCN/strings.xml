@@ -318,7 +318,7 @@
     <string name="this_data_exists">该文件已存在！</string>
     <string name="download_failed_s_exists">下载失败：%1$s 已存在</string>
     <string name="download_task_failed">下载任务失败！</string>
-    <string name="download_task_failed_s">下载任务失败：%1$s</string>
+    <string name="download_task_failed_s">下载任务失败，请检查下载目录是否存在该文件！：%1$s</string>
     <string name="download_task_failed_s_reason_s">下载失败：%1$s\n原因为：%2$s</string>
     <string name="custom">自定义</string>
     <string name="show_bottom_progress">显示底部进度条</string>

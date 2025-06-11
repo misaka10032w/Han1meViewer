@@ -363,6 +363,7 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
         }
     }
 
+    @JvmOverloads
     private suspend fun enqueueDownloadWork(videoData: HanimeVideo, redownload: Boolean = false) {
         requireContext().requestPostNotificationPermission()
         val checkedQuality = requireNotNull(checkedQuality)
