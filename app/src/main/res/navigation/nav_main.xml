@@ -21,6 +21,10 @@
         android:id="@id/nv_watch_later"
         android:name="com.yenaly.han1meviewer.ui.fragment.home.MyWatchLaterFragment" />
     <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.yenaly.han1meviewer.ui.fragment.search.SearchFragment"
+        tools:layout="@layout/fragment_search"/>
+    <fragment
         android:id="@id/video_vp"
         android:name="com.yenaly.han1meviewer.ui.fragment.video.VideoFragment"
         android:label="Video"

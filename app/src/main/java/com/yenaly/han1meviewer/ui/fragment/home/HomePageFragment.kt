@@ -9,10 +9,12 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toBitmapOrNull
+import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isGone
@@ -23,13 +25,14 @@ import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavOptions
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.onNavDestinationSelected
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
-import com.yenaly.han1meviewer.AdvancedSearchMap
 import com.yenaly.han1meviewer.HAdvancedSearch
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VIDEO_CODE
@@ -40,7 +43,6 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.StateLayoutMixin
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.activity.PreviewActivity
-import com.yenaly.han1meviewer.ui.activity.SearchActivity
 import com.yenaly.han1meviewer.ui.activity.VideoActivity
 import com.yenaly.han1meviewer.ui.adapter.HanimeVideoRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.RvWrapper.Companion.wrappedWith
@@ -53,6 +55,7 @@ import com.yenaly.han1meviewer.util.colorTransition
 import com.yenaly.yenaly_libs.base.YenalyFragment
 import com.yenaly.yenaly_libs.utils.startActivity
 import kotlinx.coroutines.launch
+import java.io.Serializable
 
 /**
  * @project Hanime1
@@ -80,7 +83,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
     private val concatAdapter = ConcatAdapter(
         VideoColumnTitleAdapter(R.string.latest_hanime).apply {
             onMoreHanimeListener = {
-                toSearchActivity(advancedSearchMapOf(HAdvancedSearch.GENRE to "裏番"))
+                showSearchFragment(advancedSearchMapOf(HAdvancedSearch.GENRE to "裏番"))
             }
         },
         latestHanimeAdapter.wrappedWith {
@@ -90,7 +93,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         },
         VideoColumnTitleAdapter(R.string.latest_release).apply {
             onMoreHanimeListener = {
-                toSearchActivity(advancedSearchMapOf(HAdvancedSearch.SORT to "最新上市"))
+                showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to "最新上市"))
             }
         },
         latestReleaseAdapter.wrappedWith {
@@ -100,7 +103,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         },
         VideoColumnTitleAdapter(R.string.latest_upload).apply {
             onMoreHanimeListener = {
-                toSearchActivity(advancedSearchMapOf(HAdvancedSearch.SORT to "最新上傳"))
+                showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to "最新上傳"))
             }
         },
         latestUploadAdapter.wrappedWith {
@@ -110,7 +113,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         },
         VideoColumnTitleAdapter(R.string.chinese_subtitle).apply {
             onMoreHanimeListener = {
-                toSearchActivity(
+                showSearchFragment(
                     advancedSearchMapOf(
                         HAdvancedSearch.TAGS to hashMapOf<Int, Any>(R.string.video_attr to "中文字幕"),
                         HAdvancedSearch.SORT to "最新上傳"
@@ -125,7 +128,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         },
         VideoColumnTitleAdapter(R.string.they_watched).apply {
             onMoreHanimeListener = {
-                toSearchActivity(advancedSearchMapOf(HAdvancedSearch.SORT to "他們在看"))
+                showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to "他們在看"))
             }
         },
         hanimeTheyWatchedAdapter.wrappedWith {
@@ -135,7 +138,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         },
         VideoColumnTitleAdapter(R.string.ranking_today).apply {
             onMoreHanimeListener = {
-                toSearchActivity(advancedSearchMapOf(HAdvancedSearch.SORT to "本日排行"))
+                showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to "本日排行"))
             }
         },
         hanimeCurrentAdapter.wrappedWith {
@@ -145,7 +148,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         },
         VideoColumnTitleAdapter(R.string.ranking_this_month).apply {
             onMoreHanimeListener = {
-                toSearchActivity(advancedSearchMapOf(HAdvancedSearch.SORT to "本月排行"))
+                showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to "本月排行"))
             }
         },
         hotHanimeMonthlyAdapter.wrappedWith {
@@ -200,9 +203,9 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
     override fun onResume() {
         super.onResume()
         (activity as? ToolbarHost)?.hideToolbar()
-        binding.btnSwap.setOnClickListener {
-            (requireActivity() as? MainActivity)?.swapFragments(1)
-        }
+//        binding.btnSwap.setOnClickListener {
+//            (requireActivity() as? MainActivity)?.swapFragments(1)
+//        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -248,6 +251,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
 
     override fun onDestroyView() {
         binding.rv.adapter = null
+        binding.rv.layoutManager = null
         super.onDestroyView()
     }
 
@@ -312,9 +316,39 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         }
     }
 
-    private fun toSearchActivity(advancedSearchMap: AdvancedSearchMap) {
-        startActivity<SearchActivity>(ADVANCED_SEARCH_MAP to advancedSearchMap)
+//    private fun showSearchFragment(advancedSearchMap: AdvancedSearchMap) {
+//        startActivity<SearchActivity>(ADVANCED_SEARCH_MAP to advancedSearchMap)
+//    }
+
+    private fun showSearchFragment(advancedSearchMap: Map<HAdvancedSearch, Any>) {
+        val bundleMap = HashMap<String, Serializable>().apply {
+            advancedSearchMap.forEach { (key, value) ->
+                if (value is Serializable) {
+                    this[key.name] = value
+                } else {
+                    throw IllegalArgumentException("Value for ${key.name} is not Serializable.")
+                }
+            }
+        }
+        Log.i("advancedSearchMap",bundleMap.toString())
+        val options = NavOptions.Builder()
+            .setLaunchSingleTop(false)
+            .setRestoreState(true)
+            .setEnterAnim(R.anim.fade_in)
+            .setExitAnim(R.anim.fade_out)
+            .setPopEnterAnim(R.anim.fade_in)
+            .setPopExitAnim(R.anim.fade_out)
+            .build()
+
+        findNavController().navigate(
+            R.id.searchFragment,
+            bundleOf(ADVANCED_SEARCH_MAP to bundleMap),
+            options
+        )
     }
+
+
+
 
     @RequiresApi(Build.VERSION_CODES.S)
     private var easterEggCount = 1f
@@ -344,7 +378,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         this@HomePageFragment.addMenu(R.menu.menu_main_toolbar, viewLifecycleOwner) { item ->
             when (item.itemId) {
                 R.id.tb_search -> {
-                    startActivity<SearchActivity>()
+                    findNavController().navigate(R.id.searchFragment)
                     return@addMenu true
                 }
 

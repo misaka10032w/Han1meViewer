@@ -114,7 +114,7 @@ dependencies {
     implementation(libs.bundles.android.base)
     implementation(libs.bundles.android.jetpack)
     implementation(libs.palette)
-
+    implementation("com.google.android.material:material:1.11.0")
 //    implementation(platform(libs.compose.compose.bom))
 //    androidTestImplementation(platform(libs.compose.compose.bom))
 //    implementation(libs.compose.material3)

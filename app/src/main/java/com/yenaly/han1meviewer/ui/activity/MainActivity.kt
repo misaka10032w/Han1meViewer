@@ -514,54 +514,54 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
     }
 
     private var currentMode = LayoutMode.NAV_LEFT
-    fun swapFragments(number: Number) {
-        val nav = findViewById<NavigationView>(R.id.nv_main)
-        val content = findViewById<CoordinatorLayout>(R.id.right_pan)
+//    fun swapFragments(number: Number) {
+//        val nav = findViewById<NavigationView>(R.id.nv_main)
+//        val content = findViewById<CoordinatorLayout>(R.id.right_pan)
+//        val parent = findViewById<LinearLayout>(R.id.main_layout)
+//        TransitionManager.beginDelayedTransition(parent)
+//
+//        when (currentMode) {
+//            LayoutMode.NAV_LEFT -> {
+//                // 切换到右导航（先调整顺序）
+//                parent.removeView(nav)
+//                parent.removeView(content)
+//
+////                nav.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 2f)
+////                content.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 3f)
+//                parent.addView(content)
+//                parent.addView(nav)
+//                currentMode = LayoutMode.NAV_RIGHT
+//                Toast.makeText(this, "$currentMode", Toast.LENGTH_SHORT).show()
+//            }
+//
+//            LayoutMode.NAV_RIGHT -> {
+//
+//                nav.visibility = View.VISIBLE
+//
+//                parent.removeView(nav)
+//                parent.removeView(content)
+//                parent.addView(nav)
+//                parent.addView(content)
+//                currentMode = LayoutMode.NAV_LEFT
+//
+//                Toast.makeText(this, "$currentMode", Toast.LENGTH_SHORT).show()
+//            }
+//
+//            LayoutMode.SINGLE_COLUMN -> {
+//
+////                nav.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 2f)
+////                content.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 3f)
+//                nav.visibility = View.GONE
+//                content.layoutParams = LinearLayout.LayoutParams(
+//                    LinearLayout.LayoutParams.MATCH_PARENT,
+//                    LinearLayout.LayoutParams.MATCH_PARENT
+//                )
+//                currentMode = LayoutMode.NAV_LEFT
+//                Toast.makeText(this, "$currentMode", Toast.LENGTH_SHORT).show()
+//            }
+//        }
+//    }
 
-        val parent = findViewById<LinearLayout>(R.id.main_layout)
-        TransitionManager.beginDelayedTransition(parent)
-
-        when (currentMode) {
-            LayoutMode.NAV_LEFT -> {
-                // 切换到右导航（先调整顺序）
-                parent.removeView(nav)
-                parent.removeView(content)
-
-//                nav.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 2f)
-//                content.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 3f)
-                parent.addView(content)
-                parent.addView(nav)
-                currentMode = LayoutMode.NAV_RIGHT
-                Toast.makeText(this, "$currentMode", Toast.LENGTH_SHORT).show()
-            }
-
-            LayoutMode.NAV_RIGHT -> {
-
-                nav.visibility = View.VISIBLE
-
-                parent.removeView(nav)
-                parent.removeView(content)
-                parent.addView(nav)
-                parent.addView(content)
-                currentMode = LayoutMode.NAV_LEFT
-
-                Toast.makeText(this, "$currentMode", Toast.LENGTH_SHORT).show()
-            }
-
-            LayoutMode.SINGLE_COLUMN -> {
-
-//                nav.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 2f)
-//                content.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 3f)
-                nav.visibility = View.GONE
-                content.layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT
-                )
-                currentMode = LayoutMode.NAV_LEFT
-                Toast.makeText(this, "$currentMode", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
     private var onGranted: (() -> Unit)? = null
     private var onDenied: (() -> Unit)? = null
     private var onPermanentlyDenied: (() -> Unit)? = null
@@ -584,7 +584,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         }
     }
 
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -601,17 +600,14 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                     grantResult == PackageManager.PERMISSION_GRANTED -> {
                         onGranted?.invoke()
                     }
-
                     shouldShowRequestPermissionRationale(permission) -> {
                         onDenied?.invoke()
                     }
-
                     else -> {
                         // 永久拒绝（勾选“不再询问”）
                         onPermanentlyDenied?.invoke()
                     }
                 }
-
                 // 清除引用，防止内存泄露
                 onGranted = null
                 onDenied = null
@@ -619,6 +615,4 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             }
         }
     }
-
-
 }

@@ -14,10 +14,12 @@ import com.chad.library.adapter4.BaseDifferAdapter
 import com.chad.library.adapter4.viewholder.QuickViewHolder
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.Subscription
-import com.yenaly.han1meviewer.ui.activity.SearchActivity
+import com.yenaly.han1meviewer.ui.fragment.search.SearchFragment
 import com.yenaly.han1meviewer.util.showAlertDialog
 
-class HSubscriptionAdapter : BaseDifferAdapter<Subscription, QuickViewHolder>(COMPARATOR) {
+class HSubscriptionAdapter(
+    private val fragment: SearchFragment
+) : BaseDifferAdapter<Subscription, QuickViewHolder>(COMPARATOR) {
 
     companion object {
         const val DELETE = 1
@@ -44,14 +46,12 @@ class HSubscriptionAdapter : BaseDifferAdapter<Subscription, QuickViewHolder>(CO
 
     override fun onBindViewHolder(holder: QuickViewHolder, position: Int, item: Subscription?) {
         item ?: return
-        val context = this.context
-        if (context is SearchActivity) {
-            holder.getView<CheckBox>(R.id.cb_select).apply {
-                isVisible = item.name == context.viewModel.subscriptionBrand
-                isChecked = isVisible
-            }
-            holder.getView<View>(R.id.btn_delete).isVisible = item.isDeleteVisible
+        val currentBrand = fragment.viewModel.subscriptionBrand
+        holder.getView<CheckBox>(R.id.cb_select).apply {
+            isVisible = item.name == currentBrand
+            isChecked = isVisible
         }
+        holder.getView<View>(R.id.btn_delete).isVisible = item.isDeleteVisible
         holder.setText(R.id.tv_artist, item.name)
         holder.getView<ImageView>(R.id.iv_artist).apply {
             load(item.avatarUrl) {
@@ -75,15 +75,14 @@ class HSubscriptionAdapter : BaseDifferAdapter<Subscription, QuickViewHolder>(CO
         val payload = payloads.first() as Int
         if (payload and DELETE != 0) {
             holder.getView<View>(R.id.btn_delete).isVisible = item.isDeleteVisible
-            holder.getView<View>(R.id.cb_select).isVisible = item.isCheckBoxVisible
+            holder.getView<View>(R.id.cb_select).isVisible =
+                item.name == fragment.viewModel.subscriptionBrand && !item.isDeleteVisible
         }
         if (payload and CHECK != 0) {
-            val context = this.context
-            if (context is SearchActivity) {
-                holder.getView<CheckBox>(R.id.cb_select).apply {
-                    isVisible = item.name == context.viewModel.subscriptionBrand
-                    isChecked = isVisible
-                }
+            holder.getView<CheckBox>(R.id.cb_select).apply {
+                val selected = item.name == fragment.viewModel.subscriptionBrand
+                isVisible = selected
+                isChecked = selected
             }
         }
     }
@@ -98,59 +97,53 @@ class HSubscriptionAdapter : BaseDifferAdapter<Subscription, QuickViewHolder>(CO
                 val position = bindingAdapterPosition
                 val item = getItem(position) ?: return@setOnClickListener
                 if (item.isDeleteVisible) return@setOnClickListener
-                getView<CheckBox>(R.id.cb_select).apply {
-                    if (isChecked) {
-                        isVisible = false
-                        isChecked = false
-                        if (context is SearchActivity) {
-                            context.viewModel.subscriptionBrand = null
-                            context.setSearchText(null)
-                            notifyItemChanged(position, CHECK)
-                        }
-                    } else {
-                        isVisible = true
-                        isChecked = true
-                        if (context is SearchActivity) {
-                            context.viewModel.subscriptionBrand = item.name
-                            context.setSearchText(item.name, canTextChange = false)
-                            notifyItemRangeChanged(0, itemCount, CHECK)
-                        }
-                    }
+
+                val cb = getView<CheckBox>(R.id.cb_select)
+                if (cb.isChecked) {
+                    cb.isVisible = false
+                    cb.isChecked = false
+                    fragment.viewModel.subscriptionBrand = null
+                    fragment.setSearchText(null)
+                    notifyItemChanged(position, CHECK)
+                } else {
+                    cb.isVisible = true
+                    cb.isChecked = true
+                    fragment.viewModel.subscriptionBrand = item.name
+                    fragment.setSearchText(item.name, canTextChange = false)
+                    notifyItemRangeChanged(0, itemCount, CHECK)
                 }
             }
+
             itemView.setOnLongClickListener {
-                if (context is SearchActivity) {
-                    val btnDelete = getView<View>(R.id.btn_delete)
-                    if (btnDelete.isGone) {
-                        submitList(items.map {
-                            it.copy(
-                                isDeleteVisible = true,
-                                isCheckBoxVisible = false
-                            )
-                        })
-                    } else {
-                        submitList(items.map {
-                            it.copy(
-                                isDeleteVisible = false,
-                                isCheckBoxVisible = it.name == context.viewModel.subscriptionBrand
-                            )
-                        })
+                val currentBrand = fragment.viewModel.subscriptionBrand
+                val newList = if (getView<View>(R.id.btn_delete).isGone) {
+                    items.map {
+                        it.copy(
+                            isDeleteVisible = true,
+                            isCheckBoxVisible = false
+                        )
+                    }
+                } else {
+                    items.map {
+                        it.copy(
+                            isDeleteVisible = false,
+                            isCheckBoxVisible = it.name == currentBrand
+                        )
                     }
                 }
+                submitList(newList)
                 true
             }
+
             getView<View>(R.id.btn_delete).setOnClickListener {
                 val position = bindingAdapterPosition
                 val item = getItem(position) ?: return@setOnClickListener
-                context.showAlertDialog {
+
+                fragment.requireContext().showAlertDialog {
                     setTitle(R.string.sure_to_delete)
                     setMessage(context.getString(R.string.sure_to_delete_s, item.name))
                     setPositiveButton(R.string.confirm) { _, _ ->
-                        if (context is SearchActivity) {
-                            context.myListViewModel.subscription.deleteSubscription(
-                                item.artistId, position
-                            )
-                        }
+                      //  fragment.viewModel.subscription.deleteSubscription(item.artistId, position)
                     }
                     setNegativeButton(R.string.cancel, null)
                 }

@@ -75,7 +75,7 @@
         </activity>
         <activity
             android:name=".ui.activity.MainActivity"
-            android:configChanges="orientation|screenSize"
+            android:configChanges="orientation|screenSize|keyboardHidden"
             android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.Hanime1.Main">

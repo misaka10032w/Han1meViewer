@@ -17,7 +17,7 @@
         android:layout_marginStart="8dp"
         android:layout_weight="1"
         android:maxLines="2"
-        android:textColor="@color/black"
+        android:textColor="?attr/colorOnSurface"
         android:textSize="18sp"
         tools:text="Test Ce Shi" />
 
@@ -27,6 +27,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:icon="@drawable/ic_baseline_close_24"
-        app:iconTint="@color/red" />
+        app:iconTint="?attr/colorOnSurface" />
 
 </LinearLayout>

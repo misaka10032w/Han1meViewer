@@ -100,6 +100,10 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
 
     @OptIn(UnstableApi::class)
     override fun prepare() {
+        if (_exoPlayer != null) {
+            Log.w(TAG, "prepare called, but player already exists.")
+            return // 防止误调用
+        }
         Log.e(TAG, "prepare")
         val context = jzvd.context
 
@@ -201,7 +205,8 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
 
     override fun isPlaying(): Boolean {
         return runOnPlayerThread{
-            _exoPlayer?.playWhenReady ?: false
+         //   _exoPlayer?.playWhenReady ?: false
+            _exoPlayer?.playWhenReady == true
         }
 
       //  return isActuallyPlaying
@@ -376,14 +381,28 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
         _exoPlayer?.setVideoSurface(surface)
     }
 
+//    override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
+//        if (SAVED_SURFACE == null) {
+//            SAVED_SURFACE = surface
+//            prepare()
+//        } else {
+//            jzvd.textureView.setSurfaceTexture(SAVED_SURFACE)
+//        }
+//    }
     override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
         if (SAVED_SURFACE == null) {
             SAVED_SURFACE = surface
-            prepare()
+
+            if (_exoPlayer == null) {
+                prepare()
+            } else {
+                _exoPlayer?.setVideoSurface(Surface(surface))
+            }
         } else {
             jzvd.textureView.setSurfaceTexture(SAVED_SURFACE)
         }
     }
+
 
     override fun onSurfaceTextureSizeChanged(st: SurfaceTexture, width: Int, height: Int) = Unit
 

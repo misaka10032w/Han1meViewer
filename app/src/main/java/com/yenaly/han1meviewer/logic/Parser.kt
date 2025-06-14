@@ -277,11 +277,14 @@ object Parser {
         val title = parseBody.getElementById("shareBtn-title")?.text()
             .throwIfParseNull(Parser::hanimeVideoVer2.name, "title")
 
-        val likeStatus = parseBody.selectFirst("input[name=like-status]")
+        var likeStatus = parseBody.selectFirst("[name=like-status]")
             ?.attr("value")
+        Log.i("likeStatus",likeStatus.toString())
+        if(!likeStatus.isNullOrEmpty()){
+            likeStatus= "1"
+        }
         val likesCount = parseBody.selectFirst("input[name=likes-count]")
             ?.attr("value")?.toIntOrNull()
-
         val videoDetailWrapper = parseBody.selectFirst("div[class=video-details-wrapper]")
         val videoCaptionText = videoDetailWrapper?.selectFirst("div[class^=video-caption-text]")
         val chineseTitle = videoCaptionText?.previousElementSibling()?.ownText()
