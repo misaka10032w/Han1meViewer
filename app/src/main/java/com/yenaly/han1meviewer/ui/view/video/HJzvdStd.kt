@@ -16,18 +16,20 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnLongClickListener
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.annotation.IntRange
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.getSystemService
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cn.jzvd.JZDataSource
@@ -41,10 +43,10 @@ import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.adapter.HKeyframeRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.VideoSpeedAdapter
+import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.han1meviewer.util.setStateViewLayout
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.OrientationManager
-import com.yenaly.yenaly_libs.utils.activity
 import com.yenaly.yenaly_libs.utils.appScreenWidth
 import com.yenaly.yenaly_libs.utils.navBarHeight
 import com.yenaly.yenaly_libs.utils.statusBarHeight
@@ -300,6 +302,20 @@ class HJzvdStd @JvmOverloads constructor(
         tvKeyframe.setOnClickListener(this)
         tvKeyframe.setOnLongClickListener(this)
         btnGoHome.setOnClickListener(this)
+
+        fullscreenButton.setOnClickListener {
+            (context as? FragmentActivity)
+                ?.supportFragmentManager
+                ?.fragments
+                ?.filterIsInstance<VideoFragment>()
+                ?.firstOrNull()
+            if (screen == SCREEN_FULLSCREEN) {
+                gotoNormalScreen()
+            } else {
+                gotoFullscreen()
+            }
+        }
+
     }
 
     override fun setUp(jzDataSource: JZDataSource?, screen: Int) {
@@ -432,8 +448,7 @@ class HJzvdStd @JvmOverloads constructor(
         tvSpeed.isVisible = true
         if (isHKeyframeEnabled) tvKeyframe.isVisible = true
         titleTextView.isVisible = true
-        // btnGoHome.isVisible = false
-
+        btnGoHome.isVisible = false
         val statusBarHeight = statusBarHeight
         val navBarHeight = navBarHeight
         layoutTop.updatePadding(left = statusBarHeight, right = navBarHeight)
@@ -444,6 +459,10 @@ class HJzvdStd @JvmOverloads constructor(
     override fun clickBack() {
         Log.i(TAG, "backPress")
         if ( context is MainActivity && resources.getBoolean(R.bool.isTablet)){
+            if (screen == SCREEN_FULLSCREEN){
+                gotoNormalScreen()
+                return
+            }
             findNavController().popBackStack()
             return
         }
@@ -457,10 +476,14 @@ class HJzvdStd @JvmOverloads constructor(
             }
 
             else -> { //剩餘情況直接退出
-                context.activity?.finish()
+                //context.activity?.finish()
+                findNavController().popBackStack()
 
             }
         }
+    }
+    private val isTabletMode by lazy {
+        resources.getBoolean(R.bool.isTablet)
     }
 
     override fun onClick(v: View) {
@@ -468,7 +491,14 @@ class HJzvdStd @JvmOverloads constructor(
         when (v.id) {
             R.id.tv_speed -> clickSpeed()
             R.id.tv_keyframe -> onKeyframeClickListener?.invoke(v)
-            R.id.go_home -> onGoHomeClickListener?.invoke(v)
+            R.id.go_home -> {
+                if(isTabletMode && screen != SCREEN_FULLSCREEN){
+                    findNavController().popBackStack()
+                }else{
+                    onGoHomeClickListener?.invoke(v)
+                }
+            }
+
         }
     }
 
@@ -478,7 +508,6 @@ class HJzvdStd @JvmOverloads constructor(
                 onKeyframeLongClickListener?.invoke(v)
                 return true
             }
-
             else -> false
         }
     }
@@ -595,22 +624,72 @@ class HJzvdStd @JvmOverloads constructor(
         }
     }
 
+    private var savedConstraintLayoutParams: ConstraintLayout.LayoutParams? = null
+
     override fun gotoNormalScreen() {
-        gobakFullscreenTime = System.currentTimeMillis()
-        val vg = JZUtils.scanForActivity(context).window.decorView as ViewGroup
-        vg.removeView(this)
-        // #issue-crashlytics-1b3cebd1278de6fc52230eb5517be879:
-        // 你永远要给不更新的 JZVD 擦屁股才能保持稳定
-        CONTAINER_LIST.peekLast()?.apply {
-            removeViewAt(blockIndex)
-            addView(this@HJzvdStd, blockIndex, blockLayoutParams)
+        gobakFullscreenTime = System.currentTimeMillis() // 退出全屏时间
+        // 从 decorView 移除全屏播放器视图
+        val decorView = (JZUtils.scanForActivity(jzvdContext)).window.decorView as ViewGroup
+        decorView.removeView(this)
+        // 恢复到原始容器
+        val originalContainer = CONTAINER_LIST.last()
+        CONTAINER_LIST.pop()
+        var layoutParams = blockLayoutParams
+        if (originalContainer is ConstraintLayout) {
+            layoutParams = savedConstraintLayoutParams ?: ConstraintLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        } else if (originalContainer is FrameLayout) {
+            layoutParams = LayoutParams(blockLayoutParams)
         }
-        CONTAINER_LIST.poll()
+        // 把播放器重新添加回原来的位置
+        originalContainer.addView(this, blockIndex, layoutParams)
+        originalContainer.requestLayout()
+        // 设置播放器状态并恢复系统UI和方向
         setScreenNormal()
         JZUtils.showStatusBar(jzvdContext)
-        JZUtils.setRequestedOrientation(jzvdContext, NORMAL_ORIENTATION)
+        val activity = JZUtils.scanForActivity(jzvdContext)
+        if (activity != null) {
+            manager.unlockOrientation(activity)
+        }
         JZUtils.showSystemUI(jzvdContext)
     }
+
+    private val manager = OrientationManager(context)
+    override fun gotoFullscreen() {
+        gotoFullscreenTime = System.currentTimeMillis()
+        val vg = parent as? ViewGroup ?: return
+        val activity = JZUtils.scanForActivity(jzvdContext)
+        jzvdContext = vg.context
+
+        // 保存容器与布局信息
+        blockLayoutParams = layoutParams
+        blockIndex = vg.indexOfChild(this)
+        blockWidth = width
+        blockHeight = height
+
+        if (blockLayoutParams is ConstraintLayout.LayoutParams) {
+            savedConstraintLayoutParams =
+                ConstraintLayout.LayoutParams(blockLayoutParams as ConstraintLayout.LayoutParams)
+        }
+        // 从原来容器中移除播放器
+        vg.removeView(this)
+        CONTAINER_LIST.add(vg)
+        val decorView = (JZUtils.scanForActivity(jzvdContext)).window.decorView as ViewGroup
+        val fullLayout = LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        decorView.addView(this, fullLayout)
+        setScreenFullscreen()
+        JZUtils.hideStatusBar(jzvdContext)
+        if (activity != null) {
+            manager.lockOrientation(activity,OrientationManager.ScreenOrientation.LANDSCAPE)
+        }
+        JZUtils.hideSystemUI(jzvdContext)
+    }
+
 
     override fun onStatePreparingChangeUrl() {
         Log.i(TAG, "onStatePreparingChangeUrl " + " [" + this.hashCode() + "] ")

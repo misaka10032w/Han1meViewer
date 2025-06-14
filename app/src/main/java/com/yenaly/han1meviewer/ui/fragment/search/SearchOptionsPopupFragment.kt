@@ -70,7 +70,9 @@ class SearchOptionsPopupFragment :
     private var durations: Array<String>? = null
 
     private val subscriptionAdapter by unsafeLazy {
-        HSubscriptionAdapter()
+        HSubscriptionAdapter(
+            fragment = SearchFragment()
+        )
     }
 
     // Popups
@@ -362,10 +364,11 @@ class SearchOptionsPopupFragment :
                             showShortToast(R.string.delete_success)
                             val position = state.info
                             val item = subscriptionAdapter.getItem(position) ?: return@collect
-                            val activity = requireContext()
-                            if (activity is SearchActivity && item.name == activity.searchText) {
-                                activity.setSearchText(null)
-                            }
+//                            val activity = requireContext()
+//                            if (activity is SearchActivity && item.name == activity.searchText) {
+//                                activity.setSearchText(null)
+//                            }
+
                         }
 
                         is WebsiteState.Error -> {

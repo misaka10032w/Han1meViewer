@@ -7,23 +7,22 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.coroutineScope
+import androidx.navigation.findNavController
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.ui.activity.SearchActivity
 import com.yenaly.han1meviewer.util.addUpdateListener
-import com.yenaly.yenaly_libs.utils.activity
 import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.showShortToast
-import com.yenaly.yenaly_libs.utils.startActivity
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 
@@ -128,7 +127,10 @@ class CollapsibleTags @JvmOverloads constructor(
                 ) as Chip).apply {
                     text = tag
                     setOnClickListener {
-                        context?.activity?.startActivity<SearchActivity>(ADVANCED_SEARCH_MAP to tag)
+                        findNavController().navigate(
+                            R.id.searchFragment,
+                            bundleOf(ADVANCED_SEARCH_MAP to tag)
+                        )
                     }
                     setOnLongClickListener {
                         tag.copyToClipboard()

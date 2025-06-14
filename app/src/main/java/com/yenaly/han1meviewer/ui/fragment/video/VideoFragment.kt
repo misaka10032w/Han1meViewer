@@ -49,7 +49,6 @@ import com.yenaly.yenaly_libs.utils.OrientationManager
 import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.dp
 import com.yenaly.yenaly_libs.utils.makeBundle
-import com.yenaly.yenaly_libs.utils.requireActivity
 import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.startActivity
 import com.yenaly.yenaly_libs.utils.view.attach
@@ -100,7 +99,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         initViewPager()
         initHKeyframe()
         viewModel.getHanimeVideo(videoCode)
-        Log.i("video_ui", "initData: $videoCode", )
+        Log.i("video_ui", "initData: $videoCode")
     }
 
     override fun bindDataObservers() {

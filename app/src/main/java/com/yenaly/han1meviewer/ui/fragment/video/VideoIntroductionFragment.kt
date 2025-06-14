@@ -13,16 +13,17 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
@@ -47,7 +48,6 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VIDEO_LAYOUT_MATCH_PARENT
 import com.yenaly.han1meviewer.VIDEO_LAYOUT_WRAP_CONTENT
 import com.yenaly.han1meviewer.VideoCoverSize
-import com.yenaly.han1meviewer.advancedSearchMapOf
 import com.yenaly.han1meviewer.databinding.FragmentVideoIntroductionBinding
 import com.yenaly.han1meviewer.databinding.ItemVideoIntroductionBinding
 import com.yenaly.han1meviewer.getHanimeShareText
@@ -57,14 +57,12 @@ import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.activity.SearchActivity
 import com.yenaly.han1meviewer.ui.adapter.AdapterLikeDataBindingPage
 import com.yenaly.han1meviewer.ui.adapter.BaseSingleDifferAdapter
 import com.yenaly.han1meviewer.ui.adapter.HanimeVideoRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.RvWrapper.Companion.wrappedWith
 import com.yenaly.han1meviewer.ui.adapter.VideoColumnTitleAdapter
 import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
-import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.requestPostNotificationPermission
 import com.yenaly.han1meviewer.util.setDrawableTop
@@ -76,7 +74,6 @@ import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.shareText
 import com.yenaly.yenaly_libs.utils.showShortToast
-import com.yenaly.yenaly_libs.utils.startActivity
 import com.yenaly.yenaly_libs.utils.unsafeLazy
 import com.yenaly.yenaly_libs.utils.view.clickTrigger
 import com.yenaly.yenaly_libs.utils.view.clickWithCondition
@@ -85,6 +82,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.format
+import java.io.Serializable
 
 /**
  * @project Hanime1
@@ -138,18 +136,19 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
 
     private var multi = ConcatAdapter()
 
-    private val layoutManager by unsafeLazy {
-        GridLayoutManager(context, 1).apply {
-            spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-                override fun getSpanSize(position: Int): Int {
-                    if (multi.getWrappedAdapterAndPosition(position).first === relatedAdapter) {
-                        return 1
-                    }
-                    return spanCount
-                }
-            }
-        }
-    }
+//    private val layoutManager by unsafeLazy {
+//        GridLayoutManager(context, 1).apply {
+//            spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+//                override fun getSpanSize(position: Int): Int {
+//                    if (multi.getWrappedAdapterAndPosition(position).first === relatedAdapter) {
+//                        return 1
+//                    }
+//                    return spanCount
+//                }
+//            }
+//        }
+//    }
+
 
     /**
      * 保证 submitList 不同时调用
@@ -162,9 +161,9 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
     ): FragmentVideoIntroductionBinding {
         return FragmentVideoIntroductionBinding.inflate(inflater, container, false)
     }
-
+    private lateinit var layoutManager: GridLayoutManager
     override fun initData(savedInstanceState: Bundle?) {
-        binding.rvVideoIntro.layoutManager = layoutManager
+        layoutManager = createLayoutManager(1)
         binding.rvVideoIntro.adapter = multi
         binding.rvVideoIntro.addOnItemTouchListener(VideoIntroTouchListener())
         binding.rvVideoIntro.clipToPadding = false
@@ -174,7 +173,18 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
             WindowInsetsCompat.CONSUMED
         }
     }
-
+    private fun createLayoutManager(spanCount: Int): GridLayoutManager {
+        return GridLayoutManager(requireContext(), spanCount).apply {
+            spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                override fun getSpanSize(position: Int): Int {
+                    if (multi.getWrappedAdapterAndPosition(position).first === relatedAdapter) {
+                        return 1
+                    }
+                    return spanCount
+                }
+            }
+        }
+    }
     override fun bindDataObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
@@ -209,7 +219,11 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
                                 multi.addAdapter(relatedTitleAdapter)
                                 relatedAdapter.submitList(video.relatedHanimes)
                                 multi.addAdapter(relatedAdapter)
-                                layoutManager.spanCount = video.relatedHanimes.eachGridCounts
+                                val newSpanCount = video.relatedHanimes.eachGridCounts
+                                if (layoutManager.spanCount != newSpanCount) {
+                                    layoutManager = createLayoutManager(newSpanCount)
+                                    binding.rvVideoIntro.layoutManager = layoutManager
+                                }
                             }
                         }
 
@@ -363,7 +377,6 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
         }
     }
 
-    @JvmOverloads
     private suspend fun enqueueDownloadWork(videoData: HanimeVideo, redownload: Boolean = false) {
         requireContext().requestPostNotificationPermission()
         val checkedQuality = requireNotNull(checkedQuality)
@@ -567,11 +580,16 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
             } else {
                 vgArtist.isGone = false
                 vgArtist.setOnClickListener {
-                    startActivity<SearchActivity>(
-                        ADVANCED_SEARCH_MAP to advancedSearchMapOf(
-                            HAdvancedSearch.QUERY to artist.name,
-                            HAdvancedSearch.GENRE to artist.genre
-                        )
+                    val map = hashMapOf<HAdvancedSearch, Serializable>(
+                        HAdvancedSearch.QUERY to artist.name,
+                        HAdvancedSearch.GENRE to artist.genre
+                    )
+                    val bundleMap = HashMap<String, Serializable>().apply {
+                        map.forEach { (k, v) -> put(k.name, v) }
+                    }
+                    findNavController().navigate(
+                        R.id.searchFragment,
+                        bundleOf(ADVANCED_SEARCH_MAP to bundleMap),
                     )
                 }
                 tvArtist.text = artist.name

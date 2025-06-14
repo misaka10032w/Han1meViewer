@@ -1,9 +1,7 @@
 package com.yenaly.han1meviewer.ui.adapter
 
 import android.content.Context
-import android.content.Intent
 import android.graphics.Color
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -16,7 +14,6 @@ import com.chad.library.adapter4.BaseDifferAdapter
 import com.chad.library.adapter4.viewholder.QuickViewHolder
 import com.itxca.spannablex.spannable
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.VIDEO_LAYOUT_MATCH_PARENT
 import com.yenaly.han1meviewer.VIDEO_LAYOUT_WRAP_CONTENT
 import com.yenaly.han1meviewer.VideoCoverSize
@@ -27,12 +24,10 @@ import com.yenaly.han1meviewer.ui.activity.PreviewActivity
 import com.yenaly.han1meviewer.ui.activity.SearchActivity
 import com.yenaly.han1meviewer.ui.activity.VideoActivity
 import com.yenaly.han1meviewer.ui.fragment.home.HomePageFragment
-import com.yenaly.yenaly_libs.utils.activity
 import com.yenaly.yenaly_libs.utils.copyTextToClipboard
 import com.yenaly.yenaly_libs.utils.dp
 import com.yenaly.yenaly_libs.utils.requireActivity
 import com.yenaly.yenaly_libs.utils.showShortToast
-import com.yenaly.yenaly_libs.utils.startActivity
 
 /**
  * @project Han1meViewer
@@ -202,19 +197,38 @@ class HanimeVideoRvAdapter(private val videoWidthType: Int = -1) : // videoWidth
         }
     }
 
+//    private fun View.widthMatchParent() = apply {
+//        layoutParams = ViewGroup.LayoutParams(
+//            ViewGroup.LayoutParams.MATCH_PARENT,
+//            ViewGroup.LayoutParams.WRAP_CONTENT
+//        )
+//    }
+//
+//    private fun View.widthWrapContent() = apply {
+//        layoutParams = ViewGroup.LayoutParams(
+//            ViewGroup.LayoutParams.WRAP_CONTENT,
+//            ViewGroup.LayoutParams.WRAP_CONTENT
+//        )
+//    }
     private fun View.widthMatchParent() = apply {
-        layoutParams = ViewGroup.LayoutParams(
+        val lp = layoutParams ?: ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
+        lp.width = ViewGroup.LayoutParams.MATCH_PARENT
+        lp.height = ViewGroup.LayoutParams.WRAP_CONTENT
+        layoutParams = lp
     }
 
-    private fun View.widthWrapContent() = apply {
-        layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-    }
+        private fun View.widthWrapContent() = apply {
+            val lp = layoutParams ?: ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            lp.width = ViewGroup.LayoutParams.WRAP_CONTENT
+            lp.height = ViewGroup.LayoutParams.WRAP_CONTENT
+            layoutParams = lp
+        }
 
     //    private fun Context.startVideoActivity(videoCode: String) {
 //        if (this is SearchActivity) {
@@ -229,23 +243,7 @@ class HanimeVideoRvAdapter(private val videoWidthType: Int = -1) : // videoWidth
 //        Log.e("video play","视频代码:$videoCode")
 //    }
     private fun Context.startVideoActivity(videoCode: String) {
-        if (resources.getBoolean(R.bool.isTablet)) {
-            if (this is MainActivity) {
-                (requireActivity() as? MainActivity)?.showVideoDetailFragment(videoCode)
-            }else{
-
-                activity?.startActivity<VideoActivity>(VIDEO_CODE to videoCode)
-            }
-        } else {
-            if (this is SearchActivity) {
-                val intent = Intent(this, VideoActivity::class.java).apply {
-                    putExtra(VIDEO_CODE, videoCode)
-                }
-                this.subscribeLauncher.launch(intent)
-                return
-            }
-            activity?.startActivity<VideoActivity>(VIDEO_CODE to videoCode)
-        }
+        (requireActivity() as? MainActivity)?.showVideoDetailFragment(videoCode)
     }
 
 }
