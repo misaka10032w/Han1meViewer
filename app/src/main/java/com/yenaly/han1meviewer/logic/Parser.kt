@@ -279,7 +279,8 @@ object Parser {
 
         var likeStatus = parseBody.selectFirst("[name=like-status]")
             ?.attr("value")
-        if(likeStatus?.length!=0){
+        Log.i("likeStatus",likeStatus.toString())
+        if(!likeStatus.isNullOrEmpty()){
             likeStatus= "1"
         }
         val likesCount = parseBody.selectFirst("input[name=likes-count]")
