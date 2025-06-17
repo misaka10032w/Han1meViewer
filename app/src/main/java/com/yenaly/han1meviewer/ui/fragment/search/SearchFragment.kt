@@ -73,25 +73,12 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
 
     private val optionsPopupFragment by unsafeLazy { SearchOptionsPopupFragment() }
 
-    private fun getAdvancedSearchMap(): Map<HAdvancedSearch, Any> {
-        val raw = arguments?.get(ADVANCED_SEARCH_MAP) ?: return emptyMap()
-        return when (raw) {
-            is Map<*, *> -> {
-                raw.mapNotNull { (k, v) ->
-                    val key = when (k) {
-                        is String -> runCatching { HAdvancedSearch.valueOf(k) }.getOrNull()
-                        is HAdvancedSearch -> k
-                        else -> null
-                    }
-                    if (key != null && v != null) key to v else null
-                }.toMap()
-            }
-            is String -> mapOf(HAdvancedSearch.TAGS to raw) // 你默认使用 KEYWORD 搜索
-            else -> emptyMap()
-        }
+    // ----------- 修改开始 -----------
+    // 用 arguments 获取参数，替换原 getAdvancedSearchMap()
+    private val advancedSearchMap: AdvancedSearchMap? by lazy {
+        arguments?.getSerializable(ADVANCED_SEARCH_MAP) as? AdvancedSearchMap
     }
-
-
+    // ----------- 修改结束 -----------
 
     override fun getViewBinding(
         inflater: LayoutInflater,
@@ -101,9 +88,9 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
     }
 
     override fun initData(savedInstanceState: Bundle?) {
-        Log.i("getAdvancedSearchMap",arguments.toString())
-        Log.i("getAdvancedSearchMap",getAdvancedSearchMap().toString())
-        loadAdvancedSearch(getAdvancedSearchMap())
+        Log.i("getAdvancedSearchMap", arguments.toString())
+        Log.i("getAdvancedSearchMap", advancedSearchMap.toString())
+        loadAdvancedSearch(advancedSearchMap)
         initSearchBar()
         initSubscription()
         binding.state.init()
@@ -240,10 +227,10 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     private fun initSearchBar() {
-//        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-//            if (binding.searchBar.hideHistory()) return@addCallback
-//            requireActivity().finish()
-//        }
+        // requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+        //     if (binding.searchBar.hideHistory()) return@addCallback
+        //     requireActivity().finish()
+        // }
         historyAdapter.listener = object : HanimeSearchHistoryRvAdapter.OnItemViewClickListener {
             override fun onItemClickListener(v: View, history: SearchHistoryEntity?) {
                 binding.searchBar.searchText = history?.query
@@ -293,13 +280,9 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
         return FixedGridLayoutManager(requireContext(), counts)
     }
     @Suppress("UNCHECKED_CAST")
-    private fun loadAdvancedSearch(any: Any) {
-//        if (any is String) {
-//            setSearchText(any)
-//            return
-//        }
-       // val map = any as AdvancedSearchMap
-        Log.i("getAdvancedSearchMap",any.toString())
+    private fun loadAdvancedSearch(any: Any?) {
+        if (any == null) return
+        Log.i("getAdvancedSearchMap", any.toString())
         val map: AdvancedSearchMap = when (any) {
             is Map<*, *> -> {
                 val pairs = any.mapNotNull { (k, v) ->
@@ -322,7 +305,6 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
                 throw IllegalArgumentException("Expected Map or String for advanced search but got ${any?.javaClass}")
             }
         }
-
         (map[HAdvancedSearch.QUERY] as? String)?.let {
             setSearchText(it)
         }
@@ -331,7 +313,7 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
         viewModel.year = map[HAdvancedSearch.YEAR] as? Int
         viewModel.month = map[HAdvancedSearch.MONTH] as? Int
         viewModel.duration = map[HAdvancedSearch.DURATION] as? String
-        Log.i("loadAdvancedSearch",map[HAdvancedSearch.TAGS].toString())
+        Log.i("loadAdvancedSearch", map[HAdvancedSearch.TAGS].toString())
         when (val tags = map[HAdvancedSearch.TAGS]) {
             is Map<*, *> -> {
                 val tagMap = tags as Map<Int, *>
@@ -355,7 +337,7 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
             // 不推荐使用
             is String -> {
                 setSearchText(tags)
-                Log.i("loadAdvancedSearch2",map[HAdvancedSearch.TAGS].toString())
+                Log.i("loadAdvancedSearch2", map[HAdvancedSearch.TAGS].toString())
                 kotlin.run t@{
                     viewModel.tags.forEach { (k, v) ->
                         v.find { it.searchKey == tags }?.let { so ->
