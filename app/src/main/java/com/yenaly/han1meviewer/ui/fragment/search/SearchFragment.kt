@@ -125,7 +125,6 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
                 }
             })
         }
-
         binding.searchSrl.apply {
             setOnLoadMoreListener { getHanimeSearchResult() }
             setOnRefreshListener { getNewHanimeSearchResult() }

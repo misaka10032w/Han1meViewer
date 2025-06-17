@@ -29,13 +29,13 @@ import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.FragmentActivity
+import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cn.jzvd.JZDataSource
 import cn.jzvd.JZMediaInterface
 import cn.jzvd.JZUtils
-import cn.jzvd.Jzvd
 import cn.jzvd.JzvdStd
 import com.itxca.spannablex.spannable
 import com.yenaly.han1meviewer.Preferences
@@ -113,7 +113,8 @@ class HJzvdStd @JvmOverloads constructor(
     }
 
     init {
-        gestureDetector = GestureDetector(context,
+        gestureDetector = GestureDetector(
+            context,
             object : GestureDetector.SimpleOnGestureListener() {
                 override fun onDoubleTap(e: MotionEvent): Boolean {
                     if (state == STATE_PLAYING || state == STATE_PAUSE) {
@@ -457,8 +458,9 @@ class HJzvdStd @JvmOverloads constructor(
         tvTimer.updatePadding(left = statusBarHeight)
         bottomProgressBar.updatePadding(left = statusBarHeight, right = navBarHeight)
     }
+
     override fun clickBack() {
-        Log.i(TAG, "backPressed")
+        Log.i("fun_clickBack", "backPressed")
         if (context is MainActivity && screen == SCREEN_FULLSCREEN) {
             gotoNormalScreen()
             return
@@ -474,15 +476,10 @@ class HJzvdStd @JvmOverloads constructor(
             }
             else -> { //剩餘情況直接退出
                 //context.activity?.finish()
-                findNavController().popBackStack()
-
+                findNavController().navigateUp()
             }
         }
     }
-    private val isTabletMode by lazy {
-        resources.getBoolean(R.bool.isTablet)
-    }
-
 
     override fun onClick(v: View) {
         super.onClick(v)
@@ -490,9 +487,13 @@ class HJzvdStd @JvmOverloads constructor(
             R.id.tv_speed -> clickSpeed()
             R.id.tv_keyframe -> onKeyframeClickListener?.invoke(v)
             R.id.go_home -> {
-                if(isTabletMode && screen != SCREEN_FULLSCREEN){
-                    findNavController().popBackStack()
-                }else{
+                if (screen != SCREEN_FULLSCREEN) {
+                    findNavController().navigate(
+                        R.id.nv_home_page,
+                        null,
+                        NavOptions.Builder().setPopUpTo(R.id.nav_main, true).build()
+                    )
+                } else {
                     onGoHomeClickListener?.invoke(v)
                 }
             }

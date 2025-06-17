@@ -101,8 +101,9 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         initHKeyframe()
         viewModel.getHanimeVideo(videoCode)
         Log.i("video_ui", "initData: $videoCode")
-        
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (Jzvd.backPress()) {
                     // 由backPress()处理，无内部逻辑
