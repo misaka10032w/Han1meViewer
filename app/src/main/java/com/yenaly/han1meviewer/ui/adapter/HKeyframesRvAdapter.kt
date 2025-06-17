@@ -17,16 +17,15 @@ import com.google.android.material.button.MaterialButton
 import com.itxca.spannablex.spannable
 import com.lxj.xpopup.XPopup
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
+import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.activity.SettingsActivity
 import com.yenaly.han1meviewer.ui.activity.VideoActivity
 import com.yenaly.han1meviewer.util.showAlertDialog
-import com.yenaly.yenaly_libs.utils.activity
 import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.encodeToStringByBase64
+import com.yenaly.yenaly_libs.utils.requireActivity
 import com.yenaly.yenaly_libs.utils.showShortToast
-import com.yenaly.yenaly_libs.utils.startActivity
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -72,7 +71,8 @@ class HKeyframesRvAdapter : BaseDifferAdapter<HKeyframeEntity, QuickViewHolder>(
                 context.getString(R.string.h_keyframe_title_prefix).text()
                 item.videoCode.span {
                     clickable(color = context.getColor(R.color.video_code_link_text_color)) { _, videoCode ->
-                        context.activity?.startActivity<VideoActivity>(VIDEO_CODE to videoCode)
+                    //    context.activity?.startActivity<VideoActivity>(VIDEO_CODE to videoCode)
+                        context.startVideoActivity(videoCode)
                     }
                     underline()
                 }
@@ -85,7 +85,9 @@ class HKeyframesRvAdapter : BaseDifferAdapter<HKeyframeEntity, QuickViewHolder>(
             }
         }
     }
-
+    private fun Context.startVideoActivity(videoCode: String) {
+        (requireActivity() as? MainActivity)?.showVideoDetailFragment(videoCode)
+    }
     override fun onCreateViewHolder(
         context: Context,
         parent: ViewGroup,

@@ -465,7 +465,7 @@ class HJzvdStd @JvmOverloads constructor(
             gotoNormalScreen()
             return
         }
-        findNavController().popBackStack()
+        findNavController().navigateUp()
         when {
             CONTAINER_LIST.isNotEmpty() && CURRENT_JZVD != null -> { //判断条件，因为当前所有goBack都是回到普通窗口
                 CURRENT_JZVD.gotoNormalScreen()

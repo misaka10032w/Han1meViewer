@@ -12,13 +12,11 @@ import com.chad.library.adapter4.BaseDifferAdapter
 import com.chad.library.adapter4.viewholder.QuickViewHolder
 import com.itxca.spannablex.spannable
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.logic.entity.HKeyframeHeader
 import com.yenaly.han1meviewer.logic.entity.HKeyframeType
-import com.yenaly.han1meviewer.ui.activity.VideoActivity
-import com.yenaly.yenaly_libs.utils.activity
-import com.yenaly.yenaly_libs.utils.startActivity
+import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.yenaly_libs.utils.requireActivity
 
 /**
  * @project Han1meViewer
@@ -81,7 +79,8 @@ class SharedHKeyframesRvAdapter : BaseDifferAdapter<HKeyframeType, QuickViewHold
                         context.getString(R.string.h_keyframe_title_prefix).text()
                         item.videoCode.span {
                             clickable(color = context.getColor(R.color.video_code_link_text_color)) { _, videoCode ->
-                                context.activity?.startActivity<VideoActivity>(VIDEO_CODE to videoCode)
+                                //context.activity?.startActivity<VideoActivity>(VIDEO_CODE to videoCode)
+                                context.startVideoActivity(videoCode)
                             }
                             underline()
                         }
@@ -103,7 +102,9 @@ class SharedHKeyframesRvAdapter : BaseDifferAdapter<HKeyframeType, QuickViewHold
             }
         }
     }
-
+    private fun Context.startVideoActivity(videoCode: String) {
+        (requireActivity() as? MainActivity)?.showVideoDetailFragment(videoCode)
+    }
     override fun onCreateViewHolder(
         context: Context,
         parent: ViewGroup,

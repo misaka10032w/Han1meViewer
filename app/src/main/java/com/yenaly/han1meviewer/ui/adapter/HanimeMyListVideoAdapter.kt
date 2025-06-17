@@ -10,12 +10,10 @@ import coil.load
 import com.chad.library.adapter4.BaseDifferAdapter
 import com.chad.library.adapter4.viewholder.QuickViewHolder
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.VideoCoverSize
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
-import com.yenaly.han1meviewer.ui.activity.VideoActivity
-import com.yenaly.yenaly_libs.utils.activity
-import com.yenaly.yenaly_libs.utils.startActivity
+import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.yenaly_libs.utils.requireActivity
 
 /**
  * @project Han1meViewer
@@ -70,7 +68,8 @@ class HanimeMyListVideoAdapter : BaseDifferAdapter<HanimeInfo, QuickViewHolder>(
                     val position = viewHolder.bindingAdapterPosition
                     val item = getItem(position) ?: return@setOnClickListener
                     val videoCode = item.videoCode
-                    context.activity?.startActivity<VideoActivity>(VIDEO_CODE to videoCode)
+                    //context.activity?.startActivity<VideoActivity>(VIDEO_CODE to videoCode)
+                    context.startVideoActivity(videoCode)
                 }
                 // setOnLongClickListener 由各自的 Fragment 实现
             }
@@ -78,5 +77,8 @@ class HanimeMyListVideoAdapter : BaseDifferAdapter<HanimeInfo, QuickViewHolder>(
                 viewHolder.getView<ViewGroup>(R.id.cover_wrapper).resizeForVideoCover()
             }
         }
+    }
+    private fun Context.startVideoActivity(videoCode: String) {
+        (requireActivity() as? MainActivity)?.showVideoDetailFragment(videoCode)
     }
 }
