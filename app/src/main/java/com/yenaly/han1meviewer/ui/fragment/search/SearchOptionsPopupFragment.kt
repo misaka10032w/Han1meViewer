@@ -26,11 +26,10 @@ import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SEARCH_YEAR_RANGE_END
 import com.yenaly.han1meviewer.SEARCH_YEAR_RANGE_START
-import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
-import com.yenaly.han1meviewer.HAdvancedSearch
 import com.yenaly.han1meviewer.databinding.PopUpFragmentSearchOptionsBinding
 import com.yenaly.han1meviewer.logic.model.SearchOption.Companion.get
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.ui.activity.SearchActivity
 import com.yenaly.han1meviewer.ui.adapter.HSubscriptionAdapter
 import com.yenaly.han1meviewer.ui.popup.HTimePickerPopup
 import com.yenaly.han1meviewer.ui.viewmodel.MyListViewModel
@@ -41,11 +40,8 @@ import com.yenaly.yenaly_libs.utils.mapToArray
 import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.unsafeLazy
 import kotlinx.coroutines.launch
-import java.io.Serializable
 import java.util.Calendar
 import java.util.Date
-import kotlin.collections.HashMap
-import kotlin.collections.HashSet
 
 /**
  * @project Han1meViewer
@@ -138,7 +134,6 @@ class SearchOptionsPopupFragment :
         initOptionsChecked()
         initClick()
         initSubscription()
-        initSearchTrigger()
     }
 
     private fun initOptionsChecked() {
@@ -369,6 +364,11 @@ class SearchOptionsPopupFragment :
                             showShortToast(R.string.delete_success)
                             val position = state.info
                             val item = subscriptionAdapter.getItem(position) ?: return@collect
+//                            val activity = requireContext()
+//                            if (activity is SearchActivity && item.name == activity.searchText) {
+//                                activity.setSearchText(null)
+//                            }
+
                         }
 
                         is WebsiteState.Error -> {
@@ -416,34 +416,5 @@ class SearchOptionsPopupFragment :
         }
         // 重置状态
         isUserUsed = false
-    }
-
-    /**
-     * 新增：初始化“保存并搜索”按钮的监听器，统一用Fragment+Bundle传递高级搜索参数
-     */
-    private fun initSearchTrigger() {
-        // 你可以根据实际UI调整这个按钮，例如 binding.saveAndSearch
-        binding.saveAndSearch.setOnClickListener {
-            // 构建高级搜索参数Map
-            val map = HashMap<HAdvancedSearch, Serializable>().apply {
-                viewModel.query?.let { put(HAdvancedSearch.QUERY, it) }
-                viewModel.genre?.let { put(HAdvancedSearch.GENRE, it) }
-                viewModel.sort?.let { put(HAdvancedSearch.SORT, it) }
-                viewModel.year?.let { put(HAdvancedSearch.YEAR, it) }
-                viewModel.month?.let { put(HAdvancedSearch.MONTH, it) }
-                viewModel.duration?.let { put(HAdvancedSearch.DURATION, it) }
-                if (viewModel.tagMap.isNotEmpty()) put(HAdvancedSearch.TAGS, HashMap(viewModel.tagMap))
-                if (viewModel.brandMap.isNotEmpty()) put(HAdvancedSearch.BRANDS, HashSet(viewModel.brandMap.values))
-            }
-            // 跳转到SearchFragment并传递参数
-            val fragment = SearchFragment()
-            val bundle = Bundle()
-            bundle.putSerializable(ADVANCED_SEARCH_MAP, map)
-            fragment.arguments = bundle
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit()
-        }
     }
 }
