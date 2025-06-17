@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.core.os.bundleOf
@@ -20,18 +21,19 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.onNavDestinationSelected
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
 import com.yenaly.han1meviewer.HAdvancedSearch
 import com.yenaly.han1meviewer.R
@@ -50,6 +52,7 @@ import com.yenaly.han1meviewer.ui.adapter.VideoColumnTitleAdapter
 import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
+import com.yenaly.han1meviewer.util.NavAnim
 import com.yenaly.han1meviewer.util.addUpdateListener
 import com.yenaly.han1meviewer.util.colorTransition
 import com.yenaly.yenaly_libs.base.YenalyFragment
@@ -197,7 +200,12 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
             }
             setEnableLoadMore(false)
         }
-
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    showExitConfirmationDialog()
+                }
+            })
     }
 
     override fun onResume() {
@@ -331,19 +339,10 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
             }
         }
         Log.i("advancedSearchMap",bundleMap.toString())
-        val options = NavOptions.Builder()
-            .setLaunchSingleTop(false)
-            .setRestoreState(true)
-            .setEnterAnim(R.anim.fade_in)
-            .setExitAnim(R.anim.fade_out)
-            .setPopEnterAnim(R.anim.fade_in)
-            .setPopExitAnim(R.anim.fade_out)
-            .build()
 
         findNavController().navigate(
             R.id.searchFragment,
-            bundleOf(ADVANCED_SEARCH_MAP to bundleMap),
-            options
+            bundleOf(ADVANCED_SEARCH_MAP to bundleMap),NavAnim.slideInFromRight(true),null
         )
     }
 
@@ -378,7 +377,9 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         this@HomePageFragment.addMenu(R.menu.menu_main_toolbar, viewLifecycleOwner) { item ->
             when (item.itemId) {
                 R.id.tb_search -> {
-                    findNavController().navigate(R.id.searchFragment)
+                    findNavController().navigate(R.id.action_home_to_search,
+                        null,
+                        NavAnim.slideInFromRight(true))
                     return@addMenu true
                 }
 
@@ -391,5 +392,17 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         }
 
         toolbar.setupWithMainNavController()
+    }
+    fun Fragment.showExitConfirmationDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("确认退出")
+            .setMessage("确定已经〇完了吗？")
+            .setNegativeButton("再〇一会！") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton("退出") { _, _ ->
+                requireActivity().finish()
+            }
+            .show()
     }
 }

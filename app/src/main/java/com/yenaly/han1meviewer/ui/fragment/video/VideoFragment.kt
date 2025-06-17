@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -100,6 +101,19 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         initHKeyframe()
         viewModel.getHanimeVideo(videoCode)
         Log.i("video_ui", "initData: $videoCode")
+
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (Jzvd.backPress()) {
+                    // 由backPress()处理，无内部逻辑
+                } else {
+                    // 没处理，交由系统默认行为
+                    isEnabled = false
+                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
     }
 
     override fun bindDataObservers() {

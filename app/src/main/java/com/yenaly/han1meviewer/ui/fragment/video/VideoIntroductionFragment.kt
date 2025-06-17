@@ -74,7 +74,6 @@ import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.shareText
 import com.yenaly.yenaly_libs.utils.showShortToast
-import com.yenaly.yenaly_libs.utils.unsafeLazy
 import com.yenaly.yenaly_libs.utils.view.clickTrigger
 import com.yenaly.yenaly_libs.utils.view.clickWithCondition
 import com.yenaly.yenaly_libs.utils.view.findParent

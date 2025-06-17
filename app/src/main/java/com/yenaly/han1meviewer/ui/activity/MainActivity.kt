@@ -14,15 +14,12 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.widget.Toolbar
-import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
@@ -40,10 +37,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.navOptions
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
-import androidx.transition.TransitionManager
 import coil.load
 import coil.transform.CircleCropTransformation
-import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
@@ -58,6 +53,7 @@ import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
+import com.yenaly.han1meviewer.util.NavAnim
 import com.yenaly.han1meviewer.util.logScreenViewEvent
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.han1meviewer.util.showUpdateDialog
@@ -177,7 +173,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             // 设置相关 - 这些在 nav_settings.xml 中
             R.id.nv_settings -> {
                 // 导航到设置图的起始目的地
-                navController.navigate(R.id.action_global_nav_settings)
+                navController.navigate(R.id.action_global_nav_settings,null,NavAnim.slideInFromRight(false))
             }
 
 //            R.id.nv_h_keyframe_settings -> {
@@ -488,26 +484,21 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
     }
 
     fun showVideoDetailFragment(videoCode: String) {
-
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.fcv_main)
         val childFragmentManager = navHostFragment?.childFragmentManager
+
         if (childFragmentManager != null && !childFragmentManager.isStateSaved) {
             val navController = navHostFragment.findNavController()
-            val args = bundleOf(VIDEO_CODE to videoCode)
-            val options = navOptions {
-                anim {
-                    enter = R.anim.fade_in
-                    exit = R.anim.fade_out
-                    popEnter = R.anim.fade_in
-                    popExit = R.anim.fade_out
-                }
-                launchSingleTop = true
-            }
-            navController.navigate(R.id.video_vp, args, options)
+            val args = bundleOf(VIDEO_CODE to videoCode) // KEY 要与 Fragment 中读取的 key 对应
+            navController.navigate(
+                R.id.videoFragment,
+                args,
+                NavAnim.slideInFromRight(true))
         } else {
             Log.w("Navigation", "❌ Cannot navigate: FragmentManager has already saved its state.")
         }
     }
+
 
     enum class LayoutMode {
         NAV_LEFT, NAV_RIGHT, SINGLE_COLUMN

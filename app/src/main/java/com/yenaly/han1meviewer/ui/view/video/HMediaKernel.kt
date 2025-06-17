@@ -206,9 +206,8 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
     override fun isPlaying(): Boolean {
         return runOnPlayerThread{
          //   _exoPlayer?.playWhenReady ?: false
-            _exoPlayer?.playWhenReady == true
-        }
-
+            _exoPlayer?.playWhenReady
+        } == true
       //  return isActuallyPlaying
     }
 
@@ -245,13 +244,12 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
 
     // 在类里加一个工具方法，用来在线程里同步访问ExoPlayer
 
-    inline fun <T> runOnPlayerThread(crossinline block: () -> T): T {
+    inline fun <T> runOnPlayerThread(crossinline block: () -> T?): T? {
         if (Looper.myLooper() == mMediaHandler?.looper) {
-            // 当前已在播放器线程，直接执行
             return block()
         }
 
-        val result = AtomicReference<T>()
+        val result = AtomicReference<T?>()
         val latch = CountDownLatch(1)
 
         mMediaHandler?.post {
@@ -262,22 +260,23 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
             }
         }
 
-        latch.await(300, TimeUnit.MILLISECONDS) // 避免卡死线程，可调整超时时间
-        return result.get()
+        val finished = latch.await(300, TimeUnit.MILLISECONDS)
+        return if (finished) result.get() else null
     }
+
 
 
     override fun getCurrentPosition(): Long {
         return runOnPlayerThread {
-            _exoPlayer?.currentPosition ?: 0L
-        }
-
+            _exoPlayer?.currentPosition
+        } ?: 0L
     }
+
 
     override fun getDuration(): Long {
         return runOnPlayerThread {
-            _exoPlayer?.duration ?: 0L
-        }
+            _exoPlayer?.duration
+        } ?: 0L
     }
 
 

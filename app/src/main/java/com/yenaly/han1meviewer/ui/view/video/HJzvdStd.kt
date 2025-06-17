@@ -29,6 +29,7 @@ import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.FragmentActivity
+import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -112,7 +113,8 @@ class HJzvdStd @JvmOverloads constructor(
     }
 
     init {
-        gestureDetector = GestureDetector(context,
+        gestureDetector = GestureDetector(
+            context,
             object : GestureDetector.SimpleOnGestureListener() {
                 override fun onDoubleTap(e: MotionEvent): Boolean {
                     if (state == STATE_PLAYING || state == STATE_PAUSE) {
@@ -456,16 +458,14 @@ class HJzvdStd @JvmOverloads constructor(
         tvTimer.updatePadding(left = statusBarHeight)
         bottomProgressBar.updatePadding(left = statusBarHeight, right = navBarHeight)
     }
+
     override fun clickBack() {
-        Log.i(TAG, "backPress")
-        if ( context is MainActivity && resources.getBoolean(R.bool.isTablet)){
-            if (screen == SCREEN_FULLSCREEN){
-                gotoNormalScreen()
-                return
-            }
-            findNavController().popBackStack()
+        Log.i("fun_clickBack", "backPressed")
+        if (context is MainActivity && screen == SCREEN_FULLSCREEN) {
+            gotoNormalScreen()
             return
         }
+        findNavController().popBackStack()
         when {
             CONTAINER_LIST.isNotEmpty() && CURRENT_JZVD != null -> { //判断条件，因为当前所有goBack都是回到普通窗口
                 CURRENT_JZVD.gotoNormalScreen()
@@ -474,16 +474,11 @@ class HJzvdStd @JvmOverloads constructor(
             CONTAINER_LIST.isEmpty() && CURRENT_JZVD != null && CURRENT_JZVD.screen != SCREEN_NORMAL -> { //退出直接进入的全屏
                 CURRENT_JZVD.clearFloatScreen()
             }
-
             else -> { //剩餘情況直接退出
                 //context.activity?.finish()
-                findNavController().popBackStack()
-
+                findNavController().navigateUp()
             }
         }
-    }
-    private val isTabletMode by lazy {
-        resources.getBoolean(R.bool.isTablet)
     }
 
     override fun onClick(v: View) {
@@ -492,9 +487,13 @@ class HJzvdStd @JvmOverloads constructor(
             R.id.tv_speed -> clickSpeed()
             R.id.tv_keyframe -> onKeyframeClickListener?.invoke(v)
             R.id.go_home -> {
-                if(isTabletMode && screen != SCREEN_FULLSCREEN){
-                    findNavController().popBackStack()
-                }else{
+                if (screen != SCREEN_FULLSCREEN) {
+                    findNavController().navigate(
+                        R.id.nv_home_page,
+                        null,
+                        NavOptions.Builder().setPopUpTo(R.id.nav_main, true).build()
+                    )
+                } else {
                     onGoHomeClickListener?.invoke(v)
                 }
             }

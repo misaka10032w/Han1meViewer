@@ -5,41 +5,69 @@
     android:id="@+id/nav_main"
     app:startDestination="@id/nv_home_page">
 
+    <!-- 栈底：主页 -->
     <fragment
-        android:id="@id/nv_home_page"
-        android:name="com.yenaly.han1meviewer.ui.fragment.home.HomePageFragment" />
-    <fragment
-        android:id="@id/nv_watch_history"
-        android:name="com.yenaly.han1meviewer.ui.fragment.home.WatchHistoryFragment" />
-    <fragment
-        android:id="@id/nv_fav_video"
-        android:name="com.yenaly.han1meviewer.ui.fragment.home.MyFavVideoFragment" />
-    <fragment
-        android:id="@id/nv_playlist"
-        android:name="com.yenaly.han1meviewer.ui.fragment.home.MyPlaylistFragment" />
-    <fragment
-        android:id="@id/nv_watch_later"
-        android:name="com.yenaly.han1meviewer.ui.fragment.home.MyWatchLaterFragment" />
+        android:id="@+id/nv_home_page"
+        android:name="com.yenaly.han1meviewer.ui.fragment.home.HomePageFragment"
+        tools:layout="@layout/fragment_home_page">
+
+        <!-- 可跳转到搜索页 -->
+        <action
+            android:id="@+id/action_home_to_search"
+            app:destination="@id/searchFragment" />
+
+        <!-- 可跳转到视频页 -->
+        <action
+            android:id="@+id/action_home_to_video"
+            app:destination="@id/videoFragment" />
+    </fragment>
+
+    <!-- 搜索页 -->
     <fragment
         android:id="@+id/searchFragment"
         android:name="com.yenaly.han1meviewer.ui.fragment.search.SearchFragment"
-        tools:layout="@layout/fragment_search"/>
+        tools:layout="@layout/fragment_search">
+
+        <!-- 跳转到视频页 -->
+        <action
+            android:id="@+id/action_search_to_video"
+            app:destination="@id/videoFragment" />
+    </fragment>
+
+    <!-- 视频页（详情+播放器合一） -->
     <fragment
-        android:id="@id/video_vp"
+        android:id="@+id/videoFragment"
         android:name="com.yenaly.han1meviewer.ui.fragment.video.VideoFragment"
-        android:label="Video"
-        tools:layout="@layout/fragment_video" />
+        tools:layout="@layout/fragment_video">
 
+        <!-- 需要时跳转回搜索页 -->
+        <action
+            android:id="@+id/action_video_to_search"
+            app:destination="@id/searchFragment" />
+    </fragment>
 
+    <!-- 其他页面（按需添加） -->
+    <fragment
+        android:id="@+id/nv_watch_history"
+        android:name="com.yenaly.han1meviewer.ui.fragment.home.WatchHistoryFragment" />
+    <fragment
+        android:id="@+id/nv_fav_video"
+        android:name="com.yenaly.han1meviewer.ui.fragment.home.MyFavVideoFragment" />
+    <fragment
+        android:id="@+id/nv_playlist"
+        android:name="com.yenaly.han1meviewer.ui.fragment.home.MyPlaylistFragment" />
+    <fragment
+        android:id="@+id/nv_watch_later"
+        android:name="com.yenaly.han1meviewer.ui.fragment.home.MyWatchLaterFragment" />
+
+    <!-- 设置模块子导航图 -->
     <include app:graph="@navigation/nav_settings" />
-    <!-- 添加全局动作导航到设置导航图 -->
+
+    <!-- 全局动作 -->
     <action
         android:id="@+id/action_global_nav_settings"
         app:destination="@id/nav_settings" />
-
-    <!-- 添加全局动作直接导航到 HKeyframeSettingsFragment -->
     <action
         android:id="@+id/action_global_to_hKeyframeSettingsFragment"
         app:destination="@id/hKeyframeSettingsFragment" />
-
 </navigation>

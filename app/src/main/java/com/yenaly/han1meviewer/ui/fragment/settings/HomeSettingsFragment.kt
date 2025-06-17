@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.View
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.core.text.parseAsHtml
 import androidx.lifecycle.Lifecycle
@@ -16,6 +15,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.Preference
 import androidx.preference.SeekBarPreference
 import androidx.preference.SwitchPreferenceCompat
+import com.google.android.material.color.MaterialColors
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.analytics
 import com.yenaly.han1meviewer.BuildConfig
@@ -25,9 +25,7 @@ import com.yenaly.han1meviewer.HA1_GITHUB_RELEASES_URL
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.activity.SettingsActivity
 import com.yenaly.han1meviewer.ui.activity.SettingsRouter
-import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.view.pref.HPrivacyPreference
 import com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
@@ -257,6 +255,8 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val backgroundColor = MaterialColors.getColor(view, com.google.android.material.R.attr.colorSurface)
+        view.setBackgroundColor(backgroundColor)
         initFlow()
     }
 
