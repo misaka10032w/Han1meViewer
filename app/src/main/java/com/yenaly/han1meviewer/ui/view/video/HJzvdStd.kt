@@ -35,6 +35,7 @@ import androidx.recyclerview.widget.RecyclerView
 import cn.jzvd.JZDataSource
 import cn.jzvd.JZMediaInterface
 import cn.jzvd.JZUtils
+import cn.jzvd.Jzvd
 import cn.jzvd.JzvdStd
 import com.itxca.spannablex.spannable
 import com.yenaly.han1meviewer.Preferences
@@ -457,15 +458,12 @@ class HJzvdStd @JvmOverloads constructor(
         bottomProgressBar.updatePadding(left = statusBarHeight, right = navBarHeight)
     }
     override fun clickBack() {
-        Log.i(TAG, "backPress")
-        if ( context is MainActivity && resources.getBoolean(R.bool.isTablet)){
-            if (screen == SCREEN_FULLSCREEN){
-                gotoNormalScreen()
-                return
-            }
-            findNavController().popBackStack()
+        Log.i(TAG, "backPressed")
+        if (context is MainActivity && screen == SCREEN_FULLSCREEN) {
+            gotoNormalScreen()
             return
         }
+        findNavController().popBackStack()
         when {
             CONTAINER_LIST.isNotEmpty() && CURRENT_JZVD != null -> { //判断条件，因为当前所有goBack都是回到普通窗口
                 CURRENT_JZVD.gotoNormalScreen()
@@ -474,7 +472,6 @@ class HJzvdStd @JvmOverloads constructor(
             CONTAINER_LIST.isEmpty() && CURRENT_JZVD != null && CURRENT_JZVD.screen != SCREEN_NORMAL -> { //退出直接进入的全屏
                 CURRENT_JZVD.clearFloatScreen()
             }
-
             else -> { //剩餘情況直接退出
                 //context.activity?.finish()
                 findNavController().popBackStack()
@@ -485,6 +482,7 @@ class HJzvdStd @JvmOverloads constructor(
     private val isTabletMode by lazy {
         resources.getBoolean(R.bool.isTablet)
     }
+
 
     override fun onClick(v: View) {
         super.onClick(v)
