@@ -29,7 +29,6 @@ import com.yenaly.han1meviewer.SEARCH_YEAR_RANGE_START
 import com.yenaly.han1meviewer.databinding.PopUpFragmentSearchOptionsBinding
 import com.yenaly.han1meviewer.logic.model.SearchOption.Companion.get
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.activity.SearchActivity
 import com.yenaly.han1meviewer.ui.adapter.HSubscriptionAdapter
 import com.yenaly.han1meviewer.ui.popup.HTimePickerPopup
 import com.yenaly.han1meviewer.ui.viewmodel.MyListViewModel
@@ -338,6 +337,20 @@ class SearchOptionsPopupFragment :
                 return@lc true
             }
         }
+        // ----------- 修改开始 -----------
+        // 搜索确认跳转到 SearchFragment 并通过 arguments 传递参数
+        binding.btnConfirm.setOnClickListener {
+            val advancedSearchMap = viewModel.buildAdvancedSearchMap() // 你应有该方法
+            val fragment = SearchFragment()
+            fragment.arguments = Bundle().apply {
+                putSerializable(com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP, advancedSearchMap)
+            }
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit()
+        }
+        // ----------- 修改结束 -----------
     }
 
     private fun initSubscription() {
@@ -364,11 +377,6 @@ class SearchOptionsPopupFragment :
                             showShortToast(R.string.delete_success)
                             val position = state.info
                             val item = subscriptionAdapter.getItem(position) ?: return@collect
-//                            val activity = requireContext()
-//                            if (activity is SearchActivity && item.name == activity.searchText) {
-//                                activity.setSearchText(null)
-//                            }
-
                         }
 
                         is WebsiteState.Error -> {
