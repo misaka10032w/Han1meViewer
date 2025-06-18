@@ -197,9 +197,12 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
 
                         is VideoLoadingState.Success -> {
                             val video = state.info
-                            // 重新赋值，防止重复添加
                             multi = ConcatAdapter()
                             binding.rvVideoIntro.adapter = multi
+
+                            val newSpanCount = video.relatedHanimes.eachGridCounts
+                            layoutManager = createLayoutManager(newSpanCount)
+                            binding.rvVideoIntro.layoutManager = layoutManager
 
                             mutex.withLock {
                                 videoIntroAdapter.submit(video) // 挂起是为了让它在首位
@@ -208,21 +211,16 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
                             if (video.playlist != null && !viewModel.fromDownload) {
                                 playlistTitleAdapter.subtitle = video.playlist.playlistName
                                 multi.addAdapter(playlistTitleAdapter)
-                                playlistAdapter.submitList(video.playlist.video)
                                 multi.addAdapter(playlistWrapper)
+                                playlistAdapter.submitList(video.playlist.video)
                             } else {
                                 multi.removeAdapter(playlistTitleAdapter)
                                 multi.removeAdapter(playlistWrapper)
                             }
                             if (!viewModel.fromDownload) {
                                 multi.addAdapter(relatedTitleAdapter)
-                                relatedAdapter.submitList(video.relatedHanimes)
                                 multi.addAdapter(relatedAdapter)
-                                val newSpanCount = video.relatedHanimes.eachGridCounts
-                                if (layoutManager.spanCount != newSpanCount) {
-                                    layoutManager = createLayoutManager(newSpanCount)
-                                    binding.rvVideoIntro.layoutManager = layoutManager
-                                }
+                                relatedAdapter.submitList(video.relatedHanimes)
                             }
                         }
 

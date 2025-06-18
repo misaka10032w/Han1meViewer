@@ -18,6 +18,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.databinding.ItemHanimeDownloadedBinding
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
+import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.activity.VideoActivity
 import com.yenaly.han1meviewer.ui.fragment.home.download.DownloadedFragment
 import com.yenaly.han1meviewer.util.HImageMeower.loadUnhappily
@@ -26,6 +27,7 @@ import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.activity
 import com.yenaly.yenaly_libs.utils.dpF
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
+import com.yenaly.yenaly_libs.utils.requireActivity
 import com.yenaly.yenaly_libs.utils.startActivity
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -107,7 +109,9 @@ class HanimeDownloadedRvAdapter(private val fragment: DownloadedFragment) :
         }
         holder.binding.tvQuality.text = item.video.quality
     }
-
+    private fun Context.startVideoActivity(videoCode: String) {
+        (requireActivity() as? MainActivity)?.showVideoDetailFragment(videoCode)
+    }
     override fun onCreateViewHolder(
         context: Context,
         parent: ViewGroup,
@@ -121,7 +125,8 @@ class HanimeDownloadedRvAdapter(private val fragment: DownloadedFragment) :
             viewHolder.itemView.setOnClickListener {
                 val position = viewHolder.bindingAdapterPosition
                 val item = getItem(position) ?: return@setOnClickListener
-                context.activity?.startActivity<VideoActivity>(VIDEO_CODE to item.video.videoCode)
+               // context.activity?.startActivity<VideoActivity>(VIDEO_CODE to item.video.videoCode)
+                context.startVideoActivity(item.video.videoCode)
             }
             viewHolder.binding.btnDelete.setOnClickListener {
                 val position = viewHolder.bindingAdapterPosition

@@ -61,7 +61,6 @@ import kotlinx.datetime.Clock
 class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager.OrientationChangeListener {
 
     private val viewModel by viewModels<VideoViewModel>()
- //   private val commentViewModel by viewModels<CommentViewModel>()
     private val commentViewModel by activityViewModels<CommentViewModel>()
     private val kernel = HMediaKernel.Type.fromString(Preferences.switchPlayerKernel)
 
