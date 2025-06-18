@@ -13,6 +13,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isGone
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
@@ -57,7 +58,7 @@ import java.io.Serializable
 class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin {
 
 
-    val viewModel by viewModels<SearchViewModel>()
+    val viewModel by activityViewModels<SearchViewModel>()
     private val myListViewModel by viewModels<MyListViewModel>()
     val adapter = HSubscriptionAdapter(this)
     private var hasAdapterLoaded = false

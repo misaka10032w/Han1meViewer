@@ -10,6 +10,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.util.size
 import androidx.core.util.valueIterator
 import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.yenaly.han1meviewer.R
@@ -32,7 +33,7 @@ class HMultiChoicesDialog(
         var adapterMap: SparseArray<HSearchTagAdapter>? = null
     }
 
-    private val pageAdapter = SimpleFragmentStateAdapter(context.findActivity())
+    private val pageAdapter = SimpleFragmentStateAdapter(context.findActivity() as FragmentActivity)
 
     private val coreView = View.inflate(context, R.layout.pop_up_hanime_search_tag, null)
     private val tab = coreView.findViewById<TabLayout>(R.id.tl_tag)
