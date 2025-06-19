@@ -25,4 +25,7 @@
     <dimen name="video_view_and_time_and_duration">12sp</dimen>
     <dimen name="err_tip_text_size">24sp</dimen>
     <dimen name="main_avatar_size">80dp</dimen>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="fragment_horizontal_margin">16dp</dimen>
+    <dimen name="fragment_vertical_margin">16dp</dimen>
 </resources>

@@ -357,7 +357,16 @@ Recommendations are as follows:\n
     <string name="no_limit">No Limit</string>
     <string name="check_video_exists_in_download">I noticed you seem to have downloaded the video with resolution %s</string>
     <string name="retry">Retry</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="switch_layout">Switch layout</string>
+    <string name="oss_license">Open source projects used in this software</string>
+    <string name="open_source_license">Open Source License</string>
+    <string name="confirm_to_exit">Confirm Exit</string>
+    <string name="finished_masturbating">Have you finished mast****ting🥵?</string>
+    <string name="exit">Exit</string>
+    <string name="do_more">Mast****te again！</string>
+    <string name="using_a_private_storage_directory">Using the application\'s private storage directory</string>
+    <string name="private_storage_directory_comment">After enabling, if you encounter issues like download crashes, try switching storage options. Download files will be saved in the app\'s private directory and will be deleted upon uninstallation. Please transfer them promptly.</string>
+    <string name="private_storage_on">Switched to application private storage path</string>
+    <string name="private_storage_off">Switched to the public download directory (/Download/Han1meViewer)</string>
 
 </resources>

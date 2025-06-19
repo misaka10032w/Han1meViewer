@@ -52,7 +52,6 @@ import com.yenaly.han1meviewer.ui.adapter.VideoColumnTitleAdapter
 import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
-import com.yenaly.han1meviewer.util.NavAnim
 import com.yenaly.han1meviewer.util.addUpdateListener
 import com.yenaly.han1meviewer.util.colorTransition
 import com.yenaly.yenaly_libs.base.YenalyFragment
@@ -212,7 +211,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         super.onResume()
         (activity as? ToolbarHost)?.hideToolbar()
 //        binding.btnSwap.setOnClickListener {
-//            (requireActivity() as? MainActivity)?.swapFragments(1)
+//            findNavController().navigate(R.id.blankFragment)
 //        }
     }
 
@@ -342,7 +341,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
 
         findNavController().navigate(
             R.id.searchFragment,
-            bundleOf(ADVANCED_SEARCH_MAP to bundleMap),NavAnim.slideInFromRight(true),null
+            bundleOf(ADVANCED_SEARCH_MAP to bundleMap)
         )
     }
 
@@ -377,9 +376,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         this@HomePageFragment.addMenu(R.menu.menu_main_toolbar, viewLifecycleOwner) { item ->
             when (item.itemId) {
                 R.id.tb_search -> {
-                    findNavController().navigate(R.id.action_home_to_search,
-                        null,
-                        NavAnim.slideInFromRight(true))
+                    findNavController().navigate(R.id.action_home_to_search)
                     return@addMenu true
                 }
 
@@ -395,12 +392,12 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
     }
     fun Fragment.showExitConfirmationDialog() {
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle("确认退出")
-            .setMessage("确定已经〇完了吗？")
-            .setNegativeButton("再〇一会！") { dialog, _ ->
+            .setTitle(getString(R.string.confirm_to_exit))
+            .setMessage(getString(R.string.finished_masturbating))
+            .setNegativeButton(getString(R.string.do_more)) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setPositiveButton("退出") { _, _ ->
+            .setPositiveButton(getString(R.string.exit)) { _, _ ->
                 requireActivity().finish()
             }
             .show()

@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import androidx.appcompat.app.AlertDialog
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.yenaly.han1meviewer.R
 import com.yenaly.yenaly_libs.utils.activity
@@ -16,10 +17,15 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
 fun Context.getDialogDefaultDrawable(): Drawable {
+    val color = MaterialColors.getColor(
+        this,
+        com.google.android.material.R.attr.colorSurfaceContainerHighest,
+        getColor(R.color.per90_dark_red)
+    )
     return GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
         cornerRadius = 32.dpF
-        setColor(getColor(R.color.per90_dark_red))
+        setColor(color)
     }
 }
 

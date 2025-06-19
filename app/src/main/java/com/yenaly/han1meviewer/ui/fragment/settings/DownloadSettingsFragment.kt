@@ -1,19 +1,21 @@
 package com.yenaly.han1meviewer.ui.fragment.settings
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.net.toUri
+import androidx.preference.Preference
 import androidx.preference.SeekBarPreference
+import androidx.preference.SwitchPreferenceCompat
 import com.yenaly.han1meviewer.HFileManager
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.network.interceptor.SpeedLimitInterceptor
 import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
+import com.yenaly.han1meviewer.util.HStorageModeManager
 import com.yenaly.han1meviewer.util.setSummaryConverter
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
@@ -22,10 +24,6 @@ import com.yenaly.yenaly_libs.base.settings.YenalySettingsFragment
 import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.formatBytesPerSecond
 import com.yenaly.yenaly_libs.utils.showShortToast
-import androidx.core.net.toUri
-import androidx.preference.Preference
-import androidx.preference.SwitchPreferenceCompat
-import com.yenaly.han1meviewer.util.HStorageModeManager
 
 class DownloadSettingsFragment : YenalySettingsFragment(R.xml.settings_download,
     HStorageModeManager.PREF_NAME){
@@ -113,7 +111,7 @@ class DownloadSettingsFragment : YenalySettingsFragment(R.xml.settings_download,
             updateDownloadPathSummary()
             Toast.makeText(
                 requireContext(),
-                if (usePrivate) "已切换为应用私有存储路径" else "已切换为公共下载目录（/Download/Han1meViewer）",
+                if (usePrivate) getString(R.string.private_storage_on) else getString(R.string.private_storage_off),
                 Toast.LENGTH_SHORT
             ).show()
             true

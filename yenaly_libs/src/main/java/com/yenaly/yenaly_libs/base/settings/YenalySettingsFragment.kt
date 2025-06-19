@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.annotation.XmlRes
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import com.google.android.material.transition.MaterialSharedAxis
 import com.yenaly.yenaly_libs.utils.unsafeLazy
 
 /**
@@ -25,6 +26,12 @@ abstract class YenalySettingsFragment(@XmlRes private val xmlRes: Int,
         initPreferencesVariable()
         onPreferencesCreated(savedInstanceState)
         bindDataObservers()
+        enterTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
+            duration = 500L
+        }
+        returnTransition = MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
+            duration = 500L
+        }
     }
 
     override fun setDivider(divider: Drawable?) {

@@ -18,6 +18,7 @@ import androidx.preference.SwitchPreferenceCompat
 import com.google.android.material.color.MaterialColors
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.analytics
+import com.mikepenz.aboutlibraries.LibsBuilder
 import com.yenaly.han1meviewer.BuildConfig
 import com.yenaly.han1meviewer.HA1_GITHUB_FORUM_URL
 import com.yenaly.han1meviewer.HA1_GITHUB_ISSUE_URL
@@ -105,6 +106,8 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
             by safePreference<Preference>(APPLY_DEEP_LINKS)
     private val useAnalytics
             by safePreference<HPrivacyPreference>(USE_ANALYTICS)
+    private val ossLicense
+            by safePreference<Preference>("oss_license")
 
     private var checkUpdateTimes = 0
 
@@ -249,6 +252,18 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
             setOnPreferenceLongClickListener {
                 privacyDialog.showWithBlurEffect()
                 return@setOnPreferenceLongClickListener true
+            }
+        }
+        ossLicense.apply {
+            setOnPreferenceClickListener {
+                LibsBuilder()
+                    .withShowLoadingProgress(true)
+                    .withSearchEnabled(true)
+                    .withActivityTitle(getString(R.string.open_source_license) )
+                    .withAboutIconShown(true)
+                    .withAboutVersionShown(true)
+                    .start(requireContext())
+                true
             }
         }
     }
