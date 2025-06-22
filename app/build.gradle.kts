@@ -15,6 +15,7 @@ plugins {
     alias(libs.plugins.com.google.gms.google.services)
     alias(libs.plugins.com.google.firebase.crashlytics)
     alias(libs.plugins.com.google.firebase.firebase.pref)
+    id("com.mikepenz.aboutlibraries.plugin") version "12.2.3"
     // alias(libs.plugins.compose.compiler)
 }
 
@@ -83,6 +84,7 @@ android {
         //noinspection DataBindingWithoutKapt
         dataBinding = true
         buildConfig = true
+        viewBinding = true
 
 
         // compose = true
@@ -106,15 +108,15 @@ dependencies {
     implementation(libs.androidx.appcompat.v161)
     implementation(libs.androidx.window)
     implementation(libs.androidx.window.java)
-
     implementation(project(":yenaly_libs"))
-
+    implementation("com.mikepenz:aboutlibraries-core:12.2.3")
+    implementation("com.mikepenz:aboutlibraries:12.2.3")
     // android related
 
     implementation(libs.bundles.android.base)
     implementation(libs.bundles.android.jetpack)
     implementation(libs.palette)
-    implementation("com.google.android.material:material:1.11.0")
+    implementation(libs.material)
 //    implementation(platform(libs.compose.compose.bom))
 //    androidTestImplementation(platform(libs.compose.compose.bom))
 //    implementation(libs.compose.material3)

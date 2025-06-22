@@ -1,18 +1,12 @@
 package com.yenaly.han1meviewer.ui.activity
 
-import android.Manifest
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.text.parseAsHtml
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.ActivityDownloadBinding
-import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
 import com.yenaly.han1meviewer.ui.fragment.home.download.DownloadedFragment
 import com.yenaly.han1meviewer.ui.fragment.home.download.DownloadingFragment
 import com.yenaly.han1meviewer.ui.view.funcbar.Hanidokitem
@@ -50,13 +44,13 @@ class DownloadActivity : YenalyActivity<ActivityDownloadBinding>() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             overrideActivityTransition(
                 OVERRIDE_TRANSITION_OPEN,
-                R.anim.slide_in_from_bottom,
+                R.anim.fade_in,
                 R.anim.fade_out
             )
             overrideActivityTransition(
                 OVERRIDE_TRANSITION_CLOSE,
                 R.anim.fade_in,
-                R.anim.slide_out_to_bottom
+                R.anim.fade_out
             )
         }
 
@@ -94,7 +88,7 @@ class DownloadActivity : YenalyActivity<ActivityDownloadBinding>() {
         super.finish()
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             @Suppress("DEPRECATION")
-            overridePendingTransition(R.anim.fade_in, R.anim.slide_out_to_bottom)
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
         }
     }
 

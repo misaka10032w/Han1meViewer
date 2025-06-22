@@ -33,8 +33,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.navOptions
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import coil.load
@@ -53,7 +51,6 @@ import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
-import com.yenaly.han1meviewer.util.NavAnim
 import com.yenaly.han1meviewer.util.logScreenViewEvent
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.han1meviewer.util.showUpdateDialog
@@ -173,7 +170,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             // 设置相关 - 这些在 nav_settings.xml 中
             R.id.nv_settings -> {
                 // 导航到设置图的起始目的地
-                navController.navigate(R.id.action_global_nav_settings,null,NavAnim.slideInFromRight(false))
+                navController.navigate(R.id.action_global_nav_settings)
             }
 
 //            R.id.nv_h_keyframe_settings -> {
@@ -189,7 +186,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                 startActivity<DownloadActivity>()
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                     @Suppress("DEPRECATION")
-                    overridePendingTransition(R.anim.slide_in_from_bottom, R.anim.fade_out)
+                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
                 }
             }
         }
@@ -230,18 +227,8 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
 //        }
 //    }
     private fun openInRightPane(destinationId: Int) {
-        val options = navOptions {
-            anim {
-                enter = R.anim.fade_in
-                exit = R.anim.fade_out
-                popEnter = R.anim.fade_in
-                popExit = R.anim.fade_out
-            }
-            launchSingleTop = true
-        }
-
         try {
-            navController.navigate(destinationId, null, options)
+            navController.navigate(destinationId)
         } catch (e: IllegalArgumentException) {
             Log.e("Navigation", "Navigation destination not found: $destinationId", e)
         }
@@ -488,12 +475,11 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         val childFragmentManager = navHostFragment?.childFragmentManager
 
         if (childFragmentManager != null && !childFragmentManager.isStateSaved) {
-            val navController = navHostFragment.findNavController()
+//            val navController = navHostFragment.findNavController()
             val args = bundleOf(VIDEO_CODE to videoCode) // KEY 要与 Fragment 中读取的 key 对应
             navController.navigate(
                 R.id.videoFragment,
-                args,
-                NavAnim.slideInFromRight(true))
+                args)
         } else {
             Log.w("Navigation", "❌ Cannot navigate: FragmentManager has already saved its state.")
         }

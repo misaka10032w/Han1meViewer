@@ -370,5 +370,23 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
     <string name="switch_layout">切換佈局</string>
+    <string name="oss_license">本軟體所使用的開源項目</string>
+    <string name="open_source_license">開源許可</string>
+    <string name="confirm_to_exit">退出確認</string>
+    <string name="finished_masturbating">已經〇完了嗎🥵？</string>
+    <string name="exit">退出</string>
+    <string name="do_more">再〇一會！</string>
+    <string name="using_a_private_storage_directory">使用應用程式私有儲存目錄</string>
+    <string name="private_storage_directory_comment">啟用後,如遇下載閃退等問題可嘗試切換。下載檔案將保存在應用私有目錄，卸載時會被一併刪除，請及時轉移。</string>
+    <string name="private_storage_on">已切換為應用私有儲存路徑</string>
+    <string name="private_storage_off">已切換為公共下載目錄（/Download/Han1meViewer）</string>
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome!"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
 
 </resources>

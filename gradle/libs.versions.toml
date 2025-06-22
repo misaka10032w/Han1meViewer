@@ -1,8 +1,11 @@
 [versions]
 # Plugins
+aboutlibrariesUiMaterial = "10.6.1"
 androidGradle = "8.9.0"
 appcompatVersion = "1.6.1"
 kotlin = "2.0.21"
+ossLicenses = "17.0.0"
+materialVersion = "1.11.0"
 serializationPlugin = "2.0.21"
 ksp = "2.0.21-1.0.27"
 
@@ -68,9 +71,13 @@ asynclayoutinflater = "1.0.0"
 flexbox = "3.0.0"
 firebaseBom = "33.10.0"
 composeBom = "2025.02.00"
+playServicesOssLicenses = "17.1.0"
+annotation = "1.6.0"
+uiTestAndroid = "1.8.2"
 
 [libraries]
 # Android
+aboutlibraries-ui-material = { module = "com.mikepenz:aboutlibraries-ui-material", version.ref = "aboutlibrariesUiMaterial" }
 androidx-appcompat-v161 = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
 androidx-window = { module = "androidx.window:window", version.ref = "window" }
 androidx-window-java = { module = "androidx.window:window-java", version.ref = "windowJava" }
@@ -79,6 +86,8 @@ appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "a
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutinesAndroid" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintLayout" }
+material-v1110 = { module = "com.google.android.material:material", version.ref = "materialVersion" }
+oss-licenses = { module = "com.google.android.gms:oss-licenses", version.ref = "ossLicenses" }
 recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerView" }
 flexbox = { group = "com.google.android.flexbox", name = "flexbox", version.ref = "flexbox" }
 
@@ -164,6 +173,9 @@ firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics
 firebase-perf = { group = "com.google.firebase", name = "firebase-perf" }
 firebase-config = { group = "com.google.firebase", name = "firebase-config" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+play-services-oss-licenses = { group = "com.google.android.gms", name = "play-services-oss-licenses", version.ref = "playServicesOssLicenses" }
+androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "annotation" }
+androidx-ui-test-android = { group = "androidx.compose.ui", name = "ui-test-android", version.ref = "uiTestAndroid" }
 
 [bundles]
 

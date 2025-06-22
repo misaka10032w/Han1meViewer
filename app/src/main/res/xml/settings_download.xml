@@ -8,8 +8,8 @@
         app:title="@string/download_path" />
     <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
         app:key="use_private_storage"
-        app:title="使用私有存储目录"
-        app:summary="启用后,如遇下载闪退等问题可尝试切换。下载文件将保存在应用私有目录，卸载时会被一并删除，请及时转移。"
+        app:title="@string/using_a_private_storage_directory"
+        app:summary="@string/private_storage_directory_comment"
         app:iconSpaceReserved="false"
         app:defaultValue="false" />
 

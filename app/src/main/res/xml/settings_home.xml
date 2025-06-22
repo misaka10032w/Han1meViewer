@@ -102,6 +102,12 @@
             app:title="@string/forum" />
 
         <Preference
+            android:icon="@drawable/oss"
+            android:key="oss_license"
+            android:title="@string/open_source_license"
+            android:summary="@string/oss_license" />
+
+        <Preference
             app:icon="@drawable/ic_baseline_info_24"
             app:key="about"
             app:summary="@string/hanime_app_name"

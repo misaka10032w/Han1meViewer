@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.ViewDataBinding
+import com.google.android.material.transition.MaterialSharedAxis
 import com.yenaly.yenaly_libs.base.frame.FrameFragment
 
 /**
@@ -26,6 +27,15 @@ abstract class YenalyFragment<DB : ViewDataBinding> : FrameFragment(), IViewBind
     ): View {
         initView(inflater, container)
         return binding.root
+    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enterTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
+            duration = 500L
+        }
+        returnTransition = MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
+            duration = 500L
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

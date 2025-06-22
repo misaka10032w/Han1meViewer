@@ -364,5 +364,15 @@
     <string name="check_video_exists_in_download">我注意到你好像下载过分辨率为 %s 的该影片</string>
     <string name="retry">重试</string>
     <string name="switch_layout">切换布局</string>
+    <string name="oss_license">本软件使用的开源项目</string>
+    <string name="open_source_license">开源许可</string>
+    <string name="confirm_to_exit">退出确认</string>
+    <string name="finished_masturbating">确定已经〇完了吗🥵？</string>
+    <string name="do_more">再〇一会！</string>
+    <string name="exit">退出</string>
+    <string name="using_a_private_storage_directory">使用应用私有存储目录</string>
+    <string name="private_storage_directory_comment">启用后,如遇下载闪退等问题可尝试切换。下载文件将保存在应用私有目录，卸载时会被一并删除，请及时转移。</string>
+    <string name="private_storage_on">已切换为应用私有存储路径</string>
+    <string name="private_storage_off">已切换为公共下载目录（/Download/Han1meViewer）</string>
 
 </resources>
