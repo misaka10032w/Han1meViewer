@@ -495,6 +495,10 @@ class HJzvdStd @JvmOverloads constructor(
             R.id.tv_keyframe -> onKeyframeClickListener?.invoke(v)
             R.id.go_home -> {
                 if (screen != SCREEN_FULLSCREEN) {
+                    if (context is VideoActivity){
+                        context.activity?.finish()
+                        return
+                    }
                     findNavController().navigate(
                         R.id.nv_home_page,
                         null,
