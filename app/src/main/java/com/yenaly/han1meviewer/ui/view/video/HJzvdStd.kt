@@ -269,6 +269,10 @@ class HJzvdStd @JvmOverloads constructor(
      */
     @Volatile
     private var isSpeedGestureDetected = false
+    private val screenBrightnessBK = Settings.System.getInt(
+        context.contentResolver,
+        Settings.System.SCREEN_BRIGHTNESS
+    ).toFloat()
 
     /**
      * 長按快進檢測
@@ -638,6 +642,8 @@ class HJzvdStd @JvmOverloads constructor(
 
     override fun gotoNormalScreen() {
         gobakFullscreenTime = System.currentTimeMillis() // 退出全屏时间
+        val params = JZUtils.getWindow(context).attributes
+        params.screenBrightness = screenBrightnessBK //恢复亮度
         // 从 decorView 移除全屏播放器视图
         val decorView = (JZUtils.scanForActivity(jzvdContext)).window.decorView as ViewGroup
         decorView.removeView(this)
