@@ -19,7 +19,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
@@ -150,15 +150,15 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
         }
     }
 
-    override fun onDestroyView() {
-        binding.searchRv.apply {
-            adapter = null
-            layoutManager = null
-            clearOnScrollListeners()
-        }
-        super.onDestroyView()
-        _binding?.unbind()
-    }
+//    override fun onDestroyView() {
+//        binding.searchRv.apply {
+//            adapter = null
+//            layoutManager = null
+//            clearOnScrollListeners()
+//        }
+//        super.onDestroyView()
+//        _binding?.unbind()
+//    }
 
     @SuppressLint("SetTextI18n")
     override fun bindDataObservers() {
