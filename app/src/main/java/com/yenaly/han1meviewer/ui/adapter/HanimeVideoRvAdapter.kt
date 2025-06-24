@@ -21,9 +21,9 @@ import com.yenaly.han1meviewer.getHanimeShareText
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.activity.PreviewActivity
-import com.yenaly.han1meviewer.ui.activity.SearchActivity
-import com.yenaly.han1meviewer.ui.activity.VideoActivity
 import com.yenaly.han1meviewer.ui.fragment.home.HomePageFragment
+import com.yenaly.han1meviewer.ui.fragment.search.SearchFragment
+import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.yenaly_libs.utils.copyTextToClipboard
 import com.yenaly.yenaly_libs.utils.dp
 import com.yenaly.yenaly_libs.utils.requireActivity
@@ -133,38 +133,39 @@ class HanimeVideoRvAdapter(private val videoWidthType: Int = -1) : // videoWidth
             when (viewType) {
                 HanimeInfo.SIMPLIFIED -> {
                     when (context) {
-                        is SearchActivity -> {
-                            viewHolder.getView<View>(R.id.frame).widthMatchParent()
-                        }
+                        is MainActivity -> {
+                            val fragment = context.currentFragment
+                            when (fragment) {
+                                is SearchFragment -> {
+                                    viewHolder.getView<View>(R.id.frame).widthMatchParent()
+                                }
 
-                        is VideoActivity -> when (videoWidthType) {
-                            VIDEO_LAYOUT_MATCH_PARENT ->
-                                viewHolder.getView<View>(R.id.frame).widthMatchParent()
-
-                            VIDEO_LAYOUT_WRAP_CONTENT ->
-                                viewHolder.getView<View>(R.id.frame).widthWrapContent()
+                                is VideoFragment -> when (videoWidthType) {
+                                    VIDEO_LAYOUT_MATCH_PARENT ->
+                                        viewHolder.getView<View>(R.id.frame).widthMatchParent()
+                                    VIDEO_LAYOUT_WRAP_CONTENT ->
+                                        viewHolder.getView<View>(R.id.frame).widthWrapContent()
+                                }
+                            }
                         }
                     }
-                    with(VideoCoverSize.Simplified) {
-                        viewHolder.getView<ViewGroup>(R.id.cover_wrapper).resizeForVideoCover()
-                    }
+
                 }
 
                 HanimeInfo.NORMAL -> {
                     when (context) {
-                        is VideoActivity -> when (videoWidthType) {
-                            VIDEO_LAYOUT_MATCH_PARENT ->
-                                viewHolder.getView<View>(R.id.frame).widthMatchParent()
-
-                            VIDEO_LAYOUT_WRAP_CONTENT ->
-                                viewHolder.getView<View>(R.id.frame).widthWrapContent()
-                        }
-
                         is MainActivity -> {
-                            val activity = context
-                            val fragment = activity.currentFragment
-                            if (fragment is HomePageFragment) {
-                                viewHolder.getView<View>(R.id.frame).widthWrapContent()
+                            val fragment = context.currentFragment
+                            when (fragment) {
+                                is VideoFragment -> when (videoWidthType) {
+                                    VIDEO_LAYOUT_MATCH_PARENT ->
+                                        viewHolder.getView<View>(R.id.frame).widthMatchParent()
+                                    VIDEO_LAYOUT_WRAP_CONTENT ->
+                                        viewHolder.getView<View>(R.id.frame).widthWrapContent()
+                                }
+                                is HomePageFragment -> {
+                                    viewHolder.getView<View>(R.id.frame).widthWrapContent()
+                                }
                             }
                         }
                     }

@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.viewmodel
 
 import android.app.Application
+import android.os.Parcelable
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.EMPTY_STRING
@@ -60,7 +61,14 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
     private val _hanimeVideoFlow = MutableStateFlow<HanimeVideo?>(null)
     val hanimeVideoFlow = _hanimeVideoFlow.asStateFlow()
 
+    // 保存当前 videoCode及请求数据以及对应的滚动位置
+    val scrollPositionMap = mutableMapOf<String, Parcelable?>()
+    val videoIntroDataMap = mutableMapOf<String, HanimeVideo?>()
+    // 表示已经还原过的数据
+    val videoIntroRestoredSet = mutableSetOf<String>()
+
     fun getHanimeVideo(videoCode: String) {
+        if (videoIntroRestoredSet.contains(videoCode)) return
         viewModelScope.launch {
             val flow = if (fromDownload) {
                 HCacheManager.loadHanimeVideoInfo(application,videoCode).map { hv ->
@@ -82,6 +90,16 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
             }
         }
     }
+
+    fun restoreFromCacheIfExists(code: String): Boolean {
+        val cached = videoIntroDataMap[code] ?: return false
+        videoIntroRestoredSet.add(code) //
+        _hanimeVideoFlow.value = cached
+        _hanimeVideoStateFlow.value = VideoLoadingState.Success(cached)
+        return true
+    }
+
+
 
     private val _addToFavVideoFlow = MutableSharedFlow<WebsiteState<Boolean>>()
     val addToFavVideoFlow = _addToFavVideoFlow.asSharedFlow()

@@ -37,7 +37,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
 import com.yenaly.han1meviewer.HAdvancedSearch
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.advancedSearchMapOf
 import com.yenaly.han1meviewer.databinding.FragmentHomePageBinding
 import com.yenaly.han1meviewer.logic.model.HomePage
@@ -45,7 +44,6 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.StateLayoutMixin
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.activity.PreviewActivity
-import com.yenaly.han1meviewer.ui.activity.VideoActivity
 import com.yenaly.han1meviewer.ui.adapter.HanimeVideoRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.RvWrapper.Companion.wrappedWith
 import com.yenaly.han1meviewer.ui.adapter.VideoColumnTitleAdapter
@@ -287,7 +285,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
             binding.btnBanner.isEnabled = banner.videoCode != null
             binding.btnBanner.setOnClickListener {
                 banner.videoCode?.let { videoCode ->
-                    requireActivity().startActivity<VideoActivity>(VIDEO_CODE to videoCode)
+                    (requireActivity() as? MainActivity)?.showVideoDetailFragment(videoCode)
                 }
             }
         }

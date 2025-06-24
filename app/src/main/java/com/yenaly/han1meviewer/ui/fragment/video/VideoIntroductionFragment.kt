@@ -9,6 +9,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -172,6 +173,25 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
             WindowInsetsCompat.CONSUMED
         }
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        val code = viewModel.videoCode
+        viewModel.scrollPositionMap[code] = binding.rvVideoIntro.layoutManager?.onSaveInstanceState()
+        viewModel.videoIntroDataMap[code] = viewModel.hanimeVideoFlow.value
+        viewModel.videoIntroRestoredSet.remove(code)
+    }
+
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val code = viewModel.videoCode
+        if (!viewModel.restoreFromCacheIfExists(code)) {
+            viewModel.getHanimeVideo(code)
+        }
+    }
+
+
     private fun createLayoutManager(spanCount: Int): GridLayoutManager {
         return GridLayoutManager(requireContext(), spanCount).apply {
             spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
@@ -197,33 +217,47 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
 
                         is VideoLoadingState.Success -> {
                             val video = state.info
+                            val code = viewModel.videoCode
+
+                            if (viewModel.videoIntroRestoredSet.contains(code)) return@collect
+                            val savedState = viewModel.scrollPositionMap[code]
                             multi = ConcatAdapter()
                             binding.rvVideoIntro.adapter = multi
-
-                            val newSpanCount = video.relatedHanimes.eachGridCounts
-                            layoutManager = createLayoutManager(newSpanCount)
+                            layoutManager = createLayoutManager(video.relatedHanimes.eachGridCounts)
                             binding.rvVideoIntro.layoutManager = layoutManager
 
                             mutex.withLock {
-                                videoIntroAdapter.submit(video) // 挂起是为了让它在首位
+                                videoIntroAdapter.submit(video)
                             }
+
                             multi.addAdapter(videoIntroAdapter)
+                            val cached = viewModel.videoIntroDataMap[code]
+
                             if (video.playlist != null && !viewModel.fromDownload) {
                                 playlistTitleAdapter.subtitle = video.playlist.playlistName
                                 multi.addAdapter(playlistTitleAdapter)
                                 multi.addAdapter(playlistWrapper)
-                                playlistAdapter.submitList(video.playlist.video)
-                            } else {
-                                multi.removeAdapter(playlistTitleAdapter)
-                                multi.removeAdapter(playlistWrapper)
+                                if (cached?.playlist?.video != video.playlist.video) {
+                                    playlistAdapter.submitList(video.playlist.video)
+                                }
                             }
+
                             if (!viewModel.fromDownload) {
                                 multi.addAdapter(relatedTitleAdapter)
                                 multi.addAdapter(relatedAdapter)
-                                relatedAdapter.submitList(video.relatedHanimes)
+                                if (cached?.relatedHanimes != video.relatedHanimes) {
+                                    relatedAdapter.submitList(video.relatedHanimes)
+                                }
+                            }
+
+                            viewModel.videoIntroDataMap[code] = video
+                            viewModel.videoIntroRestoredSet.add(code)
+                            savedState?.let { state ->
+                                binding.rvVideoIntro.post {
+                                    binding.rvVideoIntro.layoutManager?.onRestoreInstanceState(state)
+                                }
                             }
                         }
-
                         is VideoLoadingState.NoContent -> Unit
                     }
                 }

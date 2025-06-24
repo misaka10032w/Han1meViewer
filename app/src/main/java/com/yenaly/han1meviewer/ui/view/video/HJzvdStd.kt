@@ -42,12 +42,14 @@ import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.activity.VideoActivity
 import com.yenaly.han1meviewer.ui.adapter.HKeyframeRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.VideoSpeedAdapter
 import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.han1meviewer.util.setStateViewLayout
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.OrientationManager
+import com.yenaly.yenaly_libs.utils.activity
 import com.yenaly.yenaly_libs.utils.appScreenWidth
 import com.yenaly.yenaly_libs.utils.navBarHeight
 import com.yenaly.yenaly_libs.utils.statusBarHeight
@@ -460,12 +462,18 @@ class HJzvdStd @JvmOverloads constructor(
     }
 
     override fun clickBack() {
-        Log.i("fun_clickBack", "backPressed")
+        Log.i("fun_clickBack", "player_backBtn_clicked")
         if (context is MainActivity && screen == SCREEN_FULLSCREEN) {
             gotoNormalScreen()
             return
         }
-        findNavController().navigateUp()
+        if (context is VideoActivity){
+            when(screen){
+                SCREEN_FULLSCREEN -> gotoNormalScreen()
+                SCREEN_NORMAL -> context.activity?.finish()
+            }
+            return
+        }
         when {
             CONTAINER_LIST.isNotEmpty() && CURRENT_JZVD != null -> { //判断条件，因为当前所有goBack都是回到普通窗口
                 CURRENT_JZVD.gotoNormalScreen()
@@ -474,8 +482,7 @@ class HJzvdStd @JvmOverloads constructor(
             CONTAINER_LIST.isEmpty() && CURRENT_JZVD != null && CURRENT_JZVD.screen != SCREEN_NORMAL -> { //退出直接进入的全屏
                 CURRENT_JZVD.clearFloatScreen()
             }
-            else -> { //剩餘情況直接退出
-                //context.activity?.finish()
+            else -> {
                 findNavController().navigateUp()
             }
         }

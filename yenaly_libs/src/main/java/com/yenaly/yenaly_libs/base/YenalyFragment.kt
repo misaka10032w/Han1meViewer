@@ -16,7 +16,7 @@ import com.yenaly.yenaly_libs.base.frame.FrameFragment
  */
 abstract class YenalyFragment<DB : ViewDataBinding> : FrameFragment(), IViewBinding<DB> {
 
-    var _binding: DB? = null
+    private var _binding: DB? = null
     override val binding get() = _binding!!
     val bindingOrNull get() = _binding
 
