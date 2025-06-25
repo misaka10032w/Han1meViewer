@@ -107,7 +107,7 @@
     <string name="deny">拒绝</string>
     <string name="no_video_links_found">未发现影片链接</string>
     <string name="child_comment">子评论</string>
-    <string name="search_options_tips">长按某单元可以清除当前你所选单元的所有tag</string>
+    <string name="search_options_tips">Tips:长按某单元可以清除当前你所选单元的所有tag</string>
     <string name="pause">暂停</string>
     <string name="continues">继续</string>
     <string name="jump_to_webpage">转到网页</string>
@@ -383,5 +383,6 @@
     <string name="auth_request">请验证身份🥵</string>
     <string name="unlock_method">使用指纹、PIN 或图案解锁</string>
     <string name="unlock_desc">我们需要确认开〇的是你本人🍄💦</string>
+    <string name="popup_search_btn">发起搜索</string>
 
 </resources>

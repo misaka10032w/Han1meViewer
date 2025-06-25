@@ -58,7 +58,7 @@ import java.io.Serializable
 class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin {
 
 
-    val viewModel by activityViewModels<SearchViewModel>()
+    val viewModel by viewModels<SearchViewModel>()
     private val myListViewModel by viewModels<MyListViewModel>()
     val adapter = HSubscriptionAdapter(this)
     private var hasAdapterLoaded = false
@@ -209,6 +209,15 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
                 }
             }
         }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.refreshTriggerFlow.collect {
+                    binding.searchSrl.autoRefresh()
+                    getNewHanimeSearchResult()
+                }
+            }
+        }
+
     }
 
 
@@ -230,7 +239,7 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
     /**
      * 獲取最新結果，清除之前保存的所有數據
      */
-    private fun getNewHanimeSearchResult() {
+    fun getNewHanimeSearchResult() {
         viewModel.page = 1
         hasAdapterLoaded = false
         viewModel.clearHanimeSearchResult()
@@ -389,5 +398,4 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
             }
         }
     }
-
 }

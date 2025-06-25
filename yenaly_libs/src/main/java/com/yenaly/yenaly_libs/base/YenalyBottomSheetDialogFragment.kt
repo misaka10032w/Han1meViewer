@@ -65,11 +65,13 @@ abstract class YenalyBottomSheetDialogFragment<DB : ViewDataBinding> :
      * 简化fragment内唤出该dialog的方式
      */
     fun showIn(fragment: Fragment) {
-        val fragmentManager = fragment.requireActivity().supportFragmentManager
-        if (fragmentManager.findFragmentByTag(this.javaClass.name) != null) {
+    //    val fragmentManager = fragment.requireActivity().supportFragmentManager
+        val tag = this.javaClass.name
+        val fragmentManager = fragment.childFragmentManager
+        if (fragmentManager.findFragmentByTag(tag) != null) {
             return
         }
-        show(fragmentManager, this.javaClass.name)
+        show(fragmentManager, tag)
     }
 
     /**

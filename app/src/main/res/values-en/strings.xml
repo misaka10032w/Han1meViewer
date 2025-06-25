@@ -106,7 +106,7 @@
     <string name="deny">Deny</string>
     <string name="no_video_links_found">No video links found</string>
     <string name="child_comment">Child Comments</string>
-    <string name="search_options_tips">Long press a unit to clear all tags of the selected unit</string>
+    <string name="search_options_tips">Tips:Long press a unit to clear all tags of the selected unit</string>
     <string name="pause">Pause</string>
     <string name="continues">Continue</string>
     <string name="jump_to_webpage">Go to Webpage</string>
@@ -377,5 +377,6 @@ Recommendations are as follows:\n
     <string name="auth_request">Verify Your Identity🥵</string>
     <string name="unlock_method">Use fingerprint, PIN, or pattern to unlock</string>
     <string name="unlock_desc">We need to confirm it\'s really you Mast****tion🍄💦</string>
+    <string name="popup_search_btn">Search</string>
 
 </resources>

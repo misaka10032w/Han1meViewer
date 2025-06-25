@@ -49,6 +49,14 @@
   },
   {
     "lang": {
+      "zh-rCN": "点赞比例",
+      "en": "Like Ratio",
+      "zh-rTW": "讚好比例"
+    },
+    "search_key": "讚好比例"
+  },
+  {
+    "lang": {
       "zh-rCN": "他们在看",
       "en": "Trending",
       "zh-rTW": "他們在看"

@@ -12,10 +12,12 @@ import androidx.core.util.valueIterator
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.tabs.TabLayout
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.ui.adapter.HSearchTagAdapter
+import com.yenaly.han1meviewer.ui.viewmodel.SearchViewModel
 import com.yenaly.han1meviewer.util.createAlertDialog
 import com.yenaly.han1meviewer.util.showWithBlurEffect
 import com.yenaly.yenaly_libs.utils.findActivity
@@ -24,6 +26,7 @@ import com.yenaly.yenaly_libs.utils.view.attach
 
 class HMultiChoicesDialog(
     val context: Context,
+    private val searchViewModel: SearchViewModel,
     @StringRes private val titleRes: Int,
     private val hasSingleItem: Boolean = false
 ) {
@@ -47,7 +50,7 @@ class HMultiChoicesDialog(
     private var onDismiss: DialogInterface.OnDismissListener? = null
 
     private var isAdded = false
-
+    private val switch = coreView.findViewById<SwitchMaterial>(R.id.pair_widely)
     private val dialog = context.createAlertDialog {
         setTitle(titleRes)
         setPositiveButton(R.string.save, null)
@@ -58,7 +61,7 @@ class HMultiChoicesDialog(
     init {
         HMultiChoicesDialog.adapterMap = SparseArray()
         adapterMap = HMultiChoicesDialog.adapterMap!!
-
+        switch.isChecked = searchViewModel.broad
         page.adapter = pageAdapter
         page.offscreenPageLimit = ViewPager2.OFFSCREEN_PAGE_LIMIT_DEFAULT
 
@@ -66,6 +69,7 @@ class HMultiChoicesDialog(
             page.requestLayout()
             val ad = di as AlertDialog
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                searchViewModel.broad = switch.isChecked
                 onSave?.invoke(ad)
             }
             dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {

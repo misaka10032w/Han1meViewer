@@ -10,6 +10,7 @@ import android.widget.Checkable
 import androidx.core.util.isNotEmpty
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.Firebase
@@ -29,7 +30,6 @@ import com.yenaly.han1meviewer.SEARCH_YEAR_RANGE_START
 import com.yenaly.han1meviewer.databinding.PopUpFragmentSearchOptionsBinding
 import com.yenaly.han1meviewer.logic.model.SearchOption.Companion.get
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.activity.SearchActivity
 import com.yenaly.han1meviewer.ui.adapter.HSubscriptionAdapter
 import com.yenaly.han1meviewer.ui.popup.HTimePickerPopup
 import com.yenaly.han1meviewer.ui.viewmodel.MyListViewModel
@@ -55,7 +55,7 @@ class SearchOptionsPopupFragment :
         private const val POP_UP_BORDER_RADIUS = 36F
     }
 
-    private val viewModel by activityViewModels<SearchViewModel>()
+    val viewModel by viewModels<SearchViewModel>({ requireParentFragment() })
     val myListViewModel by activityViewModels<MyListViewModel>()
 
     /**
@@ -182,7 +182,7 @@ class SearchOptionsPopupFragment :
         // deprecated
         binding.brand.apply {
             setOnClickListener {
-                HMultiChoicesDialog(context, R.string.brand, hasSingleItem = true).apply {
+                HMultiChoicesDialog(context,viewModel, R.string.brand, hasSingleItem = true).apply {
                     addTagScope(null, viewModel.brands, spanCount = 2)
                 }.apply {
                     loadSavedTags(viewModel.brandMap)
@@ -207,7 +207,7 @@ class SearchOptionsPopupFragment :
         }
         binding.tag.apply {
             setOnClickListener {
-                HMultiChoicesDialog(context, R.string.tag).apply {
+                HMultiChoicesDialog(context,viewModel, R.string.tag).apply {
                     addTagScope(
                         R.string.video_attr,
                         viewModel.tags[R.string.video_attr],
@@ -336,6 +336,18 @@ class SearchOptionsPopupFragment :
                     initOptionsChecked()
                 }
                 return@lc true
+            }
+        }
+        binding.popupSearchBtn.apply {
+            setOnClickListener {
+                Log.d("SearchActivity", buildString {
+                    appendLine("page: ${viewModel.page}, query: ${viewModel.query}, genre: ${viewModel.genre}, ")
+                    appendLine("sort: ${viewModel.sort}, broad: ${viewModel.broad}, year: ${viewModel.year}, ")
+                    appendLine("month: ${viewModel.month}, duration: ${viewModel.duration}, ")
+                    appendLine("tagMap: ${viewModel.tagMap}, brandMap: ${viewModel.brandMap}")
+                })
+                viewModel.triggerNewSearch()
+                dismiss()
             }
         }
     }
