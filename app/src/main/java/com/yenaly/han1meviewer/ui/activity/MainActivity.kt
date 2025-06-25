@@ -2,6 +2,8 @@ package com.yenaly.han1meviewer.ui.activity
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.KeyguardManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -15,19 +17,24 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.widget.Toolbar
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -35,6 +42,7 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
+import androidx.preference.PreferenceManager
 import coil.load
 import coil.transform.CircleCropTransformation
 import com.google.android.material.snackbar.Snackbar
@@ -93,7 +101,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                 initMenu()
             }
         }
-
+    private var hasAuthenticated = false
 
     override fun getViewBinding(layoutInflater: LayoutInflater): ActivityMainBinding =
         ActivityMainBinding.inflate(layoutInflater)
@@ -113,43 +121,95 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
      * 初始化数据
      */
     override fun initData(savedInstanceState: Bundle?) {
-        navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.fcv_main) as NavHostFragment
+        navHostFragment = supportFragmentManager.findFragmentById(R.id.fcv_main) as NavHostFragment
         navController = navHostFragment.navController
-        if (!isTabletMode) {
-            if (binding.dlMain is androidx.drawerlayout.widget.DrawerLayout) {
-                (binding.dlMain as androidx.drawerlayout.widget.DrawerLayout).addDrawerListener(this)
-            }
-        }
-
+        binding.dlMain.addDrawerListener(this)
         binding.nvMain.setNavigationItemSelectedListener { menuItem ->
             handleNavigationItemSelected(menuItem)
             true
         }
-
-        //binding.nvMain.setupWithNavController(navController)
-        // binding.dlMain.addDrawerListener(this)
-        if (binding.dlMain is androidx.drawerlayout.widget.DrawerLayout) {
-            (binding.dlMain as androidx.drawerlayout.widget.DrawerLayout).addDrawerListener(this)
-        }
         setSupportActionBar(findViewById(R.id.toolbar))
         initHeaderView()
-        //initNavActivity()
         initMenu()
         ViewCompat.setOnApplyWindowInsetsListener(binding.nvMain) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             WindowInsetsCompat.CONSUMED
         }
-        // 设置导航控制器
-        if (isTabletMode) {
-            val navHostFragment =
-                supportFragmentManager.findFragmentById(R.id.fcv_main) as? NavHostFragment
-            detailNavController = navHostFragment?.navController
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            installSplashScreen().apply {
+                setKeepOnScreenCondition { !hasAuthenticated }
+            }
+        } else null
+        super.onCreate(savedInstanceState)
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val useLock = prefs.getBoolean("use_lock_screen", false)
+
+        if (useLock && isDeviceSecureCompat(this)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                authenticate(this,
+                    onSuccess = {
+                        hasAuthenticated = true
+                        initData(savedInstanceState)
+                    },
+                    onFailed = {
+                        finish()
+                    }
+                )
+            } else {
+                // Android 7~8，不支持 BiometricPrompt
+                Toast.makeText(this, R.string.not_compact_lock_screen, Toast.LENGTH_SHORT).show()
+                hasAuthenticated = true
+                initData(savedInstanceState)
+            }
+        } else {
+            hasAuthenticated = true
+            initData(savedInstanceState)
         }
     }
 
+    private fun isDeviceSecureCompat(context: Context): Boolean {
+        val km = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        return km.isDeviceSecure
+    }
 
+    private fun authenticate(
+        activity: FragmentActivity,
+        onSuccess: () -> Unit,
+        onFailed: () -> Unit
+    ) {
+        val executor = ContextCompat.getMainExecutor(activity)
+        val biometricPrompt = BiometricPrompt(
+            activity,
+            executor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    onSuccess()
+                }
+                override fun onAuthenticationFailed() {
+                    onFailed()
+                }
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    onFailed()
+                }
+            }
+        )
+
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle(getString(R.string.auth_request))
+            .setSubtitle(getString(R.string.unlock_method))
+            .setDescription(getString(R.string.unlock_desc))
+            .setAllowedAuthenticators(
+                BiometricManager.Authenticators.BIOMETRIC_WEAK or
+                        BiometricManager.Authenticators.DEVICE_CREDENTIAL
+            )
+            .build()
+
+        biometricPrompt.authenticate(promptInfo)
+    }
 
     // 处理菜单项点击
     private fun handleNavigationItemSelected(menuItem: MenuItem) {
@@ -375,7 +435,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                     }
                 }
             } else {
-                headerAvatar.load(R.drawable.neuro) {
+                headerAvatar.load(R.drawable.bg_default_header) {
                     crossfade(true)
                     transformations(CircleCropTransformation())
                 }

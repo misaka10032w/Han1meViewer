@@ -27,4 +27,19 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">8dp</item>
     </style>
+    <!-- 启动页面专用主题 -->
+    <style name="Theme.Hanime1.Splash" parent="Theme.SplashScreen">
+        <!-- 背景颜色 -->
+        <item name="windowSplashScreenBackground">@color/per90_dark_red</item>
+
+        <!-- 启动图标，可以是 mipmap/logo.xml 或图片 -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+
+        <!-- 图标缩放动画持续时间 -->
+        <item name="windowSplashScreenAnimationDuration">500</item>
+
+        <!-- 是否保留主题背景直到 Activity 绘制完成 -->
+        <item name="postSplashScreenTheme">@style/Theme.Hanime1.Main</item>
+    </style>
+
 </resources>

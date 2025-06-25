@@ -374,5 +374,14 @@
     <string name="private_storage_directory_comment">启用后,如遇下载闪退等问题可尝试切换。下载文件将保存在应用私有目录，卸载时会被一并删除，请及时转移。</string>
     <string name="private_storage_on">已切换为应用私有存储路径</string>
     <string name="private_storage_off">已切换为公共下载目录（/Download/Han1meViewer）</string>
+    <string name="use_lock_screen">使用应用锁定屏幕</string>
+    <string name="use_lock_screen_sum">开启后，进入应用时需验证屏幕锁，防止别人打开</string>
+    <string name="not_compact_lock_screen">你的系统版本不支持验证锁屏，无法启用此功能</string>
+    <string name="not_set_sys_lock">请先在系统设置中启用指纹、图案或PIN锁</string>
+    <string name="app_lang">语言</string>
+    <string name="app_lang_sum">选择应用语言</string>
+    <string name="auth_request">请验证身份🥵</string>
+    <string name="unlock_method">使用指纹、PIN 或图案解锁</string>
+    <string name="unlock_desc">我们需要确认开〇的是你本人🍄💦</string>
 
 </resources>

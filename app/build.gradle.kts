@@ -111,6 +111,8 @@ dependencies {
     implementation(project(":yenaly_libs"))
     implementation("com.mikepenz:aboutlibraries-core:12.2.3")
     implementation("com.mikepenz:aboutlibraries:12.2.3")
+    implementation(libs.androidx.biometric)
+    implementation(libs.androidx.core.splashscreen)
     // android related
 
     implementation(libs.bundles.android.base)

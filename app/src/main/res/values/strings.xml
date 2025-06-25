@@ -368,7 +368,6 @@
     <string name="check_video_exists_in_download">我注意到你好像下載過畫質為 %s 的該影片</string>
     <string name="retry">重試</string>
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
     <string name="switch_layout">切換佈局</string>
     <string name="oss_license">本軟體所使用的開源項目</string>
     <string name="open_source_license">開源許可</string>
@@ -380,13 +379,28 @@
     <string name="private_storage_directory_comment">啟用後,如遇下載閃退等問題可嘗試切換。下載檔案將保存在應用私有目錄，卸載時會被一併刪除，請及時轉移。</string>
     <string name="private_storage_on">已切換為應用私有儲存路徑</string>
     <string name="private_storage_off">已切換為公共下載目錄（/Download/Han1meViewer）</string>
-    <!-- Strings related to login -->
-    <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="welcome">"Welcome!"</string>
-    <string name="invalid_username">Not a valid username</string>
-    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="use_lock_screen">使用應用程式鎖定螢幕</string>
+    <string name="use_lock_screen_sum">開啟後，進入應用程式時需驗證螢幕鎖定，防止他人開啟。</string>
+    <string name="not_compact_lock_screen">您的系統版本不支援驗證螢幕鎖定，因此無法啟用此功能。</string>
+    <string name="not_set_sys_lock">請先在系統設定中啟用指紋、圖案或PIN碼鎖定。</string>
+    <string-array name="lang_display_names">
+        <item>跟随系统</item>
+        <item>简体中文</item>
+        <item>繁體中文</item>
+        <item>English</item>
+    </string-array>
+
+    <string-array name="lang_values">
+        <item>system</item>
+        <item>zh-rCN</item>
+        <item>zh</item>
+        <item>en</item>
+    </string-array>
+    <string name="app_lang">語言</string>
+    <string name="app_lang_sum">選擇應用程式語言</string>
+    <string name="auth_request">請驗證身份🥵</string>
+    <string name="unlock_method">使用指紋、PIN碼或圖案解鎖</string>
+    <string name="unlock_desc">我們需要確認是您本人开〇🍄💦</string>
+
 
 </resources>
