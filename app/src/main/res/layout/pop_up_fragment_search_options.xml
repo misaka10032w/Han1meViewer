@@ -92,22 +92,24 @@
                 android:text="@string/tag"
                 android:textAlignment="center" />
 
-            <com.yenaly.han1meviewer.ui.view.HOptionChip
-                android:id="@+id/brand"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="16dp"
-                android:text="@string/brand"
-                android:textAlignment="center" />
 
             <com.yenaly.han1meviewer.ui.view.HOptionChip
                 android:id="@+id/release_date"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/release_date"
+                android:textAlignment="center" />
+
+            <com.yenaly.han1meviewer.ui.view.HOptionChip
+                android:id="@+id/brand"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="8dp"
-                android:text="@string/release_date"
+                android:visibility="gone"
+                android:text="@string/brand"
                 android:textAlignment="center" />
 
             <com.yenaly.han1meviewer.ui.view.HOptionChip
@@ -116,16 +118,31 @@
                 android:layout_columnWeight="1"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="16dp"
+                android:visibility="gone"
                 android:text="@string/duration"
                 android:textAlignment="center" />
 
         </GridLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/search_options_tips" />
+            android:gravity="center"
+             android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:text="@string/search_options_tips" />
 
+            <Button
+                android:id="@+id/popup_search_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="10dp"
+                android:text="@string/popup_search_btn" />
+        </LinearLayout>
     </LinearLayout>
 </layout>

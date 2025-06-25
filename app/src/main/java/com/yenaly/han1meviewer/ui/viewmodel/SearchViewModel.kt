@@ -14,6 +14,7 @@ import com.yenaly.han1meviewer.util.loadAssetAs
 import com.yenaly.yenaly_libs.base.YenalyViewModel
 import com.yenaly.yenaly_libs.utils.unsafeLazy
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flowOn
@@ -32,7 +33,6 @@ class SearchViewModel(application: Application) : YenalyViewModel(application) {
     var query: String? = null
 
     // START: Use in [ChildCommentPopupFragment.kt]
-
     var genre: String? = null
     var sort: String? = null
     var broad: Boolean = false
@@ -127,5 +127,11 @@ class SearchViewModel(application: Application) : YenalyViewModel(application) {
             DatabaseRepo.SearchHistory.deleteByKeyword(query)
             Log.d("delete_search_hty", "$query DONE!")
         }
+    }
+    val refreshTriggerFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    fun triggerNewSearch() {
+        page = 1
+        clearHanimeSearchResult()
+        refreshTriggerFlow.tryEmit(Unit)
     }
 }
