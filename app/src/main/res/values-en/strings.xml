@@ -368,5 +368,14 @@ Recommendations are as follows:\n
     <string name="private_storage_directory_comment">After enabling, if you encounter issues like download crashes, try switching storage options. Download files will be saved in the app\'s private directory and will be deleted upon uninstallation. Please transfer them promptly.</string>
     <string name="private_storage_on">Switched to application private storage path</string>
     <string name="private_storage_off">Switched to the public download directory (/Download/Han1meViewer)</string>
+    <string name="use_lock_screen_sum">When enabled, screen lock verification is required to access the app, preventing others from opening it.</string>
+    <string name="use_lock_screen">"Use App Lock Screen "</string>
+    <string name="not_compact_lock_screen">Your system version does not support screen lock verification, so this feature cannot be enabled.</string>
+    <string name="not_set_sys_lock">Please enable fingerprint, pattern, or PIN lock in your system settings first.</string>
+    <string name="app_lang">Language</string>
+    <string name="app_lang_sum">Select the application language</string>
+    <string name="auth_request">Verify Your Identity🥵</string>
+    <string name="unlock_method">Use fingerprint, PIN, or pattern to unlock</string>
+    <string name="unlock_desc">We need to confirm it\'s really you Mast****tion🍄💦</string>
 
 </resources>

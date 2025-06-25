@@ -1,17 +1,22 @@
 package com.yenaly.han1meviewer.ui.fragment.settings
 
+import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.view.View
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
 import androidx.core.text.parseAsHtml
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.SeekBarPreference
 import androidx.preference.SwitchPreferenceCompat
@@ -122,8 +127,32 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
 }
 
     override fun onPreferencesCreated(savedInstanceState: Bundle?) {
-        videoLanguage.apply {
+        val lockSwitch = findPreference<SwitchPreferenceCompat>("use_lock_screen")
+        lockSwitch?.setOnPreferenceChangeListener { _, newValue ->
+            if (newValue == true) {
+                if (!isDeviceSecureCompat(requireContext())) {
+                    Toast.makeText(requireContext(),
+                        getString(R.string.not_set_sys_lock), Toast.LENGTH_LONG).show()
+                    return@setOnPreferenceChangeListener false
+                }
 
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+                    Toast.makeText(requireContext(),
+                        getString(R.string.not_compact_lock_screen), Toast.LENGTH_LONG).show()
+                    return@setOnPreferenceChangeListener false
+                }
+            }
+            true
+        }
+        val langPref = findPreference<ListPreference>("app_language")
+        langPref?.setOnPreferenceChangeListener { _, _ ->
+            Handler(Looper.getMainLooper()).post {
+                activity?.recreate()
+            }
+            true
+        }
+
+        videoLanguage.apply {
             // 從 xml 轉移至此
             entries = arrayOf(
                 getString(R.string.traditional_chinese),
@@ -385,5 +414,9 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
             0 -> getString(R.string.at_any_time)
             else -> getString(R.string.which_days, value)
         } + "\n" + msg
+    }
+    private fun isDeviceSecureCompat(context: Context): Boolean {
+        val km = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        return km.isDeviceSecure
     }
 }

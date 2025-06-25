@@ -57,12 +57,14 @@
 
         <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
             app:defaultValue="false"
+            app:icon="@drawable/ic_setting_ci"
             app:key="use_ci_update_channel"
             app:summary="@string/use_ci_update_channel_summary"
             app:title="@string/use_ci_update_channel" />
 
         <SeekBarPreference
             android:max="30"
+            app:icon="@drawable/ic_clock"
             app:key="update_popup_interval_days"
             app:min="0"
             app:title="@string/update_popup_interval_days"
@@ -79,10 +81,25 @@
             app:key="use_analytics"
             app:summary="@string/analytics_summary"
             app:title="@string/analytics_title" />
+        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
+            app:icon="@drawable/ic_setting_applock"
+            app:iconSpaceReserved="false"
+            app:key="use_lock_screen"
+            app:summary="@string/use_lock_screen_sum"
+            app:title="@string/use_lock_screen" />
 
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/other">
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
+            app:key="app_language"
+            app:title="@string/app_lang"
+            app:summary="@string/app_lang_sum"
+            app:entries="@array/lang_display_names"
+            app:entryValues="@array/lang_values"
+            app:defaultValue="system"
+            app:icon="@drawable/ic_setting_lang"
+            app:iconSpaceReserved="false"/>
 
         <Preference
             app:icon="@drawable/ic_baseline_clear_all_24"
@@ -102,7 +119,7 @@
             app:title="@string/forum" />
 
         <Preference
-            android:icon="@drawable/oss"
+            android:icon="@drawable/ic_oss"
             android:key="oss_license"
             android:title="@string/open_source_license"
             android:summary="@string/oss_license" />

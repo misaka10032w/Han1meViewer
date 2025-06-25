@@ -3,6 +3,8 @@
 aboutlibrariesUiMaterial = "10.6.1"
 androidGradle = "8.9.0"
 appcompatVersion = "1.6.1"
+biometric = "1.1.0"
+coreSplashscreen = "1.0.1"
 kotlin = "2.0.21"
 ossLicenses = "17.0.0"
 materialVersion = "1.11.0"
@@ -79,6 +81,8 @@ uiTestAndroid = "1.8.2"
 # Android
 aboutlibraries-ui-material = { module = "com.mikepenz:aboutlibraries-ui-material", version.ref = "aboutlibrariesUiMaterial" }
 androidx-appcompat-v161 = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
+androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-window = { module = "androidx.window:window", version.ref = "window" }
 androidx-window-java = { module = "androidx.window:window-java", version.ref = "windowJava" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
