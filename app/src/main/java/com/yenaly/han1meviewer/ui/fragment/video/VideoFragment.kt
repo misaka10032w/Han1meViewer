@@ -287,7 +287,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
    fun showRedDotCount(count: Int) {
         binding.videoTl.getOrCreateBadgeOnTextViewAt(
             tabNameArray.indexOf(R.string.comment),
-            null, Gravity.START, 2.dp
+            null, Gravity.END, 4.dp
         ) {
             isVisible = count > 0
             number = count

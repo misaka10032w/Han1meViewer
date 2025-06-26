@@ -153,6 +153,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                 authenticate(this,
                     onSuccess = {
                         hasAuthenticated = true
+                        removeAuthGuard()
                         initData(savedInstanceState)
                     },
                     onFailed = {
@@ -162,15 +163,19 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             } else {
                 // Android 7~8，不支持 BiometricPrompt
                 Toast.makeText(this, R.string.not_compact_lock_screen, Toast.LENGTH_SHORT).show()
+                removeAuthGuard()
                 hasAuthenticated = true
                 initData(savedInstanceState)
             }
         } else {
+            removeAuthGuard()
             hasAuthenticated = true
             initData(savedInstanceState)
         }
     }
-
+    private fun removeAuthGuard() {
+        findViewById<View>(R.id.auth_guard)?.visibility = View.GONE
+    }
     private fun isDeviceSecureCompat(context: Context): Boolean {
         val km = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
         return km.isDeviceSecure

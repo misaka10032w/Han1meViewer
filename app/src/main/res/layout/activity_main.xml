@@ -58,6 +58,15 @@
             app:itemTextColor="@color/nav_item_text_color"
             app:itemIconTint="@color/nav_item_icon_color" />
 
+        <View
+            android:fitsSystemWindows="true"
+            android:id="@+id/auth_guard"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/mask"
+            android:visibility="visible"
+            android:elevation="9999dp" />
+
     </androidx.drawerlayout.widget.DrawerLayout>
 
 

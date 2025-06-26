@@ -10,7 +10,7 @@ ossLicenses = "17.0.0"
 materialVersion = "1.11.0"
 serializationPlugin = "2.0.21"
 ksp = "2.0.21-1.0.27"
-
+drawerlayout = "1.2.0"
 # Dependencies
 about = "2.5.2"
 coreKtx = "1.15.0"
@@ -94,7 +94,7 @@ material-v1110 = { module = "com.google.android.material:material", version.ref 
 oss-licenses = { module = "com.google.android.gms:oss-licenses", version.ref = "ossLicenses" }
 recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerView" }
 flexbox = { group = "com.google.android.flexbox", name = "flexbox", version.ref = "flexbox" }
-
+drawerlayout = { module = "androidx.drawerlayout:drawerlayout", version.ref = "drawerlayout" }
 # Jetpack
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewModelKtx" }
 lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
