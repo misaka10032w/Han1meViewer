@@ -173,6 +173,22 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             hasAuthenticated = true
             initData(savedInstanceState)
         }
+        handleDeeplinkIfNeeded(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleDeeplinkIfNeeded(intent)
+    }
+
+    private fun handleDeeplinkIfNeeded(intent: Intent) {
+        Log.i("deeplink",intent.data.toString())
+        if (intent.action == Intent.ACTION_VIEW) {
+            val uri = intent.data ?: return
+            val videoCode = uri.getQueryParameter("v") ?: return
+            showVideoDetailFragment(videoCode)
+        }
     }
     private fun removeAuthGuard() {
         val root = findViewById<ViewGroup>(R.id.dl_main) // 或者 R.id.root
@@ -422,7 +438,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
     private fun showFindRelatedLinkSnackBar(videoCode: String) {
         showSnackBar(R.string.detect_ha1_related_link_in_clipboard, Snackbar.LENGTH_LONG) {
             setAction(R.string.enter) {
-                startActivity<VideoActivity>(VIDEO_CODE to videoCode)
+                showVideoDetailFragment(videoCode)
             }
         }
     }

@@ -13,7 +13,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isGone
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
@@ -71,6 +70,7 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
 
     private val searchAdapter by unsafeLazy { HanimeVideoRvAdapter() }
     private val historyAdapter by unsafeLazy { HanimeSearchHistoryRvAdapter() }
+    private var hasInitAdvancedSearch = false
 
     private val optionsPopupFragment by unsafeLazy { SearchOptionsPopupFragment() }
 
@@ -104,16 +104,18 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
     override fun initData(savedInstanceState: Bundle?) {
         Log.i("getAdvancedSearchMap",arguments.toString())
         Log.i("getAdvancedSearchMap",getAdvancedSearchMap().toString())
-        loadAdvancedSearch(getAdvancedSearchMap())
+        if (!hasInitAdvancedSearch) {
+            loadAdvancedSearch(getAdvancedSearchMap())
+            hasInitAdvancedSearch = true
+        }
         initSearchBar()
         initSubscription()
         binding.state.init()
         binding.searchRv.apply {
-            if (layoutManager == null) {
-                layoutManager = FixedGridLayoutManager(
-                    requireContext(), VideoCoverSize.Normal.videoInOneLine
-                )
-            }
+            layoutManager = if (viewModel.searchFlow.value.isNotEmpty())
+                viewModel.searchFlow.value.buildFlexibleGridLayoutManager()
+            else
+                FixedGridLayoutManager(requireContext(), VideoCoverSize.Normal.videoInOneLine)
             if (adapter == null) {
                 adapter = searchAdapter
             }
