@@ -168,6 +168,7 @@ dependencies {
     implementation(libs.about)
     implementation(libs.statelayout)
     implementation(libs.circular.reveal.switch)
+    implementation(libs.drawerlayout)
 
     // firebase
 
