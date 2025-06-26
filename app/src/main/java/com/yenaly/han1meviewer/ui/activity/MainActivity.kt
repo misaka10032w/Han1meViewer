@@ -15,6 +15,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -152,8 +153,8 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 authenticate(this,
                     onSuccess = {
-                        hasAuthenticated = true
                         removeAuthGuard()
+                        hasAuthenticated = true
                         initData(savedInstanceState)
                     },
                     onFailed = {
@@ -174,7 +175,9 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         }
     }
     private fun removeAuthGuard() {
-        findViewById<View>(R.id.auth_guard)?.visibility = View.GONE
+        val root = findViewById<ViewGroup>(R.id.dl_main) // 或者 R.id.root
+        val authGuard = findViewById<View>(R.id.auth_guard)
+        root?.removeView(authGuard)
     }
     private fun isDeviceSecureCompat(context: Context): Boolean {
         val km = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
