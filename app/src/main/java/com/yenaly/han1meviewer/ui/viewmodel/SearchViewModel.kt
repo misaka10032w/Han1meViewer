@@ -3,6 +3,7 @@ package com.yenaly.han1meviewer.ui.viewmodel
 import android.app.Application
 import android.util.Log
 import android.util.SparseArray
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.NetworkRepo
@@ -27,17 +28,37 @@ import kotlinx.coroutines.launch
  * @author Yenaly Liew
  * @time 2022/06/13 013 22:29
  */
-class SearchViewModel(application: Application) : YenalyViewModel(application) {
+class SearchViewModel(
+    application: Application,
+    private val state: SavedStateHandle
+) : YenalyViewModel(application) {
 
     var page: Int = 1
     var query: String? = null
 
     // START: Use in [ChildCommentPopupFragment.kt]
-    var genre: String? = null
-    var sort: String? = null
+    var genre: String?
+        get() = state["genre"]
+        set(value) { state["genre"] = value }
+
+    var sort: String?
+        get() = state["sort"]
+        set(value) { state["sort"] = value }
+
+    var year: Int?
+        get() = state["year"]
+        set(value) { state["year"] = value }
+
+    var month: Int?
+        get() = state["month"]
+        set(value) { state["month"] = value }
+
+
+//    var genre: String? = null
+//    var sort: String? = null
     var broad: Boolean = false
-    var year: Int? = null
-    var month: Int? = null
+//    var year: Int? = null
+//    var month: Int? = null
     var duration: String? = null
 
     var subscriptionBrand: String? = null
