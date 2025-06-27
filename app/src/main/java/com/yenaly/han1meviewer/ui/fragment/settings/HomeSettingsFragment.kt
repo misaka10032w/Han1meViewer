@@ -283,6 +283,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
                 return@setOnPreferenceLongClickListener true
             }
         }
+        @Suppress ("DEPRECATION")
         ossLicense.apply {
             setOnPreferenceClickListener {
                 LibsBuilder()

@@ -47,6 +47,7 @@ import androidx.preference.PreferenceManager
 import coil.load
 import coil.transform.CircleCropTransformation
 import com.google.android.material.snackbar.Snackbar
+import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
 import com.yenaly.han1meviewer.R
@@ -85,16 +86,13 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
 
     private lateinit var navHostFragment: NavHostFragment
     lateinit var navController: NavController
-    private var detailNavController: NavController? = null
+//    private var detailNavController: NavController? = null
 
     companion object {
         private const val REQUEST_WRITE_EXTERNAL_STORAGE = 1234
     }
 
     val currentFragment get() = navHostFragment.childFragmentManager.primaryNavigationFragment
-    private val isTabletMode by lazy {
-        resources.getBoolean(R.bool.isTablet)
-    }
 
     // 登錄完了後讓activity刷新主頁
     private val loginDataLauncher =
@@ -159,6 +157,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        @Suppress("UNUSED_VARIABLE")
         val splashScreen = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             installSplashScreen().apply {
                 setKeepOnScreenCondition { !hasAuthenticated }
@@ -203,13 +202,33 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
     }
 
     private fun handleDeeplinkIfNeeded(intent: Intent) {
-        Log.i("deeplink", intent.data.toString())
+        Log.i("deeplink", "intent=$intent")
         if (intent.action == Intent.ACTION_VIEW) {
             val uri = intent.data ?: return
             val videoCode = uri.getQueryParameter("v") ?: return
             showVideoDetailFragment(videoCode)
+            return
+        }
+
+        val tag = intent.getStringExtra("startSearchFromTag")
+        if (tag != null) {
+            intent.removeExtra("startSearchFromTag")
+            val navHostFragment = supportFragmentManager.findFragmentById(R.id.fcv_main) as? NavHostFragment
+            val navController = navHostFragment?.navController
+            if (navHostFragment?.childFragmentManager?.isStateSaved == true) {
+                return
+            }
+            if (navController?.currentDestination?.id != R.id.searchFragment) {
+                navController?.navigate(
+                    R.id.searchFragment,
+                    bundleOf(ADVANCED_SEARCH_MAP to tag)
+                )
+            } else {
+                Log.i("deeplink", "🔁 Already at searchFragment")
+            }
         }
     }
+
 
     private fun removeAuthGuard() {
         val root = findViewById<ViewGroup>(R.id.dl_main) // 或者 R.id.root
@@ -584,11 +603,12 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
     }
 
 
-    enum class LayoutMode {
-        NAV_LEFT, NAV_RIGHT, SINGLE_COLUMN
-    }
 
-    private var currentMode = LayoutMode.NAV_LEFT
+//    enum class LayoutMode {
+//        NAV_LEFT, NAV_RIGHT, SINGLE_COLUMN
+//    }
+
+//    private var currentMode = LayoutMode.NAV_LEFT
 //    fun swapFragments(number: Number) {
 //        val nav = findViewById<NavigationView>(R.id.nv_main)
 //        val content = findViewById<CoordinatorLayout>(R.id.right_pan)

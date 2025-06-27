@@ -17,6 +17,7 @@ import com.yenaly.han1meviewer.ui.viewmodel.SearchViewModel
  * @author Yenaly Liew
  * @time 2022/06/13 013 22:29
  */
+@Suppress ("DEPRECATION")
 class SearchActivity : AppCompatActivity() {
     val viewModel by viewModels<SearchViewModel>()
 
