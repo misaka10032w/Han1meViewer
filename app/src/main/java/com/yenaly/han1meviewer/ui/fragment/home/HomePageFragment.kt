@@ -115,8 +115,9 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
             onMoreHanimeListener = {
                 showSearchFragment(
                     advancedSearchMapOf(
-                        HAdvancedSearch.TAGS to hashMapOf<Int, Any>(R.string.video_attr to "中文字幕"),
-                        HAdvancedSearch.SORT to "最新上傳"
+                        HAdvancedSearch.TAGS to hashMapOf(
+                            "video_attributes" to "中文字幕"
+                        )
                     )
                 )
             }

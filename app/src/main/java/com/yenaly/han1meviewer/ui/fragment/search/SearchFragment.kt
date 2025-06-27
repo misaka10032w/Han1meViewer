@@ -311,7 +311,7 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
 //            return
 //        }
        // val map = any as AdvancedSearchMap
-        Log.i("getAdvancedSearchMap",any.toString())
+        Log.i("loadAdvancedSearch",any.toString())
         val map: AdvancedSearchMap = when (any) {
             is Map<*, *> -> {
                 val pairs = any.mapNotNull { (k, v) ->
@@ -346,19 +346,20 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
         Log.i("loadAdvancedSearch",map[HAdvancedSearch.TAGS].toString())
         when (val tags = map[HAdvancedSearch.TAGS]) {
             is Map<*, *> -> {
-                val tagMap = tags as Map<Int, *>
+                val tagMap = tags as Map<String, *>
                 tagMap.forEach { (k, v) ->
-                    val key = k.toString()
-                    val scope = viewModel.tags[key]
+                    val scope = viewModel.tags[k]
                     when (v) {
                         is String -> {
                             val option = scope?.find { it.searchKey == v }
-                            viewModel.tagMap[k] = option?.let(::setOf) ?: emptySet()
+                            val key = SearchOption.toScopeKey(k)
+                            viewModel.tagMap[key] = option?.let(::setOf) ?: emptySet()
                         }
 
                         is Set<*> -> {
                             val keySet = scope?.filterTo(mutableSetOf()) { it.searchKey in v }
-                            viewModel.tagMap[k] = keySet
+                            val key = SearchOption.toScopeKey(k)
+                            viewModel.tagMap[key] = keySet
                         }
                     }
                 }
