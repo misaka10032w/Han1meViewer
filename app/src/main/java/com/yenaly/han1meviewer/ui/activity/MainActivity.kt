@@ -203,6 +203,8 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
 
     private fun handleDeeplinkIfNeeded(intent: Intent) {
         Log.i("deeplink", "intent=$intent")
+
+        //外部跳转Deeplink
         if (intent.action == Intent.ACTION_VIEW) {
             val uri = intent.data ?: return
             val videoCode = uri.getQueryParameter("v") ?: return
@@ -210,24 +212,37 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             return
         }
 
-        val tag = intent.getStringExtra("startSearchFromTag")
-        if (tag != null) {
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.fcv_main) as? NavHostFragment ?: return
+        val navController = navHostFragment.navController
+        if (navHostFragment.childFragmentManager.isStateSaved) {
+            Log.w("deeplink", "❌ Cannot navigate: state already saved")
+            return
+        }
+
+        //String形式TAG
+        intent.getStringExtra("startSearchFromTag")?.let { tag ->
             intent.removeExtra("startSearchFromTag")
-            val navHostFragment = supportFragmentManager.findFragmentById(R.id.fcv_main) as? NavHostFragment
-            val navController = navHostFragment?.navController
-            if (navHostFragment?.childFragmentManager?.isStateSaved == true) {
-                return
-            }
-            if (navController?.currentDestination?.id != R.id.searchFragment) {
-                navController?.navigate(
+            if (navController.currentDestination?.id != R.id.searchFragment) {
+                navController.navigate(
                     R.id.searchFragment,
                     bundleOf(ADVANCED_SEARCH_MAP to tag)
                 )
-            } else {
-                Log.i("deeplink", "🔁 Already at searchFragment")
             }
+            return
+        }
+
+        // Map形式TAG
+        @Suppress("UNCHECKED_CAST","DEPRECATION")
+        val map = intent.getSerializableExtra("startSearchFromMap") as? HashMap<String, String>
+        if (map != null) {
+            intent.removeExtra("startSearchFromMap")
+            navController.navigate(
+                R.id.searchFragment,
+                bundleOf(ADVANCED_SEARCH_MAP to map)
+            )
         }
     }
+
 
 
     private fun removeAuthGuard() {
