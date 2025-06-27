@@ -536,15 +536,15 @@ class HJzvdStd @JvmOverloads constructor(
     }
 
     override fun touchActionMove(x: Float, y: Float) {
-        Log.i(TAG, "onTouch surfaceContainer actionMove [" + this.hashCode() + "] ")
         val deltaX = x - mDownX
         var deltaY = y - mDownY
         val absDeltaX = deltaX.absoluteValue
         val absDeltaY = deltaY.absoluteValue
         // 此處進行了修改，未全屏也能調節進度
+        Log.d(TAG, "mDownX=$mDownX, screenWidth=${JZUtils.getScreenWidth(context)}")
         if (screen != SCREEN_TINY && !isSpeedGestureDetected) {
             //拖动的是NavigationBar和状态栏
-            if (mDownX > JZUtils.getScreenWidth(context)
+            if (mDownX > appScreenWidth
                 || mDownY < JZUtils.getStatusBarHeight(context)
             ) {
                 return
@@ -561,6 +561,7 @@ class HJzvdStd @JvmOverloads constructor(
                         }
                     } else {
                         //如果y轴滑动距离超过设置的处理范围，那么进行滑动事件处理
+                        Log.i("appScreenWidth",appScreenWidth.toString())
                         if (mDownX < appScreenWidth * 0.5f) { //左侧改变亮度
                             mChangeBrightness = true
                             val lp = JZUtils.getWindow(context).attributes
