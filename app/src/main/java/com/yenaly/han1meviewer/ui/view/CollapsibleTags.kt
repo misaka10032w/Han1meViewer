@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.ui.view
 
 import android.animation.ValueAnimator
 import android.content.Context
+import android.content.Intent
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -20,6 +21,7 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.util.addUpdateListener
 import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.showShortToast
@@ -127,10 +129,15 @@ class CollapsibleTags @JvmOverloads constructor(
                 ) as Chip).apply {
                     text = tag
                     setOnClickListener {
-                        findNavController().navigate(
-                            R.id.searchFragment,
-                            bundleOf(ADVANCED_SEARCH_MAP to tag)
-                        )
+                        try {
+                            findNavController().navigate(
+                                R.id.searchFragment,
+                                bundleOf(ADVANCED_SEARCH_MAP to tag)
+                            )
+                        }catch (e:IllegalStateException){
+                            context.startSearchFromTag(tag)
+                        }
+
                     }
                     setOnLongClickListener {
                         tag.copyToClipboard()
@@ -141,6 +148,13 @@ class CollapsibleTags @JvmOverloads constructor(
             }.toMutableList()
         }
     }
+    private fun Context.startSearchFromTag(tag: String) {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            putExtra("startSearchFromTag", tag)
+        }
+        startActivity(intent)
+    }
+
 
     private fun handleWhenCollapsed(isCollapsed: Boolean) {
         toggleButton.animate().rotation(if (isCollapsed) 0F else 180F).setDuration(ANIM_DURATION)

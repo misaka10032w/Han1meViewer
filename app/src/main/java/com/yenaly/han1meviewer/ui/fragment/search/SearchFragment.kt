@@ -73,7 +73,7 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
     private var hasInitAdvancedSearch = false
 
     private val optionsPopupFragment by unsafeLazy { SearchOptionsPopupFragment() }
-
+    @Suppress ("DEPRECATION")
     private fun getAdvancedSearchMap(): Map<HAdvancedSearch, Any> {
         val raw = arguments?.get(ADVANCED_SEARCH_MAP) ?: return emptyMap()
         return when (raw) {

@@ -58,6 +58,7 @@ import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.adapter.AdapterLikeDataBindingPage
 import com.yenaly.han1meviewer.ui.adapter.BaseSingleDifferAdapter
 import com.yenaly.han1meviewer.ui.adapter.HanimeVideoRvAdapter
@@ -618,10 +619,18 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
                     val bundleMap = HashMap<String, Serializable>().apply {
                         map.forEach { (k, v) -> put(k.name, v) }
                     }
-                    findNavController().navigate(
-                        R.id.searchFragment,
-                        bundleOf(ADVANCED_SEARCH_MAP to bundleMap),
-                    )
+                    try{
+                        findNavController().navigate(
+                            R.id.searchFragment,
+                            bundleOf(ADVANCED_SEARCH_MAP to bundleMap),
+                        )
+                    }catch (e:IllegalStateException){
+                        context.startActivity(
+                            Intent(context, MainActivity::class.java).apply {
+                                putExtra("startSearchFromMap", HashMap(bundleMap)) // 必须是 Serializable
+                            }
+                        )
+                    }
                 }
                 tvArtist.text = artist.name
                 tvGenre.text = artist.genre
