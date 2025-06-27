@@ -78,16 +78,19 @@ import kotlinx.datetime.Clock
  * @author Yenaly Liew
  * @time 2022/06/08 008 17:35
  */
-class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, ToolbarHost,PermissionRequester {
+class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, ToolbarHost,
+    PermissionRequester {
 
     val viewModel by viewModels<MainViewModel>()
 
     private lateinit var navHostFragment: NavHostFragment
     lateinit var navController: NavController
     private var detailNavController: NavController? = null
+
     companion object {
         private const val REQUEST_WRITE_EXTERNAL_STORAGE = 1234
     }
+
     val currentFragment get() = navHostFragment.childFragmentManager.primaryNavigationFragment
     private val isTabletMode by lazy {
         resources.getBoolean(R.bool.isTablet)
@@ -137,6 +140,22 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             WindowInsetsCompat.CONSUMED
         }
+
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            val currentCheckedId = binding.nvMain.checkedItem?.itemId
+            val targetId = when (destination.id) {
+                R.id.nv_home_page -> R.id.nv_home_page
+                R.id.nv_watch_history -> R.id.nv_watch_history
+                R.id.nv_fav_video -> R.id.nv_fav_video
+                R.id.nv_playlist -> R.id.nv_playlist
+                R.id.nv_watch_later -> R.id.nv_watch_later
+                R.id.nav_settings -> R.id.nv_settings
+                else -> null
+            }
+            if (targetId != null && targetId != currentCheckedId) {
+                binding.nvMain.setCheckedItem(targetId)
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -151,7 +170,8 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
 
         if (useLock && isDeviceSecureCompat(this)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                authenticate(this,
+                authenticate(
+                    this,
                     onSuccess = {
                         removeAuthGuard()
                         hasAuthenticated = true
@@ -183,18 +203,20 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
     }
 
     private fun handleDeeplinkIfNeeded(intent: Intent) {
-        Log.i("deeplink",intent.data.toString())
+        Log.i("deeplink", intent.data.toString())
         if (intent.action == Intent.ACTION_VIEW) {
             val uri = intent.data ?: return
             val videoCode = uri.getQueryParameter("v") ?: return
             showVideoDetailFragment(videoCode)
         }
     }
+
     private fun removeAuthGuard() {
         val root = findViewById<ViewGroup>(R.id.dl_main) // 或者 R.id.root
         val authGuard = findViewById<View>(R.id.auth_guard)
         root?.removeView(authGuard)
     }
+
     private fun isDeviceSecureCompat(context: Context): Boolean {
         val km = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
         return km.isDeviceSecure
@@ -213,9 +235,11 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                     onSuccess()
                 }
+
                 override fun onAuthenticationFailed() {
                     onFailed()
                 }
+
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     onFailed()
                 }
@@ -245,25 +269,17 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
 
         when (menuItem.itemId) {
             // 主界面相关 - 这些在 nav_main.xml 中
-            R.id.nv_home_page -> openInRightPane(R.id.nv_home_page)
-            R.id.nv_watch_history -> openInRightPane(R.id.nv_watch_history)
-            R.id.nv_fav_video -> openInRightPane(R.id.nv_fav_video)
-            R.id.nv_playlist -> openInRightPane(R.id.nv_playlist)
-            R.id.nv_watch_later -> openInRightPane(R.id.nv_watch_later)
+            R.id.nv_home_page -> safeNavigateTo(R.id.nv_home_page)
+            R.id.nv_watch_history -> safeNavigateTo(R.id.nv_watch_history)
+            R.id.nv_fav_video -> safeNavigateTo(R.id.nv_fav_video)
+            R.id.nv_playlist -> safeNavigateTo(R.id.nv_playlist)
+            R.id.nv_watch_later -> safeNavigateTo(R.id.nv_watch_later)
 
             // 设置相关 - 这些在 nav_settings.xml 中
             R.id.nv_settings -> {
                 // 导航到设置图的起始目的地
                 navController.navigate(R.id.action_global_nav_settings)
             }
-
-//            R.id.nv_h_keyframe_settings -> {
-//                // 导航到设置图中的具体目的地
-//              // navController.navigate(R.id.action_global_to_hKeyframeSettingsFragment)
-//                val intent = Intent(this, SettingsActivity::class.java)
-//                intent.putExtra("target", "hKeyframe")
-//                startActivity(intent)
-//            }
 
             // 特殊处理（下载）
             R.id.nv_download -> {
@@ -274,10 +290,14 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                 }
             }
         }
+        binding.dlMain.closeDrawer(GravityCompat.START)
+    }
 
-        // 在平板模式下不关闭左侧菜单
-        if (!isTabletMode) {
-            binding.dlMain?.closeDrawer(GravityCompat.START)
+    private fun safeNavigateTo(destinationId: Int) {
+        try {
+            navController.navigate(destinationId)
+        } catch (e: IllegalArgumentException) {
+            Log.e("Navigation", "Navigation destination not found: $destinationId", e)
         }
     }
 
@@ -310,13 +330,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
 //            }
 //        }
 //    }
-    private fun openInRightPane(destinationId: Int) {
-        try {
-            navController.navigate(destinationId)
-        } catch (e: IllegalArgumentException) {
-            Log.e("Navigation", "Navigation destination not found: $destinationId", e)
-        }
-    }
 
     // 设置相关的目标ID
 //    private val settingsDestinations = setOf(
@@ -563,7 +576,8 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             val args = bundleOf(VIDEO_CODE to videoCode) // KEY 要与 Fragment 中读取的 key 对应
             navController.navigate(
                 R.id.videoFragment,
-                args)
+                args
+            )
         } else {
             Log.w("Navigation", "❌ Cannot navigate: FragmentManager has already saved its state.")
         }
@@ -629,16 +643,25 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
     override fun requestStoragePermission(
         onGranted: () -> Unit,
         onDenied: () -> Unit,
-        onPermanentlyDenied: () -> Unit) {
+        onPermanentlyDenied: () -> Unit
+    ) {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
             val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
-            if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    permission
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
                 onGranted()
             } else {
                 this.onGranted = onGranted
                 this.onDenied = onDenied
                 this.onPermanentlyDenied = onPermanentlyDenied
-                ActivityCompat.requestPermissions(this, arrayOf(permission), REQUEST_WRITE_EXTERNAL_STORAGE)
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(permission),
+                    REQUEST_WRITE_EXTERNAL_STORAGE
+                )
             }
         } else {
             onGranted() // Android 10+ 不需要权限
@@ -661,9 +684,11 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                     grantResult == PackageManager.PERMISSION_GRANTED -> {
                         onGranted?.invoke()
                     }
+
                     shouldShowRequestPermissionRationale(permission) -> {
                         onDenied?.invoke()
                     }
+
                     else -> {
                         // 永久拒绝（勾选“不再询问”）
                         onPermanentlyDenied?.invoke()
