@@ -378,5 +378,7 @@ Recommendations are as follows:\n
     <string name="unlock_method">Use fingerprint, PIN, or pattern to unlock</string>
     <string name="unlock_desc">We need to confirm it\'s really you Mast****tion🍄💦</string>
     <string name="popup_search_btn">Search</string>
+    <string name="disable_comments_title">When enabled, the comment section will be hidden on the video details page</string>
+    <string name="disable_comments_sum">Disable Comments</string>
 
 </resources>

@@ -21,6 +21,12 @@
             app:icon="@drawable/baseline_h_24"
             app:key="h_keyframe_settings"
             app:title="@string/h_keyframe_settings" />
+        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
+            app:icon="@drawable/ic_comments"
+            app:iconSpaceReserved="false"
+            app:key="disable_comments"
+            app:summary="@string/disable_comments_sum"
+            app:title="@string/disable_comments_title" />
 
     </PreferenceCategory>
 

@@ -402,6 +402,8 @@
     <string name="unlock_method">使用指紋、PIN碼或圖案解鎖</string>
     <string name="unlock_desc">我們需要確認是您本人开〇🍄💦</string>
     <string name="popup_search_btn">發起搜尋</string>
+    <string name="disable_comments_title">關閉評論區</string>
+    <string name="disable_comments_sum">啟用後，影片詳情頁將不再顯示評論區</string>
 
 
 </resources>

@@ -202,7 +202,7 @@ object Parser {
             hanimeSearchItem.previousElementSibling()?.absUrl("href")?.toVideoCode()
                 .logIfParseNull(Parser::hanimeNormalItemVer2.name, "videoCode") // videoCode
         if (title == null || coverUrl == null || videoCode == null) return null
-        val durationAndViews = hanimeSearchItem.select("div[class=card-mobile-duration]")
+        val durationAndViews = hanimeSearchItem.select("div[class^=card-mobile-duration]")
         val mDuration = durationAndViews.getOrNull(0)?.text() // 改了
         val views = durationAndViews.getOrNull(2)?.text() // 改了
         return HanimeInfo(
