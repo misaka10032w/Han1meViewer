@@ -18,6 +18,7 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import cn.jzvd.JZMediaInterface
 import cn.jzvd.Jzvd
 import coil.load
@@ -229,10 +230,12 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
 
     private fun initViewPager() {
         binding.videoVp.offscreenPageLimit = 1
+        val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        val disableComments = prefs.getBoolean("disable_comments", false)
 
         binding.videoVp.setUpFragmentStateAdapter(this) {
             addFragment { VideoIntroductionFragment() }
-            if (!fromDownload) {
+            if (!fromDownload && !disableComments) {
                 addFragment { CommentFragment().makeBundle(COMMENT_TYPE to VIDEO_COMMENT_PREFIX) }
             }
         }
