@@ -241,6 +241,14 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                 bundleOf(ADVANCED_SEARCH_MAP to map)
             )
         }
+
+        val videoCode = intent.getStringExtra("startVideoCode")
+        if (!videoCode.isNullOrEmpty()) {
+            intent.removeExtra("startVideoCode")
+            showVideoDetailFragment(videoCode)
+            return
+        }
+
     }
 
 
