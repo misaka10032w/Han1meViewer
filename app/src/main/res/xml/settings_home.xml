@@ -9,6 +9,11 @@
             app:key="video_language"
             app:title="@string/video_language"
             app:useSimpleSummaryProvider="true" />
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
+            app:icon="@drawable/ic_video_quilty"
+            app:key="default_video_quality"
+            app:title="@string/default_video_quilty"
+            app:useSimpleSummaryProvider="true" />
 
         <Preference
             app:icon="@drawable/ic_baseline_play_circle_outline_24"
