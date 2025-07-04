@@ -31,6 +31,7 @@ import androidx.core.view.updatePadding
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cn.jzvd.JZDataSource
@@ -336,7 +337,23 @@ class HJzvdStd @JvmOverloads constructor(
 
     override fun setUp(jzDataSource: JZDataSource?, screen: Int, clazz: Class<*>) {
         super.setUp(jzDataSource, screen, clazz)
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        val preferredQuality = prefs.getString("default_video_quality", null)
+        if (!preferredQuality.isNullOrBlank()) {
+            val index = jzDataSource?.urlsMap?.keys?.indexOf(preferredQuality)
+            if (index != -1) {
+                if (jzDataSource != null) {
+                    if (index != null) {
+                        jzDataSource.currentUrlIndex = index
+                    }
+                }
+            } else {
+                Log.w("CustomJzvdStd-Settings", "清晰度 $preferredQuality 不可用，使用默认清晰度")
+            }
+        }
         Log.d("CustomJzvdStd-Settings", buildString {
+            append("default_video_quality: ")
+            appendLine(preferredQuality)
             append("showBottomProgress: ")
             appendLine(showBottomProgress)
             append("userDefSpeed: ")
@@ -457,6 +474,7 @@ class HJzvdStd @JvmOverloads constructor(
         if (isHKeyframeEnabled) tvKeyframe.isVisible = true
         titleTextView.isVisible = true
         btnGoHome.isVisible = false
+        clarity.isVisible = true
         val statusBarHeight = statusBarHeight
         val navBarHeight = navBarHeight
         layoutTop.updatePadding(left = statusBarHeight, right = navBarHeight)

@@ -42,6 +42,7 @@ import com.yenaly.han1meviewer.util.showUpdateDialog
 import com.yenaly.han1meviewer.util.showWithBlurEffect
 import com.yenaly.yenaly_libs.ActivityManager
 import com.yenaly.yenaly_libs.base.settings.YenalySettingsFragment
+import com.yenaly.yenaly_libs.utils.application
 import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.folderSize
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
@@ -65,6 +66,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
 
     companion object {
         const val VIDEO_LANGUAGE = "video_language"
+        const val DEFAULT_VIDEO_QUALITY = "default_video_quality"
         const val PLAYER_SETTINGS = "player_settings"
         const val H_KEYFRAME_SETTINGS = "h_keyframe_settings"
         const val UPDATE = "update"
@@ -85,6 +87,8 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
 
     private val videoLanguage
             by safePreference<MaterialDialogPreference>(VIDEO_LANGUAGE)
+    private val videoQuality
+            by safePreference<MaterialDialogPreference>(DEFAULT_VIDEO_QUALITY)
     private val playerSettings
             by safePreference<Preference>(PLAYER_SETTINGS)
     private val hKeyframeSettings
@@ -178,6 +182,22 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
                         }
                         setNegativeButton(R.string.cancel, null)
                     }
+                }
+                return@setOnPreferenceChangeListener true
+            }
+        }
+        videoQuality.apply {
+            entries = arrayOf(
+                "480P",
+                "720P",
+                "1080P"
+            )
+            entryValues = arrayOf("480P", "720P","1080P")
+            if (value == null) setValueIndex(2)
+
+            setOnPreferenceChangeListener { _, newValue ->
+                if (newValue != Preferences.videoLanguage) {
+                    Toast.makeText(application, "修改成功：$newValue", Toast.LENGTH_SHORT).show()
                 }
                 return@setOnPreferenceChangeListener true
             }

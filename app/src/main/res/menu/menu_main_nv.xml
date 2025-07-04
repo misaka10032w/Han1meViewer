@@ -33,8 +33,8 @@
                     android:title="@string/play_list" />
                 <item
                     android:id="@+id/nv_subscription"
-                    android:icon="@drawable/baseline_h_24"
-                    android:title="我的订阅" />
+                    android:icon="@drawable/ic_subscribtion"
+                    android:title="@string/my_subscribe" />
             </group>
         </menu>
     </item>

@@ -380,5 +380,7 @@ Recommendations are as follows:\n
     <string name="popup_search_btn">Search</string>
     <string name="disable_comments_title">When enabled, the comment section will be hidden on the video details page</string>
     <string name="disable_comments_sum">Disable Comments</string>
+    <string name="default_video_quilty">Default video resolution</string>
+    <string name="my_subscribe">My Subscriptions</string>
 
 </resources>
