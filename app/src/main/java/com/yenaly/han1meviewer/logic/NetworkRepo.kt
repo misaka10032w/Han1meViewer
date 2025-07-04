@@ -68,6 +68,11 @@ object NetworkRepo {
         action = Parser::hanimePreview
     )
 
+    //获取订阅或者可以说是关注列表及它们的更新
+    fun getMySubscriptions(page: Int) = websiteIOFlow(
+        request = { HanimeNetwork.hanimeService.getMySubscriptions(page) },
+        action = Parser::getMySubscriptions
+    )
     //</editor-fold>
 
     //<editor-fold desc="My List">

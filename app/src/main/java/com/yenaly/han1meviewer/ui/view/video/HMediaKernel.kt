@@ -9,9 +9,7 @@ import android.os.HandlerThread
 import android.os.Looper
 import android.util.Log
 import android.view.Surface
-import android.view.TextureView
 import androidx.annotation.OptIn
-import androidx.lifecycle.AtomicReference
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
@@ -33,13 +31,11 @@ import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter
 import cn.jzvd.JZMediaInterface
 import cn.jzvd.JZMediaSystem
 import cn.jzvd.Jzvd
-import kotlin.math.absoluteValue
-import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicLong
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
+import java.util.concurrent.atomic.AtomicReference
+import kotlin.math.absoluteValue
+
 /**
  * @project Han1meViewer
  * @author Yenaly Liew

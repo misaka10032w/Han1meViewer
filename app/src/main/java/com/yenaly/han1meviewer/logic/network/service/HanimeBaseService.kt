@@ -50,4 +50,10 @@ interface HanimeBaseService {
 
     @GET("login")
     suspend fun getLoginPage(): Response<ResponseBody>
+
+    @GET("subscriptions")
+    suspend fun getMySubscriptions(
+        @Query("page") page: Int
+    ): Response<ResponseBody>
+
 }

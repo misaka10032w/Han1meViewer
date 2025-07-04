@@ -308,6 +308,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             R.id.nv_fav_video -> safeNavigateTo(R.id.nv_fav_video)
             R.id.nv_playlist -> safeNavigateTo(R.id.nv_playlist)
             R.id.nv_watch_later -> safeNavigateTo(R.id.nv_watch_later)
+            R.id.nv_subscription -> safeNavigateTo(R.id.nv_subscription)
 
             // 设置相关 - 这些在 nav_settings.xml 中
             R.id.nv_settings -> {
@@ -542,7 +543,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
 //    }
 
     private val loginNeededFragmentList =
-        intArrayOf(R.id.nv_fav_video, R.id.nv_watch_later, R.id.nv_playlist)
+        intArrayOf(R.id.nv_fav_video, R.id.nv_watch_later, R.id.nv_playlist, R.id.nv_subscription)
 
     private fun initMenu() {
         if (isAlreadyLogin) {

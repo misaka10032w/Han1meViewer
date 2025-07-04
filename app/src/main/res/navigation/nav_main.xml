@@ -59,6 +59,9 @@
     <fragment
         android:id="@+id/nv_watch_later"
         android:name="com.yenaly.han1meviewer.ui.fragment.home.MyWatchLaterFragment" />
+    <fragment
+        android:id="@+id/nv_subscription"
+        android:name="com.yenaly.han1meviewer.ui.fragment.home.SubscriptionFragment" />
 
     <!-- 设置模块子导航图 -->
     <include app:graph="@navigation/nav_settings" />

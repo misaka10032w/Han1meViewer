@@ -15,7 +15,9 @@ plugins {
     alias(libs.plugins.com.google.gms.google.services)
     alias(libs.plugins.com.google.firebase.crashlytics)
     alias(libs.plugins.com.google.firebase.firebase.pref)
+    alias(libs.plugins.compose.compiler)
     id("com.mikepenz.aboutlibraries.plugin") version "12.2.3"
+    id("com.github.ben-manes.versions") version "0.52.0"
     // alias(libs.plugins.compose.compiler)
 }
 
@@ -85,9 +87,7 @@ android {
         dataBinding = true
         buildConfig = true
         viewBinding = true
-
-
-        // compose = true
+        compose  =  true
     }
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
@@ -119,13 +119,17 @@ dependencies {
     implementation(libs.bundles.android.jetpack)
     implementation(libs.palette)
     implementation(libs.material)
-//    implementation(platform(libs.compose.compose.bom))
-//    androidTestImplementation(platform(libs.compose.compose.bom))
-//    implementation(libs.compose.material3)
-//    implementation(libs.androidx.activity.compose)
-//    implementation(libs.compose.ui.graphics)
-//    implementation(libs.compose.ui.ui.tooling.preview)
-//    debugImplementation(libs.compose.ui.ui.tooling)
+    //compose
+    implementation(platform(libs.compose.compose.bom)) // 引入 BOM 平台
+    implementation(libs.compose.ui.graphics)
+    implementation(libs.compose.material3)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.compose.ui.ui.tooling.preview)
+    debugImplementation(libs.compose.ui.ui.tooling)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.material.icons.core)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 
     // datetime
 
