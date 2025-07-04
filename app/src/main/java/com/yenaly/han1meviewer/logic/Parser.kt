@@ -12,8 +12,11 @@ import com.yenaly.han1meviewer.logic.model.HanimePreview
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.model.HomePage
 import com.yenaly.han1meviewer.logic.model.MyListItems
+import com.yenaly.han1meviewer.logic.model.MySubscriptions
 import com.yenaly.han1meviewer.logic.model.Playlists
 import com.yenaly.han1meviewer.logic.model.Subscription
+import com.yenaly.han1meviewer.logic.model.SubscriptionItem
+import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
 import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
@@ -852,6 +855,80 @@ object Parser {
         }
 
         return WebsiteState.Success(VideoComments(replyList))
+    }
+
+    fun getMySubscriptions(body: String): WebsiteState<MySubscriptions> {
+        val parseBody = Jsoup.parse(body).body()
+        val maxPage = parseMaxPage(parseBody)
+        Log.i("getMySubscriptions", "MaxPageList=$maxPage")
+        val subscriptionsRoot = parseBody.selectFirst("div.subscriptions-nav")
+            ?: return WebsiteState.Error(IllegalStateException("找不到 subscriptions-nav"))
+        val subscriptionsVideosRoot = parseBody.selectFirst("div.content-padding-new")
+            ?: return WebsiteState.Error(IllegalStateException("找不到 subscriptionsVideosRoot"))
+
+        // 解析订阅作者
+        val artists = subscriptionsRoot.select("div.subscriptions-artist-card").mapNotNull { card ->
+            try {
+                val imgs = card.select("img")
+                val avatarSrc = imgs.getOrNull(1)?.absUrl("src") ?: return@mapNotNull null
+                val artistName = card.selectFirst("div.card-mobile-title")?.text()?.trim()
+                    ?: return@mapNotNull null
+
+                SubscriptionItem(
+                    artistName = artistName,
+                    avatar = avatarSrc
+                )
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        // 解析订阅视频
+        val videos = subscriptionsVideosRoot.select("div.col-xs-12.search-doujin-videos")
+            .mapNotNull { videoCard ->
+            try {
+                val link = videoCard.selectFirst("a.overlay")?.absUrl("href") ?: return@mapNotNull null
+                val videoCode = Regex("""watch\?v=(\d+)""").find(link)?.groupValues?.get(1) ?: return@mapNotNull null
+                val imgs = videoCard.select("img")
+                val coverUrl = imgs.getOrNull(1)?.absUrl("src") ?: return@mapNotNull null
+                val title = videoCard.selectFirst("div.card-mobile-title")?.text()?.trim() ?: return@mapNotNull null
+                val duration = videoCard.selectFirst("div.card-mobile-duration")?.text()?.trim()
+                val infoBoxes = videoCard.select("div.card-mobile-duration")
+                    .map { it.text().trim() }
+                val reviews = infoBoxes.find { it.contains("%") }
+                val views = infoBoxes.find { it.contains("次") }
+
+                SubscriptionVideosItem(
+                    title = title,
+                    coverUrl = coverUrl,
+                    videoCode = videoCode,
+                    duration = duration,
+                    views = views,
+                    reviews = reviews
+                )
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        return WebsiteState.Success(
+            MySubscriptions(
+                subscriptions = artists,
+                subscriptionsVideos = videos,
+                maxPage = maxPage
+            )
+        )
+    }
+
+    private fun parseMaxPage(parseBody: Element): Int {
+        return parseBody
+            .select("ul.pagination")
+            .lastOrNull()
+            ?.select("a.page-link[href]")
+            ?.mapNotNull {
+                Regex("""\?page=(\d+)""").find(it.attr("href"))?.groupValues?.get(1)?.toIntOrNull()
+            }
+            ?.maxOrNull() ?: 1
     }
 
     /**

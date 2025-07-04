@@ -198,19 +198,6 @@ class HanimeVideoRvAdapter(private val videoWidthType: Int = -1) : // videoWidth
         }
     }
 
-//    private fun View.widthMatchParent() = apply {
-//        layoutParams = ViewGroup.LayoutParams(
-//            ViewGroup.LayoutParams.MATCH_PARENT,
-//            ViewGroup.LayoutParams.WRAP_CONTENT
-//        )
-//    }
-//
-//    private fun View.widthWrapContent() = apply {
-//        layoutParams = ViewGroup.LayoutParams(
-//            ViewGroup.LayoutParams.WRAP_CONTENT,
-//            ViewGroup.LayoutParams.WRAP_CONTENT
-//        )
-//    }
     private fun View.widthMatchParent() = apply {
         val lp = layoutParams ?: ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -231,18 +218,6 @@ class HanimeVideoRvAdapter(private val videoWidthType: Int = -1) : // videoWidth
             layoutParams = lp
         }
 
-    //    private fun Context.startVideoActivity(videoCode: String) {
-//        if (this is SearchActivity) {
-//            val intent = Intent(this, VideoActivity::class.java).apply {
-//                putExtra(VIDEO_CODE, videoCode)
-//            }
-//            this.subscribeLauncher.launch(intent)
-//            Log.e("video play","搜索页播放,视频代码:$videoCode")
-//            return
-//        }
-//        activity?.startActivity<VideoActivity>(VIDEO_CODE to videoCode)
-//        Log.e("video play","视频代码:$videoCode")
-//    }
     private fun Context.startVideoActivity(videoCode: String) {
         (requireActivity() as? MainActivity)?.showVideoDetailFragment(videoCode)
     }

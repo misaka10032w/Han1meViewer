@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <!-- 标题 -->
+    <TextView
+        android:id="@android:id/title"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- 摘要（可选） -->
+    <TextView
+        android:id="@android:id/summary"
+        android:textAppearance="?attr/textAppearanceBodySmall"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
+
+    <!-- Material 3 Slider -->
+    <com.google.android.material.slider.Slider
+        android:id="@+id/slider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp" />
+</LinearLayout>

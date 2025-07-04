@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.adapter
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -11,14 +12,12 @@ import com.chad.library.adapter4.viewholder.DataBindingHolder
 import com.chad.library.adapter4.viewholder.QuickViewHolder
 import com.lxj.xpopup.XPopup
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.databinding.ItemHanimePreviewNewsV2Binding
 import com.yenaly.han1meviewer.logic.model.HanimePreview
+import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.activity.PreviewActivity
-import com.yenaly.han1meviewer.ui.activity.VideoActivity
 import com.yenaly.han1meviewer.ui.popup.CoilImageLoader
 import com.yenaly.han1meviewer.ui.view.BlurTransformation
-import com.yenaly.yenaly_libs.utils.startActivity
 
 /**
  * @project Han1meViewer
@@ -75,11 +74,19 @@ class HanimePreviewNewsRvAdapter :
                     val position = viewHolder.bindingAdapterPosition
                     val item = getItem(position) ?: return@setOnClickListener
                     if (context is PreviewActivity) {
-                        context.startActivity<VideoActivity>(VIDEO_CODE to item.videoCode)
+                        item.videoCode?.let { it1 -> context.startMainActivityForVideo(it1) }
                     }
                 }
             }
         }
+    }
+
+    private fun Context.startMainActivityForVideo(videoCode: String) {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            putExtra("startVideoCode", videoCode)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        startActivity(intent)
     }
 
     private inner class PreviewPicRvAdapter(private val item: HanimePreview.PreviewInfo) :
