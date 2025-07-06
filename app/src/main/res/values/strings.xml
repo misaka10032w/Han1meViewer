@@ -406,7 +406,14 @@
     <string name="disable_comments_sum">啟用後，影片詳情頁將不再顯示評論區</string>
     <string name="default_video_quilty">預設解析度</string>
     <string name="my_subscribe">我的訂閱</string>
-    <string name="title_activity_qrcode_scanner" translatable="false">QRcodeScanner</string>
+    <string name="title_activity_qrcode_scanner">掃碼錄入Cookies</string>
+    <string name="scan_for_cookies">掃碼錄入Cookies</string>
+    <string name="cookies_import_desc">引導圖片</string>
+    <string name="cookies_import_title">如何導入</string>
+    <string name="cookies_import_dismiss">我知道了</string>
+    <string name="manual_import_cookies">手動導入</string>
+    <string name="import_cookies_intro">此種導入方式也可以緩解因cloudflare引起的登入攔截\n1. 在網頁版登入之後，想辦法獲取Cookies，只要你能獲取到，手機和電腦都行。\n 2. 格式大概如圖所示，注意！頭尾不應包含雙引號，並且不應是格式化後的Cookies序列。\n 3. 使用二維碼創建工具（草料二維碼等），並掃描這個二維碼。\n 二維碼過大可能不太好掃描，或者你沒有電腦，那就使用「手動導入」按鈕的導入。\n 如果導入完成之後刷新頁面還是顯示未登入的狀態，那就檢查你的Cookies。</string>
+    <string name="request_camera">請授予相機權限以掃碼</string>
 
 
 </resources>

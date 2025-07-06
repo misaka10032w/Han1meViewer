@@ -32,7 +32,7 @@
         android:theme="@style/Theme.Hanime1"
         tools:targetApi="34">
         <activity
-            android:name=".ui.activity.QRcodeScanner"
+            android:name=".ui.activity.QRcodeScannerActivity"
             android:exported="false"
             android:label="@string/title_activity_qrcode_scanner"
             android:theme="@style/Theme.Hanime1" />

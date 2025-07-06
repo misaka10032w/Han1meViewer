@@ -44,6 +44,16 @@
                 android:layout_height="match_parent" />
 
         </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/fab_qr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:text="@string/scan_for_cookies"
+            android:icon="@android:drawable/ic_menu_camera"
+            app:iconPadding="8dp"
+            app:layout_anchorGravity="bottom|end"
+            android:layout_gravity="bottom|end" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
