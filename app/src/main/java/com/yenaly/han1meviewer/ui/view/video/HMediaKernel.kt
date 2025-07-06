@@ -100,7 +100,7 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
             Log.w(TAG, "prepare called, but player already exists.")
             return // 防止误调用
         }
-        Log.e(TAG, "prepare")
+        Log.i(TAG, "prepare")
         val context = jzvd.context
 
         release()
@@ -146,7 +146,7 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
                     .createMediaSource(MediaItem.fromUri(currUrl))
             }
 
-            Log.e(TAG, "URL Link = $currUrl")
+            Log.i(TAG, "URL Link = $currUrl")
 
             exoPlayer.addListener(this)
 
@@ -190,7 +190,7 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
     }
 
     override fun onRenderedFirstFrame() {
-        Log.e(TAG, "onRenderedFirstFrame")
+        Log.i(TAG, "onRenderedFirstFrame")
     }
 
     override fun pause() {
@@ -291,27 +291,27 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
     }
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-        Log.e(TAG, "onTimelineChanged")
+        Log.i(TAG, "onTimelineChanged")
     }
 
     override fun onIsLoadingChanged(isLoading: Boolean) {
-        Log.e(TAG, "onIsLoadingChanged")
+        Log.i(TAG, "onIsLoadingChanged")
     }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-        Log.e(TAG, "onPlayWhenReadyChanged: $playWhenReady, reason: $reason, " +
+        Log.i(TAG, "onPlayWhenReadyChanged: $playWhenReady, reason: $reason, " +
                 "playbackState=${_exoPlayer?.playbackState}")
         if (playWhenReady && _exoPlayer?.playbackState == Player.STATE_READY) {
             handler?.post {
-                Log.e(TAG,"onPlayWhenReadyChanged_ready")
+                Log.i(TAG,"onPlayWhenReadyChanged_ready")
                 jzvd.onStatePlaying()
             }
         }
-        Log.e(TAG,"onPlayWhenReadyChanged")
+        Log.i(TAG,"onPlayWhenReadyChanged")
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {
-        Log.e(TAG, "onPlaybackStateChanged: $playbackState")
+        Log.i(TAG, "onPlaybackStateChanged: $playbackState")
         handler?.post {
             when (playbackState) {
                 Player.STATE_BUFFERING -> {
@@ -322,7 +322,7 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
                 Player.STATE_READY -> {
 
                     runOnPlayerThread {
-                        Log.e(TAG, "STATE_READY, playWhenReady=${_exoPlayer?.playWhenReady}")
+                        Log.i(TAG, "STATE_READY, playWhenReady=${_exoPlayer?.playWhenReady}")
                         if (_exoPlayer?.playWhenReady == true){
                             jzvd.onStatePlaying()
                         }
@@ -334,7 +334,7 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
                 }
 
                 else -> {
-                    Log.e(TAG, "onPlaybackStateChanged: $playbackState")
+                    Log.i(TAG, "onPlaybackStateChanged: $playbackState")
                 }
             }
         }

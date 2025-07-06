@@ -1,8 +1,15 @@
 package com.yenaly.han1meviewer.ui.fragment.video
 
+import android.app.PendingIntent
+import android.app.PictureInPictureParams
+import android.app.RemoteAction
+import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.graphics.drawable.Icon
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.util.Rational
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -10,6 +17,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -40,6 +48,7 @@ import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.logic.exception.ParseException
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.view.video.ExoMediaKernel
 import com.yenaly.han1meviewer.ui.view.video.HMediaKernel
 import com.yenaly.han1meviewer.ui.view.video.HanimeDataSource
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
@@ -295,5 +304,41 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
             isVisible = count > 0
             number = count
         }
+    }
+    fun enterPipMode() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val aspectRatio = Rational(16, 9)
+            val intent = PendingIntent.getBroadcast(
+                requireContext(),
+                0,
+                Intent(MainActivity.ACTION_TOGGLE_PLAY).setPackage(requireContext().packageName),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            val icon = Icon.createWithResource(requireContext(), R.drawable.ic_baseline_play_circle_outline_24)
+            val action = RemoteAction(
+                icon,
+                getString(R.string.play_pause),
+                getString(R.string.play_pause),
+                intent
+            )
+            val params = PictureInPictureParams.Builder()
+                .setAspectRatio(aspectRatio)
+                .setActions(listOf(action))
+                .build()
+            requireActivity().enterPictureInPictureMode(params)
+        }
+    }
+
+    fun shouldEnterPip(): Boolean {
+        val isPlaying = (Jzvd.CURRENT_JZVD?.mediaInterface as? ExoMediaKernel)?.isPlaying ?: false
+        Log.i("pipmode","enter pip mode?isPlaying:$isPlaying\n")
+        return  !requireActivity().isInPictureInPictureMode
+    }
+    fun onPipModeChanged(isInPip: Boolean) {
+        binding.videoTl.isVisible = !isInPip
+        binding.videoVp.isUserInputEnabled = !isInPip
+        binding.videoVp.isVisible = !isInPip
+        binding.videoPlayer.setControlsVisible(!isInPip)
+        binding.videoPlayer.centerSurfaceInPip(isInPip, binding.videoPlayer.screen == Jzvd.SCREEN_FULLSCREEN)
     }
 }
