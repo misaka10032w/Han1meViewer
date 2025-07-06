@@ -406,6 +406,7 @@
     <string name="disable_comments_sum">啟用後，影片詳情頁將不再顯示評論區</string>
     <string name="default_video_quilty">預設解析度</string>
     <string name="my_subscribe">我的訂閱</string>
+    <string name="title_activity_qrcode_scanner" translatable="false">QRcodeScanner</string>
 
 
 </resources>

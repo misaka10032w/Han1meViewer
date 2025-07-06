@@ -14,7 +14,7 @@ import com.yenaly.yenaly_libs.utils.unsafeLazy
  * @Time : 2022/04/17 017 19:26
  * @Description : Description...
  */
-abstract class YenalySettingsFragment(@XmlRes private val xmlRes: Int,
+abstract class YenalySettingsFragment(@param:XmlRes private val xmlRes: Int,
                                       private val sharedPrefsName: String? = null) :
     PreferenceFragmentCompat() {
 

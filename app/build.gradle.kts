@@ -5,6 +5,7 @@ import Config.Version.source
 import Config.isRelease
 import Config.lastCommitSha
 import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.com.android.application)
@@ -94,9 +95,14 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_21.toString()
-        freeCompilerArgs = listOf("-opt-in=kotlin.RequiresOptIn", "-Xjvm-default=all-compatibility")
+    kotlin {
+        compilerOptions {
+            jvmTarget.value(JvmTarget.JVM_21)
+            freeCompilerArgs.addAll(
+                "-opt-in=kotlin.RequiresOptIn",
+                "-Xjvm-default=all-compatibility"
+            )
+        }
     }
     lint {
         disable += setOf("EnsureInitializerMetadata")
@@ -105,7 +111,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.appcompat.v161)
+    implementation(libs.appcompat)
     implementation(libs.androidx.window)
     implementation(libs.androidx.window.java)
     implementation(project(":yenaly_libs"))
@@ -120,16 +126,26 @@ dependencies {
     implementation(libs.palette)
     implementation(libs.material)
     //compose
-    implementation(platform(libs.compose.compose.bom)) // 引入 BOM 平台
+    implementation(platform(libs.compose.compose.bom))
     implementation(libs.compose.ui.graphics)
     implementation(libs.compose.material3)
     implementation(libs.androidx.activity.compose)
     implementation(libs.compose.ui.ui.tooling.preview)
+    implementation(libs.androidx.ui)
+    androidTestImplementation(platform(libs.compose.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.compose.ui.ui.tooling)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.material.icons.core)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+
+    //for QRCODE scanner
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.barcode.scanning)
 
     // datetime
 
@@ -181,6 +197,7 @@ dependencies {
     implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.perf)
     implementation(libs.firebase.config)
+    debugImplementation(libs.androidx.ui.test.manifest)
 
     ksp(libs.room.compiler)
 

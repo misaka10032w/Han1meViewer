@@ -27,7 +27,7 @@ import com.yenaly.yenaly_libs.utils.view.attach
 class HMultiChoicesDialog(
     val context: Context,
     private val searchViewModel: SearchViewModel,
-    @StringRes private val titleRes: Int,
+    @param:StringRes private val titleRes: Int,
     private val hasSingleItem: Boolean = false
 ) {
 

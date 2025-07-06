@@ -10,8 +10,8 @@ import androidx.annotation.StringRes
  * @since 2025/3/11 22:10
  */
 data class Hanidokitem(
-    @DrawableRes var icon: Int = 0,
-    @StringRes var text: Int = 0,
+    @param:DrawableRes var icon: Int = 0,
+    @param:StringRes var text: Int = 0,
     var viewAction: OnClickListener? = null,
     var subitems: List<Hanidokitem> = emptyList(),
     private val _isBack: Boolean = false,

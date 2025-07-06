@@ -282,9 +282,9 @@ object Parser {
 
         var likeStatus = parseBody.selectFirst("[name=like-status]")
             ?.attr("value")
-        Log.i("likeStatus",likeStatus.toString())
-        if(!likeStatus.isNullOrEmpty()){
-            likeStatus= "1"
+        Log.i("likeStatus", likeStatus.toString())
+        if (!likeStatus.isNullOrEmpty()) {
+            likeStatus = "1"
         }
         val likesCount = parseBody.selectFirst("input[name=likes-count]")
             ?.attr("value")?.toIntOrNull()
@@ -310,7 +310,7 @@ object Parser {
                 tagListWithLikeNum.add(child.text())
             }
         }
-        val tagList=tagListWithLikeNum.map { it.substringBefore(" (") }
+        val tagList = tagListWithLikeNum.map { it.substringBefore(" (") }
         val myListCheckboxWrapper = parseBody.select("div[class~=playlist-checkbox-wrapper]")
         val myListInfo = mutableListOf<HanimeVideo.MyList.MyListInfo>()
         myListCheckboxWrapper.forEach {
@@ -336,7 +336,7 @@ object Parser {
             val playlistName = it.selectFirst("div > div > h4")?.text()
             val playlistScroll = it.getElementById("playlist-scroll")
             playlistScroll?.children()?.forEach { parent ->
-                if (parent.tagName()=="a"){
+                if (parent.tagName() == "a") {
                     return@forEach
                 }
 //                println("S------------------------------------S")
@@ -388,27 +388,25 @@ object Parser {
                     ?.getElementsByClass("home-rows-videos-div")
                     ?.firstOrNull() != null
             if (isSimplified) {
-                if (children != null) {
-                    for (each in children) {
-                        val eachContent = each.selectFirst("a")
-                        val homeRowsVideosDiv =
-                            eachContent?.getElementsByClass("home-rows-videos-div")?.firstOrNull()
+                for (each in children) {
+                    val eachContent = each.selectFirst("a")
+                    val homeRowsVideosDiv =
+                        eachContent?.getElementsByClass("home-rows-videos-div")?.firstOrNull()
 
-                        if (homeRowsVideosDiv != null) {
-                            val eachVideoCode = eachContent.absUrl("href").toVideoCode() ?: continue
-                            val eachCoverUrl = homeRowsVideosDiv.selectFirst("img")?.absUrl("src")
-                                .throwIfParseNull(Parser::hanimeVideoVer2.name, "eachCoverUrl")
-                            val eachTitle =
-                                homeRowsVideosDiv.selectFirst("div[class$=title]")?.text()
-                                    .throwIfParseNull(Parser::hanimeVideoVer2.name, "eachTitle")
-                            relatedAnimeList.add(
-                                HanimeInfo(
-                                    title = eachTitle, coverUrl = eachCoverUrl,
-                                    videoCode = eachVideoCode,
-                                    itemType = HanimeInfo.SIMPLIFIED
-                                )
+                    if (homeRowsVideosDiv != null) {
+                        val eachVideoCode = eachContent.absUrl("href").toVideoCode() ?: continue
+                        val eachCoverUrl = homeRowsVideosDiv.selectFirst("img")?.absUrl("src")
+                            .throwIfParseNull(Parser::hanimeVideoVer2.name, "eachCoverUrl")
+                        val eachTitle =
+                            homeRowsVideosDiv.selectFirst("div[class$=title]")?.text()
+                                .throwIfParseNull(Parser::hanimeVideoVer2.name, "eachTitle")
+                        relatedAnimeList.add(
+                            HanimeInfo(
+                                title = eachTitle, coverUrl = eachCoverUrl,
+                                videoCode = eachVideoCode,
+                                itemType = HanimeInfo.SIMPLIFIED
                             )
-                        }
+                        )
                     }
                 }
             } else {
@@ -464,7 +462,7 @@ object Parser {
                 )
             } else null
         }
-        val artist = if (artistAvatarUrl != null && artistName != null && artistGenre != null) {
+        val artist = if (artistName != null && artistGenre != null) {
             HanimeVideo.Artist(
                 name = artistName,
                 avatarUrl = artistAvatarUrl,
@@ -713,7 +711,7 @@ object Parser {
 
         buildList {
             allCommentsClass?.children()?.chunked(5)?.forEach { elements ->
-                this += Element("div").apply { appendChildren(elements) }
+                add(Element("div").apply { appendChildren(elements) })
             }
         }.forEach { child: Element ->
             val avatarUrl = child.selectFirst("img")?.absUrl("src")
@@ -878,7 +876,7 @@ object Parser {
                     artistName = artistName,
                     avatar = avatarSrc
                 )
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 null
             }
         }
@@ -886,30 +884,33 @@ object Parser {
         // 解析订阅视频
         val videos = subscriptionsVideosRoot.select("div.col-xs-12.search-doujin-videos")
             .mapNotNull { videoCard ->
-            try {
-                val link = videoCard.selectFirst("a.overlay")?.absUrl("href") ?: return@mapNotNull null
-                val videoCode = Regex("""watch\?v=(\d+)""").find(link)?.groupValues?.get(1) ?: return@mapNotNull null
-                val imgs = videoCard.select("img")
-                val coverUrl = imgs.getOrNull(1)?.absUrl("src") ?: return@mapNotNull null
-                val title = videoCard.selectFirst("div.card-mobile-title")?.text()?.trim() ?: return@mapNotNull null
-                val duration = videoCard.selectFirst("div.card-mobile-duration")?.text()?.trim()
-                val infoBoxes = videoCard.select("div.card-mobile-duration")
-                    .map { it.text().trim() }
-                val reviews = infoBoxes.find { it.contains("%") }
-                val views = infoBoxes.find { it.contains("次") }
+                try {
+                    val link =
+                        videoCard.selectFirst("a.overlay")?.absUrl("href") ?: return@mapNotNull null
+                    val videoCode = Regex("""watch\?v=(\d+)""").find(link)?.groupValues?.get(1)
+                        ?: return@mapNotNull null
+                    val imgs = videoCard.select("img")
+                    val coverUrl = imgs.getOrNull(1)?.absUrl("src") ?: return@mapNotNull null
+                    val title = videoCard.selectFirst("div.card-mobile-title")?.text()?.trim()
+                        ?: return@mapNotNull null
+                    val duration = videoCard.selectFirst("div.card-mobile-duration")?.text()?.trim()
+                    val infoBoxes = videoCard.select("div.card-mobile-duration")
+                        .map { it.text().trim() }
+                    val reviews = infoBoxes.find { it.contains("%") }
+                    val views = infoBoxes.find { it.contains("次") }
 
-                SubscriptionVideosItem(
-                    title = title,
-                    coverUrl = coverUrl,
-                    videoCode = videoCode,
-                    duration = duration,
-                    views = views,
-                    reviews = reviews
-                )
-            } catch (e: Exception) {
-                null
+                    SubscriptionVideosItem(
+                        title = title,
+                        coverUrl = coverUrl,
+                        videoCode = videoCode,
+                        duration = duration,
+                        views = views,
+                        reviews = reviews
+                    )
+                } catch (_: Exception) {
+                    null
+                }
             }
-        }
 
         return WebsiteState.Success(
             MySubscriptions(
