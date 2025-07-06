@@ -3,9 +3,12 @@ package com.yenaly.han1meviewer.ui.activity
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.KeyguardManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
@@ -59,6 +62,7 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
+import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
 import com.yenaly.han1meviewer.util.logScreenViewEvent
@@ -90,6 +94,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
 
     companion object {
         private const val REQUEST_WRITE_EXTERNAL_STORAGE = 1234
+        const val ACTION_TOGGLE_PLAY = "com.yenaly.han1meviewer.ACTION_TOGGLE_PLAY"
     }
 
     val currentFragment get() = navHostFragment.childFragmentManager.primaryNavigationFragment
@@ -104,6 +109,18 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             }
         }
     private var hasAuthenticated = false
+    private val pipActionReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            Log.i("pipmode", "✅ onReceive called with action: ${intent?.action}")
+            when (intent?.action) {
+                ACTION_TOGGLE_PLAY -> {
+                    Log.i("pipmode", "🎬 ACTION_TOGGLE_PLAY triggered")
+                    togglePlayPause()
+                }
+            }
+        }
+    }
+
 
     override fun getViewBinding(layoutInflater: LayoutInflater): ActivityMainBinding =
         ActivityMainBinding.inflate(layoutInflater)
@@ -251,8 +268,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
 
     }
 
-
-
     private fun removeAuthGuard() {
         val root = findViewById<ViewGroup>(R.id.dl_main) // 或者 R.id.root
         val authGuard = findViewById<View>(R.id.auth_guard)
@@ -387,6 +402,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
 
     override fun onStart() {
         super.onStart()
+        registerPipReceiver()
         binding.root.post {
             textFromClipboard?.let {
                 videoUrlRegex.find(it)?.groupValues?.get(1)?.let { videoCode ->
@@ -394,6 +410,25 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                 }
             }
         }
+    }
+    private fun registerPipReceiver() {
+        val filter = IntentFilter().apply {
+            addAction(ACTION_TOGGLE_PLAY)
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(pipActionReceiver, filter, RECEIVER_NOT_EXPORTED)
+            Log.i("pipmode", "✅ registerReceiver with RECEIVER_NOT_EXPORTED")
+        } else {
+            @SuppressLint("UnspecifiedRegisterReceiverFlag")
+            registerReceiver(pipActionReceiver, filter)
+            Log.i("pipmode", "✅ registerReceiver (legacy)")
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unregisterReceiver(pipActionReceiver)
     }
 
     override fun bindDataObservers() {
@@ -745,4 +780,44 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             }
         }
     }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        val currentFragment = supportFragmentManager
+            .findFragmentById(R.id.fcv_main)
+            ?.childFragmentManager
+            ?.primaryNavigationFragment
+
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val allowPip = prefs.getBoolean("allow_pip_mode", true)
+
+        Log.i("pipmode","enter pip mode?\n$currentFragment\nallowpip:$allowPip\n")
+
+        if (currentFragment is VideoFragment && currentFragment.shouldEnterPip() && allowPip) {
+            Log.i("pipmode","enter pip mode")
+            currentFragment.enterPipMode()
+        }
+    }
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean,
+        newConfig: Configuration
+    ) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+
+        val currentFragment = supportFragmentManager
+            .findFragmentById(R.id.fcv_main)
+            ?.childFragmentManager
+            ?.primaryNavigationFragment
+
+        if (currentFragment is VideoFragment) {
+            currentFragment.onPipModeChanged(isInPictureInPictureMode)
+        }
+    }
+    fun togglePlayPause() {
+//        val playing = exoPlayer?.isPlaying == true
+//        exoPlayer?.playWhenReady = !playing
+        Toast.makeText(this, "尚未实现", Toast.LENGTH_SHORT).show()
+        Log.i("pipmode","toggleplay&pause")
+    }
+
 }

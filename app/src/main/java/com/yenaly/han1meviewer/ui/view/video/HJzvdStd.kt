@@ -334,6 +334,26 @@ class HJzvdStd @JvmOverloads constructor(
     fun setUp(jzDataSource: JZDataSource?, screen: Int, kernel: HMediaKernel.Type) {
         setUp(jzDataSource, screen, kernel.clazz)
     }
+    fun setControlsVisible(visible: Boolean) {
+        findViewById<View>(R.id.tv_speed)?.isVisible = visible
+        findViewById<View>(R.id.tv_keyframe)?.isVisible = visible
+        findViewById<View>(R.id.tv_timer)?.isVisible = visible
+        findViewById<View>(R.id.go_home)?.isVisible = visible
+        findViewById<View>(R.id.layout_top)?.isVisible = visible
+        findViewById<View>(R.id.layout_bottom)?.isVisible = visible
+    }
+    fun centerSurfaceInPip(isInPip: Boolean, isFullscreen: Boolean) {
+        val container = findViewById<View>(R.id.surface_container)
+        container?.let {
+            if (isInPip && !isFullscreen) {
+//                it.translationY = -210f // 调节竖屏模式下因系统UI导致的偏移
+                it.translationY = 0f
+            } else {
+                it.translationY = 0f
+            }
+        }
+    }
+
 
     override fun setUp(jzDataSource: JZDataSource?, screen: Int, clazz: Class<*>) {
         super.setUp(jzDataSource, screen, clazz)

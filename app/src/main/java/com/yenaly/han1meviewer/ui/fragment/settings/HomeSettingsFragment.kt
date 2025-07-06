@@ -1,6 +1,7 @@
 @file:Suppress("DEPRECATION")
 package com.yenaly.han1meviewer.ui.fragment.settings
 
+import android.app.AppOpsManager
 import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
@@ -68,6 +69,8 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
     companion object {
         const val VIDEO_LANGUAGE = "video_language"
         const val DEFAULT_VIDEO_QUALITY = "default_video_quality"
+
+        const val ALLOW_PIP_MDOE = "allow_pip_mode"
         const val PLAYER_SETTINGS = "player_settings"
         const val H_KEYFRAME_SETTINGS = "h_keyframe_settings"
         const val UPDATE = "update"
@@ -92,6 +95,8 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
             by safePreference<MaterialDialogPreference>(DEFAULT_VIDEO_QUALITY)
     private val playerSettings
             by safePreference<Preference>(PLAYER_SETTINGS)
+    private val allowPipMode
+            by safePreference<Preference>(ALLOW_PIP_MDOE)
     private val hKeyframeSettings
             by safePreference<Preference>(H_KEYFRAME_SETTINGS)
     private val downloadSettings
@@ -131,6 +136,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
 
 }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onPreferencesCreated(savedInstanceState: Bundle?) {
         val lockSwitch = findPreference<SwitchPreferenceCompat>("use_lock_screen")
         lockSwitch?.setOnPreferenceChangeListener { _, newValue ->
@@ -198,9 +204,25 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
 
             setOnPreferenceChangeListener { _, newValue ->
                 if (newValue != Preferences.videoLanguage) {
-                    Toast.makeText(application, "修改成功：$newValue", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(application, "Success：$newValue", Toast.LENGTH_SHORT).show()
                 }
                 return@setOnPreferenceChangeListener true
+            }
+        }
+        allowPipMode.apply {
+            setOnPreferenceChangeListener{ preference: Preference, newValue ->
+                val enabled = newValue as Boolean
+                if (enabled && !isPipPermissionGranted(requireContext())) {
+                    Toast.makeText(requireContext(),
+                        getString(R.string.request_pip_alert), Toast.LENGTH_SHORT).show()
+                    openPipPermissionSettings(requireContext())
+                    Handler(Looper.getMainLooper()).post {
+                        (preference as SwitchPreferenceCompat).isChecked = false
+                    }
+                    false
+                } else {
+                    true
+                }
             }
         }
         playerSettings.setOnPreferenceClickListener {
@@ -440,5 +462,31 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
     private fun isDeviceSecureCompat(context: Context): Boolean {
         val km = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
         return km.isDeviceSecure
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun isPipPermissionGranted(context: Context): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false
+        val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val mode = appOps.unsafeCheckOpNoThrow(
+                AppOpsManager.OPSTR_PICTURE_IN_PICTURE,
+                android.os.Process.myUid(),
+                context.packageName
+            )
+            mode == AppOpsManager.MODE_ALLOWED
+        } else {
+            true
+        }
+    }
+
+    private fun openPipPermissionSettings(context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val intent = Intent("android.settings.PICTURE_IN_PICTURE_SETTINGS",
+                "package:${context.packageName}".toUri())
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            context.startActivity(intent)
+        }
     }
 }
