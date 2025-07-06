@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.com.android.library)
     alias(libs.plugins.org.jetbrains.kotlin.android)
@@ -31,13 +33,15 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_21.toString()
-        freeCompilerArgs = listOf(
-            "-opt-in=kotlin.RequiresOptIn",
-            "-Xskip-prerelease-check",
-            "-opt-in=kotlin.ExperimentalStdlibApi"
-        )
+    kotlin {
+        compilerOptions {
+            jvmTarget.value(JvmTarget.JVM_21)
+            freeCompilerArgs.addAll(
+                "-opt-in=kotlin.RequiresOptIn",
+                "-Xskip-prerelease-check",
+                "-opt-in=kotlin.ExperimentalStdlibApi"
+            )
+        }
     }
     buildFeatures {
         buildConfig = true

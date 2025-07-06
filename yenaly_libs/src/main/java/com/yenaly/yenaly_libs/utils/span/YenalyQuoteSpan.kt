@@ -15,7 +15,7 @@ import androidx.annotation.ColorInt
  * @Description : Description...
  */
 class YenalyQuoteSpan @JvmOverloads constructor(
-    @ColorInt private val color: Int = STANDARD_COLOR,
+    @param:ColorInt private val color: Int = STANDARD_COLOR,
     private val stripeWidth: Int = STANDARD_STRIPE_WIDTH_PX,
     private val gapWidth: Int = STANDARD_GAP_WIDTH_PX
 ) : LeadingMarginSpan {

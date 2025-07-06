@@ -1,6 +1,12 @@
 package com.yenaly.han1meviewer.ui.activity
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.content.res.Resources
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -10,13 +16,18 @@ import android.webkit.CookieManager
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.text.parseAsHtml
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import com.google.android.material.textfield.TextInputEditText
 import com.yenaly.han1meviewer.HANIME_ALTER_BASE_URL
 import com.yenaly.han1meviewer.HANIME_LOGIN_URL
@@ -33,9 +44,10 @@ import com.yenaly.yenaly_libs.base.frame.FrameActivity
 import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.unsafeLazy
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class LoginActivity : FrameActivity() {
-
+    private lateinit var scannerLauncher: ActivityResultLauncher<Intent>
     companion object {
         const val TAG = "LoginActivity"
 
@@ -56,6 +68,16 @@ class LoginActivity : FrameActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val cameraPermissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted ->
+            if (isGranted) {
+                scannerLauncher.launch(Intent(this, QRcodeScannerActivity::class.java))
+            } else {
+                Toast.makeText(this, getString(R.string.request_camera), Toast.LENGTH_SHORT).show()
+            }
+        }
+
         binding = DataBindingUtil.setContentView(this, R.layout.activity_login)
         setSupportActionBar(binding.toolbar)
         binding.toolbar.setNavigationOnClickListener {
@@ -71,6 +93,26 @@ class LoginActivity : FrameActivity() {
             binding.wvLogin.loadUrl(HANIME_LOGIN_URL)
         }
         binding.srlLogin.autoRefresh()
+        scannerLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val cookie = result.data?.getStringExtra("cookie")
+                Log.i("LoginActivity", "扫描结果: $cookie")
+                login(cookie.toString())
+                setResult(RESULT_OK)
+                finish()
+            }
+        }
+        binding.fabQr.setOnClickListener {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED
+            ) {
+                scannerLauncher.launch(Intent(this, QRcodeScannerActivity::class.java))
+            } else {
+                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -204,5 +246,26 @@ class LoginActivity : FrameActivity() {
         fun dismiss() {
             dialog.dismiss()
         }
+    }
+    private fun applyAppLocale(context: Context): Context {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        val lang = prefs.getString("app_language", "system") ?: "system"
+
+        val newLocale = when (lang) {
+            "zh-rCN" -> Locale.SIMPLIFIED_CHINESE
+            "zh" -> Locale.TRADITIONAL_CHINESE
+            "en" -> Locale.ENGLISH
+            else -> Resources.getSystem().configuration.locales.get(0)
+        }
+
+        Locale.setDefault(newLocale)
+
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(newLocale)
+        return context.createConfigurationContext(config)
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(applyAppLocale(newBase))
     }
 }

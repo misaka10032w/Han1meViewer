@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION")
 package com.yenaly.han1meviewer.ui.fragment.settings
 
 import android.app.KeyguardManager

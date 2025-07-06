@@ -388,5 +388,13 @@
     <string name="disable_comments_title">关闭评论区</string>
     <string name="default_video_quilty">默认分辨率</string>
     <string name="my_subscribe">我的订阅</string>
+    <string name="title_activity_qrcode_scanner">扫码录入Cookies</string>
+    <string name="scan_for_cookies">扫码录入Cookies</string>
+    <string name="import_cookies_intro">此种导入方式也可以缓解因cloudflare引起的登录拦截\n1.在网页版登录之后，想办法获取Cookies，只要你能获取到，手机和电脑都行。\n2.格式大概如图所示，注意！头尾不应包含双引号，并且不应是格式化后的Cookies序列。\n3.使用二维码创建工具（草料二维码等），并扫描这个二维码。\n二维码过大可能不太好扫描，或者你没有电脑，那就使用“手动导入”按钮的导入。\n如果导入完成之后刷新页面还是显示未登陆的状态，那就检查你的Cookies。</string>
+    <string name="cookies_import_desc">引导图示</string>
+    <string name="cookies_import_title">如何导入</string>
+    <string name="cookies_import_dismiss">我知道了</string>
+    <string name="manual_import_cookies">手动导入</string>
+    <string name="request_camera">请授予相机权限以扫码</string>
 
 </resources>

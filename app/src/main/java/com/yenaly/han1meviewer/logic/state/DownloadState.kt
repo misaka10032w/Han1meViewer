@@ -8,7 +8,7 @@ import androidx.annotation.IntDef
  * @author Yenaly Liew
  * @time 2025/3/3 21:11
  */
-enum class DownloadState(@Mask val mask: Int) {
+enum class DownloadState(@param:Mask val mask: Int) {
     // 未知状态（刚添加进来的状态），队列中，下载中，暂停，已完成，失败
     Unknown(Mask.UNKNOWN),
     Queued(Mask.QUEUED),
