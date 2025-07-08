@@ -54,6 +54,8 @@ Han1meViewer 是一个基于 Kotlin 开发的 Android 应用，用于播放和�
 ℹ️ 温馨提示：建议通过官方渠道支持原站内容，并点击广告以支持网站运营者。
 
 ---
+## 🧾 参与讨论
+ Telegram群组： `https://t.me/Han1meViewer`
 
 ## ✨ 功能特色
 
