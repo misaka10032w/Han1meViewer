@@ -116,7 +116,7 @@ object Preferences {
         )?.toFloat() ?: HJzvdStd.DEF_LONG_PRESS_SPEED_TIMES
 
     val videoLanguage: String
-        get() = preferenceSp.getString(HomeSettingsFragment.VIDEO_LANGUAGE, "zh-CHT") ?: "zh-CHT"
+        get() = preferenceSp.getString(HomeSettingsFragment.VIDEO_LANGUAGE, "zhs") ?: "zht"
 
     val baseUrl: String
         get() = preferenceSp.getString(NetworkSettingsFragment.DOMAIN_NAME, HANIME_MAIN_BASE_URL)
