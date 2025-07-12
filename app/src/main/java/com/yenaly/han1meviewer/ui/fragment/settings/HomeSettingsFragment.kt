@@ -169,7 +169,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
                 getString(R.string.traditional_chinese),
                 getString(R.string.simplified_chinese)
             )
-            entryValues = arrayOf("zh-CHT", "zh-CHS")
+            entryValues = arrayOf("zht", "zhs")
             // 不能直接用 defaultValue 设置，没效果
             if (value == null) setValueIndex(0)
 
