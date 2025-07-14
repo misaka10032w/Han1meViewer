@@ -78,4 +78,15 @@ class MainViewModel(application: Application) : YenalyViewModel(application) {
             _modifyHKeyframeFlow.emit(true to application.getString(R.string.modify_success))
         }
     }
+    fun deleteHKeyframes(entity: HKeyframeEntity) {
+        viewModelScope.launch(Dispatchers.IO) {
+            DatabaseRepo.HKeyframe.delete(entity)
+        }
+    }
+
+    fun updateHKeyframes(entity: HKeyframeEntity) {
+        viewModelScope.launch(Dispatchers.IO) {
+            DatabaseRepo.HKeyframe.update(entity)
+        }
+    }
 }

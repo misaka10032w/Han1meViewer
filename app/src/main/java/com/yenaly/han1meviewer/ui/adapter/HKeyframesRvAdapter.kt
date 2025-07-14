@@ -134,7 +134,7 @@ class HKeyframesRvAdapter : BaseDifferAdapter<HKeyframeEntity, QuickViewHolder>(
 
     private fun delete(item: HKeyframeEntity) {
         val activity = context
-        if (activity is SettingsActivity) {
+        if (activity is MainActivity) {
             activity.showAlertDialog {
                 setTitle(R.string.sure_to_delete)
                 setMessage(item.title)
@@ -148,7 +148,7 @@ class HKeyframesRvAdapter : BaseDifferAdapter<HKeyframeEntity, QuickViewHolder>(
 
     private fun modify(item: HKeyframeEntity) {
         val activity = context
-        if (activity is SettingsActivity) {
+        if (activity is MainActivity) {
             val view = View.inflate(activity, R.layout.dialog_modify_h_keyframes, null)
             val etTitle = view.findViewById<TextView>(R.id.et_title)
             val etVideoCode = view.findViewById<TextView>(R.id.et_video_code)
@@ -268,7 +268,7 @@ class HKeyframeRvAdapter(
                                             prompt = prompt
                                         )
                                     )
-                                    // showShortToast("修改成功") // 這裏不用提示，因為 VideoActivity 有 Flow 操控
+                                     showShortToast("修改成功")
                                 }
                             }
                         }
@@ -292,7 +292,7 @@ class HKeyframeRvAdapter(
 
                                 is MainActivity -> {
                                     context.viewModel.removeHKeyframe(videoCode, item)
-                                    // showShortToast("刪除成功") // 這裏不用提示，因為 VideoActivity 有 Flow 操控
+                                     showShortToast("刪除成功")
                                 }
                             }
                         }

@@ -41,18 +41,6 @@ class SettingsViewModel(application: Application) : YenalyViewModel(application)
         }
     }
 
-    fun deleteHKeyframes(entity: HKeyframeEntity) {
-        viewModelScope.launch(Dispatchers.IO) {
-            DatabaseRepo.HKeyframe.delete(entity)
-        }
-    }
-
-    fun updateHKeyframes(entity: HKeyframeEntity) {
-        viewModelScope.launch(Dispatchers.IO) {
-            DatabaseRepo.HKeyframe.update(entity)
-        }
-    }
-
     fun loadAllSharedHKeyframes() =
         DatabaseRepo.HKeyframe.loadAllShared().flowOn(Dispatchers.IO)
 }
