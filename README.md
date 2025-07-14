@@ -78,6 +78,7 @@ Han1meViewer 是一个基于 Kotlin 开发的 Android 应用，用于播放和�
 * Kotlin
 * Jetpack Navigation
 * ViewModel + StateFlow
+* Jetpack Compose
 * ExoPlayer
 * JZPlayer 自定义接口
 * Fragment + ConcatAdapter 多类型布局
@@ -88,14 +89,14 @@ Han1meViewer 是一个基于 Kotlin 开发的 Android 应用，用于播放和�
 
 ### 运行环境
 
-* Android Studio 可靠编译版本：Android Studio Meerkat Feature Drop | 2024.3.2 Patch 1 
-Build AI-243.26053.27.2432.13536105, built on May 22, 2025
+* Android Studio 可靠编译版本：Android Studio Narwhal | 2025.1.1
+  Build #AI-251.25410.109.2511.13665796, built on June 19, 2025
 * 最低支持 Android 7.0 (API 24 Nougat)
 * 目标版本 Android 15 (API 35 V)
-* Android Gradle 8.9.0
-* Kotlin 2.0.21
+* Android Gradle 8.10.0
+* Kotlin 2.2.0
 * Serialization Plugin 2.0.21
-* KSP 2.0.21-1.0.27
+* KSP 2.2.0-2.0.2
 
 ### 启动流程
 

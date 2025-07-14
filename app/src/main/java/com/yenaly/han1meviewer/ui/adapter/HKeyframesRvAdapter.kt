@@ -20,13 +20,11 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.activity.SettingsActivity
-import com.yenaly.han1meviewer.ui.activity.VideoActivity
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.encodeToStringByBase64
 import com.yenaly.yenaly_libs.utils.requireActivity
 import com.yenaly.yenaly_libs.utils.showShortToast
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 /**
@@ -263,13 +261,13 @@ class HKeyframeRvAdapter(
                                     showShortToast(R.string.modify_success)
                                 }
 
-                                is VideoActivity -> {
-//                                    context.viewModel.modifyHKeyframe(
-//                                        videoCode, item, HKeyframeEntity.Keyframe(
-//                                            position = pos,
-//                                            prompt = prompt
-//                                        )
-//                                    )
+                                is MainActivity -> {
+                                    context.viewModel.modifyHKeyframe(
+                                        videoCode, item, HKeyframeEntity.Keyframe(
+                                            position = pos,
+                                            prompt = prompt
+                                        )
+                                    )
                                     // showShortToast("修改成功") // 這裏不用提示，因為 VideoActivity 有 Flow 操控
                                 }
                             }
@@ -292,8 +290,8 @@ class HKeyframeRvAdapter(
                                     showShortToast(R.string.delete_success)
                                 }
 
-                                is VideoActivity -> {
-//                                    context.viewModel.removeHKeyframe(videoCode, item)
+                                is MainActivity -> {
+                                    context.viewModel.removeHKeyframe(videoCode, item)
                                     // showShortToast("刪除成功") // 這裏不用提示，因為 VideoActivity 有 Flow 操控
                                 }
                             }

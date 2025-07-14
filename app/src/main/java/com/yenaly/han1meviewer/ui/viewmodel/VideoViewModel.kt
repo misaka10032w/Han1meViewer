@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.EMPTY_STRING
 import com.yenaly.han1meviewer.HCacheManager
-import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.NetworkRepo
@@ -19,12 +18,16 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
 import com.yenaly.yenaly_libs.base.YenalyViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -218,16 +221,21 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
     // boolean: 成功 or 失敗，String: 提示信息
     private val _modifyHKeyframeFlow = MutableSharedFlow<Pair<Boolean, String>>()
     val modifyHKeyframeFlow = _modifyHKeyframeFlow.asSharedFlow()
-
-    fun observeKeyframe(videoCode: String) = if (Preferences.hKeyframesEnable)
-        DatabaseRepo.HKeyframe.observe(videoCode).flowOn(Dispatchers.IO) else null
-
+    private val _forceRefresh = MutableSharedFlow<Unit>(replay = 1)
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun observeKeyframe(videoCode: String): Flow<HKeyframeEntity?> {
+        return _forceRefresh
+            .onStart { emit(Unit) }
+            .flatMapLatest {
+                DatabaseRepo.HKeyframe.observe(videoCode).flowOn(Dispatchers.IO)
+            }
+    }
     fun appendHKeyframe(videoCode: String, title: String, hKeyframe: HKeyframeEntity.Keyframe) {
         viewModelScope.launch(Dispatchers.IO) {
             run {
                 this@VideoViewModel.hKeyframes?.keyframes?.forEach { keyframeInDb ->
                     if (abs(keyframeInDb.position - hKeyframe.position) < MIN_H_KEYFRAME_SAVE_INTERVAL) {
-                        Log.d("append_hkeyframe", "time conflict: $keyframeInDb")
+                        Log.d("HKeyframe", "append_hkeyframe:time conflict: $keyframeInDb")
                         _modifyHKeyframeFlow.emit(
                             false to application.getString(
                                 R.string.interval_must_greater_than_d,
@@ -238,28 +246,10 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
                     }
                 }
                 DatabaseRepo.HKeyframe.appendKeyframe(videoCode, title, hKeyframe)
-                Log.d("append_hkeyframe", "$hKeyframe DONE!")
+                Log.d("HKeyframe", "append_hkeyframe:$hKeyframe DONE!")
                 _modifyHKeyframeFlow.emit(true to application.getString(R.string.add_success))
+                _forceRefresh.emit(Unit)
             }
-        }
-    }
-
-    fun removeHKeyframe(videoCode: String, hKeyframe: HKeyframeEntity.Keyframe) {
-        viewModelScope.launch(Dispatchers.IO) {
-            DatabaseRepo.HKeyframe.removeKeyframe(videoCode, hKeyframe)
-            Log.d("remove_hkeyframe", "$hKeyframe DONE!")
-            _modifyHKeyframeFlow.emit(true to application.getString(R.string.delete_success))
-        }
-    }
-
-    fun modifyHKeyframe(
-        videoCode: String,
-        oldKeyframe: HKeyframeEntity.Keyframe, keyframe: HKeyframeEntity.Keyframe,
-    ) {
-        viewModelScope.launch {
-            DatabaseRepo.HKeyframe.modifyKeyframe(videoCode, oldKeyframe, keyframe)
-            Log.d("modify_hkeyframe", "$keyframe DONE!")
-            _modifyHKeyframeFlow.emit(true to application.getString(R.string.modify_success))
         }
     }
 }

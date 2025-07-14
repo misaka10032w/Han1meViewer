@@ -183,10 +183,13 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.observeKeyframe(videoCode)?.flowWithLifecycle(viewLifecycleOwner.lifecycle)?.collect {
-                binding.videoPlayer.hKeyframe = it
-                viewModel.hKeyframes = it
-            }
+            viewModel.observeKeyframe(videoCode)
+                .flowWithLifecycle(viewLifecycleOwner.lifecycle)
+                .collect {
+                    Log.i("HKeyframe", "KeyframeFlow:collected entity: $it")
+                    binding.videoPlayer.hKeyframe = it
+                    viewModel.hKeyframes = it
+                }
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
