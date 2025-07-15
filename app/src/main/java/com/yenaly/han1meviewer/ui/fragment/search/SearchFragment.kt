@@ -11,7 +11,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isGone
-import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -138,17 +137,18 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
             v.updatePadding(top = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top)
             WindowInsetsCompat.CONSUMED
         }
-        ViewCompat.setOnApplyWindowInsetsListener(binding.searchRv) { v, insets ->
-            val sysBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.updatePadding(bottom = sysBars.bottom, top = sysBars.top + 68.dp)
-            WindowInsetsCompat.CONSUMED
-        }
-        ViewCompat.setOnApplyWindowInsetsListener(binding.searchHeader) { v, insets ->
-            val sysBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-            v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                topMargin = sysBars.top + 68.dp
-            }
-            WindowInsetsCompat.CONSUMED
+
+        binding.searchBar.post {
+            val offset = binding.searchBar.height + 10.dp
+            binding.searchRv.setPadding(
+                binding.searchRv.paddingLeft,
+                offset,
+                binding.searchRv.paddingRight,
+                binding.searchRv.paddingBottom
+            )
+            val headerLp = binding.searchHeader.layoutParams as ViewGroup.MarginLayoutParams
+            headerLp.topMargin = offset
+            binding.searchHeader.layoutParams = headerLp
         }
     }
 
