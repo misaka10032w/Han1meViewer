@@ -10,7 +10,7 @@
     android:elevation="6dp"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:paddingTop="8dp">
+    android:layout_marginTop="8dp">
 
     <!-- MD3 Search Bar Container -->
     <com.google.android.material.card.MaterialCardView
