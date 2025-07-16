@@ -45,14 +45,14 @@ object NetworkRepo {
 
     fun getHanimeSearchResult(
         page: Int, query: String?, genre: String?,
-        sort: String?, broad: Boolean, year: Int?, month: Int?,
+        sort: String?, broad: Boolean, date: String?,
         duration: String?, tags: Set<String>, brands: Set<String>,
     ) = pageIOFlow(
         request = {
             HanimeNetwork.hanimeService.getHanimeSearchResult(
                 page, query, genre, sort,
                 if (broad) "on" else null,
-                year, month, duration, tags, brands
+                date, duration, tags, brands
             )
         },
         action = Parser::hanimeSearch

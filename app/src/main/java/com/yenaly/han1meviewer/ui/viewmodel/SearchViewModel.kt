@@ -53,6 +53,9 @@ class SearchViewModel(
         get() = state["month"]
         set(value) { state["month"] = value }
 
+    var approxTime: String?
+        get() = state["approxTime"]
+        set(value) { state["approxTime"] = value }
 
 //    var genre: String? = null
 //    var sort: String? = null
@@ -89,6 +92,9 @@ class SearchViewModel(
     val durations by unsafeLazy {
         loadAssetAs<List<SearchOption>>("search_options/duration.json").orEmpty()
     }
+    val timeList by unsafeLazy {
+        loadAssetAs<List<SearchOption>>("search_options/release_date.json").orEmpty()
+    }
 
     // END: Use in [SearchOptionsPopupFragment.kt]
 
@@ -103,13 +109,13 @@ class SearchViewModel(
 
     fun getHanimeSearchResult(
         page: Int, query: String?, genre: String?,
-        sort: String?, broad: Boolean, year: Int?, month: Int?,
+        sort: String?, broad: Boolean, date: String?,
         duration: String?, tags: Set<String>, brands: Set<String>,
     ) {
         viewModelScope.launch {
             NetworkRepo.getHanimeSearchResult(
                 page, query, genre,
-                sort, broad, year, month,
+                sort, broad, date ,
                 duration, tags, brands
             ).collect { state ->
                 val prev = _searchStateFlow.getAndUpdate { state }

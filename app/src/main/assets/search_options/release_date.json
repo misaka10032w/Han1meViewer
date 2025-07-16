@@ -1,0 +1,58 @@
+[
+  {
+    "lang": {
+      "zh-rCN": "全部",
+      "en": "All",
+      "zh-rTW": "全部"
+    },
+    "search_key": null
+  },
+  {
+    "lang": {
+      "zh-rCN": "过去24小时",
+      "en": "Last 24 hours",
+      "zh-rTW": "過去24小時"
+    },
+    "search_key": "過去 24 小時"
+  },
+  {
+    "lang": {
+      "zh-rCN": "过去2天",
+      "en": "Last 2 days",
+      "zh-rTW": "過去2天"
+    },
+    "search_key": "過去 2 天"
+  },
+  {
+    "lang": {
+      "zh-rCN": "过去1周",
+      "en": "Last week",
+      "zh-rTW": "過去1週"
+    },
+    "search_key": "過去 1 週"
+  },
+  {
+    "lang": {
+      "zh-rCN": "过去1个月",
+      "en": "Last month",
+      "zh-rTW": "過去1個月"
+    },
+    "search_key": "過去 1 個月"
+  },
+  {
+    "lang": {
+      "zh-rCN": "过去3个月",
+      "en": "Last 3 months",
+      "zh-rTW": "過去3個月"
+    },
+    "search_key": "過去 3 個月"
+  },
+  {
+    "lang": {
+      "zh-rCN": "过去1年",
+      "en": "Past year",
+      "zh-rTW": "過去1年"
+    },
+    "search_key": "過去 1 年"
+  }
+]

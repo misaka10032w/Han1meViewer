@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
-
-    <data>
-
-    </data>
+    <data />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -103,23 +97,22 @@
                 android:textAlignment="center" />
 
             <com.yenaly.han1meviewer.ui.view.HOptionChip
-                android:id="@+id/brand"
+                android:id="@+id/duration"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="8dp"
-                android:visibility="gone"
-                android:text="@string/brand"
+                android:text="@string/duration"
                 android:textAlignment="center" />
 
             <com.yenaly.han1meviewer.ui.view.HOptionChip
-                android:id="@+id/duration"
+                android:id="@+id/brand"
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="16dp"
                 android:visibility="gone"
-                android:text="@string/duration"
+                android:text="@string/brand"
                 android:textAlignment="center" />
 
         </GridLayout>

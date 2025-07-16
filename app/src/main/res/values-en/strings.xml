@@ -20,7 +20,7 @@
     <string name="sort_option">Sort Option</string>
     <string name="brand">Brand</string>
     <string name="release_date">Release Date</string>
-    <string name="duration">Duration</string>
+    <string name="duration">Video duration</string>
     <string name="duration_able_reset">Duration (Select to Reset)</string>
     <string name="type_able_reset">Type (Select to Reset)</string>
     <string name="sort_option_able_reset">Sort Option (Select to Reset)</string>
@@ -395,5 +395,7 @@ Recommendations are as follows:\n
     <string name="allow_pip_title">Allow picture-in-picture mode</string>
     <string name="play_pause">Play/Pause</string>
     <string name="request_pip_alert">If the picture-in-picture permission is not authorized, it will be automatically closed.</string>
+    <string name="approximate_range">Approximate time</string>
+    <string name="specific_y_m">Specific Y &amp; M</string>
 
 </resources>

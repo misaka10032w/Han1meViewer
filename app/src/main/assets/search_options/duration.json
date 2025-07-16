@@ -9,26 +9,66 @@
   },
   {
     "lang": {
-      "zh-rCN": "短片（4分钟内）",
-      "en": "Short Film (Within 4 min)",
-      "zh-rTW": "短片（4分鐘內）"
+      "zh-rCN": "1分钟以上",
+      "en": "More than 1 minute",
+      "zh-rTW": "1分鐘以上"
     },
-    "search_key": "短片"
+    "search_key": "1 分鐘 +"
   },
   {
     "lang": {
-      "zh-rCN": "中长片（4至20分钟）",
-      "en": "Medium-length Film (4 to 20 min)",
-      "zh-rTW": "中長片（4至20分鐘）"
+      "zh-rCN": "5分钟以上",
+      "en": "More than 5 minute",
+      "zh-rTW": "5分鐘以上"
     },
-    "search_key": "中長片"
+    "search_key": "5 分鐘 +"
   },
   {
     "lang": {
-      "zh-rCN": "长片（20分钟以上）",
-      "en": "Feature Film (Over 20 min)",
-      "zh-rTW": "長片（20分鐘以上）"
+      "zh-rCN": "10分钟以上",
+      "en": "More than 10 minutes",
+      "zh-rTW": "10分鐘以上"
     },
-    "search_key": "長片"
+    "search_key": "10 分鐘 +"
+  },
+  {
+    "lang": {
+      "zh-rCN": "20分钟以上",
+      "en": "More than 20 minutes",
+      "zh-rTW": "20分鐘以上"
+    },
+    "search_key": "20 分鐘 +"
+  },
+  {
+    "lang": {
+      "zh-rCN": "30分钟以上",
+      "en": "More than 30 minutes",
+      "zh-rTW": "30分鐘以上"
+    },
+    "search_key": "30 分鐘 +"
+  },
+  {
+    "lang": {
+      "zh-rCN": "60分钟以上",
+      "en": "More than 60 minutes",
+      "zh-rTW": "60分鐘以上"
+    },
+    "search_key": "60 分鐘 +"
+  },
+  {
+    "lang": {
+      "zh-rCN": "0~10分钟",
+      "en": "0~10 minutes",
+      "zh-rTW": "0~10分鐘"
+    },
+    "search_key": "0 - 10 分鐘"
+  },
+  {
+    "lang": {
+      "zh-rCN": "0~20分钟",
+      "en": "0~20 minutes",
+      "zh-rTW": "0~20分鐘以上"
+    },
+    "search_key": "0 - 20 分鐘"
   }
 ]

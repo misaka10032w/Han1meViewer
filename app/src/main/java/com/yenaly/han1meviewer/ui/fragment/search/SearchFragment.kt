@@ -212,28 +212,35 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
             }
         }
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.refreshTriggerFlow.collect {
                     binding.searchSrl.autoRefresh()
-                    getNewHanimeSearchResult()
+                  //  getNewHanimeSearchResult()
                 }
             }
         }
 
     }
 
-
     private fun getHanimeSearchResult() {
         Log.d("SearchActivity", buildString {
             appendLine("page: ${viewModel.page}, query: ${viewModel.query}, genre: ${viewModel.genre}, ")
             appendLine("sort: ${viewModel.sort}, broad: ${viewModel.broad}, year: ${viewModel.year}, ")
             appendLine("month: ${viewModel.month}, duration: ${viewModel.duration}, ")
-            appendLine("tagMap: ${viewModel.tagMap}, brandMap: ${viewModel.brandMap}")
+            appendLine("tagMap: ${viewModel.tagMap}, brandMap: ${viewModel.brandMap}, approxTime:${viewModel.approxTime}")
         })
+        val date: String? = when {
+            viewModel.approxTime != null -> viewModel.approxTime
+            viewModel.year != null -> listOfNotNull(
+                viewModel.year?.let { "$it 年" },
+                viewModel.month?.let { "$it 月" }
+            ).joinToString(" ")
+            else -> null
+        }
         viewModel.getHanimeSearchResult(
             viewModel.page,
             viewModel.query, viewModel.genre, viewModel.sort, viewModel.broad,
-            viewModel.year, viewModel.month, viewModel.duration,
+            date, viewModel.duration,
             viewModel.tagMap.flatten(), viewModel.brandMap.flatten()
         )
     }
