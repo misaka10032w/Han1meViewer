@@ -62,5 +62,13 @@
       "zh-rTW": "他們在看"
     },
     "search_key": "他們在看"
+  },
+  {
+    "lang": {
+      "zh-rCN": "时长最长",
+      "en": "Longest duration",
+      "zh-rTW": "時長最長"
+    },
+    "search_key": "時長最長"
   }
 ]

@@ -21,7 +21,7 @@
     <string name="sort_option">排序方式</string>
     <string name="brand">品牌</string>
     <string name="release_date">发布日期</string>
-    <string name="duration">片长</string>
+    <string name="duration">影片时长</string>
     <string name="duration_able_reset">片长（复选可取消）</string>
     <string name="type_able_reset">类型（复选可取消）</string>
     <string name="sort_option_able_reset">排序方式（复选可取消）</string>
@@ -401,5 +401,7 @@
     <string name="allow_pip_title">允许进入画中画模式</string>
     <string name="play_pause">播放/暂停</string>
     <string name="request_pip_alert">未授权画中画权限，将自动关闭</string>
+    <string name="specific_y_m">具体年月</string>
+    <string name="approximate_range">大致范围</string>
 
 </resources>

@@ -6,6 +6,7 @@ import com.yenaly.han1meviewer.HA1_GITHUB_API_URL
 import com.yenaly.han1meviewer.HJson
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.network.interceptor.SpeedLimitInterceptor
+import com.yenaly.han1meviewer.logic.network.interceptor.UrlLoggingInterceptor
 import com.yenaly.han1meviewer.logic.network.interceptor.UserAgentInterceptor
 import com.yenaly.yenaly_libs.utils.applicationContext
 import com.yenaly.yenaly_libs.utils.unsafeLazy
@@ -79,6 +80,7 @@ object ServiceCreator {
         return OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .addInterceptor(UserAgentInterceptor)
+            .addInterceptor(UrlLoggingInterceptor())
             .cache(cache)
             .cookieJar(HCookieJar())
             .proxySelector(HProxySelector())

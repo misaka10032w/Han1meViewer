@@ -68,6 +68,7 @@ class SearchOptionsPopupFragment :
     private var genres: Array<String>? = null
     private var sortOptions: Array<String>? = null
     private var durations: Array<String>? = null
+    private var timeList: Array<String>? = null
 
     private val subscriptionAdapter by unsafeLazy {
         HSubscriptionAdapter(
@@ -88,7 +89,15 @@ class SearchOptionsPopupFragment :
                 viewModel.year != null -> TimePickerPopup.Mode.Y
                 else -> TimePickerPopup.Mode.YM
             }
-            val popup = HTimePickerPopup(requireContext())
+            val popup = HTimePickerPopup(
+                requireContext(),
+                timeList = viewModel.timeList,
+                onItemSelected = { selected ->
+                    viewModel.approxTime =selected.searchKey
+                    viewModel.year = null
+                    viewModel.month = null
+                    Log.d("TAG", "选中 search_key = ${selected.searchKey}")
+                })
                 .apply popup@{
                     setMode(mode)
                     setYearRange(SEARCH_YEAR_RANGE_START, SEARCH_YEAR_RANGE_END)
@@ -111,6 +120,7 @@ class SearchOptionsPopupFragment :
                                     viewModel.month = null
                                 }
                             }
+                            viewModel.approxTime = null
                             isUserUsed = true
                             initOptionsChecked()
                         }
@@ -126,8 +136,8 @@ class SearchOptionsPopupFragment :
         PopUpFragmentSearchOptionsBinding.inflate(layoutInflater)
 
     override fun initData(savedInstanceState: Bundle?, dialog: Dialog) {
-        // #issue-199: 片长搜索官网取消了
-        binding.duration.isAvailable = false
+        // #issue-199: 片长搜索官网取消了,2025年7月15日恢复了
+ //       binding.duration.isAvailable = false
         // 简单的厂商搜索官网取消了
         binding.brand.isAvailable = false
 
@@ -142,7 +152,7 @@ class SearchOptionsPopupFragment :
         binding.duration.isChecked = viewModel.duration != null
         binding.tag.isChecked = viewModel.tagMap.isNotEmpty()
         binding.type.isChecked = viewModel.genre != null
-        binding.releaseDate.isChecked = viewModel.year != null || viewModel.month != null
+        binding.releaseDate.isChecked = viewModel.year != null || viewModel.month != null || viewModel.approxTime != null
     }
 
     private fun initClick() {
@@ -327,12 +337,16 @@ class SearchOptionsPopupFragment :
         }
         binding.releaseDate.apply {
             setOnClickListener {
+                if (timeList == null) {
+                    timeList = viewModel.timeList.mapToArray { it.value }
+                }
                 timePickerPopup.show()
             }
             setOnLongClickListener lc@{
                 showClearAllTagsDialog {
                     viewModel.year = null
                     viewModel.month = null
+                    viewModel.approxTime = null
                     initOptionsChecked()
                 }
                 return@lc true
@@ -344,7 +358,7 @@ class SearchOptionsPopupFragment :
                     appendLine("page: ${viewModel.page}, query: ${viewModel.query}, genre: ${viewModel.genre}, ")
                     appendLine("sort: ${viewModel.sort}, broad: ${viewModel.broad}, year: ${viewModel.year}, ")
                     appendLine("month: ${viewModel.month}, duration: ${viewModel.duration}, ")
-                    appendLine("tagMap: ${viewModel.tagMap}, brandMap: ${viewModel.brandMap}")
+                    appendLine("tagMap: ${viewModel.tagMap}, brandMap: ${viewModel.brandMap}, approxTime:${viewModel.approxTime}")
                 })
                 viewModel.triggerNewSearch()
                 dismiss()

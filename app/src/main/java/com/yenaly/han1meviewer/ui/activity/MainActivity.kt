@@ -165,6 +165,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                 R.id.nv_playlist -> R.id.nv_playlist
                 R.id.nv_watch_later -> R.id.nv_watch_later
                 R.id.nav_settings -> R.id.nv_settings
+                R.id.nv_subscription -> R.id.nv_subscription
                 else -> null
             }
             if (targetId != null && targetId != currentCheckedId) {

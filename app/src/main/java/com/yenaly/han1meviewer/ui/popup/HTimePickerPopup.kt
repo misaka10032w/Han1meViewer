@@ -1,16 +1,32 @@
 package com.yenaly.han1meviewer.ui.popup
 
 import android.content.Context
+import android.util.AttributeSet
+import android.view.View
+import android.widget.ViewFlipper
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.tabs.TabLayout
 import com.lxj.xpopupext.popup.TimePickerPopup
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.logic.model.SearchOption
+import com.yenaly.han1meviewer.ui.adapter.ReleaseDateAdapter
 
 /**
  * #issue-161: 高级搜索可以选择年或年月
  */
-class HTimePickerPopup(context: Context) : TimePickerPopup(context) {
+class HTimePickerPopup(
+    context: Context,
+    private val timeList: List<SearchOption>,
+    private val onItemSelected: (SearchOption) -> Unit
+) : TimePickerPopup(context) {
+    @JvmOverloads
+    constructor(context: Context, attrs: AttributeSet? = null) : this(context, emptyList(), {})
 
     private lateinit var btnSwitch: MaterialButton
+    private lateinit var tabLayout: TabLayout
+    private lateinit var viewFlipper: ViewFlipper
 
     var mode: Mode = Mode.YM
         private set
@@ -31,6 +47,35 @@ class HTimePickerPopup(context: Context) : TimePickerPopup(context) {
             }
             onCreate()
         }
+        val recyclerView = findViewById<RecyclerView>(R.id.releaseDateRecyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.adapter = ReleaseDateAdapter(timeList) { selected ->
+            onItemSelected(selected)
+            dismiss()
+        }
+        initTabView()
+        popupImplView.background = null //清除TimePickerPopup自带的背景
+    }
+
+    override fun getPopupImplView(): View {
+        return findViewById(R.id.popup_root)
+    }
+
+    private fun initTabView() {
+        tabLayout = findViewById(R.id.timePickerTabLayout)
+        viewFlipper = findViewById(R.id.viewFlipper)
+        tabLayout.removeAllTabs()
+        tabLayout.addTab(tabLayout.newTab().setText(context.getString(R.string.specific_y_m)))
+        tabLayout.addTab(tabLayout.newTab().setText(context.getString(R.string.approximate_range)))
+
+        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
+                viewFlipper.displayedChild = tab.position
+            }
+            override fun onTabUnselected(tab: TabLayout.Tab) {}
+            override fun onTabReselected(tab: TabLayout.Tab) {}
+        })
+        viewFlipper.displayedChild = 0
     }
 
     override fun setMode(mode: Mode): TimePickerPopup {
