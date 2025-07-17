@@ -403,5 +403,6 @@
     <string name="request_pip_alert">未授权画中画权限，将自动关闭</string>
     <string name="specific_y_m">具体年月</string>
     <string name="approximate_range">大致范围</string>
+    <string name="ext_player">外部播放器</string>
 
 </resources>
