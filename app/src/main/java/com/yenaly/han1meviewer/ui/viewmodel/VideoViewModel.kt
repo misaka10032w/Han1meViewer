@@ -45,7 +45,7 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
          */
         const val MIN_H_KEYFRAME_SAVE_INTERVAL = 5_000 // ms
     }
-
+    val horizontalScrollPositions = mutableMapOf<String, Int>()
     var videoCode: String = EMPTY_STRING
         set(value) {
             field = value

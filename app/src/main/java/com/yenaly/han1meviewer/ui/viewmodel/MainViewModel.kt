@@ -30,6 +30,7 @@ class MainViewModel(application: Application) : YenalyViewModel(application) {
     private val _homePageFlow =
         MutableStateFlow<WebsiteState<HomePage>>(WebsiteState.Loading)
     val homePageFlow = _homePageFlow.asStateFlow()
+    val horizontalScrollPositions = mutableMapOf<String, Int>()
 
     fun getHomePage() {
         viewModelScope.launch {

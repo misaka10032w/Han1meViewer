@@ -128,9 +128,22 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
     private val playlistTitleAdapter =
         VideoColumnTitleAdapter(title = R.string.series_video, notifyWhenSet = true)
     private val playlistAdapter = HanimeVideoRvAdapter(VIDEO_LAYOUT_WRAP_CONTENT)
-    private val playlistWrapper = playlistAdapter.wrappedWith {
-        LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-    }
+    private val playlistWrapper = playlistAdapter
+        .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
+        .apply {
+            doOnWrap {
+                val key = viewModel.videoCode
+                val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
+                val pos = viewModel.horizontalScrollPositions[key] ?: 0
+                post { lm.scrollToPositionWithOffset(pos, 0) }
+                addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                    override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                        viewModel.horizontalScrollPositions[key] = lm.findFirstVisibleItemPosition()
+                    }
+                })
+            }
+        }
+
     private val relatedTitleAdapter =
         VideoColumnTitleAdapter(title = R.string.related_video)
     private val relatedAdapter = HanimeVideoRvAdapter(VIDEO_LAYOUT_MATCH_PARENT)
