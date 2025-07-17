@@ -421,6 +421,7 @@
     <string name="request_pip_alert">未授權畫中畫權限，自動關閉</string>
     <string name="approximate_range">大致範圍</string>
     <string name="specific_y_m">具體年月</string>
+    <string name="ext_player">外部播放器</string>
 
 
 </resources>

@@ -397,5 +397,6 @@ Recommendations are as follows:\n
     <string name="request_pip_alert">If the picture-in-picture permission is not authorized, it will be automatically closed.</string>
     <string name="approximate_range">Approximate time</string>
     <string name="specific_y_m">Specific Y &amp; M</string>
+    <string name="ext_player">External player</string>
 
 </resources>

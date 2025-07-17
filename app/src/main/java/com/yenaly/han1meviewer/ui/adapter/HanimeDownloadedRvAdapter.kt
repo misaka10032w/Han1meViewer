@@ -15,20 +15,17 @@ import com.chad.library.adapter4.viewholder.DataBindingHolder
 import com.yenaly.han1meviewer.HFileManager
 import com.yenaly.han1meviewer.LOCAL_DATE_TIME_FORMAT
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.databinding.ItemHanimeDownloadedBinding
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.activity.VideoActivity
 import com.yenaly.han1meviewer.ui.fragment.home.download.DownloadedFragment
 import com.yenaly.han1meviewer.util.HImageMeower.loadUnhappily
 import com.yenaly.han1meviewer.util.openDownloadedHanimeVideoInActivity
+import com.yenaly.han1meviewer.util.openDownloadedHanimeVideoLocally
 import com.yenaly.han1meviewer.util.showAlertDialog
-import com.yenaly.yenaly_libs.utils.activity
 import com.yenaly.yenaly_libs.utils.dpF
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
 import com.yenaly.yenaly_libs.utils.requireActivity
-import com.yenaly.yenaly_libs.utils.startActivity
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
@@ -168,6 +165,23 @@ class HanimeDownloadedRvAdapter(private val fragment: DownloadedFragment) :
 //                    }
 //                })
                 context.openDownloadedHanimeVideoInActivity(item.video.videoCode)
+            }
+            viewHolder.binding.btnExtPlayer.setOnClickListener {
+                val position = viewHolder.bindingAdapterPosition
+                val item = getItem(position) ?: return@setOnClickListener
+                context.openDownloadedHanimeVideoLocally(item.video.videoUri, onFileNotFound = {
+                    context.showAlertDialog {
+                        setTitle(R.string.video_not_exist)
+                        setMessage(R.string.video_deleted_sure_to_delete_item)
+                        setPositiveButton(R.string.delete) { _, _ ->
+                            fragment.viewModel.deleteDownloadHanimeBy(
+                                item.video.videoCode,
+                                item.video.quality
+                            )
+                        }
+                        setNegativeButton(R.string.cancel, null)
+                    }
+                })
             }
         }
     }
