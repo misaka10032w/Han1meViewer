@@ -573,8 +573,8 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
         }
 
         private fun ItemVideoIntroductionBinding.initTitle(info: HanimeVideo) {
-            title.text = info.title.also { initShareButton(it) }
-            chineseTitle.text = info.chineseTitle
+            title.text = info.chineseTitle
+            chineseTitle.text = info.title.also { initShareButton(it) }
             // #issue-80: 长按复制功能请求
             title.setOnLongClickListener {
                 title.text.copyToClipboard()
