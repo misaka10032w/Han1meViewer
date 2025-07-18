@@ -41,7 +41,7 @@ object Parser {
      */
     object Regex {
         val videoSource = Regex("""const source = '(.+)'""")
-        val viewAndUploadTime = Regex("""觀看次數：(.+)次 *(\d{4}-\d{2}-\d{2})""")
+        val viewAndUploadTime = Regex("""(觀看次數|观看次数)：(.+)次 *(\d{4}-\d{2}-\d{2})""")
     }
 
     fun extractTokenFromLoginPage(body: String): String {
@@ -296,11 +296,13 @@ object Parser {
         val uploadTimeWithViewsGroups = uploadTimeWithViews?.let {
             Regex.viewAndUploadTime.find(it)?.groups
         }
-        val uploadTime = uploadTimeWithViewsGroups?.get(2)?.value?.let { time ->
-            LocalDate.parse(time, LOCAL_DATE_FORMAT)
+        val uploadTime = uploadTimeWithViewsGroups?.get(3)?.value?.let { time ->
+            runCatching {
+                LocalDate.parse(time, LOCAL_DATE_FORMAT)
+            }.getOrNull()
         }
 
-        val views = uploadTimeWithViewsGroups?.get(1)?.value
+        val views = uploadTimeWithViewsGroups?.get(2)?.value
 
         val tags = parseBody.getElementsByClass("single-video-tag")
         val tagListWithLikeNum = mutableListOf<String>()
