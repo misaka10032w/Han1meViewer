@@ -3,6 +3,7 @@ package com.yenaly.han1meviewer.ui.popup
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
+import android.view.animation.AnimationUtils
 import android.widget.ViewFlipper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -67,15 +68,27 @@ class HTimePickerPopup(
         tabLayout.removeAllTabs()
         tabLayout.addTab(tabLayout.newTab().setText(context.getString(R.string.specific_y_m)))
         tabLayout.addTab(tabLayout.newTab().setText(context.getString(R.string.approximate_range)))
+        var lastSelectedTab = 0
 
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
-                viewFlipper.displayedChild = tab.position
+                val newPosition = tab.position
+                if (newPosition > lastSelectedTab) {
+                    viewFlipper.inAnimation = AnimationUtils.loadAnimation(context, R.anim.slide_in_right)
+                    viewFlipper.outAnimation = AnimationUtils.loadAnimation(context, R.anim.slide_out_left)
+                } else {
+                    viewFlipper.inAnimation = AnimationUtils.loadAnimation(context, R.anim.slide_in_left)
+                    viewFlipper.outAnimation = AnimationUtils.loadAnimation(context, R.anim.slide_out_right)
+                }
+                viewFlipper.displayedChild = newPosition
+                lastSelectedTab = newPosition
+                btnSwitch.visibility = if (newPosition == 0) VISIBLE else GONE
             }
             override fun onTabUnselected(tab: TabLayout.Tab) {}
             override fun onTabReselected(tab: TabLayout.Tab) {}
         })
         viewFlipper.displayedChild = 0
+        btnSwitch.visibility = VISIBLE
     }
 
     override fun setMode(mode: Mode): TimePickerPopup {
