@@ -16,6 +16,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnLongClickListener
 import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.PopupWindow
@@ -692,8 +693,8 @@ class HJzvdStd @JvmOverloads constructor(
         var layoutParams = blockLayoutParams
         if (originalContainer is ConstraintLayout) {
             layoutParams = savedConstraintLayoutParams ?: ConstraintLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                LayoutParams.MATCH_PARENT,
+                LayoutParams.WRAP_CONTENT
             )
         } else if (originalContainer is FrameLayout) {
             layoutParams = LayoutParams(blockLayoutParams)
@@ -733,14 +734,37 @@ class HJzvdStd @JvmOverloads constructor(
         CONTAINER_LIST.add(vg)
         val decorView = (JZUtils.scanForActivity(jzvdContext)).window.decorView as ViewGroup
         val fullLayout = LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
+            LayoutParams.MATCH_PARENT,
+            LayoutParams.MATCH_PARENT
         )
+        val mediaKernel = CURRENT_JZVD?.mediaInterface as? ExoMediaKernel
+        val videoWidth  = mediaKernel?.videoRealWidth?:0
+        val videoHeight = mediaKernel?.videoRealHeight?:0
+        val isPortraitVideo = videoWidth > 0 && videoHeight > 0 && videoWidth < videoHeight
+        if (isPortraitVideo) {
+            pivotY = 0f
+            scaleY = 0.5f
+        }
         decorView.addView(this, fullLayout)
+        if (isPortraitVideo) {
+            animate()
+                .scaleY(1f)
+                .setDuration(300)
+                .setInterpolator(DecelerateInterpolator())
+                .start()
+        }
         setScreenFullscreen()
         JZUtils.hideStatusBar(jzvdContext)
-        if (activity != null) {
-            manager.lockOrientation(activity,OrientationManager.ScreenOrientation.LANDSCAPE)
+        val targetOrientation = if (videoWidth > 0 && videoHeight > 0) {
+            if (isPortraitVideo)
+                OrientationManager.ScreenOrientation.PORTRAIT
+            else
+                OrientationManager.ScreenOrientation.LANDSCAPE
+        } else {
+            OrientationManager.ScreenOrientation.LANDSCAPE
+        }
+        activity?.let {
+            manager.lockOrientation(it, targetOrientation)
         }
         JZUtils.hideSystemUI(jzvdContext)
     }

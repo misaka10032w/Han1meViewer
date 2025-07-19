@@ -94,6 +94,10 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
     private var callback: Runnable? = null
     private var prevSeek = 0L
 
+    var videoRealWidth: Int = 0
+        private set
+    var videoRealHeight: Int = 0
+        private set
     @OptIn(UnstableApi::class)
     override fun prepare() {
         if (_exoPlayer != null) {
@@ -178,6 +182,9 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
     override fun onVideoSizeChanged(videoSize: VideoSize) {
         val realWidth = videoSize.width * videoSize.pixelWidthHeightRatio
         val realHeight = videoSize.height
+        videoRealWidth = realWidth.toInt()
+        videoRealHeight = realHeight
+        Log.i("JZVD-onVideoSizeChanged","realWidth:$realWidth,realHeight:$realHeight")
         handler.post {
             jzvd.onVideoSizeChanged(realWidth.toInt(), realHeight)
         }
