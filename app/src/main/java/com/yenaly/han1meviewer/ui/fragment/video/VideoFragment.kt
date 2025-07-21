@@ -77,7 +77,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
     private val fromDownload by lazy { requireArguments().getBoolean(FROM_DOWNLOAD, false) }
     private val videoCode by lazy { requireArguments().getString(VIDEO_CODE) ?: error("Missing video code") }
     private var videoTitle: String? = null
-
+    private lateinit var orientationManager: OrientationManager
     private val tabNameArray = intArrayOf(R.string.introduction, R.string.comment)
     companion object {
         fun newInstance(videoCode: String): VideoFragment {
@@ -104,8 +104,9 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
             }
             WindowInsetsCompat.CONSUMED
         }
-
-        lifecycle.addObserver(OrientationManager(requireActivity()))
+        orientationManager = OrientationManager(requireActivity(), this)
+        lifecycle.addObserver(orientationManager)
+        binding.videoPlayer.orientationManager = orientationManager
         initViewPager()
         initHKeyframe()
         viewModel.getHanimeVideo(videoCode)

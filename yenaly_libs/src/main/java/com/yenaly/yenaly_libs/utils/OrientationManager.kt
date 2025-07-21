@@ -6,6 +6,7 @@ import android.content.pm.ActivityInfo
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.util.Log
 import android.view.OrientationEventListener
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -66,9 +67,21 @@ class OrientationManager(
         return lastLockedOrientation != null
     }
 
+    fun getCurrentScreenOrientation(): ScreenOrientation {
+        return screenOrientation
+    }
+
     override fun onOrientationChanged(orientation: Int) {
-        if (orientation == -1) {
-            return
+        if (orientation == -1) return
+        val newOrientation = when (orientation) {
+            in 60..140 -> ScreenOrientation.REVERSED_LANDSCAPE
+            in 140..220 -> ScreenOrientation.REVERSED_PORTRAIT
+            in 220..300 -> ScreenOrientation.LANDSCAPE
+            else -> ScreenOrientation.PORTRAIT
+        }
+        if (newOrientation != screenOrientation) {
+            screenOrientation = newOrientation
+            Log.d("OrientationManager", "screenOrientation updated to $screenOrientation")
         }
         try {
             val isRotateEnabled = Settings.System.getInt(
@@ -79,16 +92,7 @@ class OrientationManager(
         } catch (e: Settings.SettingNotFoundException) {
             e.printStackTrace()
         }
-        val newOrientation = when (orientation) {
-            in 60..140 -> ScreenOrientation.REVERSED_LANDSCAPE
-            in 140..220 -> ScreenOrientation.REVERSED_PORTRAIT
-            in 220..300 -> ScreenOrientation.LANDSCAPE
-            else -> ScreenOrientation.PORTRAIT
-        }
-        if (newOrientation != screenOrientation) {
-            screenOrientation = newOrientation
-            orientationChangeListener?.onOrientationChanged(screenOrientation)
-        }
+        orientationChangeListener?.onOrientationChanged(screenOrientation)
     }
 
     fun interface OrientationChangeListener {

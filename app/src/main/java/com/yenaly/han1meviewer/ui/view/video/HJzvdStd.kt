@@ -203,6 +203,7 @@ class HJzvdStd @JvmOverloads constructor(
     private lateinit var btnGoHome: ImageView
     private lateinit var layoutTop: View
     private lateinit var layoutBottom: View
+    lateinit var orientationManager: OrientationManager
 
     var hKeyframe: HKeyframeEntity? = null
         set(value) {
@@ -707,12 +708,11 @@ class HJzvdStd @JvmOverloads constructor(
         JZUtils.showStatusBar(jzvdContext)
         val activity = JZUtils.scanForActivity(jzvdContext)
         if (activity != null) {
-            manager.unlockOrientation(activity)
+            orientationManager.unlockOrientation(activity)
         }
         JZUtils.showSystemUI(jzvdContext)
     }
 
-    private val manager = OrientationManager(context)
     override fun gotoFullscreen() {
         gotoFullscreenTime = System.currentTimeMillis()
         val vg = parent as? ViewGroup ?: return
@@ -755,16 +755,22 @@ class HJzvdStd @JvmOverloads constructor(
         }
         setScreenFullscreen()
         JZUtils.hideStatusBar(jzvdContext)
+        val currentOrientation = orientationManager.getCurrentScreenOrientation()
         val targetOrientation = if (videoWidth > 0 && videoHeight > 0) {
             if (isPortraitVideo)
                 OrientationManager.ScreenOrientation.PORTRAIT
             else
-                OrientationManager.ScreenOrientation.LANDSCAPE
+                if (currentOrientation == OrientationManager.ScreenOrientation.REVERSED_LANDSCAPE)
+                    OrientationManager.ScreenOrientation.REVERSED_LANDSCAPE
+                else
+                    OrientationManager.ScreenOrientation.LANDSCAPE
         } else {
             OrientationManager.ScreenOrientation.LANDSCAPE
         }
-        activity?.let {
-            manager.lockOrientation(it, targetOrientation)
+        if (isPortraitVideo) {
+            activity?.let { orientationManager.lockOrientation(it, targetOrientation) }
+        } else {
+            JZUtils.setRequestedOrientation(jzvdContext, FULLSCREEN_ORIENTATION)
         }
         JZUtils.hideSystemUI(jzvdContext)
     }
