@@ -755,20 +755,13 @@ class HJzvdStd @JvmOverloads constructor(
         }
         setScreenFullscreen()
         JZUtils.hideStatusBar(jzvdContext)
-        val currentOrientation = orientationManager.getCurrentScreenOrientation()
-        val targetOrientation = if (videoWidth > 0 && videoHeight > 0) {
-            if (isPortraitVideo)
-                OrientationManager.ScreenOrientation.PORTRAIT
-            else
-                if (currentOrientation == OrientationManager.ScreenOrientation.REVERSED_LANDSCAPE)
-                    OrientationManager.ScreenOrientation.REVERSED_LANDSCAPE
-                else
-                    OrientationManager.ScreenOrientation.LANDSCAPE
-        } else {
-            OrientationManager.ScreenOrientation.LANDSCAPE
-        }
         if (isPortraitVideo) {
-            activity?.let { orientationManager.lockOrientation(it, targetOrientation) }
+            activity?.let {
+                orientationManager.lockOrientation(
+                    it,
+                    OrientationManager.ScreenOrientation.PORTRAIT
+                )
+            }
         } else {
             JZUtils.setRequestedOrientation(jzvdContext, FULLSCREEN_ORIENTATION)
         }
