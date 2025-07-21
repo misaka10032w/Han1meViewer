@@ -815,10 +815,9 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         }
     }
     fun togglePlayPause() {
-//        val playing = exoPlayer?.isPlaying == true
-//        exoPlayer?.playWhenReady = !playing
-        Toast.makeText(this, "尚未实现", Toast.LENGTH_SHORT).show()
-        Log.i("pipmode","toggleplay&pause")
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.fcv_main) as NavHostFragment
+        val videoFragment = navHostFragment.childFragmentManager.primaryNavigationFragment as? VideoFragment
+        videoFragment?.togglePlayPause()
     }
 
 }

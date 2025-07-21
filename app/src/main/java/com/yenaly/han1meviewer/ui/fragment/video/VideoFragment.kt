@@ -5,6 +5,7 @@ import android.app.PictureInPictureParams
 import android.app.RemoteAction
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.graphics.Rect
 import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.Bundle
@@ -13,6 +14,7 @@ import android.util.Rational
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.activity.OnBackPressedCallback
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
@@ -318,31 +320,80 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
                 Intent(MainActivity.ACTION_TOGGLE_PLAY).setPackage(requireContext().packageName),
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )
-            val icon = Icon.createWithResource(requireContext(), R.drawable.ic_baseline_play_circle_outline_24)
+            val icon = Icon.createWithResource(requireContext(), R.drawable.ic_baseline_pause_24_tintwhite)
             val action = RemoteAction(
                 icon,
                 getString(R.string.play_pause),
                 getString(R.string.play_pause),
                 intent
             )
+            val sourceRect = Rect()
+            binding.videoPlayer.getGlobalVisibleRect(sourceRect)
             val params = PictureInPictureParams.Builder()
+                .setSourceRectHint(sourceRect)
                 .setAspectRatio(aspectRatio)
                 .setActions(listOf(action))
                 .build()
             requireActivity().enterPictureInPictureMode(params)
         }
     }
+    fun updatePipAction() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && requireActivity().isInPictureInPictureMode) {
+            val isPlaying = (Jzvd.CURRENT_JZVD?.mediaInterface as? ExoMediaKernel)?.isPlaying == true
+            val icon = if (isPlaying) {
+                Icon.createWithResource(requireContext(), R.drawable.ic_baseline_pause_24_tintwhite)
+            } else {
+                Icon.createWithResource(requireContext(), R.drawable.ic_baseline_play_arrow_24_tintwhite)
+            }
+            val title = if (isPlaying) "Pause Video" else "Play Video"
+
+            val intent = PendingIntent.getBroadcast(
+                requireContext(),
+                0,
+                Intent(MainActivity.ACTION_TOGGLE_PLAY).setPackage(requireContext().packageName),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
+            val action = RemoteAction(
+                icon,
+                title,
+                getString(R.string.play_pause),
+                intent
+            )
+            val params = PictureInPictureParams.Builder()
+                .setAspectRatio(Rational(16, 9))
+                .setActions(listOf(action))
+                .build()
+
+            requireActivity().setPictureInPictureParams(params)
+        }
+    }
+
 
     fun shouldEnterPip(): Boolean {
-        val isPlaying = (Jzvd.CURRENT_JZVD?.mediaInterface as? ExoMediaKernel)?.isPlaying ?: false
-        Log.i("pipmode","enter pip mode?isPlaying:$isPlaying\n")
-        return  !requireActivity().isInPictureInPictureMode
+        val isPlaying = (binding.videoPlayer.state == Jzvd.STATE_PLAYING ||
+                binding.videoPlayer.state == Jzvd.STATE_PAUSE)
+        Log.i("pipmode","enter pip mode?:$isPlaying\n")
+        return  isPlaying
     }
     fun onPipModeChanged(isInPip: Boolean) {
+        val lp = binding.videoPlayer.layoutParams
+        lp.height = if (isInPip) MATCH_PARENT else 250.dp
+        binding.videoPlayer.layoutParams = lp
         binding.videoTl.isVisible = !isInPip
         binding.videoVp.isUserInputEnabled = !isInPip
         binding.videoVp.isVisible = !isInPip
         binding.videoPlayer.setControlsVisible(!isInPip)
-        binding.videoPlayer.centerSurfaceInPip(isInPip, binding.videoPlayer.screen == Jzvd.SCREEN_FULLSCREEN)
+        if (isInPip) updatePipAction()
+    }
+    fun togglePlayPause() {
+        val player = binding.videoPlayer
+        if (player.mediaInterface.isPlaying) {
+            player.mediaInterface.pause()
+ //           player.onStatePause()
+        } else {
+            player.mediaInterface.start()
+        }
+        updatePipAction()
     }
 }
