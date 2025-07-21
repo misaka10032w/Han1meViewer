@@ -3,7 +3,10 @@ package com.yenaly.han1meviewer.ui.view.video
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Typeface
+import android.media.AudioFocusRequest
 import android.media.AudioManager
+import android.os.Build
+import android.os.Looper
 import android.provider.Settings
 import android.provider.Settings.SettingNotFoundException
 import android.util.AttributeSet
@@ -415,9 +418,9 @@ class HJzvdStd @JvmOverloads constructor(
 
             STATE_PLAYING -> {
                 if (bottomContainer.isVisible) {
-                    changeUiToPlayingClear()
+                    changeUiToPlayingClearSafe()
                 } else {
-                    changeUiToPlayingShow()
+                    changeUiToPlayingShowSafe()
                 }
             }
 
@@ -453,7 +456,7 @@ class HJzvdStd @JvmOverloads constructor(
     override fun changeUIToPreparingPlaying() {
         when (screen) {
             SCREEN_FULLSCREEN -> {
-                setAllControlsVisiblity(
+                setAllControlsVisiblitySafe(
                     INVISIBLE, INVISIBLE, INVISIBLE,
                     VISIBLE, INVISIBLE, INVISIBLE, INVISIBLE
                 )
@@ -837,7 +840,7 @@ class HJzvdStd @JvmOverloads constructor(
     private fun changeUiToPreparingPlayingClear() {
         when (screen) {
             SCREEN_NORMAL, SCREEN_FULLSCREEN -> {
-                setAllControlsVisiblity(
+                setAllControlsVisiblitySafe(
                     INVISIBLE, INVISIBLE, INVISIBLE,
                     VISIBLE, INVISIBLE, INVISIBLE, INVISIBLE
                 )
@@ -848,12 +851,78 @@ class HJzvdStd @JvmOverloads constructor(
     private fun changeUiToPreparingPlayingShow() {
         when (screen) {
             SCREEN_NORMAL, SCREEN_FULLSCREEN -> {
-                setAllControlsVisiblity(
+                setAllControlsVisiblitySafe(
                     VISIBLE, VISIBLE, INVISIBLE,
                     VISIBLE, INVISIBLE, VISIBLE, INVISIBLE
                 )
             }
         }
+    }
+
+    //安卓7会报错CalledFromWrongThreadException
+    fun setAllControlsVisiblitySafe(
+        topCon: Int, bottomCon: Int, startBtn: Int, loadingPro: Int,
+        posterImg: Int, bottomPro: Int, retryLayout: Int
+    ) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            setAllControlsVisiblity(topCon, bottomCon, startBtn, loadingPro, posterImg, bottomPro, retryLayout)
+        } else {
+            post {
+                setAllControlsVisiblity(topCon, bottomCon, startBtn, loadingPro, posterImg, bottomPro, retryLayout)
+            }
+        }
+    }
+    fun changeUiToPlayingClearSafe() {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            changeUiToPlayingClear()
+        } else {
+            post {
+                changeUiToPlayingClear()
+            }
+        }
+    }
+    fun changeUiToPlayingShowSafe() {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            changeUiToPlayingShow()
+        } else {
+            post {
+                changeUiToPlayingShow()
+            }
+        }
+    }
+
+    override fun onStatePlaying() {
+        Log.i(TAG, "onStatePlaying " + " [" + this.hashCode() + "] ")
+        if (state == STATE_PREPARED) { //如果是准备完成视频后第一次播放，先判断是否需要跳转进度。
+            Log.d(TAG, "onStatePlaying:STATE_PREPARED ")
+            mAudioManager =
+                getApplicationContext().getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+                    .setOnAudioFocusChangeListener(onAudioFocusChangeListener)
+                    .build()
+                mAudioManager.requestAudioFocus(audioFocusRequest)
+            } else {
+                @Suppress("DEPRECATION")
+                mAudioManager.requestAudioFocus(
+                    onAudioFocusChangeListener,
+                    AudioManager.STREAM_MUSIC,
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT
+                )
+            }
+            if (seekToInAdvance != 0L) {
+                mediaInterface.seekTo(seekToInAdvance)
+                seekToInAdvance = 0
+            } else {
+                val position = JZUtils.getSavedProgress(context, jzDataSource.currentUrl)
+                if (position != 0L) {
+                    mediaInterface.seekTo(position) //这里为什么区分开呢，第一次的播放和resume播放是不一样的。 这里怎么区分是一个问题。然后
+                }
+            }
+        }
+        state = STATE_PLAYING
+        startProgressTimer()
+        changeUiToPlayingClearSafe()
     }
 
     // #issue-14: 之前用 XPopup 三键模式下会有 bug，无法呼出，所以换成这个
