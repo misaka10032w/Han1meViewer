@@ -375,7 +375,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
 
         fakeLauncherIcon.apply {
         //    summary = getString(R.string.select_fake_icon)
-            val currentAlias = preferenceManager.sharedPreferences?.getString(FAKE_LAUNCHER_ICON, "default_alias")
+            val currentAlias = Preferences.fakeLauncherIcon
             val currentItem = items.find { it.alias == currentAlias } ?: items[0]
             fakeLauncherIcon.summary = currentItem.name
             setOnPreferenceClickListener {
