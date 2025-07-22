@@ -104,6 +104,11 @@
             app:key="use_lock_screen"
             app:summary="@string/use_lock_screen_sum"
             app:title="@string/use_lock_screen" />
+        <Preference
+            android:key="pref_fake_launcher_icon"
+            android:title="@string/fake_app_icon"
+            android:icon="@drawable/ic_baseline_mask"
+            android:summary="@string/select_fake_icon" />
 
     </PreferenceCategory>
 

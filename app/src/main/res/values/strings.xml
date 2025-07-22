@@ -422,6 +422,12 @@
     <string name="approximate_range">大致範圍</string>
     <string name="specific_y_m">具體年月</string>
     <string name="ext_player">外部播放器</string>
+    <string name="app_name_fake_calc">計算機</string>
+    <string name="app_name_fake_xxt">學不通</string>
+    <string name="app_name_fake_cornhub" translatable="false">Cornhub</string>
+    <string name="fake_app_icon">偽裝應用</string>
+    <string name="select_fake_icon">選擇顯示在桌面的圖標</string>
+    <string name="fake_icon_hint">設定成功，應用可能會關閉，應用圖標可能會稍晚些刷新，期間會提示應用未安裝。</string>
 
 
 </resources>

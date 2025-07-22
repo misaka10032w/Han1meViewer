@@ -38,7 +38,7 @@ android {
         applicationId = "com.yenaly.han1meviewer"
         minSdk = property("min.sdk")?.toString()?.toIntOrNull()
         targetSdk = property("target.sdk")?.toString()?.toIntOrNull()
-        val (code, name) = createVersion(major = 0, minor = 16, patch = 0)
+        val (code, name) = createVersion(major = 0, minor = 16, patch = 2)
         versionCode = code
         versionName = name
 
@@ -68,6 +68,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
+            manifestPlaceholders.put("appIcon", "@mipmap/ic_launcher")
             applicationVariants.all variant@{
                 this@variant.outputs.all output@{
                     val output = this@output as BaseVariantOutputImpl
@@ -81,6 +82,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
             applicationIdSuffix = ".debug"
+            manifestPlaceholders.put("appIcon", "@mipmap/ic_launcher_debug")
         }
     }
     buildFeatures {
