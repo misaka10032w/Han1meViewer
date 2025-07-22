@@ -10,8 +10,14 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
 import androidx.core.text.parseAsHtml
@@ -58,6 +64,11 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
 import kotlinx.datetime.toLocalDateTime
+import kotlin.apply
+import androidx.core.content.edit
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.yenaly.han1meviewer.HanimeApplication
+import com.yenaly.yenaly_libs.utils.showLongToast
 
 /**
  * @project Han1meViewer
@@ -85,8 +96,8 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
         const val LAST_UPDATE_POPUP_TIME = "last_update_popup_time"
         const val UPDATE_POPUP_INTERVAL_DAYS = "update_popup_interval_days"
         const val USE_CI_UPDATE_CHANNEL = "use_ci_update_channel"
-
         const val USE_ANALYTICS = "use_analytics"
+        const val FAKE_LAUNCHER_ICON = "pref_fake_launcher_icon"
     }
 
     private val videoLanguage
@@ -123,8 +134,16 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
             by safePreference<HPrivacyPreference>(USE_ANALYTICS)
     private val ossLicense
             by safePreference<Preference>("oss_license")
+    private val fakeLauncherIcon
+            by safePreference<Preference>(FAKE_LAUNCHER_ICON)
 
     private var checkUpdateTimes = 0
+
+    data class LauncherItem(
+        val name: String,
+        @param:DrawableRes val iconRes: Int,
+        val alias: String
+    )
 
     override fun onStart() {
         super.onStart()
@@ -134,11 +153,25 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
             canNavigateBack = true
         )
 
-}
+    }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onPreferencesCreated(savedInstanceState: Bundle?) {
         val lockSwitch = findPreference<SwitchPreferenceCompat>("use_lock_screen")
+        val items = listOf(
+            LauncherItem(getString(R.string.hanime_app_name),
+                R.drawable.ic_launcher,
+                "com.yenaly.han1meviewer.LauncherAliasDefault"),
+            LauncherItem(getString(R.string.app_name_fake_calc),
+                R.drawable.ic_launcher_calc,
+                "com.yenaly.han1meviewer.LauncherFakeCalc"),
+            LauncherItem(getString(R.string.app_name_fake_cornhub),
+                R.drawable.ic_launcher_cornhub,
+                "com.yenaly.han1meviewer.LauncherFakeCornhub"),
+            LauncherItem(getString(R.string.app_name_fake_xxt),
+                R.drawable.ic_launcher_xxt,
+                "com.yenaly.han1meviewer.LauncherFakeXxt")
+        )
         lockSwitch?.setOnPreferenceChangeListener { _, newValue ->
             if (newValue == true) {
                 if (!isDeviceSecureCompat(requireContext())) {
@@ -203,7 +236,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
             if (value == null) setValueIndex(2)
 
             setOnPreferenceChangeListener { _, newValue ->
-                if (newValue != Preferences.videoLanguage) {
+                if (newValue != Preferences.videoQuality) {
                     Toast.makeText(application, "Success：$newValue", Toast.LENGTH_SHORT).show()
                 }
                 return@setOnPreferenceChangeListener true
@@ -336,6 +369,39 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
                     .withAboutIconShown(true)
                     .withAboutVersionShown(true)
                     .start(requireContext())
+                true
+            }
+        }
+
+        fakeLauncherIcon.apply {
+        //    summary = getString(R.string.select_fake_icon)
+            val currentAlias = preferenceManager.sharedPreferences?.getString(FAKE_LAUNCHER_ICON, "default_alias")
+            val currentItem = items.find { it.alias == currentAlias } ?: items[0]
+            fakeLauncherIcon.summary = currentItem.name
+            setOnPreferenceClickListener {
+                val adapter = object : ArrayAdapter<LauncherItem>(context, 0, items) {
+                    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                        val view = convertView ?: LayoutInflater.from(context)
+                            .inflate(R.layout.item_simple_icon_with_text, parent, false)
+                        val item = getItem(position)!!
+                        view.findViewById<ImageView>(R.id.icon).setImageResource(item.iconRes)
+                        view.findViewById<TextView>(R.id.name).text = item.name
+                        return view
+                    }
+                }
+                MaterialAlertDialogBuilder(context)
+                    .setTitle(getString(R.string.fake_app_icon))
+                    .setAdapter(adapter) { _, which ->
+                        val selected = items[which]
+                        preferenceManager.sharedPreferences?.edit {
+                            putString(FAKE_LAUNCHER_ICON, selected.alias)
+                        }
+                        val app = context.applicationContext as? HanimeApplication
+                        app?.switchLauncher(selected.alias)
+                        summary = selected.name
+                        showLongToast(getString(R.string.fake_icon_hint))
+                    }
+                    .show()
                 true
             }
         }

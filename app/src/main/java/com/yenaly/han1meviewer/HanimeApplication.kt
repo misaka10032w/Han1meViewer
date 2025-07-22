@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer
 
+import android.content.ComponentName
+import android.content.pm.PackageManager
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
 import com.google.android.material.color.DynamicColors
@@ -46,9 +48,10 @@ class HanimeApplication : YenalyApplication() {
         super.onCreate()
         DynamicColors.applyToActivitiesIfAvailable(this)
         HProxySelector.rebuildNetwork()
-
         initFirebase()
         initNotificationChannel()
+        val selected = Preferences.fakeLauncherIcon
+        switchLauncher(selected)
     }
 
     private fun initFirebase() {
@@ -95,5 +98,28 @@ class HanimeApplication : YenalyApplication() {
             NotificationManagerCompat.IMPORTANCE_HIGH
         ).setName("App Update").build()
         nm.createNotificationChannel(appUpdateChannel)
+    }
+    fun switchLauncher(alias: String) {
+        val pm = packageManager
+
+        val allAliases = listOf(
+            "com.yenaly.han1meviewer.LauncherAliasDefault",
+            "com.yenaly.han1meviewer.LauncherFakeCalc",
+            "com.yenaly.han1meviewer.LauncherFakeCornhub",
+            "com.yenaly.han1meviewer.LauncherFakeXxt"
+        )
+
+        allAliases.forEach { a ->
+            val state = if (a == alias)
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+            else
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+
+            pm.setComponentEnabledSetting(
+                ComponentName(this, a),
+                state,
+                PackageManager.DONT_KILL_APP
+            )
+        }
     }
 }

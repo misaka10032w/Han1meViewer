@@ -72,6 +72,7 @@
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity">
         </activity>
+        <!-- MainActivity 本体：无 launcher 配置 -->
         <activity
             android:name=".ui.activity.MainActivity"
             android:supportsPictureInPicture="true"
@@ -79,17 +80,10 @@
             android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.Hanime1.Main">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
                 <data android:scheme="http" />
                 <data android:scheme="https" />
                 <data android:host="hanime1.com" />
@@ -97,6 +91,61 @@
                 <data android:path="/watch" />
             </intent-filter>
         </activity>
+
+        <!-- 默认启动器别名 -->
+        <activity-alias
+            android:name=".LauncherAliasDefault"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/hanime_app_name"
+            android:targetActivity=".ui.activity.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- 伪装1 -->
+        <activity-alias
+            android:name=".LauncherFakeCalc"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_calc"
+            android:label="@string/app_name_fake_calc"
+            android:targetActivity=".ui.activity.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <!-- 伪装2 -->
+        <activity-alias
+            android:name=".LauncherFakeCornhub"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_cornhub"
+            android:label="@string/app_name_fake_cornhub"
+            android:targetActivity=".ui.activity.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <!-- 伪装3 -->
+        <activity-alias
+            android:name=".LauncherFakeXxt"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_xxt"
+            android:label="@string/app_name_fake_xxt"
+            android:targetActivity=".ui.activity.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
         <activity
             android:name=".ui.activity.SearchActivity"
             android:configChanges="orientation|screenSize"

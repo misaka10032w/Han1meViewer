@@ -404,5 +404,10 @@
     <string name="specific_y_m">具体年月</string>
     <string name="approximate_range">大致范围</string>
     <string name="ext_player">外部播放器</string>
+    <string name="app_name_fake_calc">计算器</string>
+    <string name="app_name_fake_xxt">学不通</string>
+    <string name="fake_app_icon">伪装应用</string>
+    <string name="select_fake_icon">选择显示在桌面的图标</string>
+    <string name="fake_icon_hint">设置成功，应用可能会关闭，应用图标可能会稍晚些刷新，期间会提示应用未安装。</string>
 
 </resources>

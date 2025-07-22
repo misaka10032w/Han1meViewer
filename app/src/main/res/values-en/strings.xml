@@ -398,5 +398,10 @@ Recommendations are as follows:\n
     <string name="approximate_range">Approximate time</string>
     <string name="specific_y_m">Specific Y &amp; M</string>
     <string name="ext_player">External player</string>
+    <string name="app_name_fake_calc">Calculator</string>
+    <string name="app_name_fake_xxt">学不通</string>
+    <string name="fake_app_icon">Fake Icon</string>
+    <string name="select_fake_icon">Select the fake icon</string>
+    <string name="fake_icon_hint">Settings applied successfully. The app may close, and the app icon might take a while to update. During this time, you may see a \"Not installed\" prompt.</string>
 
 </resources>

@@ -118,6 +118,14 @@ object Preferences {
     val videoLanguage: String
         get() = preferenceSp.getString(HomeSettingsFragment.VIDEO_LANGUAGE, "zhs") ?: "zht"
 
+    val videoQuality: String
+        get() = preferenceSp.getString(HomeSettingsFragment.DEFAULT_VIDEO_QUALITY, "1080P") ?: "1080P"
+
+    val fakeLauncherIcon: String
+        get() = preferenceSp.getString(
+            HomeSettingsFragment.FAKE_LAUNCHER_ICON,
+            "com.yenaly.han1meviewer.LauncherAliasDefault") ?: "com.yenaly.han1meviewer.LauncherAliasDefault"
+
     val baseUrl: String
         get() = preferenceSp.getString(NetworkSettingsFragment.DOMAIN_NAME, HANIME_MAIN_BASE_URL)
             ?: HANIME_MAIN_BASE_URL
