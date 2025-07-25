@@ -530,8 +530,6 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
         return km.isDeviceSecure
     }
 
-
-    @RequiresApi(Build.VERSION_CODES.Q)
     fun isPipPermissionGranted(context: Context): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false
         val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager

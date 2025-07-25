@@ -712,7 +712,7 @@ object Parser {
         val allCommentsClass = parseBody.getElementById("comment-start")
 
         buildList {
-            allCommentsClass?.children()?.chunked(5)?.forEach { elements ->
+            allCommentsClass?.children()?.chunked(4)?.forEach { elements ->
                 add(Element("div").apply { appendChildren(elements) })
             }
         }.forEach { child: Element ->
