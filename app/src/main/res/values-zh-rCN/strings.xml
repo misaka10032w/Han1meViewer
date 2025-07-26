@@ -53,6 +53,7 @@
     <string name="now_playing">现正播放</string>
     <string name="view_more_replies">查看更多回复</string>
     <string name="comment_not_found">未发现评论</string>
+    <string name="comment_is_finding">喵呜 子评论加载中</string>
     <string name="hanime_list">新番列表</string>
     <string name="latest_hanime_tour">新番导览</string>
     <string name="latest_hanime_list_monthly">%s 里番新番列表</string>

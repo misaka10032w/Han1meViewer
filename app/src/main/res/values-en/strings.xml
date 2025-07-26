@@ -53,6 +53,7 @@
     <string name="view_more_replies">View More Replies</string>
     <string name="comment_not_found">Comments Not Found</string>
     <string name="hanime_list">New Anime List</string>
+    <string name="comment_is_finding">Comments loading</string>
     <string name="latest_hanime_tour">New Anime Tour</string>
     <string name="latest_hanime_list_monthly">%s New Anime List</string>
     <string name="latest_hanime_news">New Anime News</string>

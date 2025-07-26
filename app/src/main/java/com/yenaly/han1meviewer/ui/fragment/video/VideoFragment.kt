@@ -219,7 +219,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
             && Jzvd.FULLSCREEN_ORIENTATION != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         ) {
             if (orientation.isLandscape && binding.videoPlayer.screen == Jzvd.SCREEN_NORMAL) {
-                changeScreenFullLandscape(orientation)
+              //  changeScreenFullLandscape(orientation)
             } else if (orientation === OrientationManager.ScreenOrientation.PORTRAIT
                 && binding.videoPlayer.screen == Jzvd.SCREEN_FULLSCREEN
             ) {
