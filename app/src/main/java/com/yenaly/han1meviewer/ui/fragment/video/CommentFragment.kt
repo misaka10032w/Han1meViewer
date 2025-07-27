@@ -9,8 +9,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -43,7 +43,14 @@ import kotlinx.coroutines.launch
  */
 class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMixin {
 
-    val viewModel by activityViewModels<CommentViewModel>()
+    val viewModel: CommentViewModel by lazy {
+        val parent = parentFragment
+        if (parent != null) {
+            ViewModelProvider(parent)[CommentViewModel::class.java]
+        } else {
+            ViewModelProvider(requireActivity())[CommentViewModel::class.java]
+        }
+    }
 
     private val commentTypePrefix by arguments(COMMENT_TYPE, VIDEO_COMMENT_PREFIX)
     private val commentAdapter by unsafeLazy {
@@ -112,7 +119,6 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
                     }
                 }).asCustom(replyPopup).show()
         }
-        viewModel.getComment(commentTypePrefix, viewModel.code)
     }
 
     override fun bindDataObservers() {
