@@ -187,11 +187,21 @@ class HJzvdStd @JvmOverloads constructor(
         @SuppressLint("SetTextI18n")
         set(value) {
             field = value
-            if (value == DEF_SPEED_INDEX) {
-                tvSpeed.text = context.getString(R.string.speed)
-            } else {
-                tvSpeed.text = speedStringArray[value]
+
+            val updateText = {
+                tvSpeed.text = if (value == DEF_SPEED_INDEX) {
+                    context.getString(R.string.speed)
+                } else {
+                    speedStringArray[value]
+                }
             }
+
+            if (Looper.myLooper() == Looper.getMainLooper()) {
+                updateText()
+            } else {
+                tvSpeed.post(updateText)
+            }
+
             videoSpeed = speedArray[value]
             // #issue-14: 有些机器到这里可能会报空指针异常，所以加了个判断，但是不知道为什么会报空指针异常
             if (jzDataSource.objects == null) {
