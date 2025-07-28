@@ -13,10 +13,10 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.util.HImageMeower
 import com.yenaly.han1meviewer.util.HImageMeower.loadUnhappily
 import com.yenaly.yenaly_libs.utils.requireActivity
-import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.ExperimentalTime
 
 /**
  * @project Han1meViewer
@@ -48,6 +48,7 @@ class WatchHistoryRvAdapter :
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     override fun onBindViewHolder(
         holder: DataBindingHolder<ItemWatchHistoryBinding>,
         position: Int,
@@ -56,9 +57,10 @@ class WatchHistoryRvAdapter :
         item ?: return
         holder.binding.ivCover.loadUnhappily(item.coverUrl, HImageMeower.placeholder(72, 128))
         holder.binding.tvAddedTime.text =
-            Instant.fromEpochMilliseconds(item.watchDate).toLocalDateTime(
-                TimeZone.currentSystemDefault()
-            ).format(LOCAL_DATE_TIME_FORMAT)
+            kotlin.time.Instant
+                .fromEpochMilliseconds (item.watchDate)
+                .toLocalDateTime(TimeZone.currentSystemDefault())
+                .format(LOCAL_DATE_TIME_FORMAT)
         // 不打算顯示發佈日期，所以不用設置
         holder.binding.tvReleaseDate.text = null
         holder.binding.tvTitle.text = item.title

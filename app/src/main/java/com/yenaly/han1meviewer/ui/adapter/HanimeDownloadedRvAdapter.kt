@@ -26,10 +26,10 @@ import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.dpF
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
 import com.yenaly.yenaly_libs.utils.requireActivity
-import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.ExperimentalTime
 
 /**
  * @project Han1meViewer
@@ -63,6 +63,7 @@ class HanimeDownloadedRvAdapter(private val fragment: DownloadedFragment) :
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     override fun onBindViewHolder(
         holder: DataBindingHolder<ItemHanimeDownloadedBinding>,
         position: Int,
@@ -94,7 +95,7 @@ class HanimeDownloadedRvAdapter(private val fragment: DownloadedFragment) :
             }
         }
         holder.binding.tvAddedTime.text =
-            Instant.fromEpochMilliseconds(item.video.addDate).toLocalDateTime(
+            kotlin.time.Instant.fromEpochMilliseconds(item.video.addDate).toLocalDateTime(
                 TimeZone.currentSystemDefault()
             ).format(LOCAL_DATE_TIME_FORMAT)
 

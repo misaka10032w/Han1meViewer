@@ -1,15 +1,16 @@
 [versions]
 # Plugins
-androidGradle = "8.10.0"
+aboutlibraries = "12.2.4"
+androidGradle = "8.11.1"
 barcodeScanning = "17.3.0"
 biometric = "1.1.0"
 cameraCore = "1.4.2"
 cameraCamera2 = "1.4.2"
-coilCompose = "3.2.0"
+coilCompose = "3.3.0"
 coreSplashscreen = "1.0.1"
 kotlin = "2.2.0"
 materialIconsCore = "1.7.8"
-serializationPlugin = "2.0.21"
+serializationPlugin = "2.2.0"
 ksp = "2.2.0-2.0.2"
 drawerlayout = "1.2.0"
 # Dependencies
@@ -28,25 +29,26 @@ refreshLayoutKernel = "2.1.1"
 refreshHeaderMaterial = "2.1.1"
 refreshFooterClassics = "2.1.1"
 multiType = "4.3.0"
-lifecycleViewModelKtx = "2.9.1"
-lifecycleRuntimeKtx = "2.9.1"
-lifecycleLiveDataKtx = "2.9.1"
+lifecycleViewModelKtx = "2.9.2"
+lifecycleRuntimeKtx = "2.9.2"
+lifecycleLiveDataKtx = "2.9.2"
 roomRuntime = "2.7.2"
 roomKtx = "2.7.2"
 roomCompiler = "2.7.2"
 navigation = "2.8.9"
 preferenceKtx = "1.2.1"
-windowJava = "1.2.0"
-window = "1.2.0"
+swiperefreshlayout = "1.2.0-beta01"
+windowJava = "1.4.0"
+window = "1.4.0"
 workRuntime = "2.10.2"
 workRuntimeKtx = "2.10.2"
 startupRuntime = "1.2.0"
 palette = "1.0.0"
 stateLayout = "1.4.2"
 spannableX = "1.0.4"
-datetime = "0.6.0-RC.2"
-serialization = "1.6.3"
-gson = "2.11.0"
+datetime = "0.7.1"
+serialization = "1.9.0"
+gson = "2.13.1"
 jsoup = "1.21.1"
 retrofit = "3.0.0"
 converterSerialization = "1.0.0"
@@ -57,16 +59,18 @@ jiaoziVideoPlayer = "7.7.2.3300"
 junit = "4.13.2"
 testJunit = "1.2.1"
 testEspressoCore = "3.6.1"
-guava = "33.3.1-android"
-exoplayer = "1.5.1"
+guava = "33.4.8-android"
+exoplayer = "1.7.1"
 circularRevealSwitch = "0.4.6"
 desugarJdkLibs = "2.1.5"
-firebaseBom = "33.16.0"
-composeBom = "2025.06.01"
-compose-material3 = "1.4.0-alpha17"
+firebaseBom = "34.0.0"
+composeBom = "2025.07.00"
+compose-material3 = "1.4.0-alpha18"
 
 [libraries]
 # Android
+aboutlibraries = { module = "com.mikepenz:aboutlibraries", version.ref = "aboutlibraries" }
+aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutlibraries" }
 androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCamera2" }
 androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "cameraCore" }
@@ -75,6 +79,7 @@ androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", versi
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "materialIconsCore" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation" }
+androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 androidx-window = { module = "androidx.window:window", version.ref = "window" }
 androidx-window-java = { module = "androidx.window:window-java", version.ref = "windowJava" }
 barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "barcodeScanning" }

@@ -76,7 +76,7 @@ import com.yenaly.yenaly_libs.utils.showSnackBar
 import com.yenaly.yenaly_libs.utils.startActivity
 import com.yenaly.yenaly_libs.utils.textFromClipboard
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
+import kotlin.time.ExperimentalTime
 
 /**
  * @project Hanime1
@@ -432,13 +432,14 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         unregisterReceiver(pipActionReceiver)
     }
 
+    @OptIn(ExperimentalTime::class)
     override fun bindDataObservers() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 AppViewModel.versionFlow.collect { state ->
                     if (state is WebsiteState.Success && Preferences.isUpdateDialogVisible) {
                         state.info?.let { release ->
-                            Preferences.lastUpdatePopupTime = Clock.System.now().epochSeconds
+                            Preferences.lastUpdatePopupTime = kotlin.time.Clock.System.now().epochSeconds
                             showUpdateDialog(release)
                         }
                     }

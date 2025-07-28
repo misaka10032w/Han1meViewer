@@ -7,12 +7,11 @@ import android.view.ViewGroup
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.updateLayoutParams
 import androidx.viewpager2.widget.ViewPager2
-import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 /**
  * 解决比如ViewPager2的Fragment内滑动无法传递给Activity的[BottomNavigationView]
- * 的[HideBottomViewOnScrollBehavior]问题，
+ * 的[com.google.android.material.behavior.HideBottomViewOnScrollBehavior]问题，
  * 通过这种方法可以使BNV随[view]的滑动而隐藏或显示
  *
  * @param view 比如ViewPager2之类
