@@ -57,7 +57,6 @@ import com.yenaly.yenaly_libs.utils.view.innerRecyclerView
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -68,6 +67,7 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.ExperimentalTime
 
 /**
  * @project Hanime1
@@ -377,7 +377,7 @@ class PreviewActivity : YenalyActivity<ActivityPreviewBinding>() {
     }
 
     private fun handleHeaderPalette(p: Palette) {
-        val colorPrimary = getThemeColor(com.google.android.material.R.attr.colorPrimary)
+        val colorPrimary = getThemeColor(androidx.appcompat.R.attr.colorPrimary)
         val lightVibrant = p.getLightVibrantColor(colorPrimary)
         val per70lightVibrantStateList =
             ColorUtils.setAlphaComponent(lightVibrant, 0xB3).toColorStateList()
@@ -442,9 +442,11 @@ class PreviewActivity : YenalyActivity<ActivityPreviewBinding>() {
         var current: LocalDateTime = currentDate
             private set
 
+        @kotlin.OptIn(ExperimentalTime::class)
         val currentDate: LocalDateTime
-            get() = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+            get() = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
 
+        @kotlin.OptIn(ExperimentalTime::class)
         val prevDate: LocalDateTime
             get() {
                 val instant = current.toInstant(TimeZone.currentSystemDefault())
@@ -452,6 +454,7 @@ class PreviewActivity : YenalyActivity<ActivityPreviewBinding>() {
                     .toLocalDateTime(TimeZone.currentSystemDefault())
             }
 
+        @kotlin.OptIn(ExperimentalTime::class)
         val nextDate: LocalDateTime
             get() {
                 val instant = current.toInstant(TimeZone.currentSystemDefault())

@@ -69,6 +69,7 @@ import androidx.core.content.edit
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.yenaly.han1meviewer.HanimeApplication
 import com.yenaly.yenaly_libs.utils.showLongToast
+import kotlin.time.ExperimentalTime
 
 /**
  * @project Han1meViewer
@@ -508,6 +509,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
 //        }
     }
 
+    @OptIn(ExperimentalTime::class)
     private fun toIntervalDaysPrettyString(value: Int): String {
         val lastUpdatePopupTime = Preferences.lastUpdatePopupTime
         val msg = if (lastUpdatePopupTime == 0L) {

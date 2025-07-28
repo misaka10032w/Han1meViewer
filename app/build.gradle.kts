@@ -17,7 +17,7 @@ plugins {
     alias(libs.plugins.com.google.firebase.crashlytics)
     alias(libs.plugins.com.google.firebase.firebase.pref)
     alias(libs.plugins.compose.compiler)
-    id("com.mikepenz.aboutlibraries.plugin") version "12.2.3"
+    id("com.mikepenz.aboutlibraries.plugin") version "12.2.4"
     id("com.github.ben-manes.versions") version "0.52.0"
     // alias(libs.plugins.compose.compiler)
 }
@@ -117,10 +117,11 @@ dependencies {
     implementation(libs.androidx.window)
     implementation(libs.androidx.window.java)
     implementation(project(":yenaly_libs"))
-    implementation("com.mikepenz:aboutlibraries-core:12.2.3")
-    implementation("com.mikepenz:aboutlibraries:12.2.3")
+    implementation(libs.aboutlibraries.core)
+    implementation(libs.aboutlibraries)
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.swiperefreshlayout)
     // android related
 
     implementation(libs.bundles.android.base)

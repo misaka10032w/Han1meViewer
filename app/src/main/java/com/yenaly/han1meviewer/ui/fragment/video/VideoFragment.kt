@@ -66,7 +66,7 @@ import com.yenaly.yenaly_libs.utils.startActivity
 import com.yenaly.yenaly_libs.utils.view.attach
 import com.yenaly.yenaly_libs.utils.view.setUpFragmentStateAdapter
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
+import kotlin.time.ExperimentalTime
 
 
 class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager.OrientationChangeListener {
@@ -127,6 +127,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         })
     }
 
+    @OptIn(ExperimentalTime::class)
     override fun bindDataObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
@@ -164,7 +165,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
                                     state.info.coverUrl,
                                     state.info.title,
                                     state.info.uploadTimeMillis,
-                                    Clock.System.now().toEpochMilliseconds(),
+                                    kotlin.time.Clock.System.now().toEpochMilliseconds(),
                                     videoCode
                                 )
                                 viewModel.insertWatchHistoryWithCover(entity)

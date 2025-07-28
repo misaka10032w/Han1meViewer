@@ -156,7 +156,6 @@
             android:name=".ui.activity.PreviewActivity"
             android:configChanges="screenSize|orientation"
             android:exported="true"
-            android:screenOrientation="portrait"
             android:theme="@style/Theme.Hanime1.Preview"
             tools:ignore="LockedOrientationActivity">
 

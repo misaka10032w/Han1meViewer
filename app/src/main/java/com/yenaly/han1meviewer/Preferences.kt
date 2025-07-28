@@ -17,9 +17,8 @@ import com.yenaly.yenaly_libs.utils.applicationContext
 import com.yenaly.yenaly_libs.utils.getSpValue
 import com.yenaly.yenaly_libs.utils.putSpValue
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.days
+import kotlin.time.ExperimentalTime
 
 object Preferences {
     /**
@@ -75,10 +74,11 @@ object Preferences {
         get() = preferenceSp.getBoolean(HomeSettingsFragment.USE_CI_UPDATE_CHANNEL, false)
 
     // Check if show update dialog.
+    @OptIn(ExperimentalTime::class)
     val isUpdateDialogVisible: Boolean
         get() {
-            val now = Clock.System.now()
-            val lastCheckTime = Instant.fromEpochSeconds(lastUpdatePopupTime)
+            val now = kotlin.time.Clock.System.now()
+            val lastCheckTime = kotlin.time.Instant.fromEpochSeconds(lastUpdatePopupTime)
             val interval = updatePopupIntervalDays
             return now > lastCheckTime + interval.days
         }
