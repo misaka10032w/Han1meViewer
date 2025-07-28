@@ -288,8 +288,7 @@ class HJzvdStd @JvmOverloads constructor(
     private val screenBrightnessBK = Settings.System.getInt(
         context.contentResolver,
         Settings.System.SCREEN_BRIGHTNESS
-    ).toFloat()
-
+    ).toFloat()/255f
     /**
      * 長按快進檢測
      */
