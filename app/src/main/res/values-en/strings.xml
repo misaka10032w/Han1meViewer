@@ -378,8 +378,8 @@ Recommendations are as follows:\n
     <string name="unlock_method">Use fingerprint, PIN, or pattern to unlock</string>
     <string name="unlock_desc">We need to confirm it\'s really you Mast****tion🍄💦</string>
     <string name="popup_search_btn">Search</string>
-    <string name="disable_comments_title">When enabled, the comment section will be hidden on the video details page</string>
-    <string name="disable_comments_sum">Disable Comments</string>
+    <string name="disable_comments_title">Disable Comments</string>
+    <string name="disable_comments_sum">When enabled, the comment section will be hidden on the video details page</string>
     <string name="default_video_quilty">Default video resolution</string>
     <string name="my_subscribe">My Subscriptions</string>
     <string name="title_activity_qrcode_scanner">Scan the QR code</string>
