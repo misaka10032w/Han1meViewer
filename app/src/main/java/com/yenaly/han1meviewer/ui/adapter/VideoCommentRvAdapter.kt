@@ -226,7 +226,10 @@ class VideoCommentRvAdapter(
                         commentPopup.hint =
                             """${context.getString(R.string.reply)}<b>@${item.username}</b>""".parseAsHtml()
                     }
-                    XPopup.Builder(context).autoOpenSoftInput(true).asCustom(commentPopup).show()
+                    XPopup.Builder(context)
+                        .autoOpenSoftInput(true)
+                        .moveUpToKeyboard(false)
+                        .asCustom(commentPopup).show()
                 }
             }
         }

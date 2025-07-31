@@ -108,7 +108,9 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
             } ?: showShortToast(R.string.there_is_a_small_issue)
         }
         binding.btnComment.setOnClickListener {
-            XPopup.Builder(context).autoOpenSoftInput(true)
+            XPopup.Builder(context)
+                .autoOpenSoftInput(true)
+                .moveUpToKeyboard(false)
                 .setPopupCallback(object : SimpleCallback() {
                     override fun beforeShow(popupView: BasePopupView?) {
                         binding.btnComment.hide()
@@ -192,6 +194,7 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
                 when (state) {
                     is WebsiteState.Error -> {
                         showShortToast(R.string.send_failed)
+                        commentAdapter.replyPopup?.enableSendButton()
                     }
 
                     is WebsiteState.Loading -> {
@@ -200,6 +203,7 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
 
                     is WebsiteState.Success -> {
                         showShortToast(R.string.send_success)
+                        commentAdapter.replyPopup?.enableSendButton()
                         viewModel.getComment(commentTypePrefix, viewModel.code)
                         commentAdapter.replyPopup?.dismiss()
                     }

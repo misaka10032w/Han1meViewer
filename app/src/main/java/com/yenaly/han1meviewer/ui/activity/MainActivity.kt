@@ -270,7 +270,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
     }
 
     private fun removeAuthGuard() {
-        val root = findViewById<ViewGroup>(R.id.dl_main) // 或者 R.id.root
+        val root = findViewById<ViewGroup>(R.id.dl_main)
         val authGuard = findViewById<View>(R.id.auth_guard)
         root?.removeView(authGuard)
     }
