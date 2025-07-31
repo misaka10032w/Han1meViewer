@@ -19,7 +19,6 @@ plugins {
     alias(libs.plugins.compose.compiler)
     id("com.mikepenz.aboutlibraries.plugin") version "12.2.4"
     id("com.github.ben-manes.versions") version "0.52.0"
-    // alias(libs.plugins.compose.compiler)
 }
 
 android {

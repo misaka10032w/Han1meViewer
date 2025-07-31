@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.annotation.OptIn
 import androidx.fragment.app.viewModels
@@ -15,6 +16,7 @@ import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.badge.ExperimentalBadgeUtils
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.yenaly.han1meviewer.COMMENT_ID
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.PopUpFragmentChildCommentBinding
@@ -53,7 +55,7 @@ class ChildCommentPopupFragment :
 //        binding.root.minimumHeight = appScreenHeight / 2
         binding.rvReply.layoutManager = LinearLayoutManager(context)
         binding.rvReply.adapter = replyAdapter
-
+        binding.rvReplyContainer.layoutParams.height = getWindowHeight() / 2
         viewModel.getCommentReply(commentId!!)
 
         lifecycleScope.launch {
@@ -66,7 +68,9 @@ class ChildCommentPopupFragment :
 
                     is WebsiteState.Loading -> Unit
 
-                    is WebsiteState.Success -> Unit
+                    is WebsiteState.Success -> {
+                        binding.rvReplyContainer.layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
+                    }
                 }
             }
         }
@@ -83,6 +87,7 @@ class ChildCommentPopupFragment :
                 when (state) {
                     is WebsiteState.Error -> {
                         showShortToast(R.string.send_failed)
+                        replyAdapter.replyPopup?.enableSendButton()
                     }
 
                     is WebsiteState.Loading -> {
@@ -91,6 +96,7 @@ class ChildCommentPopupFragment :
 
                     is WebsiteState.Success -> {
                         showShortToast(R.string.send_success)
+                        replyAdapter.replyPopup?.enableSendButton()
                         viewModel.getCommentReply(commentId!!)
                         replyAdapter.replyPopup?.dismiss()
                     }
@@ -132,6 +138,18 @@ class ChildCommentPopupFragment :
             @Suppress("DEPRECATION")
             window.windowManager.defaultDisplay.height
         }
+    }
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
+        dialog.window?.apply {
+            addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+            @Suppress("DEPRECATION")
+            addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                isNavigationBarContrastEnforced = false
+            }
+        }
+        return dialog
     }
     @OptIn(ExperimentalBadgeUtils::class)
     private fun attachRedDotCount(count: Int) {

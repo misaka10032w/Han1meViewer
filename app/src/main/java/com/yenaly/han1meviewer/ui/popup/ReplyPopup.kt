@@ -3,8 +3,8 @@ package com.yenaly.han1meviewer.ui.popup
 import android.content.Context
 import android.os.Build
 import android.view.WindowInsets
-import android.widget.EditText
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
 import com.lxj.xpopup.core.BottomPopupView
 import com.yenaly.han1meviewer.R
 import com.yenaly.yenaly_libs.utils.unsafeLazy
@@ -16,7 +16,7 @@ import com.yenaly.yenaly_libs.utils.unsafeLazy
  */
 class ReplyPopup(context: Context) : BottomPopupView(context) {
 
-    private val editText by unsafeLazy { findViewById<EditText>(R.id.et_comment) }
+    private val editText by unsafeLazy { findViewById<TextInputEditText>(R.id.et_comment) }
     private val btnSend by unsafeLazy { findViewById<MaterialButton>(R.id.btn_send) }
 
     private var commentPrefix: String? = null
@@ -29,6 +29,11 @@ class ReplyPopup(context: Context) : BottomPopupView(context) {
         editText.hint = hint
         commentPrefix?.let(editText::append)
         sendListener?.let(btnSend::setOnClickListener)
+        //防止连续点击干出去好几个评论，评论区有时候出现好几个相同的评论，一猜就是APP发出去的，防止站长发现给加验证码。
+        btnSend.setOnClickListener {
+            btnSend.isEnabled = false
+            sendListener?.onClick(it)
+        }
     }
     /**
      * [onKeyboardHeightChange]方法在某些情况下只让出了IME高度，没有让出沉浸式导航栏高度
@@ -48,7 +53,9 @@ class ReplyPopup(context: Context) : BottomPopupView(context) {
         }
         translationY = if (height > 0) -(height + navHeight).toFloat() else 0f
     }
-
+    fun enableSendButton() {
+        btnSend.isEnabled = true
+    }
     /**
      * 得到你输入的内容
      */
