@@ -108,7 +108,9 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
             } ?: showShortToast(R.string.there_is_a_small_issue)
         }
         binding.btnComment.setOnClickListener {
-            XPopup.Builder(context).autoOpenSoftInput(true)
+            XPopup.Builder(context)
+                .autoOpenSoftInput(true)
+                .moveUpToKeyboard(false)
                 .setPopupCallback(object : SimpleCallback() {
                     override fun beforeShow(popupView: BasePopupView?) {
                         binding.btnComment.hide()

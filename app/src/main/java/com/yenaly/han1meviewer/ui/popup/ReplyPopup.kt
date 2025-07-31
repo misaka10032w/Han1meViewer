@@ -1,6 +1,8 @@
 package com.yenaly.han1meviewer.ui.popup
 
 import android.content.Context
+import android.os.Build
+import android.view.WindowInsets
 import android.widget.EditText
 import com.google.android.material.button.MaterialButton
 import com.lxj.xpopup.core.BottomPopupView
@@ -27,6 +29,24 @@ class ReplyPopup(context: Context) : BottomPopupView(context) {
         editText.hint = hint
         commentPrefix?.let(editText::append)
         sendListener?.let(btnSend::setOnClickListener)
+    }
+    /**
+     * [onKeyboardHeightChange]方法在某些情况下只让出了IME高度，没有让出沉浸式导航栏高度
+     */
+    @Suppress("DEPRECATION")
+    override fun onKeyboardHeightChange(height: Int) {
+        super.onKeyboardHeightChange(height)
+        val insets = rootView.rootWindowInsets
+        val navHeight = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            insets?.getInsets(WindowInsets.Type.navigationBars())?.bottom ?: 0
+        } else {
+            if (height == 0) {
+                insets?.systemWindowInsetBottom ?: 0
+            } else {
+                (insets?.systemWindowInsetBottom ?: 0) - height
+            }
+        }
+        translationY = if (height > 0) -(height + navHeight).toFloat() else 0f
     }
 
     /**

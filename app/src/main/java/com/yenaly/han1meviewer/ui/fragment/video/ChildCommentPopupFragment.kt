@@ -1,9 +1,12 @@
 package com.yenaly.han1meviewer.ui.fragment.video
 
 import android.app.Dialog
+import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.View
+import android.view.WindowManager
 import androidx.annotation.OptIn
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -11,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.badge.ExperimentalBadgeUtils
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.yenaly.han1meviewer.COMMENT_ID
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.PopUpFragmentChildCommentBinding
@@ -19,7 +23,6 @@ import com.yenaly.han1meviewer.ui.adapter.VideoCommentRvAdapter
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.util.setGravity
 import com.yenaly.yenaly_libs.base.YenalyBottomSheetDialogFragment
-import com.yenaly.yenaly_libs.utils.appScreenHeight
 import com.yenaly.yenaly_libs.utils.arguments
 import com.yenaly.yenaly_libs.utils.dp
 import com.yenaly.yenaly_libs.utils.showShortToast
@@ -47,7 +50,7 @@ class ChildCommentPopupFragment :
     override fun initData(savedInstanceState: Bundle?, dialog: Dialog) {
         if (commentId == null) dialog.dismiss()
 
-        binding.root.minimumHeight = appScreenHeight / 2
+//        binding.root.minimumHeight = appScreenHeight / 2
         binding.rvReply.layoutManager = LinearLayoutManager(context)
         binding.rvReply.adapter = replyAdapter
 
@@ -108,7 +111,28 @@ class ChildCommentPopupFragment :
             }
         }
     }
-
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+        val bottomSheet = dialog?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+        bottomSheet?.let { sheet ->
+            val screenHeight = getWindowHeight()
+            sheet.minimumHeight = screenHeight / 2
+            val behavior = BottomSheetBehavior.from(sheet)
+            behavior.isFitToContents = false
+            behavior.peekHeight = screenHeight / 2
+            behavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        }
+    }
+    private fun getWindowHeight(): Int {
+        val window = dialog?.window ?: return resources.displayMetrics.heightPixels
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.windowManager.currentWindowMetrics.bounds.height()
+        } else {
+            @Suppress("DEPRECATION")
+            window.windowManager.defaultDisplay.height
+        }
+    }
     @OptIn(ExperimentalBadgeUtils::class)
     private fun attachRedDotCount(count: Int) {
         val badgeDrawable = BadgeDrawable.create(requireContext())
