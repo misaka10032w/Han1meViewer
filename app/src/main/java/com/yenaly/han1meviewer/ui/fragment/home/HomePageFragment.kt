@@ -50,13 +50,10 @@ import com.yenaly.han1meviewer.ui.adapter.RvWrapper.Companion.wrappedWith
 import com.yenaly.han1meviewer.ui.adapter.VideoColumnTitleAdapter
 import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
-import com.yenaly.han1meviewer.ui.fragment.funny.FunnyTouchListener
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
 import com.yenaly.han1meviewer.util.addUpdateListener
 import com.yenaly.han1meviewer.util.colorTransition
 import com.yenaly.yenaly_libs.base.YenalyFragment
-import com.yenaly.yenaly_libs.utils.application
-import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.startActivity
 import kotlinx.coroutines.launch
 import java.io.Serializable
@@ -83,9 +80,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
     private val hanimeTheyWatchedAdapter = HanimeVideoRvAdapter()
     private val hanimeCurrentAdapter = HanimeVideoRvAdapter()
     private val hotHanimeMonthlyAdapter = HanimeVideoRvAdapter()
-    private val someFunnyTouchListener = FunnyTouchListener(application) {
-        showShortToast("WTF?")
-    }
+
     private val concatAdapter = ConcatAdapter(
         VideoColumnTitleAdapter(R.string.latest_hanime).apply {
             onMoreHanimeListener = {
@@ -248,7 +243,6 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         (activity as MainActivity).setupToolbar()
         binding.state.init()
 
-        view?.setOnTouchListener(someFunnyTouchListener)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             easterEgg()
         }
