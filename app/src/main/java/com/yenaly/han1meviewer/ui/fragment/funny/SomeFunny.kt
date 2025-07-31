@@ -15,7 +15,7 @@ class SomeFunny(
     private var inputSequence = mutableListOf<String>()
     private var lastInputTime = 0L
     private val timeLimit = 2000 // 2秒内完成全部输入
-    private val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    private val vibrator: Vibrator? = context.getSystemService(Vibrator::class.java)
     private val minDistance = 10
     // 用于过滤手指未抬起时的重复方向
     private var lastDirectionInMove: String? = null
@@ -89,11 +89,13 @@ class SomeFunny(
     }
     private fun vibrateOnce() {
         val vibrationDuration = 20L // 震动20毫秒
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(VibrationEffect.createOneShot(vibrationDuration, VibrationEffect.DEFAULT_AMPLITUDE))
-        } else {
-            @Suppress("DEPRECATION")
-            vibrator.vibrate(vibrationDuration)
+        vibrator?.let {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                it.vibrate(VibrationEffect.createOneShot(vibrationDuration, VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                it.vibrate(vibrationDuration)
+            }
         }
     }
 }
