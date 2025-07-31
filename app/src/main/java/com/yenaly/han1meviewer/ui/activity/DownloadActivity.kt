@@ -1,9 +1,11 @@
 package com.yenaly.han1meviewer.ui.activity
 
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.core.text.parseAsHtml
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.ActivityDownloadBinding
@@ -32,6 +34,10 @@ class DownloadActivity : YenalyActivity<ActivityDownloadBinding>() {
 
     override fun initData(savedInstanceState: Bundle?) {
         setSupportActionBar(binding.toolbar)
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
+        )
         binding.toolbar.setNavigationOnClickListener {
             onBackPressedDispatcher.onBackPressed()
         }
@@ -63,25 +69,25 @@ class DownloadActivity : YenalyActivity<ActivityDownloadBinding>() {
             tab.setText(tabNameArray[position])
         }
 
-        binding.hanidock.hanidokitems = listOf(
-            Hanidokitem.create {
-                icon = R.drawable.ic_baseline_access_time_24
-                text = R.string.title
-                viewAction = View.OnClickListener {
-                    showShortToast("test")
-                }
-            },
-            Hanidokitem.create {
-                icon = R.drawable.baseline_add_24
-                text = R.string.add
-                subitems = listOf(
-                    Hanidokitem.create {
-                        icon = R.drawable.ic_baseline_access_time_24
-                        text = R.string.title
-                    }
-                )
-            }
-        )
+//        binding.hanidock.hanidokitems = listOf(
+//            Hanidokitem.create {
+//                icon = R.drawable.ic_baseline_access_time_24
+//                text = R.string.title
+//                viewAction = View.OnClickListener {
+//                    showShortToast("test")
+//                }
+//            },
+//            Hanidokitem.create {
+//                icon = R.drawable.baseline_add_24
+//                text = R.string.add
+//                subitems = listOf(
+//                    Hanidokitem.create {
+//                        icon = R.drawable.ic_baseline_access_time_24
+//                        text = R.string.title
+//                    }
+//                )
+//            }
+//        )
     }
 
     override fun finish() {
