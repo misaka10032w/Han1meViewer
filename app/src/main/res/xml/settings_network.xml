@@ -11,10 +11,19 @@
         app:key="proxy"
         app:title="@string/proxy" />
 
-    <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
-        app:iconSpaceReserved="false"
-        app:key="use_built_in_hosts"
-        app:summary="@string/use_built_in_hosts_summary"
-        app:title="@string/use_built_in_hosts" />
+    <PreferenceCategory app:title="@string/builtin_dns">
+
+        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
+            app:iconSpaceReserved="false"
+            app:key="use_built_in_hosts"
+            app:summary="@string/use_built_in_hosts_summary"
+            app:title="@string/use_built_in_hosts" />
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="delay_test"
+            app:summary="@string/node_latency_sum"
+            app:title="@string/view_node_latency" />
+
+    </PreferenceCategory>
 
 </PreferenceScreen>
