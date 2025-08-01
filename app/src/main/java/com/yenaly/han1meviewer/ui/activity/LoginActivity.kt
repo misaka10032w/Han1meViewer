@@ -29,9 +29,8 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import com.google.android.material.textfield.TextInputEditText
-import com.yenaly.han1meviewer.HANIME_ALTER_BASE_URL
 import com.yenaly.han1meviewer.HANIME_LOGIN_URL
-import com.yenaly.han1meviewer.HANIME_MAIN_BASE_URL
+import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.USER_AGENT
 import com.yenaly.han1meviewer.databinding.ActivityLoginBinding
@@ -150,8 +149,7 @@ class LoginActivity : FrameActivity() {
                     view: WebView,
                     request: WebResourceRequest,
                 ): Boolean {
-                    val isSameUrl = request.url.toString() == HANIME_MAIN_BASE_URL ||
-                            request.url.toString() == HANIME_ALTER_BASE_URL
+                    val isSameUrl = HANIME_URL.contains(request.url.toString())
                     if (request.isRedirect && isSameUrl) {
                         val url = request.url
                         val cookieManager = CookieManager.getInstance().getCookie(url.host)

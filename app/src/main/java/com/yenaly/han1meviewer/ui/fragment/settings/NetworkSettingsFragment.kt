@@ -6,23 +6,18 @@ import android.view.View
 import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.preference.Preference
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.textfield.TextInputEditText
 import com.yenaly.han1meviewer.EMPTY_STRING
-import com.yenaly.han1meviewer.HANIME_ALTER_BASE_URL
-import com.yenaly.han1meviewer.HANIME_ALTER_HOSTNAME
-import com.yenaly.han1meviewer.HANIME_MAIN_BASE_URL
-import com.yenaly.han1meviewer.HANIME_MAIN_HOSTNAME
+import com.yenaly.han1meviewer.HanimeConstants.HANIME_HOSTNAME
+import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.logic.network.HanimeNetwork
 import com.yenaly.han1meviewer.logout
-import com.yenaly.han1meviewer.ui.activity.SettingsActivity
-import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
 import com.yenaly.han1meviewer.util.createAlertDialog
@@ -83,10 +78,12 @@ class NetworkSettingsFragment : YenalySettingsFragment(R.xml.settings_network) {
         }
         domainName.apply {
             entries = arrayOf(
-                "$HANIME_MAIN_HOSTNAME (${getString(R.string.default_)})",
-                "$HANIME_ALTER_HOSTNAME (${getString(R.string.alternative)})"
+                "${HANIME_HOSTNAME[0]} (${getString(R.string.default_)})",
+                "${HANIME_HOSTNAME[1]} (${getString(R.string.alternative)})",
+                "${HANIME_HOSTNAME[2]} (${getString(R.string.alternative)})"
+
             )
-            entryValues = arrayOf(HANIME_MAIN_BASE_URL, HANIME_ALTER_BASE_URL)
+            entryValues = HANIME_URL
             if (value == null) setValueIndex(0)
 
             setOnPreferenceChangeListener { _, newValue ->
