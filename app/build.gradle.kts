@@ -200,7 +200,7 @@ dependencies {
     implementation(libs.firebase.perf)
     implementation(libs.firebase.config)
     debugImplementation(libs.androidx.ui.test.manifest)
-
+    implementation(libs.firebase.database)
     ksp(libs.room.compiler)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
