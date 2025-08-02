@@ -90,7 +90,10 @@ object ServiceCreator {
 
     private fun buildGithubClient(): OkHttpClient {
         return OkHttpClient.Builder()
+            .connectTimeout(15, TimeUnit.SECONDS)
             .dns(GitHubDns)
+            .addInterceptor(UserAgentInterceptor)
+            .addInterceptor(UrlLoggingInterceptor())
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder().addHeader(
                     "Authorization", "Bearer ${BuildConfig.HA_GITHUB_TOKEN}"

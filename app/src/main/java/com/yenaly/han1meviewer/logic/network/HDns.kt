@@ -1,6 +1,5 @@
 package com.yenaly.han1meviewer.logic.network
 
-import android.util.Log
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_HOSTNAME
 import com.yenaly.han1meviewer.Preferences
 import okhttp3.Dns
