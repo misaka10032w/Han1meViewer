@@ -1,9 +1,12 @@
 package com.yenaly.han1meviewer.logic.model
 
 import androidx.annotation.Keep
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.yenaly.han1meviewer.LOCAL_DATE_TIME_FORMAT
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.format
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.ExperimentalTime
+
 @Keep
 data class Announcement(
     @JvmField val title: String = "",
@@ -13,8 +16,11 @@ data class Announcement(
     @JvmField val imageUrl: String = "",
     @JvmField val isActive: Boolean = false
 ) {
+    @OptIn(ExperimentalTime::class)
     fun getFormattedDate(): String {
-        return SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-            .format(Date(timestamp * 1000))
+        return kotlin.time.Instant
+            .fromEpochSeconds(timestamp)
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+            .format(LOCAL_DATE_TIME_FORMAT)
     }
 }
