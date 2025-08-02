@@ -37,7 +37,7 @@ android {
         applicationId = "com.yenaly.han1meviewer"
         minSdk = property("min.sdk")?.toString()?.toIntOrNull()
         targetSdk = property("target.sdk")?.toString()?.toIntOrNull()
-        val (code, name) = createVersion(major = 0, minor = 16, patch = 2)
+        val (code, name) = createVersion(major = 0, minor = 16, patch = 3)
         versionCode = code
         versionName = name
 
@@ -200,7 +200,7 @@ dependencies {
     implementation(libs.firebase.perf)
     implementation(libs.firebase.config)
     debugImplementation(libs.androidx.ui.test.manifest)
-
+    implementation(libs.firebase.database)
     ksp(libs.room.compiler)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)

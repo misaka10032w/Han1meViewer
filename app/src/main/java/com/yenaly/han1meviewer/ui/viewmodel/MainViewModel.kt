@@ -2,12 +2,17 @@ package com.yenaly.han1meviewer.ui.viewmodel
 
 import android.app.Application
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.database.FirebaseDatabase
+import com.yenaly.han1meviewer.FIREBASE_REALTIME_DATABASE
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
+import com.yenaly.han1meviewer.logic.model.Announcement
 import com.yenaly.han1meviewer.logic.model.HomePage
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
@@ -31,7 +36,9 @@ class MainViewModel(application: Application) : YenalyViewModel(application) {
         MutableStateFlow<WebsiteState<HomePage>>(WebsiteState.Loading)
     val homePageFlow = _homePageFlow.asStateFlow()
     val horizontalScrollPositions = mutableMapOf<String, Int>()
-
+    private val _announcements = MutableLiveData<List<Announcement>>()
+    val announcements: LiveData<List<Announcement>> = _announcements
+    private val database = FirebaseDatabase.getInstance(FIREBASE_REALTIME_DATABASE)
     fun getHomePage() {
         viewModelScope.launch {
             NetworkRepo.getHomePage().collect { homePage ->
@@ -88,6 +95,29 @@ class MainViewModel(application: Application) : YenalyViewModel(application) {
     fun updateHKeyframes(entity: HKeyframeEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             DatabaseRepo.HKeyframe.update(entity)
+        }
+    }
+    fun loadAnnouncements(forceRefresh: Boolean = false) {
+        if (_announcements.value != null && !forceRefresh) return
+
+        val announcementsRef = database.getReference("announcements")
+
+        announcementsRef.get().addOnSuccessListener { snapshot ->
+            val list = mutableListOf<Announcement>()
+            if (snapshot.exists()) {
+                for (announceSnap in snapshot.children) {
+                    val announcement = announceSnap.getValue(Announcement::class.java)
+                    if (announcement != null && announcement.isActive) {
+                        list.add(announcement)
+                    }
+                }
+                _announcements.postValue(list.sortedBy { it.priority })
+            } else {
+                _announcements.postValue(emptyList())
+            }
+        }.addOnFailureListener { e ->
+            Log.e("Announcement", "读取失败: ${e.message}")
+            _announcements.postValue(emptyList())
         }
     }
 }

@@ -428,6 +428,11 @@
     <string name="fake_app_icon">偽裝應用</string>
     <string name="select_fake_icon">選擇顯示在桌面的圖標</string>
     <string name="fake_icon_hint">設定成功，應用可能會關閉，應用圖標可能會稍晚些刷新，期間會提示應用未安裝。</string>
+    <string name="current_node_latency">當前CDN節點延遲</string>
+    <string name="unknow">未知</string>
+    <string name="builtin_dns">內建DNS映射</string>
+    <string name="node_latency_sum">啟用內建Hosts後可偵測延遲狀況\n不啟用為實際解析位址</string>
+    <string name="view_node_latency">查看節點延遲</string>
 
 
 </resources>

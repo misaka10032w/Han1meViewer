@@ -2,27 +2,32 @@ package com.yenaly.han1meviewer.ui.fragment.settings
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.widget.TextView
 import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
+import androidx.core.net.toUri
 import androidx.preference.Preference
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.textfield.TextInputEditText
 import com.yenaly.han1meviewer.EMPTY_STRING
-import com.yenaly.han1meviewer.HANIME_ALTER_BASE_URL
-import com.yenaly.han1meviewer.HANIME_ALTER_HOSTNAME
-import com.yenaly.han1meviewer.HANIME_MAIN_BASE_URL
-import com.yenaly.han1meviewer.HANIME_MAIN_HOSTNAME
+import com.yenaly.han1meviewer.HanimeConstants.HANIME_HOSTNAME
+import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.logic.network.HDns
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.logic.network.HanimeNetwork
 import com.yenaly.han1meviewer.logout
-import com.yenaly.han1meviewer.ui.activity.SettingsActivity
-import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
+import com.yenaly.han1meviewer.ui.adapter.DelayAdapter
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
 import com.yenaly.han1meviewer.util.createAlertDialog
@@ -33,6 +38,8 @@ import com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
 import com.yenaly.yenaly_libs.base.settings.YenalySettingsFragment
 import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.unsafeLazy
+import java.net.InetAddress
+import java.util.concurrent.Executors
 
 /**
  * @project Han1meViewer
@@ -48,6 +55,7 @@ class NetworkSettingsFragment : YenalySettingsFragment(R.xml.settings_network) {
         const val PROXY_PORT = "proxy_port"
         const val DOMAIN_NAME = "domain_name"
         const val USE_BUILT_IN_HOSTS = "use_built_in_hosts"
+        const val DELAY_TEST = "delay_test"
     }
 
     private val proxy
@@ -56,7 +64,8 @@ class NetworkSettingsFragment : YenalySettingsFragment(R.xml.settings_network) {
             by safePreference<MaterialDialogPreference>(DOMAIN_NAME)
     private val useBuiltInHosts
             by safePreference<MaterialSwitchPreference>(USE_BUILT_IN_HOSTS)
-
+    private val delayTest
+            by safePreference<Preference>(DELAY_TEST)
     private val proxyDialog by unsafeLazy {
         ProxyDialog(proxy, R.layout.dialog_proxy)
     }
@@ -83,10 +92,12 @@ class NetworkSettingsFragment : YenalySettingsFragment(R.xml.settings_network) {
         }
         domainName.apply {
             entries = arrayOf(
-                "$HANIME_MAIN_HOSTNAME (${getString(R.string.default_)})",
-                "$HANIME_ALTER_HOSTNAME (${getString(R.string.alternative)})"
+                "${HANIME_HOSTNAME[0]} (${getString(R.string.default_)})",
+                "${HANIME_HOSTNAME[1]} (${getString(R.string.alternative)})",
+                "${HANIME_HOSTNAME[2]} (${getString(R.string.alternative)})"
+
             )
-            entryValues = arrayOf(HANIME_MAIN_BASE_URL, HANIME_ALTER_BASE_URL)
+            entryValues = HANIME_URL
             if (value == null) setValueIndex(0)
 
             setOnPreferenceChangeListener { _, newValue ->
@@ -122,6 +133,23 @@ class NetworkSettingsFragment : YenalySettingsFragment(R.xml.settings_network) {
                 return@setOnPreferenceChangeListener true
             }
         }
+        delayTest.apply {
+            setOnPreferenceClickListener {
+                val currentHost = Preferences.baseUrl.toUri().host ?: getString(R.string.unknow)
+                Executors.newSingleThreadExecutor().execute {
+                    val hdns = HDns()
+                    val ipList = hdns.getCDNList(currentHost)
+                    // 回到主线程更新 UI
+                    Handler(Looper.getMainLooper()).post {
+                        Log.i("delayTest", ipList.toString())
+                        val dialog = DelayTestDialog(this@apply, ipList)
+                        dialog.show()
+                    }
+                }
+                true
+            }
+        }
+
     }
 
     private fun generateProxySummary(type: Int, ip: String, port: Int): CharSequence {
@@ -131,6 +159,77 @@ class NetworkSettingsFragment : YenalySettingsFragment(R.xml.settings_network) {
             HProxySelector.TYPE_HTTP -> getString(R.string.http_proxy, ip, port)
             HProxySelector.TYPE_SOCKS -> getString(R.string.socks_proxy, ip, port)
             else -> getString(R.string.direct)
+        }
+    }
+    inner class DelayTestDialog(
+        delayTestPref: Preference,
+        private val ipList: List<String>
+    ) {
+        private val dialog: AlertDialog
+        private var adapter: DelayAdapter
+        private val handler = Handler(Looper.getMainLooper())
+        private var isRunning = false
+
+        init {
+            val view = LayoutInflater.from(delayTestPref.context)
+                .inflate(R.layout.delay_test_dialog, null)
+            val tvCurrentHost = view.findViewById<TextView>(R.id.current_host)
+            val currentHost = Preferences.baseUrl
+            tvCurrentHost.text = currentHost
+            val rv = view.findViewById<RecyclerView>(R.id.rv_delay_list)
+            adapter = DelayAdapter(ipList)
+            rv.layoutManager = LinearLayoutManager(delayTestPref.context)
+            rv.adapter = adapter
+
+            dialog = delayTestPref.context.createAlertDialog {
+                setTitle(getString(R.string.current_node_latency))
+                setCancelable(false)
+                setView(view)
+                setPositiveButton(R.string.confirm) { _, _ -> stop() }
+            }
+        }
+
+        fun show() {
+            dialog.showWithBlurEffect()
+            start()
+        }
+
+        private fun start() {
+            isRunning = true
+            scheduleNextTest()
+        }
+
+        private fun stop() {
+            isRunning = false
+            handler.removeCallbacksAndMessages(null)
+        }
+
+        private fun testIp(ip: String) {
+            if (!isRunning) return
+            Executors.newSingleThreadExecutor().execute {
+                val delay = measureDelay(ip)
+                handler.post {
+                    adapter.updateDelay(ip, delay)
+                }
+            }
+        }
+        private fun scheduleNextTest() {
+            if (!isRunning) return
+            ipList.forEach { ip ->
+                testIp(ip)
+            }
+            handler.postDelayed({ scheduleNextTest() }, 2000)
+        }
+
+        private fun measureDelay(ip: String): Int {
+            return try {
+                val start = System.currentTimeMillis()
+                val address = InetAddress.getByName(ip)
+                val reachable = address.isReachable(1000)
+                if (reachable) (System.currentTimeMillis() - start).toInt() else -1
+            } catch (e: Exception) {
+                -1
+            }
         }
     }
 

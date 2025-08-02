@@ -9,6 +9,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.analytics.analytics
 import com.google.firebase.crashlytics.crashlytics
 import com.google.firebase.crashlytics.setCustomKeys
+import com.google.firebase.database.database
 import com.google.firebase.remoteconfig.remoteConfig
 import com.google.firebase.remoteconfig.remoteConfigSettings
 import com.scwang.smart.refresh.footer.ClassicsFooter
@@ -82,6 +83,7 @@ class HanimeApplication : YenalyApplication() {
                 AppViewModel.getLatestVersion(delayMillis = 200)
             }
         }
+        Firebase.database.setPersistenceEnabled(true)
     }
 
     private fun initNotificationChannel() {

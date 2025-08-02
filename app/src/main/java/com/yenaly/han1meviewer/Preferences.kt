@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer
 
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
+import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.logic.network.interceptor.SpeedLimitInterceptor
 import com.yenaly.han1meviewer.ui.fragment.settings.DownloadSettingsFragment
@@ -127,8 +128,8 @@ object Preferences {
             "com.yenaly.han1meviewer.LauncherAliasDefault") ?: "com.yenaly.han1meviewer.LauncherAliasDefault"
 
     val baseUrl: String
-        get() = preferenceSp.getString(NetworkSettingsFragment.DOMAIN_NAME, HANIME_MAIN_BASE_URL)
-            ?: HANIME_MAIN_BASE_URL
+        get() = preferenceSp.getString(NetworkSettingsFragment.DOMAIN_NAME, HANIME_URL[0])
+            ?: HANIME_URL[0]
 
     val useBuiltInHosts: Boolean
         get() = preferenceSp.getBoolean(NetworkSettingsFragment.USE_BUILT_IN_HOSTS, false)

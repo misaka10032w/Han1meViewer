@@ -85,13 +85,14 @@ const val PREVIEW_COMMENT_PREFIX = "preview"
 @JvmField
 val HANIME_BASE_URL = Preferences.baseUrl
 
-const val HANIME_MAIN_HOSTNAME = "hanime1.me"
-
-const val HANIME_ALTER_HOSTNAME = "hanime1.com"
-
-const val HANIME_MAIN_BASE_URL = "https://hanime1.me/"
-
-const val HANIME_ALTER_BASE_URL = "https://hanime1.com/"
+/**
+ * 如果添加备选网址别忘了改[String.toVideoCode]的videoUrlRegex
+ * 没想弄动态匹配，觉得古法修改挺好的。
+ */
+object HanimeConstants {
+    val HANIME_HOSTNAME = arrayOf("hanime1.me","hanime1.com","hanimeone.me")
+    val HANIME_URL = arrayOf("https://hanime1.me/","https://hanime1.com/","https://hanimeone.me/")
+}
 
 @JvmField
 val HANIME_LOGIN_URL = HANIME_BASE_URL + "login"
@@ -107,7 +108,7 @@ const val HA1_GITHUB_FORUM_URL = "$HA1_GITHUB_URL/discussions"
 const val HA1_GITHUB_RELEASES_URL = "$HA1_GITHUB_URL/releases"
 
 const val HA1_GITHUB_API_URL = "https://api.github.com/repos/misaka10032w/Han1meViewer/"
-
+const val FIREBASE_REALTIME_DATABASE = "https://han1meviewer-86e5f-default-rtdb.asia-southeast1.firebasedatabase.app/"
 // for Shared Preference
 
 const val LOGIN_COOKIE = "cookie"

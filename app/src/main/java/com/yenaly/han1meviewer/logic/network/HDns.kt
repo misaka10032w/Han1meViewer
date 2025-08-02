@@ -1,7 +1,6 @@
 package com.yenaly.han1meviewer.logic.network
 
-import com.yenaly.han1meviewer.HANIME_ALTER_HOSTNAME
-import com.yenaly.han1meviewer.HANIME_MAIN_HOSTNAME
+import com.yenaly.han1meviewer.HanimeConstants.HANIME_HOSTNAME
 import com.yenaly.han1meviewer.Preferences
 import okhttp3.Dns
 import java.net.InetAddress
@@ -19,14 +18,13 @@ class HDns : Dns {
 
     init {
         if (useBuiltInHosts) {
-            dnsMap[HANIME_MAIN_HOSTNAME] = listOf(
-                "104.26.0.18", "104.26.1.18", "172.67.69.183",
-                "2400:cb00:2048:1::681a:12"
+            dnsMap[HANIME_HOSTNAME[0]] = listOf(
+                "104.25.254.167", "172.67.75.184", "172.64.229.154",
+                "2606:4700:8dd1::2a46:47f8"
             )
-            dnsMap[HANIME_ALTER_HOSTNAME] = listOf(
-                "104.26.0.18", "104.26.1.18", "172.67.167.30",
-                "172.67.69.183", "188.114.96.2",
-                "2001::1f0d:5628"
+            dnsMap[HANIME_HOSTNAME[1]] = listOf(
+                "104.25.254.167", "172.67.75.184", "172.64.229.154",
+                "2606:4700:8dd1::2a46:47f8"
             )
         }
     }
@@ -48,6 +46,21 @@ class HDns : Dns {
     override fun lookup(hostname: String): List<InetAddress> {
         return if (useBuiltInHosts) dnsMap[hostname] ?: Dns.SYSTEM.lookup(hostname)
         else Dns.SYSTEM.lookup(hostname)
+    }
+    fun getCDNList(host: String): List<String> {
+        if (useBuiltInHosts) {
+            val builtInIps = dnsMap[host]?.mapNotNull { it.hostAddress }?.distinct()
+            if (!builtInIps.isNullOrEmpty()) {
+                return builtInIps
+            }
+        }
+
+        return runCatching {
+            Dns.SYSTEM.lookup(host).map { it.hostAddress }.distinct()
+        }.getOrElse {
+            it.printStackTrace()
+            emptyList()
+        }
     }
 
 }

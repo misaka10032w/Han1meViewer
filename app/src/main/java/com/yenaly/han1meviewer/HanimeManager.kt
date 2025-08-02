@@ -47,7 +47,7 @@ fun getHanimeShareText(title: String, videoCode: String): String = buildString {
 fun getHanimeVideoDownloadLink(videoCode: String) =
     HANIME_BASE_URL + "download?v=" + videoCode
 
-val videoUrlRegex = Regex("""hanime1\.(?:com|me)/watch\?v=(\d+)""")
+val videoUrlRegex = Regex("""hanime(?:1|one)\.(?:com|me)/watch\?v=(\d+)""")
 
 fun String.toVideoCode() = videoUrlRegex.find(this)?.groupValues?.get(1)
 

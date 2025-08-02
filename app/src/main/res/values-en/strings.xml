@@ -403,5 +403,10 @@ Recommendations are as follows:\n
     <string name="fake_app_icon">Fake Icon</string>
     <string name="select_fake_icon">Select the fake icon</string>
     <string name="fake_icon_hint">Settings applied successfully. The app may close, and the app icon might take a while to update. During this time, you may see a \"Not installed\" prompt.</string>
+    <string name="current_node_latency">Current CDN node latency</string>
+    <string name="unknow">Unknown</string>
+    <string name="view_node_latency">View node latency</string>
+    <string name="node_latency_sum">Enable built-in Hosts to detect latency\nDo not enable actual address resolution</string>
+    <string name="builtin_dns">Built-in DNS mapping</string>
 
 </resources>
