@@ -270,6 +270,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                 isAfterRefreshing = false
                 // will enter here firstly. cuz the flow's def value is Loading.
                 viewModel.getHomePage()
+                viewModel.loadAnnouncements(true)
             }
             setEnableLoadMore(false)
         }
@@ -279,7 +280,6 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                     showExitConfirmationDialog()
                 }
             })
-        initAnnouncements()
     }
 
     override fun onResume() {
@@ -316,6 +316,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                             latestReleaseAdapter.submitList(state.info.latestRelease)
                             chineseSubtitleAdapter.submitList(state.info.chineseSubtitle)
                             binding.state.showContent()
+                            initAnnouncements()
                         }
 
                         is WebsiteState.Error -> {
@@ -478,7 +479,6 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
     private fun initAnnouncements() {
         val lastDismissTime = getSpValue("last_dismiss_time",0L,"setting_pref")
         val shouldShowAnno = System.currentTimeMillis() - lastDismissTime > 24*60*60*1000L
-
         if (!shouldShowAnno) return
 
         viewModel.announcements.observe(viewLifecycleOwner) { sortedList ->
@@ -507,6 +507,6 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                 }
             }
         }
-        viewModel.loadAnnouncements()
+ //       viewModel.loadAnnouncements()
     }
 }

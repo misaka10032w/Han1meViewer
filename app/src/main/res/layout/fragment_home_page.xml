@@ -146,7 +146,6 @@
                 </androidx.appcompat.widget.Toolbar>
 
             </com.google.android.material.appbar.CollapsingToolbarLayout>
-            <!-- 公告栏 -->
 
         </com.google.android.material.appbar.AppBarLayout>
 
