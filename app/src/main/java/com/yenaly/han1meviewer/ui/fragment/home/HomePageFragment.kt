@@ -14,6 +14,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
@@ -322,6 +323,19 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                         is WebsiteState.Error -> {
                             binding.homePageSrl.finishRefresh()
                             binding.state.showError(state.throwable)
+                            val priorityZero = viewModel.announcements.value
+                                ?.filter { it.priority == 0 && (it.title.isNotBlank() || it.content.isNotBlank()) }
+                                .orEmpty()
+                            if (priorityZero.isNotEmpty()) {
+                                val message = priorityZero.joinToString("\n\n") { it.content }
+                                val title = priorityZero.firstOrNull()?.title ?: "公告"
+
+                                AlertDialog.Builder(requireContext())
+                                    .setTitle(title)
+                                    .setMessage(message)
+                                    .setPositiveButton("确定", null)
+                                    .show()
+                            }
                         }
                     }
                 }
