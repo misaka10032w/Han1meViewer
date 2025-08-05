@@ -17,6 +17,7 @@ import com.yenaly.han1meviewer.logic.model.HomePage
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
 import com.yenaly.yenaly_libs.base.YenalyViewModel
+import com.yenaly.yenaly_libs.utils.getSpValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -98,6 +99,9 @@ class MainViewModel(application: Application) : YenalyViewModel(application) {
         }
     }
     fun loadAnnouncements(forceRefresh: Boolean = false) {
+        val lastDismissTime = getSpValue("last_dismiss_time",0L,"setting_pref")
+        val shouldShowAnno = System.currentTimeMillis() - lastDismissTime > 24*60*60*1000L
+        if (!shouldShowAnno) return
         if (_announcements.value != null && !forceRefresh) return
 
         val announcementsRef = database.getReference("announcements")
@@ -115,6 +119,7 @@ class MainViewModel(application: Application) : YenalyViewModel(application) {
             } else {
                 _announcements.postValue(emptyList())
             }
+            Log.i("Announcement",list.toString())
         }.addOnFailureListener { e ->
             Log.e("Announcement", "读取失败: ${e.message}")
             _announcements.postValue(emptyList())

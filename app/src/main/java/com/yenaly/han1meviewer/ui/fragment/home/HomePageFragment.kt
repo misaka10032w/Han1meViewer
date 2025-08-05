@@ -9,17 +9,12 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.LinearLayout
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
@@ -39,9 +34,7 @@ import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager2.widget.ViewPager2
 import coil.load
-import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
 import com.yenaly.han1meviewer.HAdvancedSearch
@@ -53,7 +46,7 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.StateLayoutMixin
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.activity.PreviewActivity
-import com.yenaly.han1meviewer.ui.adapter.AnnouncementAdapter
+import com.yenaly.han1meviewer.ui.adapter.AnnouncementCardAdapter
 import com.yenaly.han1meviewer.ui.adapter.HanimeVideoRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.RvWrapper.Companion.wrappedWith
 import com.yenaly.han1meviewer.ui.adapter.VideoColumnTitleAdapter
@@ -65,6 +58,8 @@ import com.yenaly.han1meviewer.util.addUpdateListener
 import com.yenaly.han1meviewer.util.colorTransition
 import com.yenaly.yenaly_libs.base.YenalyFragment
 import com.yenaly.yenaly_libs.utils.application
+import com.yenaly.yenaly_libs.utils.getSpValue
+import com.yenaly.yenaly_libs.utils.putSpValue
 import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.startActivity
 import kotlinx.coroutines.launch
@@ -95,12 +90,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
     private val someFunnyTouchListener = FunnyTouchListener(application) {
         showShortToast("WTF?")
     }
-    private lateinit var announcementCard: MaterialCardView
-    private lateinit var announcementPager: ViewPager2
-    private lateinit var btnClose: ImageButton
-    private var autoScrollRunnable: Runnable? = null
-    private val handler = Handler(Looper.getMainLooper())
-    private lateinit var indicatorLayout: LinearLayout
+    private var announcementCardAdapter: AnnouncementCardAdapter? = null
     private val concatAdapter = ConcatAdapter(
         VideoColumnTitleAdapter(R.string.latest_hanime).apply {
             onMoreHanimeListener = {
@@ -281,6 +271,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                 isAfterRefreshing = false
                 // will enter here firstly. cuz the flow's def value is Loading.
                 viewModel.getHomePage()
+                viewModel.loadAnnouncements(true)
             }
             setEnableLoadMore(false)
         }
@@ -290,7 +281,6 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                     showExitConfirmationDialog()
                 }
             })
-        initAnnouncements()
     }
 
     override fun onResume() {
@@ -327,11 +317,25 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                             latestReleaseAdapter.submitList(state.info.latestRelease)
                             chineseSubtitleAdapter.submitList(state.info.chineseSubtitle)
                             binding.state.showContent()
+                            initAnnouncements()
                         }
 
                         is WebsiteState.Error -> {
                             binding.homePageSrl.finishRefresh()
                             binding.state.showError(state.throwable)
+                            val priorityZero = viewModel.announcements.value
+                                ?.filter { it.priority == 0 && (it.title.isNotBlank() || it.content.isNotBlank()) }
+                                .orEmpty()
+                            if (priorityZero.isNotEmpty()) {
+                                val message = priorityZero.joinToString("\n\n") { it.content }
+                                val title = priorityZero.firstOrNull()?.title ?: "公告"
+
+                                AlertDialog.Builder(requireContext())
+                                    .setTitle(title)
+                                    .setMessage(message)
+                                    .setPositiveButton("确定", null)
+                                    .show()
+                            }
                         }
                     }
                 }
@@ -487,74 +491,36 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
     }
 
     private fun initAnnouncements() {
+        val lastDismissTime = getSpValue("last_dismiss_time",0L,"setting_pref")
+        val shouldShowAnno = System.currentTimeMillis() - lastDismissTime > 24*60*60*1000L
+        if (!shouldShowAnno) return
+
         viewModel.announcements.observe(viewLifecycleOwner) { sortedList ->
-            announcementCard = binding.announcementCard
-            announcementPager = binding.announcementPager
-            btnClose = binding.btnClose
-            indicatorLayout = binding.indicatorLayout
-
             if (sortedList.isNotEmpty()) {
-                announcementCard.visibility = View.VISIBLE
-
-                val adapter = AnnouncementAdapter(sortedList) {
-                    showShortToast("点击事件正在绝赞制作中！")
-                    Log.i("Announcement", "点击公告：${it.title}")
+                announcementCardAdapter?.let {
+                    concatAdapter.removeAdapter(it)
                 }
-                announcementPager.adapter = adapter
-
-                setupIndicators(sortedList.size)
-                setCurrentIndicator(0)
-
-                announcementPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-                    override fun onPageSelected(position: Int) {
-                        setCurrentIndicator(position)
+                announcementCardAdapter = AnnouncementCardAdapter(
+                    sortedList,
+                    onClick = {
+                        showShortToast("点击事件正在绝赞制作中！")
+                    },
+                    onClose = {
+                        putSpValue("last_dismiss_time", System.currentTimeMillis(),"setting_pref")
+                        announcementCardAdapter?.let {
+                            concatAdapter.removeAdapter(it)
+                            announcementCardAdapter = null
+                        }
                     }
-                })
-//                autoScrollRunnable = object : Runnable {
-//                    override fun run() {
-//                        if (sortedList.isNotEmpty()) {
-//                            val next = (announcementPager.currentItem + 1) % sortedList.size
-//                            announcementPager.setCurrentItem(next, true)
-//                            handler.postDelayed(this, 5000)
-//                        }
-//                    }
-//                }
-//                handler.removeCallbacks(autoScrollRunnable!!)
-//                handler.postDelayed(autoScrollRunnable!!, 5000)
-
-            } else {
-                announcementCard.visibility = View.GONE
-            }
-
-            btnClose.setOnClickListener {
- //               autoScrollRunnable?.let { handler.removeCallbacks(it) }
-                announcementCard.visibility = View.GONE
-            }
-        }
-        viewModel.loadAnnouncements()
-    }
-
-    private fun setupIndicators(count: Int) {
-        indicatorLayout.removeAllViews()
-        val size = resources.getDimensionPixelSize(R.dimen.indicator_size)
-        val margin = resources.getDimensionPixelSize(R.dimen.indicator_margin)
-        val ctx = context ?: return
-        repeat(count) {
-            val view = View(ctx).apply {
-                layoutParams = LinearLayout.LayoutParams(size, size).apply {
-                    this.marginEnd = margin
+                )
+                concatAdapter.addAdapter(0, announcementCardAdapter!!)
+            }else{
+                announcementCardAdapter?.let {
+                    concatAdapter.removeAdapter(it)
+                    announcementCardAdapter = null
                 }
-                background = ContextCompat.getDrawable(ctx, R.drawable.indicator_inactive)
             }
-            indicatorLayout.addView(view)
         }
-    }
-    private fun setCurrentIndicator(index: Int) {
-        for (i in 0 until indicatorLayout.childCount) {
-            val view = indicatorLayout.getChildAt(i)
-            val drawable = if (i == index) R.drawable.indicator_active else R.drawable.indicator_inactive
-            val ctx = context ?: return
-            view.background = ContextCompat.getDrawable(ctx, drawable)
-        }
+ //       viewModel.loadAnnouncements()
     }
 }
