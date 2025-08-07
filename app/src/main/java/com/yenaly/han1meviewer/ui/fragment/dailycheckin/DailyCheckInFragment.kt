@@ -312,6 +312,12 @@ fun CalendarCheckInScreen(
                 }
             }
         }
+        Text(
+            text = "Tips: 长按取消"
+        )
+        Text(
+            text = "建设中。。。如果你有好的想法请留言"
+        )
     }
 }
 

@@ -414,7 +414,7 @@
     <string name="view_node_latency">查看节点延迟</string>
     <string name="node_latency_sum">启用内置Hosts后可检测延迟情况\n不启用为实际解析地址</string>
     <string name="builtin_dns">内置DNS映射</string>
-    <string name="has_mastur">冲了吗</string>
+    <string name="has_mastur">冲了吗（建设中）</string>
     <string name="checkout_exit">打卡退出</string>
     <string name="has_cum">您冲了吗</string>
     <string name="checkin_calendar">打卡日历</string>
