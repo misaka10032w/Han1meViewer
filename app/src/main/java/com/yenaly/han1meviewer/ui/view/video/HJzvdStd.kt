@@ -682,8 +682,12 @@ class HJzvdStd @JvmOverloads constructor(
 
     override fun gotoNormalScreen() {
         gobakFullscreenTime = System.currentTimeMillis() // 退出全屏时间
-        val params = JZUtils.getWindow(context).attributes
-        params.screenBrightness = screenBrightnessBK //恢复亮度
+        val window = JZUtils.getWindow(context)
+        if (window != null) {
+            val params = window.attributes
+            params.screenBrightness = screenBrightnessBK //恢复亮度
+            window.attributes = params
+        }
         // 从 decorView 移除全屏播放器视图
         val decorView = (JZUtils.scanForActivity(jzvdContext)).window.decorView as ViewGroup
         decorView.removeView(this)
