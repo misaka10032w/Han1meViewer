@@ -230,7 +230,8 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             return
         }
 
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.fcv_main) as? NavHostFragment ?: return
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.fcv_main) as? NavHostFragment ?: return
         val navController = navHostFragment.navController
         if (navHostFragment.childFragmentManager.isStateSaved) {
             Log.w("deeplink", "❌ Cannot navigate: state already saved")
@@ -250,7 +251,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         }
 
         // Map形式TAG
-        @Suppress("UNCHECKED_CAST","DEPRECATION")
+        @Suppress("UNCHECKED_CAST", "DEPRECATION")
         val map = intent.getSerializableExtra("startSearchFromMap") as? HashMap<String, String>
         if (map != null) {
             intent.removeExtra("startSearchFromMap")
@@ -276,7 +277,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
     }
 
     private fun isDeviceSecureCompat(context: Context): Boolean {
-        val km = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        val km = context.getSystemService(KEYGUARD_SERVICE) as KeyguardManager
         return km.isDeviceSecure
     }
 
@@ -333,6 +334,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             R.id.nv_playlist -> safeNavigateTo(R.id.nv_playlist)
             R.id.nv_watch_later -> safeNavigateTo(R.id.nv_watch_later)
             R.id.nv_subscription -> safeNavigateTo(R.id.nv_subscription)
+            R.id.nv_daily_check_in -> safeNavigateTo(R.id.nv_daily_check_in)
 
             // 设置相关 - 这些在 nav_settings.xml 中
             R.id.nv_settings -> {
@@ -360,47 +362,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         }
     }
 
-    // 在右侧内容区域打开目标
-//    private fun openInRightPane(destinationId: Int) {
-//        val options = if (isTabletMode) {
-//            // 平板模式：替换当前内容
-//            navOptions {
-//                anim {
-//                    enter = R.anim.fade_in
-//                    exit = R.anim.fade_out
-//                }
-//                launchSingleTop = true
-//            }
-//        } else {
-//            // 手机模式：正常导航
-//            null
-//        }
-//
-//        try {
-//            navController.navigate(destinationId, null, options)
-//        } catch (e: IllegalArgumentException) {
-//            // 处理目标不在当前导航图中的情况
-//            if (destinationId in settingsDestinations) {
-//                // 设置相关目标在另一个导航图中
-//                navController.navigate(R.id.action_global_nav_settings)
-//                Handler(Looper.getMainLooper()).postDelayed({
-//                    detailNavController?.navigate(destinationId)
-//                }, 100)
-//            }
-//        }
-//    }
-
-    // 设置相关的目标ID
-//    private val settingsDestinations = setOf(
-//        R.id.homeSettingsFragment,
-//        R.id.playerSettingsFragment,
-//        R.id.hKeyframesFragment,
-//        R.id.sharedHKeyframesFragment,
-//        R.id.hKeyframeSettingsFragment,
-//        R.id.networkSettingsFragment,
-//        R.id.downloadSettingsFragment
-//    )
-
     override fun onStart() {
         super.onStart()
         registerPipReceiver()
@@ -412,6 +373,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             }
         }
     }
+
     private fun registerPipReceiver() {
         val filter = IntentFilter().apply {
             addAction(ACTION_TOGGLE_PLAY)
@@ -439,7 +401,8 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                 AppViewModel.versionFlow.collect { state ->
                     if (state is WebsiteState.Success && Preferences.isUpdateDialogVisible) {
                         state.info?.let { release ->
-                            Preferences.lastUpdatePopupTime = kotlin.time.Clock.System.now().epochSeconds
+                            Preferences.lastUpdatePopupTime =
+                                kotlin.time.Clock.System.now().epochSeconds
                             showUpdateDialog(release)
                         }
                     }
@@ -564,29 +527,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         }
     }
 
-    // #issue-225: 侧滑选单双重点击异常，不能从 xml 里直接定义 activity 块，需要在代码里初始化
-//    private fun initNavActivity() {
-//        binding.nvMain.menu.apply {
-//            findItem(R.id.nv_settings).setOnMenuItemClickListener {
-//                SettingsRouter.with(navController).toSettingsActivity()
-//                return@setOnMenuItemClickListener false
-//            }
-//            findItem(R.id.nv_h_keyframe_settings).setOnMenuItemClickListener {
-//                SettingsRouter.with(navController)
-//                    .toSettingsActivity(R.id.hKeyframeSettingsFragment)
-//                return@setOnMenuItemClickListener false
-//            }
-//            findItem(R.id.nv_download).setOnMenuItemClickListener {
-//                startActivity<DownloadActivity>()
-//                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-//                    @Suppress("DEPRECATION")
-//                    overridePendingTransition(R.anim.slide_in_from_bottom, R.anim.fade_out)
-//                }
-//                return@setOnMenuItemClickListener false
-//            }
-//        }
-//    }
-
     private val loginNeededFragmentList =
         intArrayOf(R.id.nv_fav_video, R.id.nv_watch_later, R.id.nv_playlist, R.id.nv_subscription)
 
@@ -663,61 +603,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         }
     }
 
-
-
-//    enum class LayoutMode {
-//        NAV_LEFT, NAV_RIGHT, SINGLE_COLUMN
-//    }
-
-//    private var currentMode = LayoutMode.NAV_LEFT
-//    fun swapFragments(number: Number) {
-//        val nav = findViewById<NavigationView>(R.id.nv_main)
-//        val content = findViewById<CoordinatorLayout>(R.id.right_pan)
-//        val parent = findViewById<LinearLayout>(R.id.main_layout)
-//        TransitionManager.beginDelayedTransition(parent)
-//
-//        when (currentMode) {
-//            LayoutMode.NAV_LEFT -> {
-//                // 切换到右导航（先调整顺序）
-//                parent.removeView(nav)
-//                parent.removeView(content)
-//
-////                nav.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 2f)
-////                content.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 3f)
-//                parent.addView(content)
-//                parent.addView(nav)
-//                currentMode = LayoutMode.NAV_RIGHT
-//                Toast.makeText(this, "$currentMode", Toast.LENGTH_SHORT).show()
-//            }
-//
-//            LayoutMode.NAV_RIGHT -> {
-//
-//                nav.visibility = View.VISIBLE
-//
-//                parent.removeView(nav)
-//                parent.removeView(content)
-//                parent.addView(nav)
-//                parent.addView(content)
-//                currentMode = LayoutMode.NAV_LEFT
-//
-//                Toast.makeText(this, "$currentMode", Toast.LENGTH_SHORT).show()
-//            }
-//
-//            LayoutMode.SINGLE_COLUMN -> {
-//
-////                nav.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 2f)
-////                content.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 3f)
-//                nav.visibility = View.GONE
-//                content.layoutParams = LinearLayout.LayoutParams(
-//                    LinearLayout.LayoutParams.MATCH_PARENT,
-//                    LinearLayout.LayoutParams.MATCH_PARENT
-//                )
-//                currentMode = LayoutMode.NAV_LEFT
-//                Toast.makeText(this, "$currentMode", Toast.LENGTH_SHORT).show()
-//            }
-//        }
-//    }
-
     private var onGranted: (() -> Unit)? = null
     private var onDenied: (() -> Unit)? = null
     private var onPermanentlyDenied: (() -> Unit)? = null
@@ -793,13 +678,14 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val allowPip = prefs.getBoolean("allow_pip_mode", true)
 
-        Log.i("pipmode","enter pip mode?\n$currentFragment\nallowpip:$allowPip\n")
+        Log.i("pipmode", "enter pip mode?\n$currentFragment\nallowpip:$allowPip\n")
 
         if (currentFragment is VideoFragment && currentFragment.shouldEnterPip() && allowPip) {
-            Log.i("pipmode","enter pip mode")
+            Log.i("pipmode", "enter pip mode")
             currentFragment.enterPipMode()
         }
     }
+
     override fun onPictureInPictureModeChanged(
         isInPictureInPictureMode: Boolean,
         newConfig: Configuration
@@ -815,9 +701,12 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             currentFragment.onPipModeChanged(isInPictureInPictureMode)
         }
     }
+
     fun togglePlayPause() {
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.fcv_main) as NavHostFragment
-        val videoFragment = navHostFragment.childFragmentManager.primaryNavigationFragment as? VideoFragment
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.fcv_main) as NavHostFragment
+        val videoFragment =
+            navHostFragment.childFragmentManager.primaryNavigationFragment as? VideoFragment
         videoFragment?.togglePlayPause()
     }
 

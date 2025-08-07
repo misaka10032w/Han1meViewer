@@ -408,5 +408,13 @@ Recommendations are as follows:\n
     <string name="view_node_latency">View node latency</string>
     <string name="node_latency_sum">Enable built-in Hosts to detect latency\nDo not enable actual address resolution</string>
     <string name="builtin_dns">Built-in DNS mapping</string>
+    <string name="has_mastur">Cum?（under construction）</string>
+    <string name="checkout_exit">CheckIn &amp; Exit</string>
+    <string name="has_cum">Did you cum?</string>
+    <string name="checkin_calendar">Punch-in calendar</string>
+    <string name="this_month_checkin">This month\'s check-in</string>
+    <string name="days">%1$d Days</string>
+    <string name="counts">%1$d Times</string>
+    <string name="has_cum_days">Ejaculation</string>
 
 </resources>

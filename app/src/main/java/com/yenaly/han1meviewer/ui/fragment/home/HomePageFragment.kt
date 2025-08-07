@@ -53,6 +53,7 @@ import com.yenaly.han1meviewer.ui.adapter.VideoColumnTitleAdapter
 import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.fragment.funny.FunnyTouchListener
+import com.yenaly.han1meviewer.ui.viewmodel.CheckInCalendarViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
 import com.yenaly.han1meviewer.util.addUpdateListener
 import com.yenaly.han1meviewer.util.colorTransition
@@ -79,7 +80,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
     }
 
     val viewModel by activityViewModels<MainViewModel>()
-
+    val checkInviewModel by activityViewModels<CheckInCalendarViewModel>()
     private val latestHanimeAdapter = HanimeVideoRvAdapter()
     private val latestReleaseAdapter = HanimeVideoRvAdapter()
     private val latestUploadAdapter = HanimeVideoRvAdapter()
@@ -483,6 +484,10 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
             .setMessage(getString(R.string.finished_masturbating))
             .setNegativeButton(getString(R.string.do_more)) { dialog, _ ->
                 dialog.dismiss()
+            }
+            .setNeutralButton(getString(R.string.checkout_exit)) { dialog, _ ->
+                checkInviewModel.incrementCheckIn(java.time.LocalDate.now())
+                requireActivity().finish()
             }
             .setPositiveButton(getString(R.string.exit)) { _, _ ->
                 requireActivity().finish()

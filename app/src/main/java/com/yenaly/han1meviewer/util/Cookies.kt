@@ -18,7 +18,24 @@ fun CookieString.toLoginCookieList(domain: String): List<Cookie> {
         if (cookie.isNotBlank()) {
             val name = cookie.substringBefore('=').trim()
             val value = cookie.substringAfter('=').trim()
-            cookieList += Cookie.Builder().domain(domain).name(name).value(value).build()
+            val cleanedName = name.filter { it.code in 0x20..0x7E && it != '\n' && it != '\r' }
+            val cleanValue = value.filter { it.code in 0x20..0x7E && it != '\n' && it != '\r' }
+            if (cleanedName.isNotEmpty()) {
+                try {
+                    cookieList += Cookie.Builder()
+                        .domain(domain)
+                        .name(cleanedName)
+                        .value(cleanValue)
+                        .build()
+                } catch (e: IllegalArgumentException) {
+                    Log.w(
+                        "CookieString",
+                        "无效Cookie: $cleanedName=$cleanValue, error=${e.message}"
+                    )
+                }
+            } else {
+                Log.w("CookieString", "无效键值: $cookie")
+            }
         }
     }
     return cookieList.also {

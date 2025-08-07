@@ -682,14 +682,23 @@ class HJzvdStd @JvmOverloads constructor(
 
     override fun gotoNormalScreen() {
         gobakFullscreenTime = System.currentTimeMillis() // 退出全屏时间
-        val params = JZUtils.getWindow(context).attributes
-        params.screenBrightness = screenBrightnessBK //恢复亮度
+        val window = JZUtils.getWindow(context)
+        if (window != null) {
+            val params = window.attributes
+            params.screenBrightness = screenBrightnessBK //恢复亮度
+            window.attributes = params
+        }
         // 从 decorView 移除全屏播放器视图
         val decorView = (JZUtils.scanForActivity(jzvdContext)).window.decorView as ViewGroup
         decorView.removeView(this)
         // 恢复到原始容器
-        val originalContainer = CONTAINER_LIST.last()
-        CONTAINER_LIST.pop()
+        val originalContainer = CONTAINER_LIST.lastOrNull()
+        if (originalContainer != null){
+            CONTAINER_LIST.pop()
+        } else {
+            Log.e("JZVD", "CONTAINER_LIST is empty!")
+            return
+        }
         var layoutParams = blockLayoutParams
         if (originalContainer is ConstraintLayout) {
             layoutParams = savedConstraintLayoutParams ?: ConstraintLayout.LayoutParams(
@@ -730,7 +739,7 @@ class HJzvdStd @JvmOverloads constructor(
         }
         // 从原来容器中移除播放器
         vg.removeView(this)
-        CONTAINER_LIST.add(vg)
+        CONTAINER_LIST.push(vg)
         val decorView = (JZUtils.scanForActivity(jzvdContext)).window.decorView as ViewGroup
         val fullLayout = LayoutParams(
             LayoutParams.MATCH_PARENT,

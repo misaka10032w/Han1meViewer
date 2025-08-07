@@ -13,6 +13,10 @@
             android:id="@+id/nv_settings"
             android:icon="@drawable/ic_baseline_settings_24"
             android:title="@string/settings" />
+        <item
+            android:id="@+id/nv_daily_check_in"
+            android:icon="@drawable/ic_baseline_thumb_up_alt_24"
+            android:title="@string/has_mastur" />
 
     </group>
 
