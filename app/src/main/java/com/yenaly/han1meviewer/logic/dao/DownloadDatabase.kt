@@ -70,6 +70,7 @@ abstract class DownloadDatabase : RoomDatabase() {
             db.execSQL(
                 """CREATE TABLE IF NOT EXISTS `HanimeCategoryCrossRef` (`videoId` INTEGER NOT NULL, `categoryId` INTEGER NOT NULL, PRIMARY KEY(`videoId`, `categoryId`))"""
             )
+            db.execSQL("""CREATE INDEX IF NOT EXISTS `index_HanimeCategoryCrossRef_categoryId` ON `HanimeCategoryCrossRef` (`categoryId`)""")
             // Add coverUri column
             db.execSQL("""ALTER TABLE `HanimeDownloadEntity` ADD COLUMN `coverUri` TEXT NULL""")
 
@@ -89,6 +90,7 @@ abstract class DownloadDatabase : RoomDatabase() {
             )
         }
     }
+
     object Migration3To4 : Migration(3, 4) {
         override fun migrate(db: SupportSQLiteDatabase) {
             db.execSQL(
