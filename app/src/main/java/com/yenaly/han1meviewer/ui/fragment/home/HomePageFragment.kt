@@ -279,7 +279,13 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    showExitConfirmationDialog()
+                    if (isResumed && isVisible) {
+                        showExitConfirmationDialog()
+                    } else {
+                        isEnabled = false
+                        requireActivity().onBackPressedDispatcher.onBackPressed()
+                        isEnabled = true
+                    }
                 }
             })
     }
