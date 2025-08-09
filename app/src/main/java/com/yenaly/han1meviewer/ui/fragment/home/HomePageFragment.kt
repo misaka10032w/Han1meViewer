@@ -276,23 +276,29 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
             }
             setEnableLoadMore(false)
         }
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
-            object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-                    if (isResumed && isVisible) {
-                        showExitConfirmationDialog()
-                    } else {
-                        isEnabled = false
-                        requireActivity().onBackPressedDispatcher.onBackPressed()
-                        isEnabled = true
-                    }
-                }
-            })
+        onBackPressedCallback = object : OnBackPressedCallback(false) { // 初始禁用
+            override fun handleOnBackPressed() {
+                showExitConfirmationDialog()
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, onBackPressedCallback)
     }
+
+    private lateinit var onBackPressedCallback: OnBackPressedCallback
 
     override fun onResume() {
         super.onResume()
+        // 只有当 HomePageFragment 在最前台时，才启用自己的返回回调
+        if (isAdded) {
+            onBackPressedCallback.isEnabled = true
+        }
         (activity as? ToolbarHost)?.hideToolbar()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 只要 HomePageFragment 被覆盖或离开前台，立刻禁用回调
+        onBackPressedCallback.isEnabled = false
     }
 
     @SuppressLint("SetTextI18n")
