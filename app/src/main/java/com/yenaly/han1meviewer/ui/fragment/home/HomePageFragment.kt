@@ -92,6 +92,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         showShortToast("WTF?")
     }
     private var announcementCardAdapter: AnnouncementCardAdapter? = null
+    private lateinit var onBackPressedCallback: OnBackPressedCallback
     private val concatAdapter = ConcatAdapter(
         VideoColumnTitleAdapter(R.string.latest_hanime).apply {
             onMoreHanimeListener = {
@@ -283,8 +284,6 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, onBackPressedCallback)
     }
-
-    private lateinit var onBackPressedCallback: OnBackPressedCallback
 
     override fun onResume() {
         super.onResume()
