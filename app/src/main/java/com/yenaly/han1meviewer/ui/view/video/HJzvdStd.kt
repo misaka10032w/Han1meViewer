@@ -285,10 +285,8 @@ class HJzvdStd @JvmOverloads constructor(
      */
     @Volatile
     private var isSpeedGestureDetected = false
-    private val screenBrightnessBK = Settings.System.getInt(
-        context.contentResolver,
-        Settings.System.SCREEN_BRIGHTNESS
-    ).toFloat()/255f
+    private var screenBrightnessBK = -1f
+    private var isAdjustBrightness = false
     /**
      * 長按快進檢測
      */
@@ -388,6 +386,14 @@ class HJzvdStd @JvmOverloads constructor(
         if (bottomProgressBar != null && !showBottomProgress) {
             bottomProgressBar.removeItself()
             bottomProgressBar = ProgressBar(context)
+        }
+        screenBrightnessBK = try {
+            Settings.System.getInt(
+                context.contentResolver,
+                Settings.System.SCREEN_BRIGHTNESS
+            ).toFloat() / 255f
+        } catch (_: SettingNotFoundException) {
+            -1f
         }
     }
 
@@ -603,6 +609,7 @@ class HJzvdStd @JvmOverloads constructor(
                         Log.i("appScreenWidth",appScreenWidth.toString())
                         if (mDownX < appScreenWidth * 0.5f) { //左侧改变亮度
                             mChangeBrightness = true
+                            isAdjustBrightness = true
                             val lp = JZUtils.getWindow(context).attributes
                             if (lp.screenBrightness < 0) {
                                 try {
@@ -682,11 +689,15 @@ class HJzvdStd @JvmOverloads constructor(
 
     override fun gotoNormalScreen() {
         gobakFullscreenTime = System.currentTimeMillis() // 退出全屏时间
-        val window = JZUtils.getWindow(context)
-        if (window != null) {
-            val params = window.attributes
-            params.screenBrightness = screenBrightnessBK //恢复亮度
-            window.attributes = params
+        Log.i(TAG,"${isAdjustBrightness}、${screenBrightnessBK}、${JZUtils.getWindow(context).attributes.screenBrightness}")
+        if (isAdjustBrightness) {
+            val window = JZUtils.getWindow(context)
+            if (window != null) {
+                val params = window.attributes
+                params.screenBrightness = screenBrightnessBK.coerceIn(0f, 1f) //恢复亮度
+                window.attributes = params
+            }
+            isAdjustBrightness = false
         }
         // 从 decorView 移除全屏播放器视图
         val decorView = (JZUtils.scanForActivity(jzvdContext)).window.decorView as ViewGroup
