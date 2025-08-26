@@ -472,6 +472,7 @@ object Parser {
                 post = post,
             )
         } else null
+        val originalComic = parseBody.selectFirst("a.video-comic-btn")?.attr("href")
 
         return VideoLoadingState.Success(
             HanimeVideo(
@@ -495,7 +496,8 @@ object Parser {
                 favTimes = likesCount,
                 isFav = likeStatus == "1",
                 csrfToken = csrfToken,
-                currentUserId = currentUserId
+                currentUserId = currentUserId,
+                originalComic = originalComic
             )
         )
     }

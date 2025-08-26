@@ -422,5 +422,7 @@
     <string name="days">%1$d 天</string>
     <string name="counts">%1$d 次</string>
     <string name="has_cum_days">共射</string>
+    <string name="original_comic">原作漫画</string>
+    <string name="fault_prompt">出现错误，请联系开发者！</string>
 
 </resources>
