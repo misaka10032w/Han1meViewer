@@ -143,6 +143,14 @@
                 android:orientation="horizontal">
 
                 <Button
+                    android:id="@+id/btn_original_comic"
+                    style="@style/Widget.Material3.Button.TextButton.Icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableTop="@drawable/ic_baseline_book"
+                    android:text="@string/original_comic" />
+
+                <Button
                     android:id="@+id/btn_add_to_fav"
                     style="@style/Widget.Material3.Button.TextButton.Icon"
                     android:layout_width="wrap_content"

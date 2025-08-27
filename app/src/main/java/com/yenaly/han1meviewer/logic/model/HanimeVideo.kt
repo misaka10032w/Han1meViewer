@@ -39,6 +39,7 @@ data class HanimeVideo(
     @Transient val isFav: Boolean = false,
     @Transient val csrfToken: String? = null,
     @Transient val currentUserId: String? = null,
+    @Transient val originalComic: String? = null,
 ) {
 
     fun incFavTime() = copy(favTimes = favTimes?.let { it + 1 }, isFav = true)
@@ -48,7 +49,7 @@ data class HanimeVideo(
     // 為保證兼容性，不能直接用天數
     val uploadTimeMillis: Long
         get() = uploadTime?.let {
-            it.toEpochDays().toLong() * 24 * 60 * 60 * 1000
+            it.toEpochDays() * 24 * 60 * 60 * 1000
         } ?: 0L
 
     data class MyList(

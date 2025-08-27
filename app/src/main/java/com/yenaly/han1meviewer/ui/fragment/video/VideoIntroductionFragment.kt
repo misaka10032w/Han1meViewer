@@ -531,6 +531,18 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
                 tvIntroduction.setContent(item.introduction)
                 tags.tags = item.tags
                 tags.lifecycle = viewLifecycleOwner.lifecycle
+                btnOriginalComic.setOnClickListener {
+                    item.originalComic?.takeIf { it.isNotBlank() }?.let { comicLink ->
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, comicLink.toUri())
+                            startActivity(intent)
+                        } catch (_: Exception) {
+                            Toast.makeText(context,
+                                getString(R.string.fault_prompt), Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+                btnOriginalComic.visibility = if (!item.originalComic.isNullOrBlank()) View.VISIBLE else View.GONE
 
                 initTitle(item)
                 initArtist(item.artist)
@@ -637,7 +649,7 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
                             R.id.searchFragment,
                             bundleOf(ADVANCED_SEARCH_MAP to bundleMap),
                         )
-                    }catch (e:IllegalStateException){
+                    }catch (_:IllegalStateException){
                         context.startActivity(
                             Intent(context, MainActivity::class.java).apply {
                                 putExtra("startSearchFromMap", HashMap(bundleMap)) // 必须是 Serializable

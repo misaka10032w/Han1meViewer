@@ -416,5 +416,7 @@ Recommendations are as follows:\n
     <string name="days">%1$d Days</string>
     <string name="counts">%1$d Times</string>
     <string name="has_cum_days">Ejaculation</string>
+    <string name="original_comic">Original comic</string>
+    <string name="fault_prompt">Something went wrong, please contact the developer!</string>
 
 </resources>
