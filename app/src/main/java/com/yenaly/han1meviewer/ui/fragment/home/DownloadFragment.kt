@@ -3,14 +3,12 @@ package com.yenaly.han1meviewer.ui.fragment.home
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.fragment.app.activityViewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.text.parseAsHtml
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.databinding.FragmentTabViewPagerOnlyBinding
-import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
+import com.yenaly.han1meviewer.databinding.ActivityDownloadBinding
 import com.yenaly.han1meviewer.ui.fragment.home.download.DownloadedFragment
 import com.yenaly.han1meviewer.ui.fragment.home.download.DownloadingFragment
-import com.yenaly.han1meviewer.ui.viewmodel.DownloadViewModel
 import com.yenaly.yenaly_libs.base.YenalyFragment
 import com.yenaly.yenaly_libs.utils.view.attach
 import com.yenaly.yenaly_libs.utils.view.setUpFragmentStateAdapter
@@ -22,26 +20,35 @@ import com.yenaly.yenaly_libs.utils.view.setUpFragmentStateAdapter
  * @author Yenaly Liew
  * @time 2022/08/01 001 17:44
  */
-class DownloadFragment : YenalyFragment<FragmentTabViewPagerOnlyBinding>(),
-    IToolbarFragment<MainActivity> {
+class DownloadFragment : YenalyFragment<ActivityDownloadBinding>(){
 
-    val viewModel by activityViewModels<DownloadViewModel>()
-
-    private val tabNameArray = intArrayOf(R.string.downloading, R.string.downloaded)
+    companion object {
+        const val TAG = "HoppinByte"
+        private const val HB = """<span style="color: #FF0000;"><b>H</b></span>oppin<b>Byte</b>"""
+        val hbSpannedTitle = HB.parseAsHtml()
+        private val tabNameArray = intArrayOf(R.string.downloading, R.string.downloaded)
+    }
 
     override fun getViewBinding(
         inflater: LayoutInflater,
         container: ViewGroup?
-    ): FragmentTabViewPagerOnlyBinding {
-        return FragmentTabViewPagerOnlyBinding.inflate(inflater, container, false)
+    ): ActivityDownloadBinding {
+        return ActivityDownloadBinding.inflate(inflater, container, false)
     }
 
     override fun initData(savedInstanceState: Bundle?) {
-        (activity as MainActivity).setupToolbar()
-        initViewPager()
-    }
+        val activity = requireActivity() as AppCompatActivity
 
-    private fun initViewPager() {
+        activity.setSupportActionBar(binding.toolbar)
+        activity.supportActionBar?.let {
+            it.title = hbSpannedTitle
+            it.setDisplayHomeAsUpEnabled(true)
+            it.setHomeActionContentDescription(R.string.back)
+        }
+
+        binding.toolbar.setNavigationOnClickListener {
+            activity.onBackPressedDispatcher.onBackPressed()
+        }
 
         binding.viewPager.setUpFragmentStateAdapter(this) {
             addFragment { DownloadingFragment() }
@@ -51,12 +58,5 @@ class DownloadFragment : YenalyFragment<FragmentTabViewPagerOnlyBinding>(),
         binding.tabLayout.attach(binding.viewPager) { tab, position ->
             tab.setText(tabNameArray[position])
         }
-    }
-
-    override fun MainActivity.setupToolbar() {
-        val toolbar = this@DownloadFragment.binding.toolbar
-        setSupportActionBar(toolbar)
-        supportActionBar!!.setSubtitle(R.string.download)
-        toolbar.setupWithMainNavController()
     }
 }

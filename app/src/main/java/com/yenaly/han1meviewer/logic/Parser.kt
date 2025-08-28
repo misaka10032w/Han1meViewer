@@ -312,7 +312,11 @@ object Parser {
                 tagListWithLikeNum.add(child.text())
             }
         }
-        val tagList = tagListWithLikeNum.map { it.substringBefore(" (") }
+        val tagList = tagListWithLikeNum.map {
+            it.substringBefore(" (")
+                .removePrefix("#")
+                .trim()
+        }
         val myListCheckboxWrapper = parseBody.select("div[class~=playlist-checkbox-wrapper]")
         val myListInfo = mutableListOf<HanimeVideo.MyList.MyListInfo>()
         myListCheckboxWrapper.forEach {
