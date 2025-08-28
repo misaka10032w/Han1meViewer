@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -41,7 +41,7 @@ import java.util.UUID
 class DownloadingFragment : YenalyFragment<FragmentListOnlyBinding>(),
     IToolbarFragment<MainActivity>, StateLayoutMixin {
 
-    val viewModel by activityViewModels<DownloadViewModel>()
+    val viewModel by viewModels<DownloadViewModel>()
 
     private val adapter by unsafeLazy { HanimeDownloadingRvAdapter(this) }
 

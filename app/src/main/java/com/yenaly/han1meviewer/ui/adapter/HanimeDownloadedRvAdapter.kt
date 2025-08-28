@@ -8,13 +8,16 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.net.toFile
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.DiffUtil
 import com.chad.library.adapter4.BaseDifferAdapter
 import com.chad.library.adapter4.viewholder.DataBindingHolder
+import com.yenaly.han1meviewer.FROM_DOWNLOAD
 import com.yenaly.han1meviewer.HFileManager
 import com.yenaly.han1meviewer.LOCAL_DATE_TIME_FORMAT
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.databinding.ItemHanimeDownloadedBinding
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.ui.activity.MainActivity
@@ -123,7 +126,6 @@ class HanimeDownloadedRvAdapter(private val fragment: DownloadedFragment) :
             viewHolder.itemView.setOnClickListener {
                 val position = viewHolder.bindingAdapterPosition
                 val item = getItem(position) ?: return@setOnClickListener
-               // context.activity?.startActivity<VideoActivity>(VIDEO_CODE to item.video.videoCode)
                 context.startVideoActivity(item.video.videoCode)
             }
             viewHolder.binding.btnDelete.setOnClickListener {
@@ -152,6 +154,14 @@ class HanimeDownloadedRvAdapter(private val fragment: DownloadedFragment) :
             viewHolder.binding.btnLocalPlayback.setOnClickListener {
                 val position = viewHolder.bindingAdapterPosition
                 val item = getItem(position) ?: return@setOnClickListener
+                val args = bundleOf(
+                    VIDEO_CODE to item.video.videoCode,
+                    FROM_DOWNLOAD to true
+                )
+                (context as? MainActivity)?.navController?.navigate(
+                    R.id.videoFragment,
+                    args
+                )
 //                context.openDownloadedHanimeVideoLocally(item.video.videoUri, onFileNotFound = {
 //                    context.showAlertDialog {
 //                        setTitle(R.string.video_not_exist)
@@ -165,7 +175,7 @@ class HanimeDownloadedRvAdapter(private val fragment: DownloadedFragment) :
 //                        setNegativeButton(R.string.cancel, null)
 //                    }
 //                })
-                context.openDownloadedHanimeVideoInActivity(item.video.videoCode)
+//                context.openDownloadedHanimeVideoInActivity(item.video.videoCode)
             }
             viewHolder.binding.btnExtPlayer.setOnClickListener {
                 val position = viewHolder.bindingAdapterPosition

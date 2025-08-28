@@ -65,6 +65,9 @@
     <fragment
         android:id="@+id/nv_daily_check_in"
         android:name="com.yenaly.han1meviewer.ui.fragment.dailycheckin.DailyCheckInFragment" />
+    <fragment
+        android:id="@+id/nv_download"
+        android:name="com.yenaly.han1meviewer.ui.fragment.home.DownloadFragment" />
     <!-- 设置模块子导航图 -->
     <include app:graph="@navigation/nav_settings" />
 

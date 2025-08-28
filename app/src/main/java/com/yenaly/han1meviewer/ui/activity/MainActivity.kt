@@ -166,6 +166,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                 R.id.nv_watch_later -> R.id.nv_watch_later
                 R.id.nav_settings -> R.id.nv_settings
                 R.id.nv_subscription -> R.id.nv_subscription
+                R.id.nv_download -> R.id.nv_download
                 else -> null
             }
             if (targetId != null && targetId != currentCheckedId) {
@@ -335,20 +336,12 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             R.id.nv_watch_later -> safeNavigateTo(R.id.nv_watch_later)
             R.id.nv_subscription -> safeNavigateTo(R.id.nv_subscription)
             R.id.nv_daily_check_in -> safeNavigateTo(R.id.nv_daily_check_in)
+            R.id.nv_download -> safeNavigateTo(R.id.nv_download)
 
             // 设置相关 - 这些在 nav_settings.xml 中
             R.id.nv_settings -> {
                 // 导航到设置图的起始目的地
                 navController.navigate(R.id.action_global_nav_settings)
-            }
-
-            // 特殊处理（下载）
-            R.id.nv_download -> {
-                startActivity<DownloadActivity>()
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                    @Suppress("DEPRECATION")
-                    overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
-                }
             }
         }
         binding.dlMain.closeDrawer(GravityCompat.START)
