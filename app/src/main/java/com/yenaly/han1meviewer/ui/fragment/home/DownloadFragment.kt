@@ -2,9 +2,11 @@ package com.yenaly.han1meviewer.ui.fragment.home
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.parseAsHtml
+import com.google.android.material.color.MaterialColors
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.ActivityDownloadBinding
 import com.yenaly.han1meviewer.ui.fragment.home.download.DownloadedFragment
@@ -34,6 +36,14 @@ class DownloadFragment : YenalyFragment<ActivityDownloadBinding>(){
         container: ViewGroup?
     ): ActivityDownloadBinding {
         return ActivityDownloadBinding.inflate(inflater, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        //需要设置个背景，否则会因系统需要绘制过渡动画,但是主页图像为软件绘制而触发
+        // [Software rendering doesn't support hardware bitmaps]
+        val backgroundColor = MaterialColors.getColor(view, com.google.android.material.R.attr.colorSurface)
+        view.setBackgroundColor(backgroundColor)
     }
 
     override fun initData(savedInstanceState: Bundle?) {
