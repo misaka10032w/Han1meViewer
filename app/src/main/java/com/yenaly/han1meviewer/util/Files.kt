@@ -1,11 +1,11 @@
 package com.yenaly.han1meviewer.util
 
 import android.content.ActivityNotFoundException
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.os.Environment
 import androidx.core.content.FileProvider
-import androidx.core.net.toFile
 import androidx.core.net.toUri
 import com.yenaly.han1meviewer.FILE_PROVIDER_AUTHORITY
 import com.yenaly.han1meviewer.FROM_DOWNLOAD
@@ -80,22 +80,48 @@ fun checkDownloadedHanimeFile(startsWith: String): Boolean {
 fun Context.openDownloadedHanimeVideoLocally(
     uri: String, onFileNotFound: (() -> Unit)? = null,
 ) {
-    val videoFile = uri.toUri().toFile()
-    if (!videoFile.exists()) {
-        onFileNotFound?.invoke()
-        return
-    }
-    val fileUri = FileProvider.getUriForFile(
-        this, FILE_PROVIDER_AUTHORITY, videoFile
-    )
-    val intent = Intent(Intent.ACTION_VIEW)
-    intent.setDataAndType(fileUri, "video/*")
-    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    try {
-        startActivity(intent)
-    } catch (e: ActivityNotFoundException) {
-        showShortToast(R.string.action_not_support)
-        e.printStackTrace()
+    val videoUri = uri.toUri()
+    if (videoUri.scheme == ContentResolver.SCHEME_CONTENT) {
+        val resolver = contentResolver
+        try {
+            resolver.openFileDescriptor(videoUri, "r")?.use { pfd ->
+                if (pfd.statSize <= 0) {
+                    onFileNotFound?.invoke()
+                    return
+                }
+            }
+        } catch (e: Exception) {
+            onFileNotFound?.invoke()
+            return
+        }
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(videoUri, "video/*")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+
+        try {
+            startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            showShortToast(R.string.action_not_support)
+            e.printStackTrace()
+        }
+    } else {
+        val videoFile = File(videoUri.path ?: "")
+        if (!videoFile.exists()) {
+            onFileNotFound?.invoke()
+            return
+        }
+        val fileUri = FileProvider.getUriForFile(this, FILE_PROVIDER_AUTHORITY, videoFile)
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(fileUri, "video/*")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            showShortToast(R.string.action_not_support)
+            e.printStackTrace()
+        }
     }
 }
 

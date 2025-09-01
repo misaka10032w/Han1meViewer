@@ -11,7 +11,9 @@
         app:key="proxy"
         app:title="@string/proxy" />
 
-    <PreferenceCategory app:title="@string/builtin_dns">
+    <PreferenceCategory
+        app:title="@string/builtin_dns"
+        app:iconSpaceReserved="false">
 
         <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
             app:iconSpaceReserved="false"

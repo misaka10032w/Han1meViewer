@@ -23,12 +23,14 @@ import androidx.work.workDataOf
 import com.yenaly.han1meviewer.DOWNLOAD_NOTIFICATION_CHANNEL
 import com.yenaly.han1meviewer.EMPTY_STRING
 import com.yenaly.han1meviewer.HFileManager
+import com.yenaly.han1meviewer.HFileManager.createVideoName
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.network.ServiceCreator
 import com.yenaly.han1meviewer.logic.state.DownloadState
 import com.yenaly.han1meviewer.util.HImageMeower
+import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.util.await
 import com.yenaly.yenaly_libs.utils.createFileIfNotExists
 import com.yenaly.yenaly_libs.utils.saveTo
@@ -46,6 +48,7 @@ import okhttp3.ResponseBody
 import okhttp3.internal.closeQuietly
 import java.io.File
 import java.io.InputStream
+import java.io.OutputStream
 import java.io.RandomAccessFile
 import java.util.concurrent.CancellationException
 import java.util.concurrent.TimeUnit
@@ -167,53 +170,63 @@ class HanimeDownloadWorker(
         return download()
     }
 
-    private suspend fun createNewRaf(file: File) {
+    private suspend fun createNewRaf(file: File): HanimeDownloadEntity? {
         return withContext(Dispatchers.IO) {
+            var os: OutputStream? = null
             var raf: RandomAccessFile? = null
             var response: Response? = null
             var body: ResponseBody? = null
             try {
-                file.createFileIfNotExists()
-                raf = RandomAccessFile(file, "rwd")
+                // SAF 优先
+                val safUri = SafFileManager.getDownloadVideoFileUri(context, videoCode, createVideoName(hanimeName, quality, videoType))
+                Log.i(TAG,safUri.toString())
+                if (safUri != null) {
+                    os = context.contentResolver.openOutputStream(safUri, "rwt")
+                } else {
+                    file.createFileIfNotExists()
+                    raf = RandomAccessFile(file, "rwd")
+                }
+
                 val request = Request.Builder().url(downloadUrl).get().build()
                 response = ServiceCreator.downloadClient.newCall(request).await()
                 if (response.isSuccessful) {
                     body = response.body
-                    body?.let {
-                        val len = body.contentLength()
-                        if (len > 0) {
-                            raf.setLength(len)
-                            val entity = HanimeDownloadEntity(
-                                // 创建文件时不需要下载 coverImage
-                                coverUrl = coverUrl, coverUri = null,
-                                title = hanimeName,
-                                addDate = System.currentTimeMillis(), videoCode = videoCode,
-                                videoUri = file.toUri().toString(), quality = quality,
-                                videoUrl = downloadUrl, length = len, downloadedLength = 0,
-                                // isDownloading = false
-                                state = DownloadState.Queued
-                            )
-                            DatabaseRepo.HanimeDownload.insert(entity)
-                        }
+                    body?.let { responseBody ->
+                        val len = responseBody.contentLength()
+                        // 创建数据库记录
+                        val entity = HanimeDownloadEntity(
+                            coverUrl = coverUrl,
+                            coverUri = null,
+                            title = hanimeName,
+                            addDate = System.currentTimeMillis(),
+                            videoCode = videoCode,
+                            videoUri = safUri?.toString() ?: file.toUri().toString(),
+                            quality = quality,
+                            videoUrl = downloadUrl,
+                            length = len,
+                            downloadedLength = 0,
+                            state = DownloadState.Queued
+                        )
+                        DatabaseRepo.HanimeDownload.insert(entity)
+                        // 预写入长度（只有 File 支持）
+                        raf?.setLength(len)
+                        return@withContext entity
                     }
                 }
             } catch (e: Exception) {
-                // 创建，但是并没有下载接收到文件大小，删除文件
+                e.printStackTrace()
                 if (file.exists() && file.length() == 0L) {
-                    // HFileManager.getDownloadVideoFolder(videoCode).deleteRecursively()
-                    // 不应该直接删除文件夹，因为可能存在其他分辨率的文件
                     dbScope.launch {
-//                        val count = DatabaseRepo.HanimeDownload.countBy(videoCode)
-//                        HFileManager.deleteDownload(videoCode, count, file)
-                        HFileManager.getDownloadVideoFolder(context,videoCode).deleteRecursively()
+                        HFileManager.getDownloadVideoFolder(context, videoCode).deleteRecursively()
                     }
                 }
-                e.printStackTrace()
             } finally {
+                os?.closeQuietly()
                 raf?.closeQuietly()
                 response?.closeQuietly()
                 body?.closeQuietly()
             }
+            null
         }
     }
 
@@ -222,22 +235,19 @@ class HanimeDownloadWorker(
             val file = HFileManager.getDownloadVideoFile(
                 context=context, title = hanimeName, quality=quality, suffix = videoType, videoCode = videoCode
             )
-            // redownload 不一定要删除全部文件夹，因为可能有不同分辨率
+            val safUri = SafFileManager.getDownloadVideoFileUri(context, videoCode, createVideoName(hanimeName, quality, videoType))
+            // 检查是否需要重下载
             if (shouldRedownload || shouldDelete) {
-                // 注意顺序
-//                val count = DatabaseRepo.HanimeDownload.countBy(videoCode)
-//                HFileManager.deleteDownload(videoCode, count, file)
                 HFileManager.getDownloadVideoFolder(context,videoCode).deleteRecursively()
                 DatabaseRepo.HanimeDownload.delete(videoCode)
                 if (shouldDelete) {
                     return@withContext Result.success()
                 }
             }
-            val entity = DatabaseRepo.HanimeDownload.find(videoCode, quality) ?: kotlin.run {
-                // 如果不存在，创建新的 raf
+            val entity = DatabaseRepo.HanimeDownload.find(videoCode, quality) ?: run {
                 createNewRaf(file)
                 DatabaseRepo.HanimeDownload.find(videoCode, quality)
-                    ?: return@withContext kotlin.run {
+                    ?: return@withContext run {
                         Log.d(TAG, "entity is null, create new raf failed")
                         showFailureNotification(context.getString(R.string.get_file_info_failed))
                         mainScope.launch {
@@ -260,65 +270,66 @@ class HanimeDownloadWorker(
             }
 
             var downloadedLength = entity.downloadedLength
-            val needRange = entity.downloadedLength > 0
+            val needRange = downloadedLength > 0 && safUri == null // SAF 下不支持断点续传
             var raf: RandomAccessFile? = null
+            var outputStream: OutputStream? = null
             var response: Response? = null
             var body: ResponseBody? = null
             var bodyStream: InputStream? = null
 
             var result: Result = Result.failure()
+
             try {
-                raf = RandomAccessFile(file, "rwd")
-                val request = Request.Builder().url(downloadUrl)
-                    .also { if (needRange) it.header("Range", "bytes=${entity.downloadedLength}-") }
-                    .get().build()
-                response = ServiceCreator.downloadClient.newCall(request).await()
-                raf.seek(entity.downloadedLength)
-                if ((needRange && response.code == 206) || (!needRange && response.isSuccessful)) {
-                    var delayTime = 0L
-                    body = response.body
-                    if (body != null) {
-                        bodyStream = body.byteStream()
-                        val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                        var len: Int = bodyStream.read(buffer)
-                        while (len != -1) {
-                            raf.write(buffer, 0, len)
-                            downloadedLength += len
-                            if (System.currentTimeMillis() - delayTime > RESPONSE_INTERVAL) {
-                                val progress = downloadedLength * 100 / entity.length
-                                setProgress(workDataOf(PROGRESS to progress.toInt()))
-                                updateDownloadNotification(progress.toInt())
-                                DatabaseRepo.HanimeDownload.update(
-                                    entity.copy(
-                                        downloadedLength = downloadedLength,
-                                        // isDownloading = true,
-                                        state = DownloadState.Downloading
-                                    )
-                                )
-                                delayTime = System.currentTimeMillis()
-                            }
-                            len = bodyStream.read(buffer)
-                        }
-                    }
-                    showSuccessNotification()
-                    result = Result.success(
-                        workDataOf(DownloadState.STATE to DownloadState.Finished.mask)
-                    )
+                if (safUri != null) {
+                    outputStream = context.contentResolver.openOutputStream(safUri, "rwt")
                 } else {
-                    Log.d(TAG, "response failed: ${response.message}")
-                    showFailureNotification(response.message)
-                    mainScope.launch {
-                        showShortToast(
-                            context.getString(R.string.download_task_failed_s, hanimeName)
-                        )
-                    }
-                    result = Result.failure(
-                        workDataOf(DownloadState.STATE to DownloadState.Failed.mask)
-                    )
+                    raf = RandomAccessFile(file, "rwd")
+                    if (needRange) raf.seek(downloadedLength)
                 }
+                val requestBuilder = Request.Builder().url(downloadUrl).get()
+                if (needRange) requestBuilder.header("Range", "bytes=$downloadedLength-")
+                val request = requestBuilder.build()
+                response = ServiceCreator.downloadClient.newCall(request).await()
+                val canWrite = (safUri != null) || ((needRange && response.code == 206) || (!needRange && response.isSuccessful))
+                if (!canWrite) {
+                    showFailureNotification(response.message)
+                    mainScope.launch { showShortToast(context.getString(R.string.download_task_failed_s, hanimeName)) }
+                    return@withContext Result.failure(workDataOf(DownloadState.STATE to DownloadState.Failed.mask))
+                }
+
+                body = response.body
+                bodyStream = body?.byteStream()
+                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                var len: Int = bodyStream?.read(buffer) ?: -1
+                var delayTime = 0L
+
+                while (len != -1) {
+                    if (raf != null) {
+                        raf.write(buffer, 0, len)
+                    } else outputStream?.write(buffer, 0, len)
+                    downloadedLength += len
+
+                    if (System.currentTimeMillis() - delayTime > RESPONSE_INTERVAL) {
+                        val progress = downloadedLength * 100 / entity.length
+                        setProgress(workDataOf(PROGRESS to progress.toInt()))
+                        updateDownloadNotification(progress.toInt())
+                        DatabaseRepo.HanimeDownload.update(
+                            entity.copy(downloadedLength = downloadedLength,
+                                state = DownloadState.Downloading
+                            )
+                        )
+                        delayTime = System.currentTimeMillis()
+                    }
+                    len = bodyStream?.read(buffer) ?: -1
+                }
+
+                showSuccessNotification()
+                result = Result.success(
+                    workDataOf(DownloadState.STATE to DownloadState.Finished.mask)
+                )
+
             } catch (e: Exception) {
                 result = if (e is CancellationException) {
-                    // cancellation exception block 是代表用户暂停
                     cancelDownloadNotification()
                     Result.success(
                         workDataOf(DownloadState.STATE to DownloadState.Paused.mask)
@@ -334,25 +345,19 @@ class HanimeDownloadWorker(
                     )
                 }
             } finally {
-                // HanimeDownloadManager.notify(newEntity)
-
-                val state = DownloadState.from(
-                    result.outputData.getInt(DownloadState.STATE, DownloadState.Unknown.mask)
-                )
-                // 为什么要用 dbScope 包住？
-                // 使用 dbScope 是为了确保即使当前协程因任务取消而失效，
-                // “update”挂起函数仍然能够找到有效的协程作用域来更新数据库。
-                // 这也是一个历史遗留问题。
                 dbScope.launch {
-                    val newEntity = entity.copy(
-                        // isDownloading = false,
-                        state = state,
-                        downloadedLength = downloadedLength
+                    val state = DownloadState.from(
+                        result.outputData.getInt(DownloadState.STATE, DownloadState.Unknown.mask)
                     )
-                    DatabaseRepo.HanimeDownload.update(newEntity)
-                    Log.d(TAG, "finally -> $newEntity")
+                    DatabaseRepo.HanimeDownload.update(
+                        entity.copy(
+                            state = state,
+                            downloadedLength = downloadedLength
+                        )
+                    )
                 }
                 raf?.closeQuietly()
+                outputStream?.closeQuietly()
                 response?.closeQuietly()
                 body?.closeQuietly()
                 bodyStream?.closeQuietly()
@@ -364,13 +369,18 @@ class HanimeDownloadWorker(
     private fun CoroutineScope.updateCoverImage(entity: HanimeDownloadEntity) {
         launch {
             val imgRes = HImageMeower.execute(entity.coverUrl)
-            val file = HFileManager.getDownloadVideoCoverFile(context, videoCode, hanimeName)
-            val isSuccess = imgRes.drawable?.saveTo(file) == true
-            if (isSuccess) {
-                val coverUri = file.toUri().toString()
-                DatabaseRepo.HanimeDownload.update(entity.copy(coverUri = coverUri))
-                // 不得不用 var，要不然有点难搞
-                entity.coverUri = coverUri
+            val (os, uri) = SafFileManager.openOutputStreamForCover(
+                context, entity.videoCode, entity.title
+            )
+            val isSuccess = os?.use { out -> imgRes.drawable?.saveTo(out) == true } ?: false
+            if (isSuccess && uri != null) {
+                val coverUriStr = uri.toString()
+                withContext(Dispatchers.IO) {
+                    DatabaseRepo.HanimeDownload.update(
+                        entity.copy(coverUri = coverUriStr)
+                    )
+                }
+                entity.coverUri = coverUriStr
             }
         }
     }

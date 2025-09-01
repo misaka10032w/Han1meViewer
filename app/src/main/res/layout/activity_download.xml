@@ -38,14 +38,15 @@
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-        <com.yenaly.han1meviewer.ui.view.funcbar.Hanidock
-            android:id="@+id/hanidock"
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/import_downloaded_fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end|bottom"
-            android:visibility="gone"
-            android:layout_margin="16dp" />
-
+            android:layout_margin="16dp"
+            android:contentDescription="@string/manual_import_cookies"
+            app:srcCompat="@drawable/ic_baseline_scan_24"
+            app:tint="@android:color/white" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 

@@ -2,30 +2,36 @@
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <com.yenaly.yenaly_libs.base.preference.LongClickablePreference
-        app:iconSpaceReserved="false"
-        app:key="download_path"
-        app:title="@string/download_path" />
-    <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
-        app:key="use_private_storage"
-        app:title="@string/using_a_private_storage_directory"
-        app:summary="@string/private_storage_directory_comment"
-        app:iconSpaceReserved="false"
-        app:defaultValue="false" />
+    <PreferenceCategory
+        app:title="@string/download_category"
+        app:summary="@string/download_category_summary"
+        app:iconSpaceReserved="false">
 
-    <SeekBarPreference
-        android:max="10"
-        app:defaultValue="2"
-        app:iconSpaceReserved="false"
-        app:key="download_count_limit"
-        app:min="0"
-        app:title="@string/download_count_limit"
-        app:updatesContinuously="true" />
+        <com.yenaly.yenaly_libs.base.preference.LongClickablePreference
+            app:iconSpaceReserved="false"
+            app:key="download_path"
+            app:title="@string/download_path" />
 
-    <SeekBarPreference
-        app:iconSpaceReserved="false"
-        app:key="download_speed_limit"
-        app:title="@string/download_speed_limit"
-        app:updatesContinuously="true" />
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="import_downloaded_file"
+            app:title="@string/pref_export_downloads_title"
+            app:summary="@string/pref_export_downloads_summary"/>
+    </PreferenceCategory>
+
+        <SeekBarPreference
+            android:max="10"
+            app:defaultValue="2"
+            app:iconSpaceReserved="false"
+            app:key="download_count_limit"
+            app:min="0"
+            app:title="@string/download_count_limit"
+            app:updatesContinuously="true" />
+
+        <SeekBarPreference
+            app:iconSpaceReserved="false"
+            app:key="download_speed_limit"
+            app:title="@string/download_speed_limit"
+            app:updatesContinuously="true" />
 
 </androidx.preference.PreferenceScreen>

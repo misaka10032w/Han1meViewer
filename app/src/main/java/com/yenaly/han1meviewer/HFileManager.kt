@@ -2,10 +2,7 @@ package com.yenaly.han1meviewer
 import android.content.Context
 import android.os.Environment
 import android.util.Log
-import com.yenaly.han1meviewer.util.HStorageModeManager
-import com.yenaly.han1meviewer.util.HStorageModeManager.isUsingPrivateDownloadFolder
 import java.io.File
-import java.io.IOException
 
 object HFileManager {
 
@@ -16,36 +13,28 @@ object HFileManager {
 
 
     /**
-     * 获取 App 的下载主目录，如写入失败则切换为私有目录，不想写MediaStore，
-     * 好烦，国产定制ROM也是了，滑为报No such file or directory，小米报File exists，NMD
+     * 获取 App 的下载主目录，如写入失败则切换为私有目录，
+     * 使用 [com.yenaly.han1meviewer.util.SafFileManager] 可自定义目录
      */
     fun getAppDownloadFolder(context: Context): File {
-        return if (shouldUsePrivateDownloadFolder(context)) {
-            // 私有路径
-            File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), APP_NAME).apply {
-                makeFolderNoMedia()
-            }
+        return if (Preferences.isUsePrivateStorage) {
+            File(
+                context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), APP_NAME
+            )
         } else {
-            // 公共路径
-            File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), APP_NAME).apply {
-                makeFolderNoMedia()
-            }
+            File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                APP_NAME
+            )
         }
     }
-    fun shouldUsePrivateDownloadFolder(context: Context): Boolean {
-        return isUsingPrivateDownloadFolder(context)
-    }
 
-    fun setUsePrivateDownloadFolder(context: Context, usePrivate: Boolean) {
-        HStorageModeManager.setUsePrivateDownloadFolder(context,usePrivate)
-    }
 
     /**
      * 获取某视频的下载目录
      */
     fun getDownloadVideoFolder(context: Context, videoCode: String): File {
         val folder = File(getAppDownloadFolder(context), "$HANIME_DOWNLOAD_FOLDER/$videoCode")
-        folder.makeFolderNoMedia()
         return folder
     }
 
@@ -83,39 +72,34 @@ object HFileManager {
     /**
      * 替换非法文件名字符
      */
-    private fun String.replaceAllIllegalChars(): String {
-        return illegalCharsRegex.replace(this, "_")
-    }
+    private fun String.replaceAllIllegalChars(): String =
+        illegalCharsRegex.replace(this, "_")
 
-    fun createVideoName(title: String, quality: String, suffix: String): String {
-        return "${title.replaceAllIllegalChars()}_${quality}.$suffix"
-    }
+    fun createVideoName(title: String, quality: String, suffix: String): String =
+        "${title.replaceAllIllegalChars()}_${quality}.$suffix"
 
-    private fun createVideoCoverName(title: String, suffix: String): String {
-        return "${title.replaceAllIllegalChars()}.$suffix"
-    }
+    fun createVideoCoverName(title: String, suffix: String): String =
+        "${title.replaceAllIllegalChars()}.$suffix"
 
     /**
      * 创建目录并在其中写入 .nomedia 文件，防止被媒体扫描器扫描到让你尴尬
      */
+    @Deprecated("下载工具已经创建了nomedia，没必要重复创建")
     private fun File.makeFolderNoMedia() {
-        if (!exists()) {
-            if (!mkdirs()) {
-                Log.w("HFileManager", "⚠️ 目录创建失败: $absolutePath")
-                return
-            }
-        } else if (!isDirectory) {
+        if (!exists() && !mkdirs()) {
+            Log.w("HFileManager", "⚠️ 目录创建失败: $absolutePath")
+            return
+        }
+
+        if (!isDirectory) {
             Log.w("HFileManager", "⚠️ 已存在但不是文件夹: $absolutePath")
             return
         }
 
         val noMedia = File(this, ".nomedia")
         if (!noMedia.exists()) {
-            try {
-                noMedia.createNewFile()
-            } catch (e: IOException) {
-                Log.w("HFileManager", "⚠️ 创建 .nomedia 失败: ${e.message}")
-            }
+            runCatching { noMedia.createNewFile() }
+                .onFailure { Log.w("HFileManager", "⚠️ 创建 .nomedia 失败: ${it.message}") }
         }
     }
 }

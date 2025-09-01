@@ -6,14 +6,22 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.parseAsHtml
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.color.MaterialColors
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.ActivityDownloadBinding
+import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
+import com.yenaly.han1meviewer.logic.dao.download.HanimeDownloadDao
 import com.yenaly.han1meviewer.ui.fragment.home.download.DownloadedFragment
 import com.yenaly.han1meviewer.ui.fragment.home.download.DownloadingFragment
+import com.yenaly.han1meviewer.util.SafFileManager.scanAndImportHanimeDownloads
+import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.base.YenalyFragment
+import com.yenaly.yenaly_libs.utils.showLongToast
 import com.yenaly.yenaly_libs.utils.view.attach
 import com.yenaly.yenaly_libs.utils.view.setUpFragmentStateAdapter
+import kotlinx.coroutines.launch
 
 /**
  * 下载影片总Fragment，暫時由[DownloadedFragment]全權托管
@@ -30,6 +38,8 @@ class DownloadFragment : YenalyFragment<ActivityDownloadBinding>(){
         val hbSpannedTitle = HB.parseAsHtml()
         private val tabNameArray = intArrayOf(R.string.downloading, R.string.downloaded)
     }
+    private val dao: HanimeDownloadDao
+        get() = DownloadDatabase.instance.hanimeDownloadDao
 
     override fun getViewBinding(
         inflater: LayoutInflater,
@@ -67,6 +77,23 @@ class DownloadFragment : YenalyFragment<ActivityDownloadBinding>(){
 
         binding.tabLayout.attach(binding.viewPager) { tab, position ->
             tab.setText(tabNameArray[position])
+        }
+        binding.importDownloadedFab.setOnClickListener {
+            if (!Preferences.safDownloadPath.isNullOrBlank() && !Preferences.isUsePrivateStorage){
+                requireContext().showAlertDialog {
+                    setTitle(getString(R.string.read_download_dir_title))
+                    setMessage(getString(R.string.read_download_dir_message))
+                    setPositiveButton(R.string.ok){_,_->
+                        lifecycleScope.launch {
+                            scanAndImportHanimeDownloads(requireContext(),dao)
+                        }
+                        showLongToast(getString(R.string.read_success))
+                    }
+                    setNegativeButton(getString(R.string.cancel)){  _, _ -> }
+                }
+            } else {
+                showLongToast(getString(R.string.select_custom_directory))
+            }
         }
     }
 }
