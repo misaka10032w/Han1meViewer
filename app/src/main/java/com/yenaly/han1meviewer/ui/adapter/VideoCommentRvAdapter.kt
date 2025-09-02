@@ -8,7 +8,6 @@ import android.widget.TextView
 import androidx.core.text.parseAsHtml
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.DiffUtil
 import coil.load
 import coil.transform.CircleCropTransformation
