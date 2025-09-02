@@ -29,6 +29,10 @@ data class VideoComments(
         val id: String? = null,
         // post 相關
         val post: POST,
+        //举报相关
+        val redirectUrl: String? = null,
+        val reportableId: String? = null,
+        val reportableType: String? = null
     ) {
 
         val realReplyId get() = post.foreignId ?: checkNotNull(id)

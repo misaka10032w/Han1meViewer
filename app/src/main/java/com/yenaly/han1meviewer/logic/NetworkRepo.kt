@@ -291,6 +291,27 @@ object NetworkRepo {
         )
     }
 
+    fun reportComment(
+        csrfToken: String?,
+        reason: String,
+        currentUserId: String?,
+        redirectUrl: String,
+        reportableType: String?,
+        reportableId: String?
+    ) = websiteIOFlow(
+        request = {
+            HanimeNetwork.commentService.submitReport(
+                userId = currentUserId,
+                csrfToken = csrfToken,
+                redirectUrl = redirectUrl,
+                reportableId = reportableId,
+                reportableType = reportableType,
+                reason = reason
+            )
+        },
+        action = Parser::reportCommentResponse
+    )
+
     //</editor-fold>
 
     //<editor-fold desc="Subscription">

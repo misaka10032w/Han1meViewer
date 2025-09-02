@@ -1,12 +1,12 @@
 package com.yenaly.han1meviewer.ui.adapter
 
+import android.content.ContentResolver
 import android.content.Context
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Build
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
@@ -23,15 +23,16 @@ import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.fragment.home.download.DownloadedFragment
 import com.yenaly.han1meviewer.util.HImageMeower.loadUnhappily
-import com.yenaly.han1meviewer.util.openDownloadedHanimeVideoInActivity
 import com.yenaly.han1meviewer.util.openDownloadedHanimeVideoLocally
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.dpF
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
 import com.yenaly.yenaly_libs.utils.requireActivity
+import com.yenaly.yenaly_libs.utils.showLongToast
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
 import kotlinx.datetime.toLocalDateTime
+import java.io.File
 import kotlin.time.ExperimentalTime
 
 /**
@@ -102,12 +103,22 @@ class HanimeDownloadedRvAdapter(private val fragment: DownloadedFragment) :
                 TimeZone.currentSystemDefault()
             ).format(LOCAL_DATE_TIME_FORMAT)
 
-        val realSize = item.video.videoUri.toUri().toFile().length()
-        holder.binding.tvSize.text = if (realSize == 0L) {
-            "???"
-        } else {
-            item.video.length.formatFileSizeV2()
+        val uri = item.video.videoUri.toUri()
+        val realSize = try {
+            when (uri.scheme) {
+                ContentResolver.SCHEME_CONTENT -> {
+                    context.contentResolver.openFileDescriptor(uri, "r")?.use { it.statSize } ?: 0L
+                }
+                "file" -> File(uri.path ?: "").length()
+                else -> 0L
+            }
+        } catch (e: Exception) {
+            showLongToast(context.getString(R.string.some_videos_moved_or_deleted))
+            e.printStackTrace()
+            0L
         }
+
+        holder.binding.tvSize.text = if (realSize <= 0L) "???" else realSize.formatFileSizeV2()
         holder.binding.tvQuality.text = item.video.quality
     }
     private fun Context.startVideoActivity(videoCode: String) {

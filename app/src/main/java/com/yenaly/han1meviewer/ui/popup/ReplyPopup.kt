@@ -7,6 +7,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.lxj.xpopup.core.BottomPopupView
 import com.yenaly.han1meviewer.R
+import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.unsafeLazy
 
 /**
@@ -28,13 +29,23 @@ class ReplyPopup(context: Context) : BottomPopupView(context) {
         super.onCreate()
         editText.hint = hint
         commentPrefix?.let(editText::append)
-        sendListener?.let(btnSend::setOnClickListener)
-        //防止连续点击干出去好几个评论，评论区有时候出现好几个相同的评论，一猜就是APP发出去的，防止站长发现给加验证码。
         btnSend.setOnClickListener {
+            val text = editText.text?.toString().orEmpty().trim()
+            val effectiveLength = if (!commentPrefix.isNullOrBlank()) {
+                text.length - commentPrefix!!.length
+            } else {
+                text.length
+            }
+
+            if (effectiveLength < 5) {
+                showShortToast(R.string.comment_too_short)
+                return@setOnClickListener
+            }
             btnSend.isEnabled = false
             sendListener?.onClick(it)
         }
     }
+
     /**
      * [onKeyboardHeightChange]方法在某些情况下只让出了IME高度，没有让出沉浸式导航栏高度
      */

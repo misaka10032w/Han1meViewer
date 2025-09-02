@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.fragment.video
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
@@ -14,14 +15,17 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.lxj.xpopup.XPopup
 import com.lxj.xpopup.core.BasePopupView
 import com.lxj.xpopup.interfaces.SimpleCallback
 import com.yenaly.han1meviewer.COMMENT_TYPE
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VIDEO_COMMENT_PREFIX
 import com.yenaly.han1meviewer.databinding.FragmentCommentBinding
+import com.yenaly.han1meviewer.logic.model.ReportReason
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.StateLayoutMixin
 import com.yenaly.han1meviewer.ui.activity.PreviewCommentActivity
@@ -51,10 +55,49 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
             ViewModelProvider(requireActivity())[CommentViewModel::class.java]
         }
     }
-
+    private var reportReason:List<ReportReason>? = null
     private val commentTypePrefix by arguments(COMMENT_TYPE, VIDEO_COMMENT_PREFIX)
     private val commentAdapter by unsafeLazy {
-        VideoCommentRvAdapter(this)
+        VideoCommentRvAdapter(this){ item ->
+            if (reportReason == null) {
+                reportReason = viewModel.reportReason
+            }
+            var checkedIndex = -1
+            val reportDialog = MaterialAlertDialogBuilder(requireContext())
+                .setTitle(getString(R.string.whats_wrong_with_him))
+                .setIcon(R.drawable.ic_baseline_report_24)
+                .setSingleChoiceItems(
+                    reportReason?.map { it.value }?.toTypedArray(),
+                    checkedIndex
+                ) { _, which ->
+                    checkedIndex = which
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(getString(R.string.submit)) { _, _ ->
+                    if (checkedIndex != -1) {
+                        val chosen = reportReason!![checkedIndex]
+                        val reasonKey = chosen.reasonKey ?:chosen.value
+                        viewModel.reportComment(
+                            reasonKey,
+                            viewModel.currentUserId,
+                            "${ Preferences.baseUrl }watch?v=${viewModel.code}",
+                            item.reportableType,
+                            item.reportableId
+                        )
+                        Log.i("ReportComment", "viewModel.reportComment: \n" +
+                                "chosen: $reasonKey\n" +
+                                "currentUserId: ${viewModel.currentUserId}\n" +
+                                "redirectUrl: ${ Preferences.baseUrl }watch?v=${viewModel.code}\n" +
+                                "reportableType: ${item.reportableType}\n" +
+                                "reportableId: ${item.reportableId}")
+
+                    } else {
+                        showShortToast(getString(R.string.report_reason_hint))
+                    }
+                }
+                .create()
+            reportDialog.show()
+        }
     }
     private val replyPopup by unsafeLazy {
         ReplyPopup(requireContext()).also { it.hint = getString(R.string.comment) }

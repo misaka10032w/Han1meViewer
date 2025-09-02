@@ -13,6 +13,7 @@ import com.yenaly.han1meviewer.ui.fragment.settings.PlayerSettingsFragment
 import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
 import com.yenaly.han1meviewer.ui.view.video.HMediaKernel
 import com.yenaly.han1meviewer.util.CookieString
+import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import com.yenaly.yenaly_libs.utils.applicationContext
 import com.yenaly.yenaly_libs.utils.getSpValue
@@ -193,7 +194,10 @@ object Preferences {
             // HanimeDownloadManager.MAX_CONCURRENT_DOWNLOAD_DEF
             HanimeDownloadManagerV2.MAX_CONCURRENT_DOWNLOAD_DEF
         )
-
+    val isUsePrivateStorage: Boolean
+        get() = preferenceSp.getBoolean(DownloadSettingsFragment.USE_PRIVATE_STORAGE,true)
+    val safDownloadPath: String?
+        get() = preferenceSp.getString(SafFileManager.KEY_TREE_URI,null)
     /**
      * 对应关系详见 [SpeedLimitInterceptor.SPEED_BYTES]
      */

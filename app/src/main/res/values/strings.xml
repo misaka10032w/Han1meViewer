@@ -443,6 +443,41 @@
     <string name="days">%1$d 天</string>
     <string name="original_comic">原作漫畫</string>
     <string name="fault_prompt">出現錯誤，請聯絡開發者！</string>
-
-
+    <string name="read_download_dir_title">讀取下載目錄</string>
+    <string name="read_download_dir_message">讀取當前下載目錄中已下載的文件，用於將之前下載的文件恢復到列表中。\n每個視頻單元文件結構應為：\n[視頻代碼]/xxx.mp4、xxx.png、info.json</string>
+    <string name="read_success">讀取成功</string>
+    <string name="select_custom_directory">請先選擇一個自訂目錄</string>
+    <string name="some_videos_moved_or_deleted">部分影片被移動或刪除，請檢查。</string>
+    <string name="directory_saved">目錄已保存:%s</string>
+    <string name="no_directory_selected">未選擇目錄，未作變更</string>
+    <string name="select_download_folder">選擇您的下載資料夾</string>
+    <string name="select_folder_message">使用系統檔案選擇器指定一個資料夾：\n\n✓ 自主選擇儲存位置\n✓ 下載檔案永久保存\n✓ 方便與其他應用共享\n✓ 解除安裝應用不影響檔案\n\n建議選擇Downloads下新建目錄或自訂資料夾</string>
+    <string name="restore_default_path">恢復預設儲存路徑</string>
+    <string name="restore_default_message">確定要恢復為應用內部儲存嗎？\n\n● 當前下載的檔案不會被移動\n● 後續下載將儲存到應用內部\n● 應用解除安裝後檔案將被清除\n● 選擇外部路徑後，可以使用檔案遷移功能移出</string>
+    <string name="default_path_restored">已恢復預設儲存路徑</string>
+    <string name="already_default_path">當前已是預設路徑</string>
+    <string name="already_default_message">您正在使用應用內部儲存空間。\n\n如需更改，可以指定外部儲存路徑來更好地管理檔案。</string>
+    <string name="understood">明白了</string>
+    <string name="confirm_import">是否進行導出？</string>
+    <string name="import_warning">導出中請勿關閉 APP，以免造成檔案損壞！</string>
+    <string name="import_progress">導入進度</string>
+    <string name="no_exportable_files">私有路徑內無可導出檔案</string>
+    <string name="importing">正在導入…</string>
+    <string name="import_complete">導入完成，共計%d個</string>
+    <string name="specify_path_first">請先指定一個路徑</string>
+    <string name="path_permission_message">目前使用應用內部儲存目錄或自訂路徑為空或權限遺失</string>
+    <string name="import_progress_format" translatable="false">%d / %d（%d%%）</string>
+    <string name="pref_export_downloads_title">導出下載項</string>
+    <string name="pref_export_downloads_summary">導出私有下載目錄中的所有下載項到自訂目錄</string>
+    <string name="save_failed_title">保存失敗</string>
+    <string name="save_failed_message">由於外部儲存權限或其他原因，影片資訊檔案保存失敗。\n已自動切換到應用私有路徑。\n如果你是解除安裝重新安裝的應用可嘗試清理Download/Han1meViewer目錄後在設定切換下載位置再試，否則將繼續使用私有目錄，並請在解除安裝或清除資料之前移出檔案！</string>
+    <string name="zero_percent" translatable="false">0%</string>
+    <string name="download_category">下載設定</string>
+    <string name="download_category_summary">點擊可設定路徑，長按可恢復預設路徑</string>
+    <string name="whats_wrong_with_him">他有什麼問題？</string>
+    <string name="submit">提交</string>
+    <string name="report_reason_hint">請先選擇一個檢舉理由</string>
+    <string name="report_failed">舉報失敗，原因：%s，請聯繫開發者</string>
+    <string name="report_success">檢舉成功</string>
+    <string name="comment_too_short">評論內容太短，請至少輸入5個字符</string>
 </resources>
