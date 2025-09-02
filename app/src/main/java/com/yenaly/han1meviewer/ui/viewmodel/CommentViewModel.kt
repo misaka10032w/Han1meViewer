@@ -1,16 +1,20 @@
 package com.yenaly.han1meviewer.ui.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.model.CommentPlace
+import com.yenaly.han1meviewer.logic.model.ReportReason
 import com.yenaly.han1meviewer.logic.model.VideoCommentArgs
 import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
+import com.yenaly.han1meviewer.util.loadAssetAs
 import com.yenaly.yenaly_libs.base.YenalyViewModel
 import com.yenaly.yenaly_libs.utils.showShortToast
+import com.yenaly.yenaly_libs.utils.unsafeLazy
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -54,6 +58,9 @@ class CommentViewModel(application: Application) : YenalyViewModel(application) 
     private val _commentLikeFlow =
         MutableSharedFlow<WebsiteState<VideoCommentArgs>>(replay = 0)
     val commentLikeFlow = _commentLikeFlow.asSharedFlow()
+    val reportReason by unsafeLazy {
+        loadAssetAs<List<ReportReason>>("report_reason.json").orEmpty()
+    }
 
     fun getComment(type: String, code: String) {
         viewModelScope.launch {
@@ -195,6 +202,38 @@ class CommentViewModel(application: Application) : YenalyViewModel(application) 
                 showShortToast(R.string.cancel_thumb_down_success)
             } else {
                 showShortToast(R.string.thumb_down_success)
+            }
+        }
+    }
+
+    fun reportComment(
+        reason: String,
+        currentUserId: String?,
+        redirectUrl: String,
+        reportableType: String?,
+        reportableId: String?
+    ){
+        viewModelScope.launch {
+            Log.i("ReportComment", "csrfToken:${csrfToken}")
+            NetworkRepo.reportComment(
+                csrfToken = csrfToken,
+                reason = reason,
+                currentUserId = currentUserId,
+                redirectUrl = redirectUrl,
+                reportableType = reportableType,
+                reportableId = reportableId
+            ).collect { state ->
+                when(state){
+                    is WebsiteState.Error -> {
+                        showShortToast(R.string.report_failed)
+                    }
+                    WebsiteState.Loading -> {
+
+                    }
+                    is WebsiteState.Success<*> -> {
+                        showShortToast(R.string.report_success)
+                    }
+                }
             }
         }
     }

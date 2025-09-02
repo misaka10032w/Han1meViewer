@@ -447,4 +447,10 @@ Recommendations are as follows:\n
     <string name="save_failed_message">Due to external storage permissions or other reasons, the video info file failed to save.\nAutomatically switched to app private path.\nIf you reinstalled the app, try cleaning the Download/Han1meViewer directory and switch download location in settings. Otherwise, continue using private directory and please move out files before uninstalling or clearing data!</string>
     <string name="download_category">Download Settings</string>
     <string name="download_category_summary">Tap to set path, long press to reset to default</string>
+    <string name="whats_wrong_with_him">What\'s his problem?</string>
+    <string name="submit">Submit</string>
+    <string name="report_reason_hint">Please select a reporting reason first.</string>
+    <string name="report_failed">Report failed, reason: %s, please contact developer</string>
+    <string name="report_success">Report successful</string>
+    <string name="comment_too_short">The comment is too short, please enter at least 5 characters</string>
 </resources>

@@ -57,4 +57,16 @@ interface HanimeCommentService {
         @Field("unlike-comment-status") unlikeCommentStatus: Int, // 你之前有沒有點過踩，1是0否
         @Header("X-CSRF-TOKEN") csrfToken_1: String? = csrfToken,
     ): Response<ResponseBody>
+
+    @FormUrlEncoded
+    @POST("user/{userId}/report")
+    suspend fun submitReport(
+        @Path("userId") userId: String?,
+        @Field("_token") csrfToken: String?,
+        @Field("redirect-url") redirectUrl: String,
+        @Field("reportable-id") reportableId: String?,
+        @Field("reportable-type") reportableType: String?,
+        @Field("reason") reason: String,
+        @Header("X-CSRF-TOKEN") csrfToken_1: String? = csrfToken
+    ): Response<ResponseBody>
 }

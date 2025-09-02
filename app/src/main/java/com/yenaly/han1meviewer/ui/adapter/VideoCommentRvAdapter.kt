@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.adapter
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
@@ -18,7 +19,7 @@ import com.drake.spannable.span.HighlightSpan
 import com.google.android.material.button.MaterialButton
 import com.lxj.xpopup.XPopup
 import com.yenaly.han1meviewer.COMMENT_ID
-import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.ItemVideoCommentBinding
 import com.yenaly.han1meviewer.logic.model.VideoComments
@@ -26,6 +27,7 @@ import com.yenaly.han1meviewer.ui.fragment.video.ChildCommentPopupFragment
 import com.yenaly.han1meviewer.ui.fragment.video.CommentFragment
 import com.yenaly.han1meviewer.ui.popup.ReplyPopup
 import com.yenaly.yenaly_libs.utils.makeBundle
+import com.yenaly.yenaly_libs.utils.showLongToast
 import com.yenaly.yenaly_libs.utils.showShortToast
 
 /**
@@ -34,7 +36,8 @@ import com.yenaly.yenaly_libs.utils.showShortToast
  * @time 2023/11/26 026 16:19
  */
 class VideoCommentRvAdapter(
-    private val fragment: Fragment? = null
+    private val fragment: Fragment? = null,
+    private val onReportClick: (item : VideoComments.VideoComment) -> Unit
 ) :
     BaseDifferAdapter<VideoComments.VideoComment, DataBindingHolder<ItemVideoCommentBinding>>(
         COMPARATOR
@@ -142,15 +145,18 @@ class VideoCommentRvAdapter(
             viewHolder.binding.btnViewMoreReplies.setOnClickListener {
                 val position = viewHolder.bindingAdapterPosition
                 val item = getItem(position) ?: return@setOnClickListener
-                check(fragment != null && fragment is CommentFragment)
-                item.realReplyId.let { id ->
-                    ChildCommentPopupFragment().makeBundle(
-                        COMMENT_ID to id
-                    ).showIn(context as FragmentActivity)
+                val parentFragment = fragment
+                check(parentFragment != null && parentFragment is CommentFragment)
+                val childFragment = ChildCommentPopupFragment().apply {
+                    makeBundle(COMMENT_ID to item.realReplyId)
                 }
+                childFragment.show(
+                    parentFragment.childFragmentManager,
+                    "child_comment_popup_${item.realReplyId}"
+                )
             }
             viewHolder.binding.btnThumbUp.setOnClickListener {
-                if (!Preferences.isAlreadyLogin) {
+                if (!isAlreadyLogin) {
                     showShortToast(R.string.login_first)
                     return@setOnClickListener
                 }
@@ -172,7 +178,7 @@ class VideoCommentRvAdapter(
                 }
             }
             viewHolder.binding.btnThumbDown.setOnClickListener {
-                if (!Preferences.isAlreadyLogin) {
+                if (!isAlreadyLogin) {
                     showShortToast(R.string.login_first)
                     return@setOnClickListener
                 }
@@ -193,7 +199,7 @@ class VideoCommentRvAdapter(
                 }
             }
             viewHolder.binding.btnReply.setOnClickListener {
-                if (!Preferences.isAlreadyLogin) {
+                if (!isAlreadyLogin) {
                     showShortToast(R.string.login_first)
                     return@setOnClickListener
                 }
@@ -231,6 +237,16 @@ class VideoCommentRvAdapter(
                         .moveUpToKeyboard(false)
                         .asCustom(commentPopup).show()
                 }
+            }
+            viewHolder.binding.btnReport.setOnClickListener {
+                val position = viewHolder.bindingAdapterPosition
+                val item = getItem(position) ?: return@setOnClickListener
+                Log.i("ReportComment","${item.username},${item.reportableId},${item.reportableType}")
+                if (!isAlreadyLogin) {
+                    showLongToast(context.getString(R.string.login_first))
+                    return@setOnClickListener
+                }
+                onReportClick(item)
             }
         }
     }

@@ -3,13 +3,15 @@ package com.yenaly.han1meviewer.ui.fragment.video
 import android.app.Dialog
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.annotation.OptIn
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.badge.BadgeDrawable
@@ -17,9 +19,12 @@ import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.badge.ExperimentalBadgeUtils
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.yenaly.han1meviewer.COMMENT_ID
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.PopUpFragmentChildCommentBinding
+import com.yenaly.han1meviewer.logic.model.ReportReason
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.adapter.VideoCommentRvAdapter
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
@@ -41,9 +46,60 @@ class ChildCommentPopupFragment :
     YenalyBottomSheetDialogFragment<PopUpFragmentChildCommentBinding>() {
 
     val commentId by arguments<String>(COMMENT_ID)
-    val viewModel by viewModels<CommentViewModel>()
+    //向上查找搞到VideoFragment初始化好的CommentViewModel
+    val viewModel: CommentViewModel by lazy {
+        var ancestor: Fragment? = parentFragment
+        while (ancestor != null && ancestor !is VideoFragment) {
+            ancestor = ancestor.parentFragment
+        }
+
+        if (ancestor != null) {
+            ViewModelProvider(ancestor)[CommentViewModel::class.java]
+        } else {
+            ViewModelProvider(requireActivity())[CommentViewModel::class.java]
+        }
+    }
+    private var reportReason: List<ReportReason>? = null
     private val replyAdapter by unsafeLazy {
-        VideoCommentRvAdapter(this)
+        VideoCommentRvAdapter(this){ item ->
+            if (reportReason == null) {
+                reportReason = viewModel.reportReason
+            }
+            var checkedIndex = -1
+            val reportDialog = MaterialAlertDialogBuilder(requireContext())
+                .setTitle(getString(R.string.whats_wrong_with_him))
+                .setIcon(R.drawable.ic_baseline_report_24)
+                .setSingleChoiceItems(
+                    reportReason?.map { it.value }?.toTypedArray(),
+                    checkedIndex
+                ) { _, which ->
+                    checkedIndex = which
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(getString(R.string.submit)) { _, _ ->
+                    if (checkedIndex != -1) {
+                        val chosen = reportReason!![checkedIndex]
+                        val reasonKey = chosen.reasonKey ?: chosen.value
+                        viewModel.reportComment(
+                            reasonKey,
+                            viewModel.currentUserId,
+                            "${ Preferences.baseUrl }watch?v=${viewModel.code}",
+                            item.reportableType,
+                            item.reportableId
+                        )
+                        Log.i("ReportComment", "viewModel.reportComment: \n" +
+                                "chosen: $reasonKey\n" +
+                                "currentUserId: ${viewModel.currentUserId}\n" +
+                                "redirectUrl: ${ Preferences.baseUrl }watch?v=${viewModel.code}\n" +
+                                "reportableType: ${item.reportableType}\n" +
+                                "reportableId: ${item.reportableId}")
+                    } else {
+                        showShortToast(getString(R.string.report_reason_hint))
+                    }
+                }
+                .create()
+            reportDialog.show()
+        }
     }
 
     override fun getViewBinding(layoutInflater: LayoutInflater) =

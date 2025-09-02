@@ -29,7 +29,7 @@
 
             <TextView
                 android:id="@+id/tv_username"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:ellipsize="end"
@@ -37,10 +37,21 @@
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:layout_constrainedWidth="true"
-                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/iv_avatar"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:text="error" />
+                app:layout_constraintEnd_toStartOf="@id/btn_report"
+                tools:text="very_long_username_example" />
+            
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_report"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                app:icon="@drawable/ic_baseline_report_24"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
             <TextView
                 android:id="@+id/tv_date"

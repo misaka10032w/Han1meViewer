@@ -453,4 +453,10 @@
     <string name="save_failed_message">由于外部存储权限或其他原因，视频信息文件保存失败。\n已自动切换到应用私有路径。\n如果你是卸载重新安装的应用可尝试清理Download/Han1meViewer目录后在设置切换下载位置再试，否则将继续使用私有目录，并请在卸载或清除数据之前移出文件！</string>
     <string name="download_category">下载设置</string>
     <string name="download_category_summary">点击可设置路径，长按可恢复默认路径</string>
+    <string name="whats_wrong_with_him">你觉得他咋了？</string>
+    <string name="submit">提交</string>
+    <string name="report_reason_hint">请先选择一个举报理由</string>
+    <string name="report_failed">举报失败，原因：%s，请联系开发者</string>
+    <string name="report_success">举报成功</string>
+    <string name="comment_too_short">评论内容太短，请至少输入5个字符</string>
 </resources>

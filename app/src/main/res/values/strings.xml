@@ -474,4 +474,10 @@
     <string name="zero_percent" translatable="false">0%</string>
     <string name="download_category">下載設定</string>
     <string name="download_category_summary">點擊可設定路徑，長按可恢復預設路徑</string>
+    <string name="whats_wrong_with_him">他有什麼問題？</string>
+    <string name="submit">提交</string>
+    <string name="report_reason_hint">請先選擇一個檢舉理由</string>
+    <string name="report_failed">舉報失敗，原因：%s，請聯繫開發者</string>
+    <string name="report_success">檢舉成功</string>
+    <string name="comment_too_short">評論內容太短，請至少輸入5個字符</string>
 </resources>

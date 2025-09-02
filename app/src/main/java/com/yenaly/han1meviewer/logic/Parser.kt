@@ -765,13 +765,18 @@ object Parser {
                 likeCommentStatus == "1",
                 unlikeCommentStatus == "1",
             )
+            val reportRedirectUrl = ""
+            val reportableId = child.select("span.report-btn").first()?.attr("data-reportable-id")
+            val reportableType = child.select("span.report-btn").first()?.attr("data-reportable-type")
+
             commentList.add(
                 VideoComments.VideoComment(
                     avatar = avatarUrl, username = username, date = date,
                     content = content, hasMoreReplies = hasMoreReplies,
                     thumbUp = thumbUp.logIfParseNull(Parser::comments.name, "thumbUp"),
                     id = id.logIfParseNull(Parser::comments.name, "id"),
-                    isChildComment = false, post = post
+                    isChildComment = false, post = post,
+                    redirectUrl = reportRedirectUrl, reportableId = reportableId, reportableType = reportableType
                 )
             )
         }
@@ -848,19 +853,37 @@ object Parser {
                     likeCommentStatus == "1",
                     unlikeCommentStatus == "1",
                 )
+                val reportRedirectUrl = ""
+                val reportableId = basicClass?.select("span.report-btn")?.first()?.attr("data-reportable-id")
+                val reportableType = basicClass?.select("span.report-btn")?.first()?.attr("data-reportable-type")
                 replyList.add(
                     VideoComments.VideoComment(
                         avatar = avatarUrl, username = username, date = date,
                         content = content,
                         thumbUp = thumbUp.logIfParseNull(Parser::commentReply.name, "thumbUp"),
                         id = null,
-                        isChildComment = true, post = post
+                        isChildComment = true, post = post, reportableId = reportableId,
+                        reportableType = reportableType, redirectUrl = reportRedirectUrl
                     )
                 )
             }
         }
 
         return WebsiteState.Success(VideoComments(replyList))
+    }
+
+    fun reportCommentResponse(body: String): WebsiteState<String> {
+        return if (body.contains("已成功檢舉該則評論")) {
+            WebsiteState.Success("已成功檢舉該則評論，我們會儘快處理您的檢舉。")
+        } else {
+            val doc = Jsoup.parse(body)
+            val msg = doc.select("#error").text()
+            if (msg.contains("已成功檢舉")) {
+                WebsiteState.Success(msg)
+            } else {
+                WebsiteState.Error(Throwable("举报失败或未检测到成功提示"))
+            }
+        }
     }
 
     fun getMySubscriptions(body: String): WebsiteState<MySubscriptions> {
