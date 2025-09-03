@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.lxj.xpopup.XPopup
 import com.lxj.xpopup.core.BasePopupView
 import com.lxj.xpopup.interfaces.SimpleCallback
@@ -263,6 +264,23 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
                         viewModel.handleCommentLike(state.info)
                     }
                 }
+            }
+        }
+        lifecycleScope.launch {
+            viewModel.reportMessage.collect { msg ->
+                val text = if (msg.args.isNotEmpty()) {
+                    getString(msg.resId, *msg.args.toTypedArray())
+                } else {
+                    getString(msg.resId)
+                }
+                val snackBar = Snackbar.make(requireView(), text, Snackbar.LENGTH_LONG)
+                val textView = snackBar.view.findViewById<TextView>(
+                    com.google.android.material.R.id.snackbar_text
+                )
+                textView.maxLines = 5
+                textView.ellipsize = null
+                textView.isSingleLine = false
+                snackBar.show()
             }
         }
     }

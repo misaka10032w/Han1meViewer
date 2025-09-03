@@ -345,9 +345,6 @@ object Parser {
                 if (parent.tagName() == "a") {
                     return@forEach
                 }
-//                println("S------------------------------------S")
-//                println(parent.selectFirst("div > a"))
-//                println("E------------------------------------E")
                 val videoCode = parent.selectFirst("div > a")?.absUrl("href")?.toVideoCode()
                     .throwIfParseNull(Parser::hanimeVideoVer2.name, "videoCode")
                 val cardMobilePanel = parent.selectFirst("div[class^=card-mobile-panel]")
@@ -675,7 +672,6 @@ object Parser {
                         artistId = artistId
                     )
                 }
-                println("-------------------$subscriptionList")
             }
         }.logIfParseNull(Parser::subscriptionItems.name, "allArtistsClass_CSS")
 
