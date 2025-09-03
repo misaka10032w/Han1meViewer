@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.ui.popup
 
 import android.content.Context
 import android.os.Build
+import android.view.KeyEvent
 import android.view.WindowInsets
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
@@ -28,6 +29,12 @@ class ReplyPopup(context: Context) : BottomPopupView(context) {
     override fun onCreate() {
         super.onCreate()
         editText.hint = hint
+        editText.setOnKeyListener { _,keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN) {
+                return@setOnKeyListener true
+            }
+            false
+        }
         commentPrefix?.let(editText::append)
         btnSend.setOnClickListener {
             val text = editText.text?.toString().orEmpty().trim()

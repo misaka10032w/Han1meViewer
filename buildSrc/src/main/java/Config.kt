@@ -50,8 +50,6 @@ object Config {
                     versionName = "${major}.${minor}.${patch}-$source+$versionCode"
                 }
             }
-            println("Version Code: $versionCode")
-            println("Version Name: $versionName")
             return versionCode to versionName
         }
 

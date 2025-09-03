@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="video_cover_height">108dp</dimen>
-    <dimen name="video_cover_width">192dp</dimen>
+    <dimen name="video_cover_width">185dp</dimen>
     <dimen name="video_cover_simplified_width_large">150dp</dimen>
     <dimen name="video_cover_simplified_height_large">220dp</dimen>
     <dimen name="video_cover_simplified_width">120dp</dimen>

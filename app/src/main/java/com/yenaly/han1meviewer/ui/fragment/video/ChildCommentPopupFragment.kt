@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.TextView
 import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -20,6 +21,7 @@ import com.google.android.material.badge.ExperimentalBadgeUtils
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.yenaly.han1meviewer.COMMENT_ID
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
@@ -172,6 +174,28 @@ class ChildCommentPopupFragment :
                 }
             }
         }
+
+        lifecycleScope.launch {
+            viewModel.reportMessage.collect { msg ->
+                val text = if (msg.args.isNotEmpty()) {
+                    getString(msg.resId, *msg.args.toTypedArray())
+                } else {
+                    getString(msg.resId)
+                }
+                val snackBar = Snackbar.make(
+                    dialog.findViewById(android.R.id.content),
+                    text,
+                    Snackbar.LENGTH_LONG
+                )
+                val textView = snackBar.view.findViewById<TextView>(
+                    com.google.android.material.R.id.snackbar_text
+                )
+                textView.maxLines = 5
+                textView.ellipsize = null
+                textView.isSingleLine = false
+                snackBar.show()
+            }
+        }
     }
     override fun onStart() {
         super.onStart()
@@ -185,6 +209,12 @@ class ChildCommentPopupFragment :
             behavior.peekHeight = screenHeight / 2
             behavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewModel.clearVideoReplyList()
+        replyAdapter.submitList(emptyList())
     }
     private fun getWindowHeight(): Int {
         val window = dialog?.window ?: return resources.displayMetrics.heightPixels

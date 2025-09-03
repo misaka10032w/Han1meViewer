@@ -9,7 +9,7 @@
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="wrap_content"
         android:layout_marginHorizontal="8dp"
         android:layout_marginVertical="8dp"
         app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
@@ -19,7 +19,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingHorizontal="4dp">
@@ -27,17 +27,27 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_comment"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
-                android:ellipsize="end"
+                android:ellipsize="none"
+                android:gravity="top"
                 android:hint="@string/comment"
-                android:inputType="text"
-                android:paddingHorizontal="12dp"
-                android:singleLine="true"
+                android:inputType="textMultiLine|textCapSentences"
+                android:minLines="1"
+                android:maxLines="5"
+                android:scrollHorizontally="false"
+                android:singleLine="false"
+                android:breakStrategy="simple"
                 android:textColor="?attr/colorOnSurface"
                 android:textColorHint="?attr/colorOnSurfaceVariant"
-                android:textSize="16sp"
+                android:textSize="18sp"
+                android:layout_gravity="center_vertical"
+                android:paddingStart="18dp"
+                android:paddingEnd="0dp"
+                android:scrollbars="vertical"
+                android:verticalScrollbarPosition="right"
+                android:fadeScrollbars="false"
                 app:endIconMode="clear_text"/>
 
             <!-- Search Button -->

@@ -460,10 +460,10 @@
     <string name="understood">明白了</string>
     <string name="confirm_import">是否進行導出？</string>
     <string name="import_warning">導出中請勿關閉 APP，以免造成檔案損壞！</string>
-    <string name="import_progress">導入進度</string>
+    <string name="import_progress">導出進度</string>
     <string name="no_exportable_files">私有路徑內無可導出檔案</string>
-    <string name="importing">正在導入…</string>
-    <string name="import_complete">導入完成，共計%d個</string>
+    <string name="importing">正在導出…</string>
+    <string name="import_complete">導出完成，共計%d個</string>
     <string name="specify_path_first">請先指定一個路徑</string>
     <string name="path_permission_message">目前使用應用內部儲存目錄或自訂路徑為空或權限遺失</string>
     <string name="import_progress_format" translatable="false">%d / %d（%d%%）</string>

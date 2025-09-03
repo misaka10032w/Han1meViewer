@@ -441,10 +441,10 @@
     <string name="understood">明白了</string>
     <string name="confirm_import">是否进行导出？</string>
     <string name="import_warning">导出中请勿关闭 APP，以免造成文件损坏！</string>
-    <string name="import_progress">导入进度</string>
+    <string name="import_progress">导出进度</string>
     <string name="no_exportable_files">私有路径内无可导出文件</string>
-    <string name="importing">正在导入…</string>
-    <string name="import_complete">导入完成，共计%d个</string>
+    <string name="importing">正在导出…</string>
+    <string name="import_complete">导出完成，共计%d个</string>
     <string name="specify_path_first">请先指定一个路径</string>
     <string name="path_permission_message">目前使用应用内部存储目录或自定义路径为空或权限丢失</string>
     <string name="pref_export_downloads_title">导出下载项</string>

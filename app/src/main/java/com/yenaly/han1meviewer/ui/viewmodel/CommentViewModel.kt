@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.ui.viewmodel
 
 import android.app.Application
 import android.util.Log
+import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.NetworkRepo
@@ -32,6 +33,13 @@ class CommentViewModel(application: Application) : YenalyViewModel(application) 
     lateinit var code: String
 
     var currentUserId: String? = null
+    //reportMessage为点击举报按钮之后的响应及错误信息
+    private val _reportMessage = MutableSharedFlow<Message>()
+    val reportMessage = _reportMessage.asSharedFlow()
+    data class Message(
+        @param:StringRes val resId: Int,
+        val args: List<Any> = emptyList()
+    )
 
     private val _videoCommentStateFlow =
         MutableStateFlow<WebsiteState<VideoComments>>(WebsiteState.Loading)
@@ -225,16 +233,22 @@ class CommentViewModel(application: Application) : YenalyViewModel(application) 
             ).collect { state ->
                 when(state){
                     is WebsiteState.Error -> {
-                        showShortToast(R.string.report_failed)
+                        _reportMessage.emit(
+                            Message(
+                                R.string.report_failed,
+                                listOf(state.throwable.message ?: "unknown")
+                            )
+                        )
                     }
                     WebsiteState.Loading -> {
 
                     }
                     is WebsiteState.Success<*> -> {
-                        showShortToast(R.string.report_success)
+                        _reportMessage.emit(Message(R.string.report_success))
                     }
                 }
             }
         }
     }
+    fun clearVideoReplyList() { _videoReplyFlow.value = emptyList() }
 }

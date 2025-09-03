@@ -435,10 +435,10 @@ Recommendations are as follows:\n
     <string name="understood">Understood</string>
     <string name="confirm_import">Confirm Export?</string>
     <string name="import_warning">Do not close APP during export to avoid file corruption!</string>
-    <string name="import_progress">Import Progress</string>
+    <string name="import_progress">Export Progress</string>
     <string name="no_exportable_files">No exportable files in private path</string>
-    <string name="importing">Importing…</string>
-    <string name="import_complete">Import completed, total %d items</string>
+    <string name="importing">Exporting…</string>
+    <string name="import_complete">Export completed, total %d items</string>
     <string name="specify_path_first">Please Specify a Path First</string>
     <string name="path_permission_message">Currently using app internal storage directory or custom path is empty or permission lost</string>
     <string name="pref_export_downloads_title">Export Download Items</string>
