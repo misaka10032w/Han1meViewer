@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/sort_latest"
+        android:title="@string/sort_by_newest" />
+    <item
+        android:id="@+id/sort_earliest"
+        android:title="@string/sort_by_oldest" />
+    <item
+        android:id="@+id/sort_most_reply"
+        android:title="@string/sort_by_replies" />
+    <item
+        android:id="@+id/sort_most_likes"
+        android:title="@string/sort_most_likes" />
+    <item
+        android:id="@+id/sort_most_dislikes"
+        android:title="@string/sort_most_dislikes" />
+</menu>

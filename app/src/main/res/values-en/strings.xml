@@ -453,4 +453,10 @@ Recommendations are as follows:\n
     <string name="report_failed">Report failed, reason: %s, please contact developer</string>
     <string name="report_success">Report successful</string>
     <string name="comment_too_short">The comment is too short, please enter at least 5 characters</string>
+    <string name="sort_by_newest">Newest</string>
+    <string name="sort_by_oldest">Oldest</string>
+    <string name="sort_by_replies">Most replies</string>
+    <string name="sort_most_likes">Most likes</string>
+    <string name="sort_most_dislikes">Most dislikes</string>
+    <string name="sort_comment">Sorting</string>
 </resources>

@@ -481,4 +481,10 @@
     <string name="report_success">檢舉成功</string>
     <string name="comment_too_short">評論內容太短，請至少輸入5個字符</string>
     <string name="blank_brackets" translatable="false">( %1$d )</string>
+    <string name="sort_by_newest">最新</string>
+    <string name="sort_by_oldest">最早</string>
+    <string name="sort_by_replies">最多回覆</string>
+    <string name="sort_most_likes">最多點讚</string>
+    <string name="sort_most_dislikes">最多點踩</string>
+    <string name="sort_comment">評論排序</string>
 </resources>

@@ -459,4 +459,10 @@
     <string name="report_failed">举报失败，原因：%s，请联系开发者</string>
     <string name="report_success">举报成功</string>
     <string name="comment_too_short">评论内容太短，请至少输入5个字符</string>
+    <string name="sort_by_newest">最新</string>
+    <string name="sort_by_oldest">最早</string>
+    <string name="sort_by_replies">回复最多</string>
+    <string name="sort_most_likes">最多点赞</string>
+    <string name="sort_most_dislikes">最多点踩</string>
+    <string name="sort_comment">评论排序</string>
 </resources>
