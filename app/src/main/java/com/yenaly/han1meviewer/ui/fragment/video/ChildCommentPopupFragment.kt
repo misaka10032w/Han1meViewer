@@ -30,6 +30,8 @@ import com.yenaly.han1meviewer.logic.model.ReportReason
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.adapter.VideoCommentRvAdapter
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
+import com.yenaly.han1meviewer.util.parseTimeStrToMinutes
+import com.yenaly.han1meviewer.util.safeSortedBy
 import com.yenaly.han1meviewer.util.setGravity
 import com.yenaly.yenaly_libs.base.YenalyBottomSheetDialogFragment
 import com.yenaly.yenaly_libs.utils.arguments
@@ -135,7 +137,8 @@ class ChildCommentPopupFragment :
 
         lifecycleScope.launch {
             viewModel.videoReplyFlow.collectLatest { list ->
-                replyAdapter.submitList(list)
+                val sortedlist = list.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = false)
+                replyAdapter.submitList(sortedlist)
                 attachRedDotCount(list.size)
             }
         }

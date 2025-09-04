@@ -3,6 +3,8 @@ package com.yenaly.han1meviewer.ui.viewmodel
 import android.app.Application
 import android.os.Parcelable
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.EMPTY_STRING
 import com.yenaly.han1meviewer.HCacheManager
@@ -12,6 +14,7 @@ import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
+import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
@@ -56,7 +59,8 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
     var fromDownload = false
 
     var hKeyframes: HKeyframeEntity? = null
-
+    private val _videoList = MutableLiveData<List<HanimeInfo>>()
+    val videoList: LiveData<List<HanimeInfo>> = _videoList
     private val _hanimeVideoStateFlow =
         MutableStateFlow<VideoLoadingState<HanimeVideo>>(VideoLoadingState.Loading)
     val hanimeVideoStateFlow = _hanimeVideoStateFlow.asStateFlow()
@@ -69,7 +73,9 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
     val videoIntroDataMap = mutableMapOf<String, HanimeVideo?>()
     // 表示已经还原过的数据
     val videoIntroRestoredSet = mutableSetOf<String>()
-
+    fun setVideoList(list: List<HanimeInfo>) {
+        _videoList.value = list
+    }
     fun getHanimeVideo(videoCode: String) {
         if (videoIntroRestoredSet.contains(videoCode)) return
         viewModelScope.launch {

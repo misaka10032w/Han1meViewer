@@ -70,7 +70,7 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
     private val searchAdapter by unsafeLazy { HanimeVideoRvAdapter() }
     private val historyAdapter by unsafeLazy { HanimeSearchHistoryRvAdapter() }
     private var hasInitAdvancedSearch = false
-
+    private var observersBound = false
     private val optionsPopupFragment by unsafeLazy { SearchOptionsPopupFragment() }
     @Suppress ("DEPRECATION")
     private fun getAdvancedSearchMap(): Map<HAdvancedSearch, Any> {
@@ -128,7 +128,10 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
             })
         }
         binding.searchSrl.apply {
-            setOnLoadMoreListener { getHanimeSearchResult() }
+            setOnLoadMoreListener {
+                viewModel.page++
+                getHanimeSearchResult()
+            }
             setOnRefreshListener { getNewHanimeSearchResult() }
             setDisableContentWhenRefresh(true)
         }
@@ -150,23 +153,20 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
             headerLp.topMargin = offset
             binding.searchHeader.layoutParams = headerLp
         }
+        if (!observersBound) {
+            sfBindDataObservers()
+            observersBound = true
+        }
     }
 
-//    override fun onDestroyView() {
-//        binding.searchRv.apply {
-//            adapter = null
-//            layoutManager = null
-//            clearOnScrollListeners()
-//        }
-//        super.onDestroyView()
-//        _binding?.unbind()
-//    }
 
     @SuppressLint("SetTextI18n")
-    override fun bindDataObservers() {
+    private fun sfBindDataObservers() {
+        Log.d("LifecycleDebug", "bindDataObservers called")
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.CREATED) {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.searchStateFlow.collect { state ->
+                    Log.d("LifecycleDebug", "searchStateFlow collected: ${state.javaClass.simpleName}, page: ${viewModel.page}")
                     binding.searchRv.isGone = state is PageLoadingState.Error
                     when (state) {
                         is PageLoadingState.Loading -> {
@@ -175,7 +175,6 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
                         }
 
                         is PageLoadingState.Success -> {
-                            viewModel.page++
                             binding.searchSrl.finishRefresh()
                             binding.searchSrl.finishLoadMore(true)
                             if (!hasAdapterLoaded) {
@@ -205,7 +204,7 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
         }
 
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.CREATED) {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.searchFlow.collectLatest {
                     searchAdapter.submitList(it)
                 }
@@ -215,7 +214,6 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.refreshTriggerFlow.collect {
                     binding.searchSrl.autoRefresh()
-                  //  getNewHanimeSearchResult()
                 }
             }
         }

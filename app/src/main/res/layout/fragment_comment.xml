@@ -2,9 +2,7 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <data>
-
-    </data>
+    <data />
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
@@ -29,12 +27,26 @@
                     android:id="@+id/rv_comment"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:clipToPadding="false"
-                    android:padding="8dp" />
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingTop="54dp"
+                    android:paddingBottom="8dp"
+                    android:clipToPadding="false" />
 
             </com.drake.statelayout.StateLayout>
 
         </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_sort"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sort_comment"
+            android:background="@android:color/transparent"
+            android:layout_gravity="end|top"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="8dp"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/btn_comment"

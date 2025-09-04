@@ -69,8 +69,10 @@ class VideoColumnTitleAdapter : BaseSingleItemAdapter<Unit, QuickViewHolder> {
         viewType: Int,
     ): QuickViewHolder {
         return QuickViewHolder(R.layout.item_video_column_title, parent).also { viewHolder ->
-            viewHolder.setGone(R.id.more, context !is MainActivity)
-            viewHolder.getView<Button>(R.id.more).setOnClickListener(onMoreHanimeListener)
+            if (onMoreHanimeListener != null){
+                viewHolder.setGone(R.id.more, context !is MainActivity)
+                viewHolder.getView<Button>(R.id.more).setOnClickListener(onMoreHanimeListener)
+            }
         }
     }
 }

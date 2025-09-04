@@ -761,6 +761,9 @@ object Parser {
                 likeCommentStatus == "1",
                 unlikeCommentStatus == "1",
             )
+            val regex = """\d+""".toRegex()
+            val replyCountText = child.select("div.load-replies-btn").text()
+            val replyCount = regex.find(replyCountText)?.value?.toInt()
             val reportRedirectUrl = ""
             val reportableId = child.select("span.report-btn").first()?.attr("data-reportable-id")
             val reportableType = child.select("span.report-btn").first()?.attr("data-reportable-type")
@@ -768,7 +771,7 @@ object Parser {
             commentList.add(
                 VideoComments.VideoComment(
                     avatar = avatarUrl, username = username, date = date,
-                    content = content, hasMoreReplies = hasMoreReplies,
+                    content = content, hasMoreReplies = hasMoreReplies, replyCount = replyCount,
                     thumbUp = thumbUp.logIfParseNull(Parser::comments.name, "thumbUp"),
                     id = id.logIfParseNull(Parser::comments.name, "id"),
                     isChildComment = false, post = post,
