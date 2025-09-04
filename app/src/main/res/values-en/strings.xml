@@ -50,7 +50,7 @@
     <string name="series_video">Series Videos</string>
     <string name="related_video">Related Videos</string>
     <string name="now_playing">Now Playing</string>
-    <string name="view_more_replies">View More Replies</string>
+    <string name="view_more_replies">View %1$d replies</string>
     <string name="comment_not_found">Comments Not Found</string>
     <string name="hanime_list">New Anime List</string>
     <string name="latest_hanime_tour">New Anime Tour</string>

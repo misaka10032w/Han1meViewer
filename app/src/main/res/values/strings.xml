@@ -51,7 +51,7 @@
     <string name="series_video">系列影片</string>
     <string name="related_video">相關影片</string>
     <string name="now_playing">現正播放</string>
-    <string name="view_more_replies">查看更多回覆</string>
+    <string name="view_more_replies">查看 %1$d 則回覆</string>
     <string name="comment_not_found">未發現評論</string>
     <string name="hanime_list">新番列表</string>
     <string name="latest_hanime_tour">新番導覽</string>

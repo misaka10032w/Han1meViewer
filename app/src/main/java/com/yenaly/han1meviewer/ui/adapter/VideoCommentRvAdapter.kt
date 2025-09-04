@@ -110,7 +110,12 @@ class VideoCommentRvAdapter(
         }
         holder.binding.tvDate.text = item.date
         holder.binding.tvUsername.text = item.username
-        holder.binding.btnViewMoreReplies.isVisible = item.hasMoreReplies
+        holder.binding.btnViewMoreReplies.apply {
+            isVisible = item.hasMoreReplies
+            if (isVisible) text = holder.itemView.context.getString(
+                R.string.view_more_replies, item.replyCount ?: 0
+            )
+        }
         holder.binding.btnThumbUp.text = item.realLikesCount?.toString()
         holder.binding.btnThumbUp.setThumbUpIcon(item.post.likeCommentStatus)
         holder.binding.btnThumbDown.setThumbDownIcon(item.post.unlikeCommentStatus)

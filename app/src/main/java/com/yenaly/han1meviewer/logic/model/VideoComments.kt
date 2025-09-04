@@ -25,6 +25,8 @@ data class VideoComments(
         val isChildComment: Boolean,
         // 是否有更多回覆
         val hasMoreReplies: Boolean = false,
+        //更多回复数量
+        val replyCount: Int? = 0,
         // 評論id，登入前不能憑藉post獲取
         val id: String? = null,
         // post 相關
