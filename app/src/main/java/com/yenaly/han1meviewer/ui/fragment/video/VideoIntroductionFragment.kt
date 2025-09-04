@@ -65,6 +65,7 @@ import com.yenaly.han1meviewer.ui.adapter.HanimeVideoRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.RvWrapper.Companion.wrappedWith
 import com.yenaly.han1meviewer.ui.adapter.VideoColumnTitleAdapter
 import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
+import com.yenaly.han1meviewer.ui.fragment.PlaylistBottomSheetFragment
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.requestPostNotificationPermission
 import com.yenaly.han1meviewer.util.setDrawableTop
@@ -248,11 +249,20 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
                             val cached = viewModel.videoIntroDataMap[code]
 
                             if (video.playlist != null && !viewModel.fromDownload) {
+                                val bottomSheet = PlaylistBottomSheetFragment()
                                 playlistTitleAdapter.subtitle = video.playlist.playlistName
                                 multi.addAdapter(playlistTitleAdapter)
                                 multi.addAdapter(playlistWrapper)
                                 if (cached?.playlist?.video != video.playlist.video) {
                                     playlistAdapter.submitList(video.playlist.video)
+                                }
+                                viewModel.setVideoList(video.playlist.video)
+
+                                playlistTitleAdapter.apply {
+                                    onMoreHanimeListener = {
+                                        bottomSheet.show(parentFragmentManager,
+                                            PlaylistBottomSheetFragment.TAG)
+                                    }
                                 }
                             }
 

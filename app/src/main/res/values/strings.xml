@@ -480,4 +480,5 @@
     <string name="report_failed">舉報失敗，原因：%s，請聯繫開發者</string>
     <string name="report_success">檢舉成功</string>
     <string name="comment_too_short">評論內容太短，請至少輸入5個字符</string>
+    <string name="blank_brackets" translatable="false">( %1$d )</string>
 </resources>
