@@ -32,12 +32,25 @@ val hanimeSpannedTitle = HANIME_TITLE_HTML.parseAsHtml()
  */
 fun getHanimeVideoLink(videoCode: String) = HANIME_BASE_URL + "watch?v=" + videoCode
 
+
+/**
+ * 獲取 Hanime 搜索地址
+ */
+fun getHanimeSearchLink(artist: String) = HANIME_BASE_URL + "search?query=" + artist
 /**
  * 獲取 Hanime 影片分享文本
  */
 fun getHanimeShareText(title: String, videoCode: String): String = buildString {
     appendLine(title)
     appendLine(getHanimeVideoLink(videoCode))
+    append("- From Han1meViewer -")
+}
+/**
+ * 獲取 Hanime 影片分享文本
+ */
+fun getHanimeSearchShareText(artist: String): String = buildString {
+    appendLine(artist)
+    appendLine(getHanimeSearchLink(artist))
     append("- From Han1meViewer -")
 }
 
