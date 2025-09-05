@@ -919,14 +919,16 @@ object Parser {
                         videoCard.selectFirst("a.overlay")?.absUrl("href") ?: return@mapNotNull null
                     val videoCode = Regex("""watch\?v=(\d+)""").find(link)?.groupValues?.get(1)
                         ?: return@mapNotNull null
-                    val imgs = videoCard.select("img")
-                    val coverUrl = imgs.getOrNull(1)?.absUrl("src") ?: return@mapNotNull null
+                    val coverHtml = videoCard.select("img")
+                    val coverUrl = coverHtml.getOrNull(1)?.absUrl("src") ?: return@mapNotNull null
                     val title = videoCard.selectFirst("div.card-mobile-title")?.text()?.trim()
                         ?: return@mapNotNull null
                     val duration = videoCard.selectFirst("div.card-mobile-duration")?.text()?.trim()
                     val infoBoxes = videoCard.select("div.card-mobile-duration")
                         .map { it.text().trim() }
-                    val reviews = infoBoxes.find { it.contains("%") }
+                    val currentArtist = videoCard.select("a.card-mobile-user").firstOrNull()
+                        ?.text()?: ""
+                    val reviews = infoBoxes.find { it.contains("%") }?.substringAfter(" ")
                     val views = infoBoxes.find { it.contains("次") }
 
                     SubscriptionVideosItem(
@@ -935,7 +937,8 @@ object Parser {
                         videoCode = videoCode,
                         duration = duration,
                         views = views,
-                        reviews = reviews
+                        reviews = reviews,
+                        currentArtist = currentArtist
                     )
                 } catch (_: Exception) {
                     null

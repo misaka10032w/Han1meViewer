@@ -52,7 +52,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -62,7 +61,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -77,6 +75,7 @@ import androidx.preference.PreferenceManager
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import java.util.Locale
 
 class QRcodeScannerActivity : ComponentActivity() {
@@ -85,15 +84,11 @@ class QRcodeScannerActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MaterialTheme {
+            HanimeTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     topBar = {
                         CenterAlignedTopAppBar(
-                            colors = topAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                titleContentColor = MaterialTheme.colorScheme.primary
-                            ),
                             title = {
                                 Text(
                                     stringResource(R.string.title_activity_qrcode_scanner),
@@ -249,7 +244,7 @@ fun ScannerOverlay(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .size(boxSize)
                 .align(Alignment.Center)
-                .border(4.dp, Color(0xFFDE3737), RoundedCornerShape(20.dp))
+                .border(4.dp, MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(20.dp))
         )
     }
 }
@@ -307,10 +302,4 @@ class BarcodeAnalyzer(private val onBarcodeScanned: (String) -> Unit) : ImageAna
                 imageProxy.close()
             }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewDialog() {
-    CookieGuideDialog {}
 }

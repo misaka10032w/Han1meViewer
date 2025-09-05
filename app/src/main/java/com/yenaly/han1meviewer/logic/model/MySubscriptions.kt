@@ -23,5 +23,6 @@ data class SubscriptionVideosItem(
     val videoCode: String,
     val duration: String? = null,
     val views: String? = null,
-    val reviews: String? = null
+    val reviews: String? = null,
+    val currentArtist: String? = null
 ) : Parcelable

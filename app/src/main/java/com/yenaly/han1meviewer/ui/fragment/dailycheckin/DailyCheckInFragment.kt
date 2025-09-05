@@ -70,6 +70,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.transition.MaterialSharedAxis
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.CheckInCalendarViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -96,40 +97,44 @@ class DailyCheckInFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                val scrollBehavior =
-                    TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-                Scaffold(
-                    modifier = Modifier
-                        .nestedScroll(scrollBehavior.nestedScrollConnection),
-                    topBar = {
-                        CenterAlignedTopAppBar(
-                            colors = topAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                titleContentColor = MaterialTheme.colorScheme.primary
-                            ),
-                            title = {
-                                Text(
-                                    stringResource(R.string.has_cum),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            },
-                            navigationIcon = { IconButton(
-                                onClick = {
-                                    lifecycleScope.launch { findNavController().navigateUp() }
-                                }) {
+                HanimeTheme {
+                    val scrollBehavior =
+                        TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+                    Scaffold(
+                        modifier = Modifier
+                            .nestedScroll(scrollBehavior.nestedScrollConnection),
+                        topBar = {
+                            CenterAlignedTopAppBar(
+                                colors = topAppBarColors(
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                                ),
+                                title = {
+                                    Text(
+                                        stringResource(R.string.has_cum),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        color = MaterialTheme.colorScheme.onBackground
+                                    )
+                                },
+                                navigationIcon = { IconButton(
+                                    onClick = {
+                                        lifecycleScope.launch { findNavController().navigateUp() }
+                                    }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                         contentDescription = "Localized description"
                                     )
                                 }
-                            },
-                            scrollBehavior = scrollBehavior,
-                        )
-                    },
-                ) { innerPadding ->
-                    CalendarCheckInScreen(innerPadding)
+                                },
+                                scrollBehavior = scrollBehavior,
+                            )
+                        },
+                    ) { innerPadding ->
+                        CalendarCheckInScreen(innerPadding)
+                    }
                 }
+
             }
         }
     }
@@ -159,6 +164,7 @@ fun CalendarCheckInScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // 标题和月份导航
         Row(
@@ -364,12 +370,12 @@ fun CalendarGrid(
             val transition = updateTransition(targetState = isChecked, label = "CheckInTransition")
             val count = records[date] ?: 0
             val bgColor by transition.animateColor(label = "BackgroundColor") { checked ->
-                if (count > 0) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                if (count > 0) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
                 else Color.Transparent
             }
 
             val borderColor by transition.animateColor(label = "BorderColor") { checked ->
-                if (count > 0) MaterialTheme.colorScheme.primary
+                if (count > 0) MaterialTheme.colorScheme.onPrimaryContainer
                 else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
             }
 
@@ -389,14 +395,13 @@ fun CalendarGrid(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = (day + 1).toString(),
-                        color = if (date == LocalDate.now()) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurface
+                        color = if (date == LocalDate.now()) MaterialTheme.colorScheme.onPrimaryContainer
+                        else MaterialTheme.colorScheme.primaryContainer
                     )
                     AnimatedVisibility(visible = count > 0) {
                         Text(
                             text = "\uD83E\uDD8Cx$count",
                             fontSize = 15.sp,
-                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
