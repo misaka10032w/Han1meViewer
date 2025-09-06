@@ -16,7 +16,7 @@ data class HanimeInfo(
     val coverUrl: String,
     val videoCode: String,
     val duration: String? = null,
-    val uploader: String? = null,
+    val artist: String? = null,
     val views: String? = null,
     val uploadTime: String? = null,
     val genre: String? = null,

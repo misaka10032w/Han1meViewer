@@ -97,8 +97,8 @@ class HanimeVideoRvAdapter(private val videoWidthType: Int = -1) : // videoWidth
                         holder.getView<View>(R.id.icon_views).isGone = true
                     }
                 }
-                holder.getView<TextView>(R.id.genre_and_uploader).apply {
-                    if (item.genre == null && item.uploader == null) {
+                holder.getView<TextView>(R.id.artist).apply {
+                    if (item.genre == null && item.artist == null) {
                         isGone = true
                         return@apply
                     }
@@ -113,7 +113,7 @@ class HanimeVideoRvAdapter(private val videoWidthType: Int = -1) : // videoWidth
                                 else -> color(Color.RED)
                             }
                         }
-                        item.uploader.text()
+                        item.artist.text()
                     }
                 }
             }

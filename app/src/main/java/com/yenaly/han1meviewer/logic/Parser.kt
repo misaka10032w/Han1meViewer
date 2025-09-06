@@ -208,12 +208,13 @@ object Parser {
         val durationAndViews = hanimeSearchItem.select("div[class^=card-mobile-duration]")
         val mDuration = durationAndViews.getOrNull(0)?.text() // 改了
         val views = durationAndViews.getOrNull(2)?.text() // 改了
+        val artist = hanimeSearchItem.selectFirst("a.card-mobile-user")?.text()
         return HanimeInfo(
             title = title,
             coverUrl = coverUrl,
             videoCode = videoCode,
             duration = mDuration.logIfParseNull(Parser::hanimeNormalItemVer2.name, "duration"),
-            uploader = null,
+            artist = artist,
             views = views.logIfParseNull(Parser::hanimeNormalItemVer2.name, "views"),
             uploadTime = null,
             genre = null,
