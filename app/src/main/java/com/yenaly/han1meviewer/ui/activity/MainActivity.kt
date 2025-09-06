@@ -14,7 +14,12 @@ import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Build
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.TextPaint
+import android.text.style.CharacterStyle
 import android.util.Log
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -56,7 +61,6 @@ import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.databinding.ActivityMainBinding
-import com.yenaly.han1meviewer.hanimeSpannedTitle
 import com.yenaly.han1meviewer.logic.exception.CloudFlareBlockedException
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.logout
@@ -73,7 +77,6 @@ import com.yenaly.yenaly_libs.base.YenalyActivity
 import com.yenaly.yenaly_libs.utils.dp
 import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.showSnackBar
-import com.yenaly.yenaly_libs.utils.startActivity
 import com.yenaly.yenaly_libs.utils.textFromClipboard
 import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
@@ -177,7 +180,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
 
     override fun onCreate(savedInstanceState: Bundle?) {
         @Suppress("UNUSED_VARIABLE")
-        val splashScreen = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             installSplashScreen().apply {
                 setKeepOnScreenCondition { !hasAuthenticated }
             }
@@ -555,18 +558,74 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
      * 必须最后调用！先设置好toolbar！
      */
     fun Toolbar.setupWithMainNavController() {
-        supportActionBar!!.title = hanimeSpannedTitle
+        supportActionBar!!.title = createAppbarTitle(context)
         val appBarConfiguration = AppBarConfiguration(setOf(R.id.nv_home_page), binding.dlMain)
         this.setupWithNavController(navController, appBarConfiguration)
+
+        val typedValue = TypedValue()
+        if (context.theme.resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true)) {
+            (this.navigationIcon as? androidx.appcompat.graphics.drawable.DrawerArrowDrawable)?.color = typedValue.data
+        }
     }
+
+    fun createAppbarTitle(context: Context): SpannableString {
+        val fullText = "Han1meViewer"
+        val spannable = SpannableString(fullText)
+
+        val redSpan = object : CharacterStyle() {
+            private val color = Color.RED
+            override fun updateDrawState(tp: TextPaint) {
+                tp.color = color
+                tp.isFakeBoldText = true
+            }
+        }
+        spannable.setSpan(redSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        val typedValue = TypedValue()
+        context.theme.resolveAttribute(com.google.android.material.R.attr.colorOnBackground, typedValue, true)
+        val themeColor = typedValue.data
+
+        val boldThemeSpan = object : CharacterStyle() {
+            override fun updateDrawState(tp: TextPaint) {
+                tp.color = themeColor
+                tp.isFakeBoldText = true
+            }
+        }
+
+        spannable.setSpan(boldThemeSpan, 1, 6, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        val normalThemeSpan = object : CharacterStyle() {
+            override fun updateDrawState(tp: TextPaint) {
+                tp.color = themeColor
+                tp.isFakeBoldText = false
+            }
+        }
+
+        spannable.setSpan(normalThemeSpan, 6, fullText.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        return spannable
+    }
+
 
     override fun setupToolbar(title: CharSequence, canNavigateBack: Boolean) {
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        val theme = toolbar.context.theme
+        val titleTypedValue  = TypedValue()
+        val bgTypedValue  = TypedValue()
+
         setSupportActionBar(toolbar)
         supportActionBar?.apply {
             this.title = title
             setDisplayHomeAsUpEnabled(canNavigateBack)
+            setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24)
         }
+
+        if (theme.resolveAttribute(com.google.android.material.R.attr.colorOnBackground, titleTypedValue , true)) {
+            toolbar.setTitleTextColor(titleTypedValue.data)
+        }
+
+        if (theme.resolveAttribute(com.google.android.material.R.attr.colorSurface, bgTypedValue , true)) {
+            toolbar.setBackgroundColor(bgTypedValue.data)
+        }
+
         toolbar.setNavigationOnClickListener {
             onBackPressedDispatcher.onBackPressed()
         }
