@@ -8,12 +8,9 @@ import android.os.Environment
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import com.yenaly.han1meviewer.FILE_PROVIDER_AUTHORITY
-import com.yenaly.han1meviewer.FROM_DOWNLOAD
 import com.yenaly.han1meviewer.HFileManager
 import com.yenaly.han1meviewer.HJson
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.VIDEO_CODE
-import com.yenaly.han1meviewer.ui.activity.VideoActivity
 import com.yenaly.yenaly_libs.utils.application
 import com.yenaly.yenaly_libs.utils.applicationContext
 import com.yenaly.yenaly_libs.utils.showShortToast
@@ -123,13 +120,6 @@ fun Context.openDownloadedHanimeVideoLocally(
             e.printStackTrace()
         }
     }
-}
-
-fun Context.openDownloadedHanimeVideoInActivity(videoCode: String) {
-    val intent = Intent(this, VideoActivity::class.java)
-    intent.putExtra(FROM_DOWNLOAD, true)
-    intent.putExtra(VIDEO_CODE, videoCode)
-    startActivity(intent)
 }
 
 /**

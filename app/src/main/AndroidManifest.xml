@@ -65,13 +65,6 @@
 
         </provider>
 
-        <activity
-            android:name=".ui.activity.VideoActivity"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
-            android:exported="true"
-            android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity">
-        </activity>
         <!-- MainActivity 本体：无 launcher 配置 -->
         <activity
             android:name=".ui.activity.MainActivity"
@@ -146,26 +139,7 @@
             </intent-filter>
         </activity-alias>
 
-        <activity
-            android:name=".ui.activity.SearchActivity"
-            android:configChanges="orientation|screenSize"
-            android:exported="true">
 
-        </activity>
-        <activity
-            android:name=".ui.activity.PreviewActivity"
-            android:configChanges="screenSize|orientation"
-            android:exported="true"
-            android:theme="@style/Theme.Hanime"
-            tools:ignore="LockedOrientationActivity">
-
-        </activity>
-        <activity
-            android:name=".ui.activity.PreviewCommentActivity"
-            android:configChanges="screenSize|orientation"
-            android:exported="true">
-
-        </activity>
         <activity
             android:name=".ui.activity.SettingsActivity"
             android:configChanges="screenSize|orientation"
@@ -175,12 +149,6 @@
         <activity
             android:name=".ui.activity.LoginActivity"
             android:configChanges="screenSize|orientation"
-            android:exported="true">
-
-        </activity>
-        <activity
-            android:name=".ui.activity.DownloadActivity"
-            android:configChanges="orientation|screenSize"
             android:exported="true">
 
         </activity>

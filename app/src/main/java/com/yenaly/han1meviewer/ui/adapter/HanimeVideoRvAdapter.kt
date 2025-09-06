@@ -20,8 +20,8 @@ import com.yenaly.han1meviewer.VideoCoverSize
 import com.yenaly.han1meviewer.getHanimeShareText
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.activity.PreviewActivity
 import com.yenaly.han1meviewer.ui.fragment.home.HomePageFragment
+import com.yenaly.han1meviewer.ui.fragment.home.preview.PreviewFragment
 import com.yenaly.han1meviewer.ui.fragment.search.SearchFragment
 import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.yenaly_libs.utils.copyTextToClipboard
@@ -175,7 +175,7 @@ class HanimeVideoRvAdapter(private val videoWidthType: Int = -1) : // videoWidth
                 }
             }
             viewHolder.itemView.apply {
-                if (context !is PreviewActivity) {
+                if (this !is PreviewFragment) {
                     setOnClickListener {
                         val position = viewHolder.bindingAdapterPosition
                         val item = getItem(position) ?: return@setOnClickListener

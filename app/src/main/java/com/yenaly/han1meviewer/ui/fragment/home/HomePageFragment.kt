@@ -45,7 +45,6 @@ import com.yenaly.han1meviewer.logic.model.HomePage
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.StateLayoutMixin
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.activity.PreviewActivity
 import com.yenaly.han1meviewer.ui.adapter.AnnouncementCardAdapter
 import com.yenaly.han1meviewer.ui.adapter.HanimeVideoRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.RvWrapper.Companion.wrappedWith
@@ -481,7 +480,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                 }
 
                 R.id.tb_previews -> {
-                    startActivity<PreviewActivity>()
+                    findNavController().navigate(R.id.nv_preview)
                     return@addMenu true
                 }
             }

@@ -68,6 +68,12 @@
     <fragment
         android:id="@+id/nv_download"
         android:name="com.yenaly.han1meviewer.ui.fragment.home.DownloadFragment" />
+    <fragment
+        android:id="@+id/nv_preview"
+        android:name="com.yenaly.han1meviewer.ui.fragment.home.preview.PreviewFragment" />
+    <fragment
+        android:id="@+id/nv_preview_comment"
+        android:name="com.yenaly.han1meviewer.ui.fragment.home.preview.PreviewCommentFragment" />
     <!-- 设置模块子导航图 -->
     <include app:graph="@navigation/nav_settings" />
 
