@@ -399,10 +399,11 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
 
             val buttonBgColor =
                 p.darkVibrantSwatch?.rgb ?: p.darkMutedSwatch?.rgb ?: Color.TRANSPARENT
-            val darkVibrantForContentScrim =
-                p.darkVibrantSwatch?.rgb ?: p.darkMutedSwatch?.rgb ?: p.lightVibrantSwatch?.rgb
-                ?: p.lightMutedSwatch?.rgb ?: Color.BLACK
-            binding.collapsingToolbar.setContentScrimColor(darkVibrantForContentScrim)
+            // 动态actionbar颜色会让浅色很丑
+//            val darkVibrantForContentScrim =
+//                p.darkVibrantSwatch?.rgb ?: p.darkMutedSwatch?.rgb ?: p.lightVibrantSwatch?.rgb
+//                ?: p.lightMutedSwatch?.rgb ?: Color.BLACK
+//            binding.collapsingToolbar.setContentScrimColor(darkVibrantForContentScrim)
             binding.btnBanner.background = GradientDrawable().apply {
                 colors = intArrayOf(Color.TRANSPARENT, buttonBgColor)
                 orientation = GradientDrawable.Orientation.LEFT_RIGHT
