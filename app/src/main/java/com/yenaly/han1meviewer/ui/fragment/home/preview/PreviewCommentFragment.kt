@@ -59,13 +59,4 @@ class PreviewCommentFragment : YenalyFragment<FragmentPreviewCommentBinding>() {
             .add(R.id.fcv_pre_comment, commentFragment)
             .commit()
     }
-
-    companion object {
-        fun newInstance(date: String, dateCode: String) = PreviewCommentFragment().apply {
-            arguments = bundleOf(
-                "date" to date,
-                DATE_CODE to dateCode
-            )
-        }
-    }
 }

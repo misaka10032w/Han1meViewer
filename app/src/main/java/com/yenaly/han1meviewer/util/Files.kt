@@ -26,24 +26,6 @@ import java.io.OutputStream
 @Deprecated(
     "Use alternative",
     ReplaceWith(
-        "HFileManager.appDownloadFolder",
-        imports = ["com.yenaly.han1meviewer.HFileManager"]
-    )
-)
-val hanimeVideoLocalFolder get() = applicationContext.getExternalFilesDir(Environment.DIRECTORY_MOVIES)
-
-@Deprecated(
-    "Use alternative",
-    ReplaceWith(
-        "HFileManager.DEF_VIDEO_TYPE",
-        imports = ["com.yenaly.han1meviewer.HFileManager"]
-    )
-)
-const val DEF_VIDEO_TYPE = "mp4"
-
-@Deprecated(
-    "Use alternative",
-    ReplaceWith(
         "HFileManager.createVideoName(title, quality, suffix)",
         imports = ["com.yenaly.han1meviewer.HFileManager"]
     )
@@ -66,7 +48,7 @@ fun getDownloadedHanimeFile(title: String, quality: String, suffix: String = HFi
 
 @Deprecated("不用了")
 fun checkDownloadedHanimeFile(startsWith: String): Boolean {
-    return HFileManager.getAppDownloadFolder(application)?.let { folder ->
+    return HFileManager.getAppDownloadFolder(application).let { folder ->
         folder.listFiles()?.any { it.name.startsWith(startsWith) }
     } == true
 }
@@ -87,7 +69,7 @@ fun Context.openDownloadedHanimeVideoLocally(
                     return
                 }
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             onFileNotFound?.invoke()
             return
         }

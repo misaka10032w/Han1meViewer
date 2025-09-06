@@ -11,6 +11,8 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.ColorUtils
 import androidx.core.graphics.drawable.toBitmapOrNull
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isGone
@@ -162,6 +164,27 @@ class PreviewFragment : YenalyFragment<FragmentPreviewBinding>() {
     override fun initData(savedInstanceState: Bundle?) {
 
         // Toolbar
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_preview_toolbar, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.tb_comment -> {
+                        val args = Bundle().apply {
+                            putString("date", dateUtils.current.format(DateUtils.NORMAL_FORMAT))
+                            putString(DATE_CODE, dateUtils.current.format(DateUtils.FORMATTED_FORMAT))
+                        }
+                        findNavController().navigate(R.id.nv_preview_comment, args)
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
         (requireActivity() as AppCompatActivity).setSupportActionBar(binding.toolbar)
         binding.toolbar.setNavigationOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
@@ -283,36 +306,6 @@ class PreviewFragment : YenalyFragment<FragmentPreviewBinding>() {
     override fun onDestroyView() {
         super.onDestroyView()
         PreviewCommentPrefetcher.Companion.bye(PreviewCommentPrefetcher.Scope.PREVIEW_ACTIVITY)
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.menu_preview_toolbar, menu)
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.tb_comment -> {
-//                startActivity<PreviewCommentActivity>(
-//                    "date" to dateUtils.current.format(DateUtils.NORMAL_FORMAT),
-//                    DATE_CODE to dateUtils.current.format(DateUtils.FORMATTED_FORMAT)
-//                )
-                val args = Bundle().apply {
-                    putString("date", dateUtils.current.format(DateUtils.NORMAL_FORMAT))
-                    putString(DATE_CODE, dateUtils.current.format(DateUtils.FORMATTED_FORMAT))
-                }
-
-                findNavController().navigate(R.id.nv_preview_comment, args)
-            }
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     private fun loadComments(currentFormat: String) {
