@@ -4,137 +4,154 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
     </data>
 
     <FrameLayout
         android:id="@+id/frame"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:foreground="?selectableItemBackground"
+        android:foreground="?attr/selectableItemBackground"
         android:paddingHorizontal="4dp"
         android:paddingBottom="8dp">
 
-        <LinearLayout
-            android:id="@+id/linear"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:orientation="vertical"
-            tools:ignore="UselessParent">
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="1dp"
+            app:strokeWidth="0dp">
 
-            <FrameLayout
-                android:id="@+id/cover_wrapper"
-                android:layout_width="@dimen/video_cover_width"
-                android:layout_height="@dimen/video_cover_height">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                tools:ignore="UselessParent">
 
-                <com.google.android.material.imageview.ShapeableImageView
-                    android:id="@+id/cover"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:contentDescription="@null"
-                    app:shapeAppearanceOverlay="@style/RoundCornerImageView" />
+                <FrameLayout
+                    android:id="@+id/cover_wrapper"
+                    android:layout_width="@dimen/video_cover_width"
+                    android:layout_height="@dimen/video_cover_height">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/cover"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@null"
+                        app:shapeAppearanceOverlay="@style/RoundCornerImageView" />
+
+                    <TextView
+                        android:id="@+id/is_playing"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="?attr/colorOnSurface"
+                        android:alpha="0.5"
+                        android:contentDescription="@null"
+                        android:gravity="center"
+                        android:text="@string/now_playing"
+                        android:textColor="?attr/colorSurface" />
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="25dp"
+                        android:layout_gravity="bottom"
+                        android:background="@drawable/gradient_black_transparent_90"
+                        android:paddingStart="4dp"
+                        android:paddingEnd="4dp"
+                        android:paddingBottom="4dp">
+
+                        <ImageView
+                            android:id="@+id/icon_views"
+                            android:layout_width="@dimen/view_view_and_time_icon_size"
+                            android:layout_height="@dimen/view_view_and_time_icon_size"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_baseline_play_circle_outline_24"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:tint="?attr/colorOnSurfaceVariant" />
+
+                        <TextView
+                            android:id="@+id/views"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="@dimen/video_view_and_time_and_duration"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/icon_views"
+                            app:layout_constraintTop_toTopOf="parent"
+                            tools:text="1234" />
+
+                        <ImageView
+                            android:id="@+id/icon_time"
+                            android:layout_width="@dimen/view_view_and_time_icon_size"
+                            android:layout_height="@dimen/view_view_and_time_icon_size"
+                            android:layout_marginStart="8dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_baseline_access_time_24"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/views"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:tint="?attr/colorOnSurfaceVariant" />
+
+                        <TextView
+                            android:id="@+id/time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="@dimen/video_view_and_time_and_duration"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/icon_time"
+                            app:layout_constraintTop_toTopOf="parent"
+                            tools:text="1天前" />
+
+                        <TextView
+                            android:id="@+id/duration"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="@dimen/video_view_and_time_and_duration"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            tools:text="12:12" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </FrameLayout>
 
                 <TextView
-                    android:id="@+id/is_playing"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@color/per50_transparent_black"
-                    android:contentDescription="@null"
-                    android:gravity="center"
-                    android:text="@string/now_playing" />
-
-                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="bottom"
-                    android:background="@drawable/gradient_black_transparent_90"
-                    android:paddingStart="4dp"
+                    android:layout_marginTop="4dp"
+                    android:ellipsize="end"
+                    android:paddingStart="6dp"
                     android:paddingEnd="4dp"
-                    android:paddingBottom="4dp">
+                    android:singleLine="true"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    tools:text="This is a title.This is a title.This is a title." />
 
-                    <ImageView
-                        android:id="@+id/icon_views"
-                        android:layout_width="@dimen/view_view_and_time_icon_size"
-                        android:layout_height="@dimen/view_view_and_time_icon_size"
-                        android:background="@drawable/ic_baseline_play_circle_outline_24"
-                        android:contentDescription="@null"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                <TextView
+                    android:id="@+id/artist"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="8dp"
+                    android:ellipsize="end"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="4dp"
+                    android:singleLine="true"
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    tools:text="里番 字幕组" />
 
-                    <TextView
-                        android:id="@+id/views"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/white"
-                        android:textSize="@dimen/video_view_and_time_and_duration"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toEndOf="@id/icon_views"
-                        app:layout_constraintTop_toTopOf="parent"
-                        tools:text="1234" />
+            </LinearLayout>
 
-                    <ImageView
-                        android:id="@+id/icon_time"
-                        android:layout_width="@dimen/view_view_and_time_icon_size"
-                        android:layout_height="@dimen/view_view_and_time_icon_size"
-                        android:layout_marginStart="8dp"
-                        android:background="@drawable/ic_baseline_access_time_24"
-                        android:contentDescription="@null"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toEndOf="@id/views"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/time"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/white"
-                        android:textSize="@dimen/video_view_and_time_and_duration"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toEndOf="@id/icon_time"
-                        app:layout_constraintTop_toTopOf="parent"
-                        tools:text="1天前" />
-
-                    <TextView
-                        android:id="@+id/duration"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/white"
-                        android:textSize="@dimen/video_view_and_time_and_duration"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        tools:text="12:12" />
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-            </FrameLayout>
-
-            <TextView
-                android:id="@+id/title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:ellipsize="end"
-                android:paddingStart="4dp"
-                android:paddingEnd="4dp"
-                android:singleLine="true"
-                tools:text="This is a title.This is a title.This is a title.This is a title.This is a title." />
-
-            <TextView
-                android:id="@+id/genre_and_uploader"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:ellipsize="end"
-                android:paddingStart="4dp"
-                android:paddingEnd="4dp"
-                android:singleLine="true"
-                android:textSize="11sp"
-                tools:text="里番 字幕组" />
-
-        </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
     </FrameLayout>
 

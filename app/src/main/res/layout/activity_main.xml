@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
-        android:background="?attr/colorSurface">
+        android:background="?android:attr/colorBackground">
         <!-- 主内容部分 -->
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -21,7 +21,6 @@
             <com.google.android.material.appbar.AppBarLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/colorSurface"
                 android:fitsSystemWindows="true"
                 android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
@@ -29,7 +28,6 @@
                     android:id="@+id/toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
-                    android:background="?attr/colorSurface"
                     app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
             </com.google.android.material.appbar.AppBarLayout>
 
@@ -54,9 +52,7 @@
             android:fitsSystemWindows="true"
             app:headerLayout="@layout/nav_header_ability"
             app:menu="@menu/menu_main_nv"
-            android:background="?attr/colorSurface"
-            app:itemTextColor="@color/nav_item_text_color"
-            app:itemIconTint="@color/nav_item_icon_color" />
+/>
 
         <View
             android:fitsSystemWindows="true"
