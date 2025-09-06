@@ -438,4 +438,11 @@
     <string name="sort_most_likes">最多點讚</string>
     <string name="sort_most_dislikes">最多點踩</string>
     <string name="sort_comment">評論排序</string>
+    <string name="theme">主題</string>
+    <string name="dynamic_color_title">動態配色</string>
+    <string name="dynamic_color_summary">開啟後跟隨系統主題色，僅支援Android 12以上</string>
+    <string name="dark_theme">深色主題</string>
+    <string name="follow_system">跟隨系統</string>
+    <string name="always_off">總是關閉</string>
+    <string name="always_on">總是開啟</string>
 </resources>

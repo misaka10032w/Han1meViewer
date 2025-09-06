@@ -416,4 +416,11 @@
     <string name="sort_most_likes">最多点赞</string>
     <string name="sort_most_dislikes">最多点踩</string>
     <string name="sort_comment">评论排序</string>
+    <string name="theme">主题</string>
+    <string name="dark_theme">深色主题</string>
+    <string name="dynamic_color_title">动态配色</string>
+    <string name="dynamic_color_summary">开启后跟随系统主题色，仅支持Android 12以上</string>
+    <string name="follow_system">跟随系统</string>
+    <string name="always_off">总是关闭</string>
+    <string name="always_on">总是开启</string>
 </resources>

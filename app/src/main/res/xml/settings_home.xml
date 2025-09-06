@@ -65,6 +65,22 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/theme">
+
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
+            app:icon="@drawable/ic_baseline_moon_24"
+            app:key="use_dark_mode"
+            app:title="@string/dark_theme"
+            app:useSimpleSummaryProvider="true" />
+
+        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
+            app:icon="@drawable/ic_baseline_theme_24"
+            app:key="use_dynamic_color"
+            app:summary="@string/dynamic_color_summary"
+            app:title="@string/dynamic_color_title" />
+
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/update">
 
         <Preference

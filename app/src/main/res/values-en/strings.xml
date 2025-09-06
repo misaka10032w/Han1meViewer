@@ -410,4 +410,11 @@ Recommendations are as follows:\n
     <string name="sort_most_likes">Most likes</string>
     <string name="sort_most_dislikes">Most dislikes</string>
     <string name="sort_comment">Sorting</string>
+    <string name="dark_theme">Dark Theme</string>
+    <string name="dynamic_color_summary">Follow system theme colors after enabling, only supported on Android 12+</string>
+    <string name="dynamic_color_title">Dynamic Coloring</string>
+    <string name="theme">Theme</string>
+    <string name="follow_system">Follow System</string>
+    <string name="always_off">Always Off</string>
+    <string name="always_on">Always On</string>
 </resources>

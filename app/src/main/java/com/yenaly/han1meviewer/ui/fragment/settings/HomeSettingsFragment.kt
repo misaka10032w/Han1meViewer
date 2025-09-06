@@ -19,6 +19,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
+import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.core.text.parseAsHtml
 import androidx.lifecycle.Lifecycle
@@ -29,6 +30,7 @@ import androidx.preference.Preference
 import androidx.preference.SeekBarPreference
 import androidx.preference.SwitchPreferenceCompat
 import com.google.android.material.color.MaterialColors
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.analytics
 import com.mikepenz.aboutlibraries.LibsBuilder
@@ -36,6 +38,7 @@ import com.yenaly.han1meviewer.BuildConfig
 import com.yenaly.han1meviewer.HA1_GITHUB_FORUM_URL
 import com.yenaly.han1meviewer.HA1_GITHUB_ISSUE_URL
 import com.yenaly.han1meviewer.HA1_GITHUB_RELEASES_URL
+import com.yenaly.han1meviewer.HanimeApplication
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.WebsiteState
@@ -44,16 +47,19 @@ import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.view.pref.HPrivacyPreference
 import com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
+import com.yenaly.han1meviewer.util.ThemeUtils
 import com.yenaly.han1meviewer.util.setSummaryConverter
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.han1meviewer.util.showUpdateDialog
 import com.yenaly.han1meviewer.util.showWithBlurEffect
 import com.yenaly.yenaly_libs.ActivityManager
+import com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
 import com.yenaly.yenaly_libs.base.settings.YenalySettingsFragment
 import com.yenaly.yenaly_libs.utils.application
 import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.folderSize
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
+import com.yenaly.yenaly_libs.utils.showLongToast
 import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -64,11 +70,6 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
 import kotlinx.datetime.toLocalDateTime
-import kotlin.apply
-import androidx.core.content.edit
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.yenaly.han1meviewer.HanimeApplication
-import com.yenaly.yenaly_libs.utils.showLongToast
 import kotlin.time.ExperimentalTime
 
 /**
@@ -99,6 +100,8 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
         const val USE_CI_UPDATE_CHANNEL = "use_ci_update_channel"
         const val USE_ANALYTICS = "use_analytics"
         const val FAKE_LAUNCHER_ICON = "pref_fake_launcher_icon"
+        const val USE_DARK_MODE = "use_dark_mode"
+        const val USE_DYNAMIC_COLOR = "use_dynamic_color"
     }
 
     private val videoLanguage
@@ -137,6 +140,10 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
             by safePreference<Preference>("oss_license")
     private val fakeLauncherIcon
             by safePreference<Preference>(FAKE_LAUNCHER_ICON)
+    private val useDarkMode
+            by safePreference<MaterialDialogPreference>(USE_DARK_MODE)
+    private val useDynamicColor
+            by safePreference<MaterialSwitchPreference>(USE_DYNAMIC_COLOR)
 
     private var checkUpdateTimes = 0
 
@@ -216,6 +223,52 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
                             getString(
                                 R.string.restart_or_not_working,
                                 getString(R.string.video_language)
+                            )
+                        )
+                        setPositiveButton(R.string.confirm) { _, _ ->
+                            ActivityManager.restart(killProcess = true)
+                        }
+                        setNegativeButton(R.string.cancel, null)
+                    }
+                }
+                return@setOnPreferenceChangeListener true
+            }
+        }
+        useDarkMode.apply {
+            entries = arrayOf(
+                getString(R.string.follow_system),
+                getString(R.string.always_off),
+                getString(R.string.always_on),
+            )
+            entryValues = arrayOf("follow_system", "always_off", "always_on")
+            // 不能直接用 defaultValue 设置，没效果
+            if (value == null) setValueIndex(0)
+
+            setOnPreferenceChangeListener { _, newValue ->
+                if (newValue != Preferences.useDarkMode) {
+                    Preferences.preferenceSp.edit {
+                        putString(USE_DARK_MODE,newValue.toString())
+                    }
+                    ThemeUtils.applyDarkModeFromPreferences(requireContext())
+                    requireActivity().recreate()
+                }
+                return@setOnPreferenceChangeListener true
+            }
+        }
+        useDynamicColor.apply {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                isEnabled = false
+                return@apply
+            }
+            setOnPreferenceChangeListener { _, newValue ->
+                if (newValue != Preferences.useDynamicColor) {
+                    requireContext().showAlertDialog {
+                        setCancelable(false)
+                        setTitle(R.string.attention)
+                        setMessage(
+                            getString(
+                                R.string.restart_or_not_working,
+                                getString(R.string.dynamic_color_title)
                             )
                         )
                         setPositiveButton(R.string.confirm) { _, _ ->
