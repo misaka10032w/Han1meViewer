@@ -2,7 +2,6 @@ package com.yenaly.han1meviewer.ui.view
 
 import android.animation.ValueAnimator
 import android.content.Context
-import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Parcelable
 import android.util.AttributeSet
@@ -13,7 +12,6 @@ import androidx.core.graphics.ColorUtils
 import androidx.core.view.updatePadding
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.google.android.material.color.MaterialColors
-import com.yenaly.han1meviewer.R
 import com.yenaly.yenaly_libs.utils.dp
 import kotlinx.parcelize.Parcelize
 

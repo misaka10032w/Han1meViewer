@@ -1,7 +1,6 @@
 package com.yenaly.han1meviewer.ui.fragment.search
 
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -167,7 +166,7 @@ class SearchOptionsPopupFragment :
                 if (genres == null) {
                     genres = viewModel.genres.mapToArray { it.value }
                 }
-                requireContext().showAlertDialog(DialogInterface.OnDismissListener {
+                requireContext().showAlertDialog({
                     logAdvSearchEvent("genres")
                 }) {
                     val index = viewModel.genres.indexOfFirst {
@@ -280,7 +279,7 @@ class SearchOptionsPopupFragment :
                 if (sortOptions == null) {
                     sortOptions = viewModel.sortOptions.mapToArray { it.value }
                 }
-                requireContext().showAlertDialog(DialogInterface.OnDismissListener {
+                requireContext().showAlertDialog({
                     logAdvSearchEvent("sort_options")
                 }) {
                     val index = viewModel.sortOptions.indexOfFirst {
@@ -314,7 +313,7 @@ class SearchOptionsPopupFragment :
                 if (durations == null) {
                     durations = viewModel.durations.mapToArray { it.value }
                 }
-                requireContext().showAlertDialog(DialogInterface.OnDismissListener {
+                requireContext().showAlertDialog({
                     initOptionsChecked()
                 }) {
                     val index = viewModel.durations.indexOfFirst {
