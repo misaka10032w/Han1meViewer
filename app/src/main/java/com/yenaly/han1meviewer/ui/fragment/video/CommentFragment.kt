@@ -25,6 +25,7 @@ import com.lxj.xpopup.XPopup
 import com.lxj.xpopup.core.BasePopupView
 import com.lxj.xpopup.interfaces.SimpleCallback
 import com.yenaly.han1meviewer.COMMENT_TYPE
+import com.yenaly.han1meviewer.PREVIEW_COMMENT_PREFIX
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
 import com.yenaly.han1meviewer.R
@@ -34,7 +35,6 @@ import com.yenaly.han1meviewer.logic.model.ReportReason
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.StateLayoutMixin
 import com.yenaly.han1meviewer.ui.adapter.VideoCommentRvAdapter
-import com.yenaly.han1meviewer.ui.fragment.home.preview.PreviewCommentFragment
 import com.yenaly.han1meviewer.ui.popup.ReplyPopup
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
@@ -115,12 +115,18 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
      * 是否已经预加载了预览评论
      */
     private var isPreviewCommentPrefetched = false
-
+    private var commentType: String? = null
     override fun getViewBinding(
         inflater: LayoutInflater,
         container: ViewGroup?
     ): FragmentCommentBinding {
         return FragmentCommentBinding.inflate(inflater, container, false)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        commentType = arguments?.getString(COMMENT_TYPE)
+        Log.i("commentType",commentType.toString())
     }
 
     override fun initData(savedInstanceState: Bundle?) {
@@ -135,7 +141,7 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
         binding.rvComment.clipToPadding = false
         sortPopup = PopupMenu(requireContext(), binding.btnSort)
         sortPopup.menuInflater.inflate(R.menu.menu_comment_sort, sortPopup.menu)
-        if (this !is PreviewCommentFragment) {
+        if (commentType == PREVIEW_COMMENT_PREFIX) {
             val comments = PreviewCommentPrefetcher.here().commentFlow.value
             if (comments.isNotEmpty()) {
                 isPreviewCommentPrefetched = true
@@ -262,7 +268,7 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
                             true
                         }
                         commentAdapter.submitList(list.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = false))
-                        if (this !is PreviewCommentFragment) {
+                        if (commentType == PREVIEW_COMMENT_PREFIX) {
                             PreviewCommentPrefetcher.here().update(list)
                         }
                     }
