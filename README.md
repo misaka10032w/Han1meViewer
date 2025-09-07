@@ -73,10 +73,10 @@ Han1meViewer 是一个基于 Kotlin 开发的 Android 应用，用于播放和�
 * 📒 功能补充：添加我的订阅界面、画中画模式、手动录入 cookies
 
 ## 📷 截图预览
-
-> ![readme1](readme_1.png) ![readme2](readme_2.png)
-> ![readme3](readme_3.png) ![readme4](readme_4.png)
-> ![readme5](readme_5.png) ![readme6](readme_6.png)
+> ![readme0](readme_0.png) ![readme1](readme_1.png)
+> ![readme2](readme_2.png) ![readme3](readme_3.png)
+> ![readme4](readme_4.png) ![readme5](readme_5.png)
+> ![readme6](readme_6.png)
 ## 🛠️ 技术栈
 
 * Kotlin
