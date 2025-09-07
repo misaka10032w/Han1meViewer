@@ -417,4 +417,9 @@ Recommendations are as follows:\n
     <string name="follow_system">Follow System</string>
     <string name="always_off">Always Off</string>
     <string name="always_on">Always On</string>
+    <string name="category_instant_noodle">Instant Noodle Anime</string>
+    <string name="category_motion_anime">Motion Anime</string>
+    <string name="category_3d_animation">3D Animation</string>
+    <string name="category_doujin">Doujin Works</string>
+    <string name="category_cosplay">Cosplay</string>
 </resources>

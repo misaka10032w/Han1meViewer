@@ -94,7 +94,11 @@ object Parser {
         val hotHanimeMonthlyClass = homePageParse.getOrNull(homePageParse.size - 2)
         val hanimeCurrentClass = homePageParse.getOrNull(homePageParse.size - 3)
         val hanimeTheyWatchedClass = homePageParse.getOrNull(4)
-
+        val animeShortClass = homePageParse.getOrNull(6)
+        val motionAnimeClass = homePageParse.getOrNull(7)
+        val thereDWorkClass = homePageParse.getOrNull(8)
+        val douJinWorkClass = homePageParse.getOrNull(9)
+        val cosplayClass = homePageParse.getOrNull(10)
         // for latest hanime
         val latestHanimeList = mutableListOf<HanimeInfo>()
         val latestHanimeItems = latestHanimeClass?.select("div[class=home-rows-videos-div]")
@@ -160,6 +164,53 @@ object Parser {
             hanimeNormalItemVer2(hotHanimeMonthlyItem)?.let(hotHanimeMonthlyList::add)
         }
 
+        val animeShortList = mutableListOf<HanimeInfo>()
+        val animeShortItems = animeShortClass?.select("div[class=home-rows-videos-div]")
+        animeShortItems?.forEach { animeShortItem ->
+            val coverUrl = animeShortItem.selectFirst("img")?.absUrl("src")
+                .throwIfParseNull(Parser::homePageVer2.name, "coverUrl")
+            val title = animeShortItem.selectFirst("div[class$=title]")?.text()
+                .throwIfParseNull(Parser::homePageVer2.name, "title")
+            val videoCode = animeShortItem.parent()?.absUrl("href")?.toVideoCode()
+                .throwIfParseNull(Parser::homePageVer2.name, "videoCode")
+            animeShortList.add(
+                HanimeInfo(
+                    coverUrl = coverUrl,
+                    title = title,
+                    videoCode = videoCode,
+                    itemType = HanimeInfo.SIMPLIFIED
+                )
+            )
+        }
+
+        val motionAnimeList = mutableListOf<HanimeInfo>()
+        val motionAnimeItems =
+            motionAnimeClass?.select("div[class^=card-mobile-panel]")
+        motionAnimeItems?.forEachStep2 { motionAnimeItem ->
+            hanimeNormalItemVer2(motionAnimeItem)?.let(motionAnimeList::add)
+        }
+
+        val thereDWorkList = mutableListOf<HanimeInfo>()
+        val thereDWorkItems =
+            thereDWorkClass?.select("div[class^=card-mobile-panel]")
+        thereDWorkItems?.forEachStep2 { thereDWorkListItem ->
+            hanimeNormalItemVer2(thereDWorkListItem)?.let(thereDWorkList::add)
+        }
+
+        val douJinWorkList = mutableListOf<HanimeInfo>()
+        val douJinWorkItems =
+            douJinWorkClass?.select("div[class^=card-mobile-panel]")
+        douJinWorkItems?.forEachStep2 { douJinWorkItem ->
+            hanimeNormalItemVer2(douJinWorkItem)?.let(douJinWorkList::add)
+        }
+
+        val cosplayList = mutableListOf<HanimeInfo>()
+        val cosplayItems =
+            cosplayClass?.select("div[class^=card-mobile-panel]")
+        cosplayItems?.forEachStep2 { cosplayItem ->
+            hanimeNormalItemVer2(cosplayItem)?.let(cosplayList::add)
+        }
+
         // emit!
         return WebsiteState.Success(
             HomePage(
@@ -172,6 +223,11 @@ object Parser {
                 hanimeTheyWatched = hanimeTheyWatchedList,
                 hanimeCurrent = hanimeCurrentList,
                 hotHanimeMonthly = hotHanimeMonthlyList,
+                animeShort = animeShortList,
+                motionAnime = motionAnimeList,
+                thereDWork = thereDWorkList,
+                douJinWork = douJinWorkList,
+                cosplay = cosplayList,
             )
         )
     }

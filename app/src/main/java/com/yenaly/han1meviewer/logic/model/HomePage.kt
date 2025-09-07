@@ -17,7 +17,11 @@ data class HomePage(
     val hanimeTheyWatched: MutableList<HanimeInfo>,
     val hanimeCurrent: MutableList<HanimeInfo>,
     val hotHanimeMonthly: MutableList<HanimeInfo>,
-    // 首页TAG不想弄
+    val animeShort: MutableList<HanimeInfo>,
+    val motionAnime: MutableList<HanimeInfo>,
+    val thereDWork: MutableList<HanimeInfo>, //3D作品
+    val douJinWork: MutableList<HanimeInfo>,  //同人
+    val cosplay: MutableList<HanimeInfo>
 ) {
     data class Banner(
         val title: String,

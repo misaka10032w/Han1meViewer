@@ -423,4 +423,9 @@
     <string name="follow_system">跟随系统</string>
     <string name="always_off">总是关闭</string>
     <string name="always_on">总是开启</string>
+    <string name="category_instant_noodle">泡面番</string>
+    <string name="category_motion_anime">动态动画</string>
+    <string name="category_3d_animation">3D作品</string>
+    <string name="category_doujin">同人作品</string>
+    <string name="category_cosplay">Cosplay</string>
 </resources>
