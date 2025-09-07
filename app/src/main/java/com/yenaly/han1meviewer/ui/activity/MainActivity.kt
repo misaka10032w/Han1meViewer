@@ -335,13 +335,13 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         when (menuItem.itemId) {
             // 主界面相关 - 这些在 nav_main.xml 中
             R.id.nv_home_page -> safeNavigateTo(R.id.nv_home_page)
-            R.id.nv_watch_history -> safeNavigateTo(R.id.nv_watch_history)
-            R.id.nv_fav_video -> safeNavigateTo(R.id.nv_fav_video)
-            R.id.nv_playlist -> safeNavigateTo(R.id.nv_playlist)
-            R.id.nv_watch_later -> safeNavigateTo(R.id.nv_watch_later)
-            R.id.nv_subscription -> safeNavigateTo(R.id.nv_subscription)
-            R.id.nv_daily_check_in -> safeNavigateTo(R.id.nv_daily_check_in)
-            R.id.nv_download -> safeNavigateTo(R.id.nv_download)
+            R.id.nv_watch_history -> safeNavigateTo(R.id.action_nv_home_page_to_nv_watch_history)
+            R.id.nv_fav_video -> safeNavigateTo(R.id.action_nv_home_page_to_nv_fav_video)
+            R.id.nv_playlist -> safeNavigateTo(R.id.action_nv_home_page_to_nv_playlist)
+            R.id.nv_watch_later -> safeNavigateTo(R.id.action_nv_home_page_to_nv_watch_later)
+            R.id.nv_subscription -> safeNavigateTo(R.id.action_nv_home_page_to_nv_subscription)
+            R.id.nv_daily_check_in -> safeNavigateTo(R.id.action_nv_home_page_to_nv_daily_check_in)
+            R.id.nv_download -> safeNavigateTo(R.id.action_nv_home_page_to_nv_download)
 
             // 设置相关 - 这些在 nav_settings.xml 中
             R.id.nv_settings -> {

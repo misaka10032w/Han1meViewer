@@ -99,6 +99,7 @@ object Parser {
         val thereDWorkClass = homePageParse.getOrNull(8)
         val douJinWorkClass = homePageParse.getOrNull(9)
         val cosplayClass = homePageParse.getOrNull(10)
+        val newAnimeTrailerClass = homePageParse.getOrNull(12)
         // for latest hanime
         val latestHanimeList = mutableListOf<HanimeInfo>()
         val latestHanimeItems = latestHanimeClass?.select("div[class=home-rows-videos-div]")
@@ -210,6 +211,29 @@ object Parser {
         cosplayItems?.forEachStep2 { cosplayItem ->
             hanimeNormalItemVer2(cosplayItem)?.let(cosplayList::add)
         }
+        val newAnimeTrailerList = mutableListOf<HanimeInfo>()
+        val newAnimeTrailerItems =
+            newAnimeTrailerClass?.select("a")
+        newAnimeTrailerItems?.forEach { newAnimeTrailerItem ->
+            val videoCode = newAnimeTrailerItem.attr("href").toVideoCode()
+
+            val coverUrl = newAnimeTrailerItem.selectFirst("img")?.attr("src")
+            val title = newAnimeTrailerItem.selectFirst("div.home-rows-videos-title")?.text()
+            if (title == null || coverUrl == null || videoCode == null) return@forEach
+            newAnimeTrailerList.add(
+                HanimeInfo(
+                    title = title,
+                    coverUrl = coverUrl,
+                    videoCode = videoCode,
+                    duration = "",
+                    artist = null,
+                    views = null,
+                    uploadTime = null,
+                    genre = null,
+                    itemType = HanimeInfo.SIMPLIFIED
+                )
+            )
+        }
 
         // emit!
         return WebsiteState.Success(
@@ -228,6 +252,7 @@ object Parser {
                 thereDWork = thereDWorkList,
                 douJinWork = douJinWorkList,
                 cosplay = cosplayList,
+                newAnimeTrailer = newAnimeTrailerList,
             )
         )
     }

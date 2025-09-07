@@ -422,4 +422,5 @@ Recommendations are as follows:\n
     <string name="category_3d_animation">3D Animation</string>
     <string name="category_doujin">Doujin Works</string>
     <string name="category_cosplay">Cosplay</string>
+    <string name="new_anime_trailers">New Anime Trailers</string>
 </resources>

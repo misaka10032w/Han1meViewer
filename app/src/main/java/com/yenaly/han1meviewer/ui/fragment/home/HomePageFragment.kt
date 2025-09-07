@@ -91,6 +91,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
     private val thereDWorkAdapter = HanimeVideoRvAdapter()
     private val douJinWorkAdapter = HanimeVideoRvAdapter()
     private val cosplayAdapter = HanimeVideoRvAdapter()
+    private val newAnimeTrailerAdapter = HanimeVideoRvAdapter()
     private val someFunnyTouchListener = FunnyTouchListener(application) {
         showShortToast("WTF?")
     }
@@ -233,6 +234,27 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                     addOnScrollListener(object : RecyclerView.OnScrollListener() {
                         override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
                             viewModel.horizontalScrollPositions[key] = lm.findFirstVisibleItemPosition()
+                        }
+                    })
+                }
+            },
+        VideoColumnTitleAdapter(R.string.new_anime_trailers).apply {
+            onMoreHanimeListener = {
+                findNavController().navigate(R.id.action_nv_home_page_to_nv_preview)
+            }
+        },
+        newAnimeTrailerAdapter
+            .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
+            .apply {
+                doOnWrap {
+                    val key = "newAnimeTrailer"
+                    val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
+                    val pos = viewModel.horizontalScrollPositions[key] ?: 0
+                    post { lm.scrollToPositionWithOffset(pos, 0) }
+                    addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                        override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                            viewModel.horizontalScrollPositions[key] =
+                                lm.findFirstVisibleItemPosition()
                         }
                     })
                 }
@@ -461,6 +483,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                             hanimeTheyWatchedAdapter.submitList(state.info.hanimeTheyWatched)
                             latestReleaseAdapter.submitList(state.info.latestRelease)
                             chineseSubtitleAdapter.submitList(state.info.chineseSubtitle)
+                            newAnimeTrailerAdapter.submitList(state.info.newAnimeTrailer)
                             animeShortAdapter.submitList(state.info.animeShort)
                             motionAnimeAdapter.submitList(state.info.motionAnime)
                             thereDWorkAdapter.submitList(state.info.thereDWork)

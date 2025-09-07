@@ -76,7 +76,6 @@ class HanimePreviewNewsRvAdapter :
                     if (context is MainActivity) {
                         item.videoCode?.let { it1 ->
                             context.startVideoFragment(it1)
-                            Log.i("aaa",it1)
                         }
                     }
                 }

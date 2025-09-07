@@ -177,7 +177,7 @@ class PreviewFragment : YenalyFragment<FragmentPreviewBinding>() {
                             putString("date", dateUtils.current.format(DateUtils.NORMAL_FORMAT))
                             putString(DATE_CODE, dateUtils.current.format(DateUtils.FORMATTED_FORMAT))
                         }
-                        findNavController().navigate(R.id.nv_preview_comment, args)
+                        findNavController().navigate(R.id.action_nv_preview_to_nv_preview_comment, args)
                         true
                     }
                     else -> false
