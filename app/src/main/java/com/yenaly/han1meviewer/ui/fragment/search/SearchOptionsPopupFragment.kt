@@ -13,6 +13,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.color.MaterialColors
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
@@ -102,6 +103,10 @@ class SearchOptionsPopupFragment :
                     setMode(mode)
                     setYearRange(SEARCH_YEAR_RANGE_START, SEARCH_YEAR_RANGE_END)
                     setDefaultDate(date)
+                    val centerTextColor = MaterialColors.getColor(rootView, com.google.android.material.R.attr.colorOnPrimaryContainer)
+                    val outTextColor = MaterialColors.getColor(rootView, com.google.android.material.R.attr.colorPrimaryContainer)
+                    textColorCenter = centerTextColor
+                    textColorOut = outTextColor
                     setTimePickerListener(object : TimePickerListener {
                         override fun onCancel() = Unit
                         override fun onTimeChanged(date: Date) = Unit
