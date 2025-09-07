@@ -69,6 +69,7 @@ import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
+import com.yenaly.han1meviewer.util.ThemeUtils.setStatusBarIcons
 import com.yenaly.han1meviewer.util.logScreenViewEvent
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.han1meviewer.util.showUpdateDialog
@@ -186,6 +187,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             }
         } else null
         super.onCreate(savedInstanceState)
+        window.decorView.post { setStatusBarIcons() }
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val useLock = prefs.getBoolean("use_lock_screen", false)
 
