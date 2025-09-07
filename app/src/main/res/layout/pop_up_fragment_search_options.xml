@@ -66,6 +66,7 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="8dp"
                 android:text="@string/type"
+                android:textColor="?attr/colorOnPrimaryContainer"
                 android:textAlignment="center" />
 
 
@@ -76,6 +77,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="16dp"
                 android:text="@string/sort_option"
+                android:textColor="?attr/colorOnPrimaryContainer"
                 android:textAlignment="center" />
 
             <com.yenaly.han1meviewer.ui.view.HOptionChip
@@ -85,6 +87,7 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="8dp"
                 android:text="@string/tag"
+                android:textColor="?attr/colorOnPrimaryContainer"
                 android:textAlignment="center" />
 
 
@@ -95,6 +98,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="16dp"
                 android:text="@string/release_date"
+                android:textColor="?attr/colorOnPrimaryContainer"
                 android:textAlignment="center" />
 
             <com.yenaly.han1meviewer.ui.view.HOptionChip
@@ -104,6 +108,7 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="8dp"
                 android:text="@string/duration"
+                android:textColor="?attr/colorOnPrimaryContainer"
                 android:textAlignment="center" />
 
             <com.yenaly.han1meviewer.ui.view.HOptionChip
@@ -114,6 +119,7 @@
                 android:layout_marginTop="16dp"
                 android:visibility="gone"
                 android:text="@string/brand"
+                android:textColor="?attr/colorOnPrimaryContainer"
                 android:textAlignment="center" />
 
         </GridLayout>

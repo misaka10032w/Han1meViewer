@@ -1,7 +1,6 @@
 package com.yenaly.han1meviewer.ui.adapter
 
 import android.content.Context
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -15,9 +14,9 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.ItemHanimePreviewNewsV2Binding
 import com.yenaly.han1meviewer.logic.model.HanimePreview
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.activity.PreviewActivity
 import com.yenaly.han1meviewer.ui.popup.CoilImageLoader
 import com.yenaly.han1meviewer.ui.view.BlurTransformation
+import com.yenaly.yenaly_libs.utils.requireActivity
 
 /**
  * @project Han1meViewer
@@ -67,26 +66,24 @@ class HanimePreviewNewsRvAdapter :
                 LayoutInflater.from(context), parent, false
             )
         ).also { viewHolder ->
-            viewHolder.binding.tags.lifecycle = (context as? PreviewActivity)?.lifecycle
+            viewHolder.binding.tags.lifecycle = (context as? MainActivity)?.lifecycle
             viewHolder.binding.tags.isCollapsedEnabled = true
             viewHolder.itemView.apply {
                 setOnClickListener {
                     val position = viewHolder.bindingAdapterPosition
                     val item = getItem(position) ?: return@setOnClickListener
-                    if (context is PreviewActivity) {
-                        item.videoCode?.let { it1 -> context.startMainActivityForVideo(it1) }
+                    if (context is MainActivity) {
+                        item.videoCode?.let { it1 ->
+                            context.startVideoFragment(it1)
+                        }
                     }
                 }
             }
         }
     }
 
-    private fun Context.startMainActivityForVideo(videoCode: String) {
-        val intent = Intent(this, MainActivity::class.java).apply {
-            putExtra("startVideoCode", videoCode)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
-        startActivity(intent)
+    private fun Context.startVideoFragment(videoCode: String) {
+        (requireActivity() as? MainActivity)?.showVideoDetailFragment(videoCode)
     }
 
     private inner class PreviewPicRvAdapter(private val item: HanimePreview.PreviewInfo) :

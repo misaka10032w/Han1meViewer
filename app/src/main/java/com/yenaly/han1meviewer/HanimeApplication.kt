@@ -17,6 +17,7 @@ import com.scwang.smart.refresh.header.MaterialHeader
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
+import com.yenaly.han1meviewer.util.ThemeUtils
 import com.yenaly.yenaly_libs.base.YenalyApplication
 import com.yenaly.yenaly_libs.utils.LanguageHelper
 
@@ -47,7 +48,10 @@ class HanimeApplication : YenalyApplication() {
 
     override fun onCreate() {
         super.onCreate()
-        DynamicColors.applyToActivitiesIfAvailable(this)
+        ThemeUtils.applyDarkModeFromPreferences(this)
+        if (Preferences.useDynamicColor){
+            DynamicColors.applyToActivitiesIfAvailable(this)
+        }
         HProxySelector.rebuildNetwork()
         initFirebase()
         initNotificationChannel()

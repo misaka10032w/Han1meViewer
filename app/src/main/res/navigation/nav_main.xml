@@ -20,6 +20,30 @@
         <action
             android:id="@+id/action_home_to_video"
             app:destination="@id/videoFragment" />
+        <action
+            android:id="@+id/action_nv_home_page_to_nv_preview"
+            app:destination="@id/nv_preview" />
+        <action
+            android:id="@+id/action_nv_home_page_to_nv_daily_check_in"
+            app:destination="@id/nv_daily_check_in" />
+        <action
+            android:id="@+id/action_nv_home_page_to_nv_watch_history"
+            app:destination="@id/nv_watch_history" />
+        <action
+            android:id="@+id/action_nv_home_page_to_nv_subscription"
+            app:destination="@id/nv_subscription" />
+        <action
+            android:id="@+id/action_nv_home_page_to_nv_watch_later"
+            app:destination="@id/nv_watch_later" />
+        <action
+            android:id="@+id/action_nv_home_page_to_nv_playlist"
+            app:destination="@id/nv_playlist" />
+        <action
+            android:id="@+id/action_nv_home_page_to_nv_fav_video"
+            app:destination="@id/nv_fav_video" />
+        <action
+            android:id="@+id/action_nv_home_page_to_nv_download"
+            app:destination="@id/nv_download" />
     </fragment>
 
     <!-- 搜索页 -->
@@ -68,6 +92,16 @@
     <fragment
         android:id="@+id/nv_download"
         android:name="com.yenaly.han1meviewer.ui.fragment.home.DownloadFragment" />
+    <fragment
+        android:id="@+id/nv_preview"
+        android:name="com.yenaly.han1meviewer.ui.fragment.home.preview.PreviewFragment" >
+        <action
+            android:id="@+id/action_nv_preview_to_nv_preview_comment"
+            app:destination="@id/nv_preview_comment" />
+    </fragment>
+    <fragment
+        android:id="@+id/nv_preview_comment"
+        android:name="com.yenaly.han1meviewer.ui.fragment.home.preview.PreviewCommentFragment" />
     <!-- 设置模块子导航图 -->
     <include app:graph="@navigation/nav_settings" />
 

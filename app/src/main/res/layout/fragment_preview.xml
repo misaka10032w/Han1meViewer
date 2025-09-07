@@ -9,7 +9,8 @@
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="?android:windowBackground">
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/app_bar"
@@ -42,7 +43,7 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="@color/per50_transparent_black"
+                        android:background="@drawable/linear_gradient_90_notrans"
                         android:fitsSystemWindows="true" />
 
                     <com.google.android.material.button.MaterialButton

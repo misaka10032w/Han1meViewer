@@ -198,6 +198,11 @@ object Preferences {
         get() = preferenceSp.getBoolean(DownloadSettingsFragment.USE_PRIVATE_STORAGE,true)
     val safDownloadPath: String?
         get() = preferenceSp.getString(SafFileManager.KEY_TREE_URI,null)
+
+    val useDarkMode: String
+        get() = preferenceSp.getString(HomeSettingsFragment.USE_DARK_MODE,"always_off") ?: "always_off"
+    val useDynamicColor: Boolean
+        get() = preferenceSp.getBoolean(HomeSettingsFragment.USE_DYNAMIC_COLOR,false)
     /**
      * 对应关系详见 [SpeedLimitInterceptor.SPEED_BYTES]
      */

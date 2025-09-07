@@ -1,7 +1,6 @@
 package com.yenaly.han1meviewer.ui.fragment.search
 
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,6 +12,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.color.MaterialColors
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
@@ -102,6 +102,10 @@ class SearchOptionsPopupFragment :
                     setMode(mode)
                     setYearRange(SEARCH_YEAR_RANGE_START, SEARCH_YEAR_RANGE_END)
                     setDefaultDate(date)
+                    val centerTextColor = MaterialColors.getColor(rootView, com.google.android.material.R.attr.colorOnPrimaryContainer)
+                    val outTextColor = MaterialColors.getColor(rootView, com.google.android.material.R.attr.colorPrimaryContainer)
+                    textColorCenter = centerTextColor
+                    textColorOut = outTextColor
                     setTimePickerListener(object : TimePickerListener {
                         override fun onCancel() = Unit
                         override fun onTimeChanged(date: Date) = Unit
@@ -162,7 +166,7 @@ class SearchOptionsPopupFragment :
                 if (genres == null) {
                     genres = viewModel.genres.mapToArray { it.value }
                 }
-                requireContext().showAlertDialog(DialogInterface.OnDismissListener {
+                requireContext().showAlertDialog({
                     logAdvSearchEvent("genres")
                 }) {
                     val index = viewModel.genres.indexOfFirst {
@@ -275,7 +279,7 @@ class SearchOptionsPopupFragment :
                 if (sortOptions == null) {
                     sortOptions = viewModel.sortOptions.mapToArray { it.value }
                 }
-                requireContext().showAlertDialog(DialogInterface.OnDismissListener {
+                requireContext().showAlertDialog({
                     logAdvSearchEvent("sort_options")
                 }) {
                     val index = viewModel.sortOptions.indexOfFirst {
@@ -309,7 +313,7 @@ class SearchOptionsPopupFragment :
                 if (durations == null) {
                     durations = viewModel.durations.mapToArray { it.value }
                 }
-                requireContext().showAlertDialog(DialogInterface.OnDismissListener {
+                requireContext().showAlertDialog({
                     initOptionsChecked()
                 }) {
                     val index = viewModel.durations.indexOfFirst {

@@ -33,8 +33,8 @@ import com.yenaly.han1meviewer.databinding.FragmentCommentBinding
 import com.yenaly.han1meviewer.logic.model.ReportReason
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.StateLayoutMixin
-import com.yenaly.han1meviewer.ui.activity.PreviewCommentActivity
 import com.yenaly.han1meviewer.ui.adapter.VideoCommentRvAdapter
+import com.yenaly.han1meviewer.ui.fragment.home.preview.PreviewCommentFragment
 import com.yenaly.han1meviewer.ui.popup.ReplyPopup
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
@@ -135,7 +135,7 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
         binding.rvComment.clipToPadding = false
         sortPopup = PopupMenu(requireContext(), binding.btnSort)
         sortPopup.menuInflater.inflate(R.menu.menu_comment_sort, sortPopup.menu)
-        if (context is PreviewCommentActivity) {
+        if (this !is PreviewCommentFragment) {
             val comments = PreviewCommentPrefetcher.here().commentFlow.value
             if (comments.isNotEmpty()) {
                 isPreviewCommentPrefetched = true
@@ -262,7 +262,7 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
                             true
                         }
                         commentAdapter.submitList(list.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = false))
-                        if (context is PreviewCommentActivity) {
+                        if (this !is PreviewCommentFragment) {
                             PreviewCommentPrefetcher.here().update(list)
                         }
                     }

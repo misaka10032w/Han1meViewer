@@ -3,15 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <data>
-
-    </data>
+    <data />
 
     <com.google.android.material.card.MaterialCardView
         style="@style/Widget.Material3.CardView.Elevated"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp">
+        android:layout_marginBottom="8dp"
+        app:cardBackgroundColor="?attr/colorSurface"
+        app:cardElevation="1dp">
 
         <ImageView
             android:id="@+id/iv_cover_bg"
@@ -24,7 +24,8 @@
             android:id="@+id/v_cover_bg"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:background="@color/per60_transparent_black" />
+            android:background="?attr/colorSurfaceVariant"
+            android:alpha="0.6" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -53,13 +54,14 @@
                 android:minLines="2"
                 android:paddingBottom="4dp"
                 android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                android:textColor="?attr/colorOnSurface"
                 android:textStyle="bold"
                 app:layout_constrainedHeight="true"
                 app:layout_constrainedWidth="true"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/iv_cover"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:text="123333333222222222222233333333333323333333" />
+                tools:text="这里是下载项的标题" />
 
             <TextView
                 android:id="@+id/tv_video_code"
@@ -68,19 +70,19 @@
                 android:layout_marginStart="8dp"
                 android:background="@drawable/shape_title_mask"
                 android:paddingHorizontal="4dp"
-                android:textColor="@color/black"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="14sp"
                 app:layout_constraintBottom_toBottomOf="@id/_barrier"
                 app:layout_constraintStart_toEndOf="@id/iv_cover"
                 app:layout_constraintTop_toBottomOf="@id/tv_title"
-                tools:text="123456789" />
+                tools:text="09527" />
 
             <View
                 android:id="@+id/_divider"
                 android:layout_width="2dp"
                 android:layout_height="10sp"
                 android:layout_marginStart="6dp"
-                android:background="@color/red"
+                android:background="?attr/colorPrimary"
                 app:layout_constraintBottom_toBottomOf="@id/_barrier"
                 app:layout_constraintEnd_toStartOf="@id/tv_size"
                 app:layout_constraintStart_toEndOf="@id/tv_video_code"
@@ -92,6 +94,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
+                android:textColor="?attr/colorOnSurface"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="@id/_barrier"
@@ -104,6 +107,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
+                android:textColor="?attr/colorOnSurfaceVariant"
                 android:textSize="16sp"
                 app:layout_constraintBottom_toBottomOf="@id/_barrier"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -155,7 +159,8 @@
                 android:layout_marginStart="-9dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="-9dp"
-                android:background="@color/per60_transparent_black"
+                android:background="?attr/colorSurfaceVariant"
+                android:alpha="0.6"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/_barrier">

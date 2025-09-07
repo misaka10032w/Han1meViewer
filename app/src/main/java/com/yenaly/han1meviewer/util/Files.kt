@@ -4,16 +4,12 @@ import android.content.ActivityNotFoundException
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
-import android.os.Environment
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import com.yenaly.han1meviewer.FILE_PROVIDER_AUTHORITY
-import com.yenaly.han1meviewer.FROM_DOWNLOAD
 import com.yenaly.han1meviewer.HFileManager
 import com.yenaly.han1meviewer.HJson
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.VIDEO_CODE
-import com.yenaly.han1meviewer.ui.activity.VideoActivity
 import com.yenaly.yenaly_libs.utils.application
 import com.yenaly.yenaly_libs.utils.applicationContext
 import com.yenaly.yenaly_libs.utils.showShortToast
@@ -25,24 +21,6 @@ import kotlinx.serialization.json.decodeFromStream
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
-
-@Deprecated(
-    "Use alternative",
-    ReplaceWith(
-        "HFileManager.appDownloadFolder",
-        imports = ["com.yenaly.han1meviewer.HFileManager"]
-    )
-)
-val hanimeVideoLocalFolder get() = applicationContext.getExternalFilesDir(Environment.DIRECTORY_MOVIES)
-
-@Deprecated(
-    "Use alternative",
-    ReplaceWith(
-        "HFileManager.DEF_VIDEO_TYPE",
-        imports = ["com.yenaly.han1meviewer.HFileManager"]
-    )
-)
-const val DEF_VIDEO_TYPE = "mp4"
 
 @Deprecated(
     "Use alternative",
@@ -69,7 +47,7 @@ fun getDownloadedHanimeFile(title: String, quality: String, suffix: String = HFi
 
 @Deprecated("不用了")
 fun checkDownloadedHanimeFile(startsWith: String): Boolean {
-    return HFileManager.getAppDownloadFolder(application)?.let { folder ->
+    return HFileManager.getAppDownloadFolder(application).let { folder ->
         folder.listFiles()?.any { it.name.startsWith(startsWith) }
     } == true
 }
@@ -90,7 +68,7 @@ fun Context.openDownloadedHanimeVideoLocally(
                     return
                 }
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             onFileNotFound?.invoke()
             return
         }
@@ -123,13 +101,6 @@ fun Context.openDownloadedHanimeVideoLocally(
             e.printStackTrace()
         }
     }
-}
-
-fun Context.openDownloadedHanimeVideoInActivity(videoCode: String) {
-    val intent = Intent(this, VideoActivity::class.java)
-    intent.putExtra(FROM_DOWNLOAD, true)
-    intent.putExtra(VIDEO_CODE, videoCode)
-    startActivity(intent)
 }
 
 /**

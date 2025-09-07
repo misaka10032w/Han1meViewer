@@ -42,7 +42,8 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="@color/per60_transparent_black" />
+                        android:background="@drawable/linear_gradient_90"
+                        android:alpha="0.6" />
 
                     <LinearLayout
                         android:id="@+id/banner"
@@ -83,7 +84,7 @@
                                     android:maxLines="1"
                                     android:paddingVertical="4dp"
                                     android:textAlignment="center"
-                                    android:textColor="@color/white"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
                                     android:textStyle="bold"
                                     tools:text="1234 -v 125" />
 
@@ -95,6 +96,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="10dp"
                                 android:layout_marginTop="2dp"
+                                android:textColor="?attr/colorOutline"
                                 android:ellipsize="end"
                                 android:maxLines="2"
                                 android:padding="4dp"

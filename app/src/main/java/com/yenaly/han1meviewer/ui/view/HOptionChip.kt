@@ -2,7 +2,6 @@ package com.yenaly.han1meviewer.ui.view
 
 import android.animation.ValueAnimator
 import android.content.Context
-import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Parcelable
 import android.util.AttributeSet
@@ -12,7 +11,7 @@ import androidx.core.content.res.use
 import androidx.core.graphics.ColorUtils
 import androidx.core.view.updatePadding
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
-import com.yenaly.han1meviewer.R
+import com.google.android.material.color.MaterialColors
 import com.yenaly.yenaly_libs.utils.dp
 import kotlinx.parcelize.Parcelize
 
@@ -21,9 +20,13 @@ class HOptionChip @JvmOverloads constructor(
 ) : AppCompatTextView(context, attrs, defStyleRes), Checkable {
 
     private val cornerRadius = 12.dp.toFloat()
-    private val unselectedColor = context.getColor(R.color.adv_search_unselected_color)
-    private val selectedColor = context.getColor(R.color.adv_search_selected_color)
+//    private val unselectedColor = context.getColor(R.color.adv_search_unselected_color)
+//    private val selectedColor = context.getColor(R.color.adv_search_selected_color)
 
+    val selectedColor = MaterialColors.getColor(rootView, com.google.android.material.R.attr.colorPrimary)
+    val unselectedColor = MaterialColors.getColor(rootView, com.google.android.material.R.attr.colorPrimaryContainer)
+    val unselectedTextColor = MaterialColors.getColor(rootView, com.google.android.material.R.attr.colorOnPrimaryContainer)
+    val selectedTextColor = MaterialColors.getColor(rootView, com.google.android.material.R.attr.colorPrimaryContainer)
     private var mIsChecked: Boolean = false
 
     init {
@@ -33,7 +36,7 @@ class HOptionChip @JvmOverloads constructor(
         }
         // Set default properties
         updatePadding(top = 12.dp, bottom = 12.dp)
-        setTextColor(Color.WHITE)
+        setTextColor(unselectedTextColor)
         // corner radius drawable
         background = GradientDrawable().apply {
             cornerRadius = this@HOptionChip.cornerRadius
@@ -45,16 +48,24 @@ class HOptionChip @JvmOverloads constructor(
         val startColor = if (enable) unselectedColor else selectedColor
         val endColor = if (enable) selectedColor else unselectedColor
 
+        val textStartColor = if (enable) unselectedTextColor else selectedTextColor
+        val textEndColor = if (enable) selectedTextColor else unselectedTextColor
+
         val animator = ValueAnimator.ofArgb(startColor, endColor)
+        val textAnimator = ValueAnimator.ofArgb(textStartColor, textEndColor)
         animator.addUpdateListener { animation ->
             background = GradientDrawable().apply {
                 cornerRadius = this@HOptionChip.cornerRadius
                 setColor(animation.animatedValue as Int)
             }
         }
+        textAnimator.addUpdateListener { animation ->
+            setTextColor(animation.animatedValue as Int)
+        }
         animator.interpolator = FastOutSlowInInterpolator()
         animator.duration = 300
         animator.start()
+        textAnimator.start()
     }
 
     var isAvailable: Boolean = true

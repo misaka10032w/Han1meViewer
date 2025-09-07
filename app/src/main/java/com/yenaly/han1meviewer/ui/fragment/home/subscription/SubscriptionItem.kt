@@ -173,6 +173,17 @@ fun VideoCardItem(
                 }
             }
 
+            //作者
+            Text(
+                text = videoItem.title,
+                maxLines = 1,
+                style = MaterialTheme.typography.titleMedium,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
+            )
             // 视频标题
             Text(
                 text = videoItem.currentArtist ?: "作者",
@@ -180,16 +191,6 @@ fun VideoCardItem(
                 style = MaterialTheme.typography.labelSmall,
                 overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
-            )
-            Text(
-                text = videoItem.title,
-                maxLines = 1,
-                style = MaterialTheme.typography.labelMedium,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp)

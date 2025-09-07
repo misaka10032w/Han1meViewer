@@ -65,6 +65,32 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/theme">
+
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
+            app:icon="@drawable/ic_baseline_moon_24"
+            app:key="use_dark_mode"
+            app:title="@string/dark_theme"
+            app:useSimpleSummaryProvider="true" />
+
+        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
+            app:icon="@drawable/ic_baseline_theme_24"
+            app:key="use_dynamic_color"
+            app:summary="@string/dynamic_color_summary"
+            app:title="@string/dynamic_color_title" />
+
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
+            app:key="app_language"
+            app:title="@string/app_lang"
+            app:summary="@string/app_lang_sum"
+            app:entries="@array/lang_display_names"
+            app:entryValues="@array/lang_values"
+            app:defaultValue="system"
+            app:icon="@drawable/ic_setting_lang"
+            app:iconSpaceReserved="false"/>
+
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/update">
 
         <Preference
@@ -113,15 +139,6 @@
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/other">
-        <com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
-            app:key="app_language"
-            app:title="@string/app_lang"
-            app:summary="@string/app_lang_sum"
-            app:entries="@array/lang_display_names"
-            app:entryValues="@array/lang_values"
-            app:defaultValue="system"
-            app:icon="@drawable/ic_setting_lang"
-            app:iconSpaceReserved="false"/>
 
         <Preference
             app:icon="@drawable/ic_baseline_clear_all_24"
