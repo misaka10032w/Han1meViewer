@@ -58,21 +58,25 @@ Han1meViewer 是一个基于 Kotlin 开发的 Android 应用，用于播放和�
  Telegram群组： [https://t.me/Han1meViewer](https://t.me/Han1meViewer)
 
 ## ✨ 功能特色
-
-* 🎞️ 视频播放：基于 ExoPlayer 实现，封装为 `ExoMediaKernel`，用于自定义的 `JZMediaInterface` 播放核心。
-* 📄 视频详情页：采用 `Fragment` 形式展示，包含标题、画质选择、播放列表、相关视频等模块。
-* 📚 双栏/单栏切换：用户可点击按钮在「详情页 + 播放页」双栏布局 和 单页面布局之间切换。
-* 🎨 动态布局：使用 `LinearLayout` 实现灵活的左右布局比例（2:3），可动态交换主内容和导航栏位置。
-* 🧭 Navigation 支持：支持 `NavigationView` 进行功能切换，集成 Jetpack Navigation 架构组件。
-* 🔄 数据绑定与状态管理：使用 `StateFlow` + `ViewModel` 管理视频加载状态（Loading、Success、Error 等）。
-* 📦 播放列表与推荐视频：支持水平/网格列表显示，使用 `ConcatAdapter` 拼接多种类型的 RecyclerView Adapter。
+* 🌙 主题系统：支持语义化颜色和莫奈取色，可根据主题模式正确渲染状态栏深浅色
+* 💬 评论系统：支持评论排序、举报功能，优化回复体验和子评论展示
+* 📁 下载管理：支持自定义下载目录，可导入已下载文件，支持在线加载已下载视频
+* 📢 公告功能：内置公告系统，支持公告管理 WEBUI 和隐藏策略
+* 🎯 原作漫画：集成原作漫画功能，丰富内容生态
+* 🔍 智能搜索：优化搜索结果展示，修复跳页和缺失问题
+* 🌐 网络优化：增加 CDN 节点延迟检测，添加备用域名，提高访问质量
+* 📊 健康打卡：内置冲了么打卡功能
+* 🔐 隐私保护：增加应用锁、图标伪装功能，保护你的隐私
+* 🌐 国际化：增加语言设置功能
+* 🏷 功能扩充：补齐网站标签和排序方式
+* 🦜 保护你的眼睛：添加评论关闭功能
+* 📒 功能补充：添加我的订阅界面、画中画模式、手动录入 cookies
 
 ## 📷 截图预览
-
-> ![img.png](img.png) ![img_1.png](img_1.png)
-> ![img_2.png](img_2.png)
-> ![img_3.png](img_3.png)
-
+> ![readme0](readme_01.png) ![readme1](readme_02.png)
+> ![readme2](readme_03.png) ![readme3](readme_04.png)
+> ![readme4](readme_05.png) ![readme5](readme_06.png)
+> ![readme6](readme_07.png)
 ## 🛠️ 技术栈
 
 * Kotlin
@@ -118,7 +122,7 @@ Han1meViewer 是一个基于 Kotlin 开发的 Android 应用，用于播放和�
 
 ## 🧩 TODO
 
-* [✅] 或许有吧
+* [✅] 随时有想法随时写
 
 
 ## 📄 许可证
