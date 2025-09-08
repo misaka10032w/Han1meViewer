@@ -33,7 +33,7 @@ object HanimeDownloadManagerV2 {
     private const val TAG = "HanimeDownloadManager"
 
     const val MAX_CONCURRENT_DOWNLOAD_DEF = 2
-    var maxConcurrentDownloadCount = Preferences.downloadCountLimit
+    var maxConcurrentDownloadCount = 0
         set(value) {
             field = if (value > 0) value else Int.MAX_VALUE
             // 如果更新并发数，重新创建 semaphore
@@ -43,7 +43,12 @@ object HanimeDownloadManagerV2 {
     private val workManager = WorkManager.getInstance(applicationContext)
 
     // 信号量限制同时下载的任务数量
-    private var semaphore = Semaphore(maxConcurrentDownloadCount)
+    private var semaphore: Semaphore = Semaphore(1)
+
+    init {
+        // 用 Preferences 里的值初始化，保证 0 会被转换成 Int.MAX_VALUE
+        maxConcurrentDownloadCount = Preferences.downloadCountLimit
+    }
 
     // Channel 内部状态：保存正在下载任务与等待队列
     private val activeDownloads = linkedMapOf<String, HanimeDownloadWorker.Args>()
