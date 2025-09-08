@@ -8,6 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DiffUtil
 import coil.load
 import com.chad.library.adapter4.BaseDifferAdapter
@@ -34,7 +35,10 @@ import com.yenaly.yenaly_libs.utils.showShortToast
  * @author Yenaly Liew
  * @time 2023/11/26 026 17:15
  */
-class HanimeVideoRvAdapter(private val videoWidthType: Int = -1) : // videoWidthType is VIDEO_LAYOUT_MATCH_PARENT or VIDEO_LAYOUT_WRAP_CONTENT or nothing
+class HanimeVideoRvAdapter(
+    private val videoWidthType: Int = -1,
+    private val hostFragment: Fragment? = null
+) : // videoWidthType is VIDEO_LAYOUT_MATCH_PARENT or VIDEO_LAYOUT_WRAP_CONTENT or nothing
     BaseDifferAdapter<HanimeInfo, QuickViewHolder>(COMPARATOR) {
 
     init {
@@ -175,7 +179,7 @@ class HanimeVideoRvAdapter(private val videoWidthType: Int = -1) : // videoWidth
                 }
             }
             viewHolder.itemView.apply {
-                if (this !is PreviewFragment) {
+                if (hostFragment  !is PreviewFragment) {
                     setOnClickListener {
                         val position = viewHolder.bindingAdapterPosition
                         val item = getItem(position) ?: return@setOnClickListener
