@@ -41,7 +41,7 @@
                         android:layout_height="match_parent"
                         android:contentDescription="@null"
                         android:scaleType="centerCrop"
-                        app:shapeAppearanceOverlay="@style/RoundCornerImageView" />
+                        app:shapeAppearanceOverlay="@style/TopRoundCornerImageView" />
 
                     <TextView
                         android:id="@+id/is_playing"
@@ -58,7 +58,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="25dp"
                         android:layout_gravity="bottom"
-                        android:background="@drawable/gradient_black_transparent_90"
+                        android:background="@drawable/linear_gradient_90_notrans"
                         android:paddingStart="4dp"
                         android:paddingEnd="4dp"
                         android:paddingBottom="4dp">

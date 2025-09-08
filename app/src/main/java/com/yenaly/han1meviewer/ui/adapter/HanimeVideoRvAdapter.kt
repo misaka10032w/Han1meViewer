@@ -82,6 +82,7 @@ class HanimeVideoRvAdapter(
                 holder.getView<TextView>(R.id.title).text = item.title
                 holder.getView<ImageView>(R.id.cover).load(item.coverUrl) {
                     crossfade(true)
+                    placeholder(R.drawable.akarin)
                 }
                 holder.getView<TextView>(R.id.is_playing).isVisible = item.isPlaying
                 holder.getView<TextView>(R.id.duration).text = item.duration
