@@ -107,7 +107,7 @@ fun VideoCardItem(
                     contentDescription = videoItem.title,
                     modifier = Modifier
                         .fillMaxSize(),
-                    placeholder = painterResource(R.drawable.baseline_data_usage_24),
+                    placeholder = painterResource(R.drawable.akarin),
                     error = painterResource(android.R.drawable.stat_notify_error),
                     contentScale = ContentScale.Crop
                 )
