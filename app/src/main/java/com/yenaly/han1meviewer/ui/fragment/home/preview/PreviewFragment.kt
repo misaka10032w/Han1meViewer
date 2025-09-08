@@ -35,6 +35,7 @@ import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.badge.BadgeUtils
 import com.google.android.material.badge.ExperimentalBadgeUtils
+import com.google.android.material.color.MaterialColors
 import com.yenaly.han1meviewer.DATE_CODE
 import com.yenaly.han1meviewer.PREVIEW_COMMENT_PREFIX
 import com.yenaly.han1meviewer.R
@@ -86,6 +87,20 @@ class PreviewFragment : YenalyFragment<FragmentPreviewBinding>() {
     private var shouldTriggerScroll = false
 
     private val tourSimplifiedAdapter = HanimePreviewTourRvAdapter()
+    private val colorPrimary by lazy {
+        MaterialColors.getColor(
+            requireContext(),
+            com.google.android.material.R.attr.colorPrimary,
+            Color.BLACK
+        )
+    }
+    private val colorOnPrimary by lazy {
+        MaterialColors.getColor(
+            requireContext(),
+            com.google.android.material.R.attr.colorOnPrimary,
+            Color.WHITE
+        )
+    }
     private val newsAdapter = HanimePreviewNewsRvAdapter()
 
     override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentPreviewBinding =
@@ -189,6 +204,7 @@ class PreviewFragment : YenalyFragment<FragmentPreviewBinding>() {
         binding.toolbar.setNavigationOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
+        binding.toolbar.setTitleTextColor(colorOnPrimary)
         (requireActivity() as AppCompatActivity).supportActionBar?.let {
             it.title = null
             it.setDisplayHomeAsUpEnabled(true)
@@ -361,7 +377,6 @@ class PreviewFragment : YenalyFragment<FragmentPreviewBinding>() {
     }
 
     private fun handleHeaderPalette(p: Palette) {
-        val colorPrimary = requireContext().getThemeColor(androidx.appcompat.R.attr.colorPrimary)
         val lightVibrant = p.getLightVibrantColor(colorPrimary)
         val per70lightVibrantStateList =
             ColorUtils.setAlphaComponent(lightVibrant, 0xB3).toColorStateList()
