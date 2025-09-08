@@ -77,6 +77,24 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">8dp</item>
     </style>
+
+    <style name="TopRoundCornerImageView" parent="">
+        <!-- 上左圆角 -->
+        <item name="cornerFamilyTopLeft">rounded</item>
+        <item name="cornerSizeTopLeft">8dp</item>
+
+        <!-- 上右圆角 -->
+        <item name="cornerFamilyTopRight">rounded</item>
+        <item name="cornerSizeTopRight">8dp</item>
+
+        <!-- 下左直角 -->
+        <item name="cornerFamilyBottomLeft">cut</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+
+        <!-- 下右直角 -->
+        <item name="cornerFamilyBottomRight">cut</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
     <!-- 启动页面专用主题 -->
     <style name="Theme.Hanime1.Splash" parent="Theme.SplashScreen">
         <!-- 背景颜色 -->

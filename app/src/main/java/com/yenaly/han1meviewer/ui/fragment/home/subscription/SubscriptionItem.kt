@@ -89,12 +89,13 @@ fun VideoCardItem(
             ),
         shape = RoundedCornerShape(12.dp),
         tonalElevation = 2.dp,
+        shadowElevation = 1.dp,
         color = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.onSurface
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Box(
                 modifier = Modifier

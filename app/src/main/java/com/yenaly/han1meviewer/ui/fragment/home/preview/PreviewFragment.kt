@@ -52,7 +52,6 @@ import com.yenaly.han1meviewer.util.colorTransition
 import com.yenaly.han1meviewer.util.toColorStateList
 import com.yenaly.yenaly_libs.base.YenalyFragment
 import com.yenaly.yenaly_libs.utils.appScreenWidth
-import com.yenaly.yenaly_libs.utils.getThemeColor
 import com.yenaly.yenaly_libs.utils.unsafeLazy
 import com.yenaly.yenaly_libs.utils.view.AppBarLayoutStateChangeListener
 import com.yenaly.yenaly_libs.utils.view.innerRecyclerView
