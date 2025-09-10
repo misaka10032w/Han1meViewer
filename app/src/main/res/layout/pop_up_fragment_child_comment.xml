@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
 
@@ -8,17 +9,18 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="?android:windowBackground"
         android:orientation="vertical"
         android:padding="8dp">
 
-        <View
+        <androidx.cardview.widget.CardView
             android:layout_width="100dp"
             android:layout_height="3dp"
             android:layout_gravity="center"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="16dp"
-            android:background="#80FFFFFF" />
+            app:cardCornerRadius="3dp"
+            app:cardBackgroundColor="?attr/colorPrimary">
+        </androidx.cardview.widget.CardView>
 
         <TextView
             android:id="@+id/tv_child_comment"

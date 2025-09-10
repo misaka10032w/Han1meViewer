@@ -8,10 +8,13 @@
     </data>
 
     <com.google.android.material.card.MaterialCardView
-        style="@style/Widget.Material3.CardView.Elevated"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp">
+        app:cardElevation="1dp"
+        android:background="?attr/colorSurface"
+        android:layout_marginBottom="8dp"
+        app:strokeWidth="0dp"
+        app:cardCornerRadius="12dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
