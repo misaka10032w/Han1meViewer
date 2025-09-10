@@ -188,10 +188,17 @@ class DownloadSettingsFragment : YenalySettingsFragment(R.xml.settings_download)
                         // 启动迁移
                         migratePrivateToSaf(requireContext(), dao) { migrated, total ->
                             Log.i("migrate","$migrated,$total")
-                            if (total == 0){
-                                progressDialog.dismiss()
-                                showLongToast(getString(R.string.no_exportable_files))
-                                return@migratePrivateToSaf
+                            when (total) {
+                                0 -> {
+                                    progressDialog.dismiss()
+                                    showLongToast(getString(R.string.no_exportable_files))
+                                    return@migratePrivateToSaf
+                                }
+                                -1 -> {
+                                    progressDialog.dismiss()
+                                    showLongToast(getString(R.string.permission_error))
+                                    return@migratePrivateToSaf
+                                }
                             }
                             val percent = migrated * 100 / total
                             titleTv.text = getString(R.string.importing)

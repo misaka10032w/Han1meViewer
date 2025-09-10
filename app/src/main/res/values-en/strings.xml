@@ -423,4 +423,5 @@ Recommendations are as follows:\n
     <string name="category_doujin">Doujin Works</string>
     <string name="category_cosplay">Cosplay</string>
     <string name="new_anime_trailers">New Anime Trailers</string>
+    <string name="permission_error">Permission error, please try to re-specify the folder!</string>
 </resources>

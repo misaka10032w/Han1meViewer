@@ -23,6 +23,7 @@ import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.fragment.home.download.DownloadedFragment
 import com.yenaly.han1meviewer.util.HImageMeower.loadUnhappily
+import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.util.openDownloadedHanimeVideoLocally
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.dpF
@@ -149,10 +150,10 @@ class HanimeDownloadedRvAdapter(private val fragment: DownloadedFragment) :
                         setMessage(context.getString(R.string.prepare_to_delete_s, it.video.title))
                         setPositiveButton(R.string.confirm) { _, _ ->
                             // if (file.exists()) file.delete()
-                            HFileManager.getDownloadVideoFolder(
+                            SafFileManager.deleteDownloadVideoFolder(
                                 context,
                                 it.video.videoCode
-                            ).deleteRecursively()
+                            )
                             fragment.viewModel.deleteDownloadHanimeBy(
                                 it.video.videoCode,
                                 it.video.quality

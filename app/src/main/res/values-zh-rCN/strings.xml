@@ -429,4 +429,5 @@
     <string name="category_doujin">同人作品</string>
     <string name="category_cosplay">Cosplay</string>
     <string name="new_anime_trailers">新番預告片</string>
+    <string name="permission_error">权限错误，请尝试重新指定文件夹！</string>
 </resources>

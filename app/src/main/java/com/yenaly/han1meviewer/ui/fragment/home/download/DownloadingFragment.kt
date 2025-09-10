@@ -2,22 +2,20 @@ package com.yenaly.han1meviewer.ui.fragment.home.download
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.FragmentListOnlyBinding
 import com.yenaly.han1meviewer.ui.StateLayoutMixin
-import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.adapter.HanimeDownloadingRvAdapter
-import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
 import com.yenaly.han1meviewer.ui.viewmodel.DownloadViewModel
 import com.yenaly.han1meviewer.util.HImageMeower
 import com.yenaly.han1meviewer.util.requestPostNotificationPermission
@@ -38,8 +36,7 @@ import java.util.UUID
  * @author Yenaly Liew
  * @time 2022/08/01 001 17:45
  */
-class DownloadingFragment : YenalyFragment<FragmentListOnlyBinding>(),
-    IToolbarFragment<MainActivity>, StateLayoutMixin {
+class DownloadingFragment : YenalyFragment<FragmentListOnlyBinding>(), StateLayoutMixin {
 
     val viewModel by viewModels<DownloadViewModel>()
 
@@ -66,7 +63,8 @@ class DownloadingFragment : YenalyFragment<FragmentListOnlyBinding>(),
 
     override fun bindDataObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.loadAllDownloadingHanime().flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            viewModel.loadAllDownloadingHanime()
+                .flowWithLifecycle(viewLifecycleOwner.lifecycle)
                 .collect {
                     adapter.submitList(it)
                 }
@@ -89,47 +87,34 @@ class DownloadingFragment : YenalyFragment<FragmentListOnlyBinding>(),
         HanimeDownloadManagerV2.addTask(args, redownload = false)
     }
 
-    // #issue-44: 一键返回主页提议
-    override fun MainActivity.setupToolbar() {
-        this@DownloadingFragment.addMenu(
-            R.menu.menu_downloading_toolbar,
-            viewLifecycleOwner,
-            Lifecycle.State.RESUMED
-        ) {
-            when (it.itemId) {
-                R.id.tb_test -> {
-                    viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
-                        test()
-                    }
-                    return@addMenu true
-                }
-
-                R.id.tb_start_all -> {
-                    adapter.items.forEachIndexed { index, entity ->
-                        if (!entity.isDownloading) {
-                            HanimeDownloadManagerV2.resumeTask(entity)
-//                            adapter.continueWork(entity.copy(isDownloading = true))
-                            adapter.notifyItemChanged(index)
-                        }
-                    }
-                    return@addMenu true
-                }
-
-                R.id.tb_pause_all -> {
-                    adapter.items.forEachIndexed { index, entity ->
-                        if (entity.isDownloading) {
-                            HanimeDownloadManagerV2.stopTask(entity)
-//                            with(adapter) {
-//                                cancelUniqueWorkAndPause(entity.copy(isDownloading = false))
-//                            }
-                            adapter.notifyItemChanged(index)
-                        }
-                    }
-                    return@addMenu true
-
-                }
+    fun onToolbarMenuSelected(menuItem: MenuItem): Boolean {
+        return when (menuItem.itemId) {
+            R.id.tb_test -> {
+                viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) { test() }
+                true
             }
-            return@addMenu false
+
+            R.id.tb_start_all -> {
+                adapter.items.forEachIndexed { index, entity ->
+                    if (!entity.isDownloading) {
+                        HanimeDownloadManagerV2.resumeTask(entity)
+                        adapter.notifyItemChanged(index)
+                    }
+                }
+                true
+            }
+
+            R.id.tb_pause_all -> {
+                adapter.items.forEachIndexed { index, entity ->
+                    if (entity.isDownloading) {
+                        HanimeDownloadManagerV2.stopTask(entity)
+                        adapter.notifyItemChanged(index)
+                    }
+                }
+                true
+            }
+
+            else -> false
         }
     }
 

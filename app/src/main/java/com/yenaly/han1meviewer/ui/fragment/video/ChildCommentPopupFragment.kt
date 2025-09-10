@@ -7,7 +7,6 @@ import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.TextView
 import androidx.annotation.OptIn
@@ -112,10 +111,8 @@ class ChildCommentPopupFragment :
     override fun initData(savedInstanceState: Bundle?, dialog: Dialog) {
         if (commentId == null) dialog.dismiss()
 
-//        binding.root.minimumHeight = appScreenHeight / 2
         binding.rvReply.layoutManager = LinearLayoutManager(context)
         binding.rvReply.adapter = replyAdapter
-        binding.rvReplyContainer.layoutParams.height = getWindowHeight() / 2
         viewModel.getCommentReply(commentId!!)
 
         lifecycleScope.launch {
@@ -129,7 +126,7 @@ class ChildCommentPopupFragment :
                     is WebsiteState.Loading -> Unit
 
                     is WebsiteState.Success -> {
-                        binding.rvReplyContainer.layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
+               //         binding.rvReplyContainer.layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
                     }
                 }
             }
@@ -204,16 +201,16 @@ class ChildCommentPopupFragment :
         super.onStart()
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
         val bottomSheet = dialog?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-        bottomSheet?.let { sheet ->
-            val screenHeight = getWindowHeight()
-            sheet.minimumHeight = screenHeight / 2
-            val behavior = BottomSheetBehavior.from(sheet)
-            behavior.isFitToContents = false
-            behavior.peekHeight = screenHeight / 2
+        bottomSheet?.let {
+            val behavior = BottomSheetBehavior.from(it)
+            behavior.peekHeight = resources.getDimensionPixelSize(R.dimen.bottom_sheet_min_height)
+            behavior.isFitToContents = true
             behavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            it.minimumHeight = resources.getDimensionPixelSize(R.dimen.bottom_sheet_min_height)
         }
     }
 
+    override fun setStyle() { }
     override fun onDestroyView() {
         super.onDestroyView()
         viewModel.clearVideoReplyList()

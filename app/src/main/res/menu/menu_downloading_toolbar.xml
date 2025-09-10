@@ -4,17 +4,17 @@
     <item
         android:id="@+id/tb_test"
         android:icon="@drawable/ic_baseline_download_24"
-        android:title="test"
-        android:visible="true"
-        app:showAsAction="always" />
+        android:title="@string/download_test"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/tb_start_all"
         android:icon="@drawable/ic_baseline_play_arrow_24_tintwhite"
         android:title="@string/start_all"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/tb_pause_all"
         android:icon="@drawable/ic_baseline_pause_24_tintwhite"
         android:title="@string/pause_all"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 </menu>
