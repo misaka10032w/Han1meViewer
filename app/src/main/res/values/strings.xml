@@ -451,4 +451,5 @@
     <string name="category_doujin">同人作品</string>
     <string name="category_cosplay">Cosplay</string>
     <string name="new_anime_trailers">新番預告片</string>
+    <string name="download_test" translatable="false">测试下载</string>
 </resources>
