@@ -9,8 +9,10 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.GravityInt
 import androidx.annotation.Px
 import androidx.core.view.children
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.badge.BadgeDrawable
 import com.google.android.material.tabs.TabLayout
+import kotlin.math.max
 
 fun Button.setDrawableTop(@DrawableRes drawableRes: Int) {
     this.setCompoundDrawablesWithIntrinsicBounds(0, drawableRes, 0, 0)
@@ -65,4 +67,11 @@ fun BadgeDrawable.setGravity(
             horizontalOffset = (targetView.width + this.intrinsicWidth) / 2
         }
     }
+}
+
+fun calculateSpanCount(recyclerView: RecyclerView, itemMinWidthDp: Int): Int {
+    val density = recyclerView.resources.displayMetrics.density
+    val itemMinWidthPx = (itemMinWidthDp * density).toInt()
+    val totalSpace = recyclerView.measuredWidth - recyclerView.paddingLeft - recyclerView.paddingRight
+    return max(2, totalSpace / itemMinWidthPx)
 }

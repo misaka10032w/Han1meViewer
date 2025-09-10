@@ -14,7 +14,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.adapter.HanimeVideoRvAdapter
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
-import kotlin.math.max
+import com.yenaly.han1meviewer.util.calculateSpanCount
 
 class PlaylistBottomSheetFragment : BottomSheetDialogFragment() {
     companion object {
@@ -32,7 +32,7 @@ class PlaylistBottomSheetFragment : BottomSheetDialogFragment() {
             val behavior = BottomSheetBehavior.from(it)
             behavior.peekHeight = resources.getDimensionPixelSize(R.dimen.bottom_sheet_min_height)
             behavior.isFitToContents = true
-            behavior.state = BottomSheetBehavior.STATE_EXPANDED
+            behavior.state = BottomSheetBehavior.STATE_COLLAPSED
             it.minimumHeight = resources.getDimensionPixelSize(R.dimen.bottom_sheet_min_height)
         }
     }
@@ -76,11 +76,5 @@ class PlaylistBottomSheetFragment : BottomSheetDialogFragment() {
                 (recyclerView.layoutManager as? GridLayoutManager)?.spanCount = spanCount
             }
         }
-    }
-    private fun calculateSpanCount(recyclerView: RecyclerView, itemMinWidthDp: Int): Int {
-        val density = recyclerView.resources.displayMetrics.density
-        val itemMinWidthPx = (itemMinWidthDp * density).toInt()
-        val totalSpace = recyclerView.measuredWidth - recyclerView.paddingLeft - recyclerView.paddingRight
-        return max(2, totalSpace / itemMinWidthPx)
     }
 }
