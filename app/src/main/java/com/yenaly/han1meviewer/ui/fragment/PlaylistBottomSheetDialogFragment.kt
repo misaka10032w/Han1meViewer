@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.adapter.HanimeVideoRvAdapter
@@ -23,6 +24,18 @@ class PlaylistBottomSheetFragment : BottomSheetDialogFragment() {
     private val viewModel: VideoViewModel by viewModels({ requireParentFragment() })
     private var videoCount = 0
     private lateinit var adapter: HanimeVideoRvAdapter
+
+    override fun onStart() {
+        super.onStart()
+        val bottomSheet = dialog?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+        bottomSheet?.let {
+            val behavior = BottomSheetBehavior.from(it)
+            behavior.peekHeight = resources.getDimensionPixelSize(R.dimen.bottom_sheet_min_height)
+            behavior.isFitToContents = true
+            behavior.state = BottomSheetBehavior.STATE_EXPANDED
+            it.minimumHeight = resources.getDimensionPixelSize(R.dimen.bottom_sheet_min_height)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,7 +54,7 @@ class PlaylistBottomSheetFragment : BottomSheetDialogFragment() {
             object : ViewTreeObserver.OnGlobalLayoutListener{
                 override fun onGlobalLayout() {
                     recyclerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                    val spanCount = calculateSpanCount(recyclerView,185)
+                    val spanCount = calculateSpanCount(recyclerView,180)
                     recyclerView.layoutManager = GridLayoutManager(requireContext(),spanCount)
                 }
             }
@@ -58,9 +71,7 @@ class PlaylistBottomSheetFragment : BottomSheetDialogFragment() {
             if (newWidth > 0) {
                 val spanCount = calculateSpanCount(
                     recyclerView,
-                    requireContext().resources
-                        .getDimension(R.dimen.video_cover_width)
-                        .toInt()
+                    180
                 )
                 (recyclerView.layoutManager as? GridLayoutManager)?.spanCount = spanCount
             }

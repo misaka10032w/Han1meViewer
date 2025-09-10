@@ -30,4 +30,5 @@
     <dimen name="fragment_vertical_margin">16dp</dimen>
     <dimen name="indicator_size">8dp</dimen>
     <dimen name="indicator_margin">4dp</dimen>
+    <dimen name="bottom_sheet_min_height">450dp</dimen>
 </resources>
