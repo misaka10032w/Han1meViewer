@@ -255,17 +255,26 @@ object SafFileManager {
 
         if (!hanimeDownloadFolder.exists() || !hanimeDownloadFolder.isDirectory) {
             Log.e("Migrate", "hanime_download 文件夹不存在")
+            withContext(Dispatchers.Main) {
+                onProgress?.invoke(0, 0)
+            }
             return@launch
         }
 
         val treeUri = Preferences.safDownloadPath?.toUri()
         if (treeUri == null) {
+            withContext(Dispatchers.Main) {
+                onProgress?.invoke(0, -1)
+            }
             Log.e("Migrate", "SAF treeUri 为空")
             return@launch
         }
 
         val rootDocFile = DocumentFile.fromTreeUri(context, treeUri)
         if (rootDocFile == null) {
+            withContext(Dispatchers.Main) {
+                onProgress?.invoke(0, -1)
+            }
             Log.e("Migrate", "无法获取 DocumentFile 根目录")
             return@launch
         }
@@ -274,6 +283,9 @@ object SafFileManager {
             ?: rootDocFile.createDirectory(HANIME_DOWNLOAD_FOLDER)
 
         if (hanimeDownloadDoc == null) {
+            withContext(Dispatchers.Main) {
+                onProgress?.invoke(0, -1)
+            }
             Log.e("Migrate", "创建/获取 HANIME_DOWNLOAD_FOLDER 失败")
             return@launch
         }
