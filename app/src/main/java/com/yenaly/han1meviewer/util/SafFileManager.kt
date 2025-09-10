@@ -12,6 +12,7 @@ import com.yenaly.han1meviewer.APP_NAME
 import com.yenaly.han1meviewer.HFileManager.DEF_VIDEO_COVER_TYPE
 import com.yenaly.han1meviewer.HFileManager.HANIME_DOWNLOAD_FOLDER
 import com.yenaly.han1meviewer.HFileManager.createVideoCoverName
+import com.yenaly.han1meviewer.HFileManager.getAppDownloadFolder
 import com.yenaly.han1meviewer.HFileManager.getDownloadVideoCoverFile
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.dao.download.HanimeDownloadDao
@@ -513,6 +514,29 @@ object SafFileManager {
         } catch (e: Exception) {
             Log.w("HFileMigrator", "SAF 权限检查失败", e)
             false
+        }
+    }
+    /**
+     * 删除某视频目录
+     * @param context context
+     * @param videoCode videoCode
+     * @return
+     */
+    fun deleteDownloadVideoFolder(context: Context, videoCode: String) {
+        if (Preferences.isUsePrivateStorage) {
+            // 私有存储模式，使用 File.deleteRecursively
+            val folder = File(getAppDownloadFolder(context), "$HANIME_DOWNLOAD_FOLDER/$videoCode")
+            if (folder.exists()) folder.deleteRecursively()
+        } else {
+            // SAF 模式
+            val treeUri = Preferences.safDownloadPath?.toUri() ?: return
+            val docTree = DocumentFile.fromTreeUri(context, treeUri) ?: return
+
+            val rootDir = docTree.findFile(HANIME_DOWNLOAD_FOLDER) ?: return
+            val videoDir = rootDir.findFile(videoCode)
+            if (videoDir != null && videoDir.isDirectory) {
+                videoDir.delete()
+            }
         }
     }
 }
