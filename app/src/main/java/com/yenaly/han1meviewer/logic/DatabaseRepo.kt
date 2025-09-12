@@ -157,8 +157,14 @@ object DatabaseRepo {
         suspend fun update(history: WatchHistoryEntity) =
             watchHistoryDao.update(history)
 
+        suspend fun updateProgress(videoCode: String,progress: Long) =
+            watchHistoryDao.updateProgress(videoCode, progress)
+
         suspend fun insert(history: WatchHistoryEntity) =
             watchHistoryDao.insertOrUpdate(history)
+
+        suspend fun findBy(videoCode: String) =
+            watchHistoryDao.findBy(videoCode)
     }
 
     object HanimeDownload {

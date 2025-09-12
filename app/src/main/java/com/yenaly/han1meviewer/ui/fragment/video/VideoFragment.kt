@@ -44,6 +44,7 @@ import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.VIDEO_COMMENT_PREFIX
 import com.yenaly.han1meviewer.databinding.FragmentVideoBinding
 import com.yenaly.han1meviewer.getHanimeVideoLink
+import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.logic.exception.ParseException
@@ -65,6 +66,7 @@ import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.startActivity
 import com.yenaly.yenaly_libs.utils.view.attach
 import com.yenaly.yenaly_libs.utils.view.setUpFragmentStateAdapter
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 
@@ -79,6 +81,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
     private val videoCode by lazy { requireArguments().getString(VIDEO_CODE) ?: error("Missing video code") }
     private var videoTitle: String? = null
     private lateinit var orientationManager: OrientationManager
+    private var saveJob: Job? = null
     private val tabNameArray = intArrayOf(R.string.introduction, R.string.comment)
     companion object {
         fun newInstance(videoCode: String): VideoFragment {
@@ -170,6 +173,9 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
                                 )
                                 viewModel.insertWatchHistoryWithCover(entity)
                             }
+                            val history = DatabaseRepo.WatchHistory.findBy(videoCode)
+                            val progress = history?.progress ?: 0L
+                            binding.videoPlayer.savedProgress = progress
                         }
 
                         is VideoLoadingState.NoContent -> {
@@ -205,6 +211,27 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
     override fun onStop() {
         super.onStop()
         Jzvd.goOnPlayOnPause()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        val progress = binding.videoPlayer.currentPositionWhenPlaying
+        val videoCode = videoCode
+        lifecycleScope.launch {
+            DatabaseRepo.WatchHistory.updateProgress(videoCode, progress)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+//        saveJob = lifecycleScope.launch {
+//            while (isActive) {
+//                delay(5000)
+//                val progress = binding.videoPlayer.currentPositionWhenPlaying
+//                val videoCode = videoCode
+//                DatabaseRepo.WatchHistory.updateProgress(videoCode, progress)
+//            }
+//        }
     }
 
     override fun onDestroyView() {

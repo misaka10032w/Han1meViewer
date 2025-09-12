@@ -30,14 +30,20 @@ abstract class WatchHistoryDao {
     @Query("SELECT * FROM WatchHistoryEntity WHERE (`videoCode` = :videoCode) LIMIT 1")
     abstract suspend fun findBy(videoCode: String): WatchHistoryEntity?
 
+    @Query("UPDATE WatchHistoryEntity SET progress = :progress WHERE videoCode = :videoCode")
+    abstract suspend fun updateProgress(videoCode: String, progress: Long)
+
     @Transaction
     open suspend fun insertOrUpdate(history: WatchHistoryEntity) {
         val dbEntity = findBy(history.videoCode)
         if (dbEntity != null) {
-            delete(dbEntity)
+            val merged = history.copy(
+                id = dbEntity.id,
+                progress = if (history.progress == 0L) dbEntity.progress else history.progress
+            )
+            update(merged)
+        } else {
             insert(history)
-            return
         }
-        insert(history)
     }
 }

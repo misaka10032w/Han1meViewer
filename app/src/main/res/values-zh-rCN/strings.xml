@@ -348,7 +348,7 @@
     <string name="cookies_import_dismiss">我知道了</string>
     <string name="manual_import_cookies">手动导入</string>
     <string name="request_camera">请授予相机权限以扫码</string>
-    <string name="allow_pip_disc">实验性：允许返回桌面时进入画中画模式\n（需要开启画中画权限）</string>
+    <string name="allow_pip_disc">允许返回桌面时进入画中画模式 （需要开启画中画权限）</string>
     <string name="allow_pip_title">允许进入画中画模式</string>
     <string name="play_pause">播放/暂停</string>
     <string name="request_pip_alert">未授权画中画权限，将自动关闭</string>
@@ -430,4 +430,6 @@
     <string name="category_cosplay">Cosplay</string>
     <string name="new_anime_trailers">新番預告片</string>
     <string name="permission_error">权限错误，请尝试重新指定文件夹！</string>
+    <string name="resume_playback_title">续播功能</string>
+    <string name="resume_playback_summary">如有播放记录，将自动跳转到上次退出时的位置</string>
 </resources>

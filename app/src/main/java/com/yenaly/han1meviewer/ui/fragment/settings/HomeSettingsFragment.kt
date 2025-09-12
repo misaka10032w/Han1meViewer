@@ -102,6 +102,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
         const val FAKE_LAUNCHER_ICON = "pref_fake_launcher_icon"
         const val USE_DARK_MODE = "use_dark_mode"
         const val USE_DYNAMIC_COLOR = "use_dynamic_color"
+        const val ALLOW_RESUME_PLAYBACK = "allow_resume_playback"
     }
 
     private val videoLanguage
@@ -144,6 +145,8 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
             by safePreference<MaterialDialogPreference>(USE_DARK_MODE)
     private val useDynamicColor
             by safePreference<MaterialSwitchPreference>(USE_DYNAMIC_COLOR)
+    private val allowResumePlayback
+            by safePreference<MaterialSwitchPreference>(ALLOW_RESUME_PLAYBACK)
 
     private var checkUpdateTimes = 0
 
@@ -310,6 +313,14 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
                 } else {
                     true
                 }
+            }
+        }
+        allowResumePlayback.apply {
+            setOnPreferenceChangeListener { _, newValue ->
+                if (newValue != Preferences.allowResumePlayback) {
+                    //TODO 可能做点什么？
+                }
+                return@setOnPreferenceChangeListener true
             }
         }
         playerSettings.setOnPreferenceClickListener {

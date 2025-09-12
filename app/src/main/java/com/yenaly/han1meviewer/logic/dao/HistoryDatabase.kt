@@ -18,7 +18,7 @@ import com.yenaly.yenaly_libs.utils.applicationContext
  */
 @Database(
     entities = [SearchHistoryEntity::class, WatchHistoryEntity::class],
-    version = 2, exportSchema = false
+    version = 3, exportSchema = false
 )
 abstract class HistoryDatabase : RoomDatabase() {
 
@@ -32,7 +32,7 @@ abstract class HistoryDatabase : RoomDatabase() {
                 applicationContext,
                 HistoryDatabase::class.java,
                 "history.db"
-            ).addMigrations(Migration1To2).build()
+            ).addMigrations(Migration1To2, Migration2To3).build()
         }
     }
 
@@ -58,6 +58,15 @@ abstract class HistoryDatabase : RoomDatabase() {
             db.execSQL(
                 """ALTER TABLE WatchHistoryEntity
                    RENAME COLUMN redirectLink TO videoCode"""
+            )
+        }
+    }
+    object Migration2To3 : Migration(2, 3) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // 增加播放进度列，默认值为 0
+            db.execSQL(
+                """ALTER TABLE WatchHistoryEntity
+                   ADD COLUMN progress INTEGER NOT NULL DEFAULT 0"""
             )
         }
     }

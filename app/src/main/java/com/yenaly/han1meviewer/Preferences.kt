@@ -203,6 +203,8 @@ object Preferences {
         get() = preferenceSp.getString(HomeSettingsFragment.USE_DARK_MODE,"always_off") ?: "always_off"
     val useDynamicColor: Boolean
         get() = preferenceSp.getBoolean(HomeSettingsFragment.USE_DYNAMIC_COLOR,false)
+    val allowResumePlayback: Boolean
+        get() = preferenceSp.getBoolean(HomeSettingsFragment.ALLOW_RESUME_PLAYBACK,true)
     /**
      * 对应关系详见 [SpeedLimitInterceptor.SPEED_BYTES]
      */

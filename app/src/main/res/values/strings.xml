@@ -366,7 +366,7 @@
     <string name="manual_import_cookies">手動導入</string>
     <string name="import_cookies_intro">此種導入方式也可以緩解因cloudflare引起的登入攔截\n1. 在網頁版登入之後，想辦法獲取Cookies，只要你能獲取到，手機和電腦都行。\n 2. 格式大概如圖所示，注意！頭尾不應包含雙引號，並且不應是格式化後的Cookies序列。\n 3. 使用二維碼創建工具（草料二維碼等），並掃描這個二維碼。\n 二維碼過大可能不太好掃描，或者你沒有電腦，那就使用「手動導入」按鈕的導入。\n 如果導入完成之後刷新頁面還是顯示未登入的狀態，那就檢查你的Cookies。</string>
     <string name="request_camera">請授予相機權限以掃碼</string>
-    <string name="allow_pip_disc">實驗性：允許返回桌面時進入畫中畫模式 \n（需要開啟畫中畫權限）</string>
+    <string name="allow_pip_disc">允許返回桌面時進入畫中畫模式  （需要開啟畫中畫權限）</string>
     <string name="allow_pip_title">允許進入畫中畫模式</string>
     <string name="play_pause">播放/暫停</string>
     <string name="request_pip_alert">未授權畫中畫權限，自動關閉</string>
@@ -453,4 +453,6 @@
     <string name="new_anime_trailers">新番預告片</string>
     <string name="download_test" translatable="false">测试下载</string>
     <string name="permission_error">權限錯誤，請嘗試重新指定資料夾！</string>
+    <string name="resume_playback_title">續播功能</string>
+    <string name="resume_playback_summary">如有播放記錄，將自動跳轉到上次退出位置</string>
 </resources>
