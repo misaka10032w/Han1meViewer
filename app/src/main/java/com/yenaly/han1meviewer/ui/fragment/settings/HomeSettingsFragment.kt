@@ -463,8 +463,6 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val backgroundColor = MaterialColors.getColor(view, com.google.android.material.R.attr.colorSurface)
-        view.setBackgroundColor(backgroundColor)
         initFlow()
     }
 
