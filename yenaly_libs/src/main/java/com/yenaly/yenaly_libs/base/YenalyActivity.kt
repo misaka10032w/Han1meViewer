@@ -70,6 +70,7 @@ abstract class YenalyActivity<DB : ViewDataBinding> : FrameActivity(), IViewBind
             "zh-rCN" -> Locale.SIMPLIFIED_CHINESE
             "zh" -> Locale.TRADITIONAL_CHINESE
             "en" -> Locale.ENGLISH
+            "ja" -> Locale.JAPANESE
             else -> Resources.getSystem().configuration.locales.get(0)
         }
 

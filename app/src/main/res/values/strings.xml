@@ -242,8 +242,7 @@
     <string name="name_with_colon">名稱：</string>
     <string name="quality_with_colon">畫質：</string>
     <string name="after_download_tips">下載完畢後可以在「下載」介面找到下載後的影片，「設定」介面裡有詳細儲存路徑</string>
-    <string name="traditional_chinese">正體中文</string>
-    <string name="simplified_chinese">簡體中文</string>
+    <string name="traditional_chinese" translatable="false">正體中文</string>
     <string name="restart_or_not_working">修改%s需要重啟程式，否則不起作用！</string>
     <string name="sure_to_clear">確定要清除嗎？</string>
     <string name="sure_to_clear_cache">確定要清除快取嗎？</string>
@@ -340,6 +339,7 @@
         <item>跟随系统</item>
         <item>简体中文</item>
         <item>繁體中文</item>
+        <item>日本語</item>
         <item>English</item>
     </string-array>
 
@@ -347,6 +347,7 @@
         <item>system</item>
         <item>zh-rCN</item>
         <item>zh</item>
+        <item>ja</item>
         <item>en</item>
     </string-array>
     <string name="app_lang">語言</string>
@@ -459,4 +460,6 @@
     <string name="i_understand">我明白了</string>
     <string name="close">關閉</string>
     <string name="save_image_confirm">是否儲存圖片？</string>
+    <string name="japanese_lang" translatable="false">日本語</string>
+    <string name="simplified_chinese" translatable="false">简体中文</string>
 </resources>
