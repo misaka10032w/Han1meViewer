@@ -23,6 +23,7 @@ import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -214,6 +215,7 @@ class HJzvdStd @JvmOverloads constructor(
     private lateinit var tvKeyframe: TextView
     private lateinit var tvTimer: TextView
     private lateinit var btnGoHome: ImageView
+    private lateinit var topBarContainer: LinearLayout
     private lateinit var layoutTop: View
     private lateinit var layoutBottom: View
     var savedProgress: Long = 0L
@@ -326,6 +328,7 @@ class HJzvdStd @JvmOverloads constructor(
         layoutTop = findViewById(R.id.layout_top)
         layoutBottom = findViewById(R.id.layout_bottom)
         btnResumeProgress = findViewById(R.id.btn_resume_progress)
+        topBarContainer = findViewById(R.id.top_bar_container)
         textureViewContainer.isHapticFeedbackEnabled = true
         tvSpeed.setOnClickListener(this)
         tvKeyframe.setOnClickListener(this)
@@ -505,6 +508,7 @@ class HJzvdStd @JvmOverloads constructor(
         titleTextView.isInvisible = true
         tvTimer.isInvisible = true
         btnGoHome.isVisible = true
+        topBarContainer.isVisible = false
 
         layoutTop.updatePadding(left = 0, right = 0)
         layoutBottom.updatePadding(left = 0, right = 0)
@@ -518,6 +522,7 @@ class HJzvdStd @JvmOverloads constructor(
         if (isHKeyframeEnabled) tvKeyframe.isVisible = true
         titleTextView.isVisible = true
         btnGoHome.isVisible = false
+        topBarContainer.isVisible = true
         clarity.isVisible = true
         val statusBarHeight = statusBarHeight
         val navBarHeight = navBarHeight

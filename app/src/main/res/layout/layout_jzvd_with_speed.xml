@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@android:color/black"
     android:descendantFocusability="blocksDescendants"
     tools:ignore="all">
@@ -21,67 +22,76 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentBottom="true"
-        android:background="#000000"
-        android:scaleType="fitCenter" />
+        android:background="#2F2F2F"
+        android:scaleType="centerCrop"/>
 
     <LinearLayout
         android:id="@+id/layout_bottom"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="40dp"
         android:layout_alignParentBottom="true"
-        android:background="@drawable/jz_bottom_bg"
+        android:layout_marginStart="@dimen/player_control_bar_margin"
+        android:layout_marginEnd="@dimen/player_control_bar_margin"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/frosted_glass"
         android:gravity="center_vertical"
         android:orientation="horizontal"
+        android:elevation="8dp"
         android:visibility="invisible">
 
+        <!-- 当前时间 -->
         <TextView
             android:id="@+id/current"
+            android:paddingStart="15dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="14dp"
             android:text="00:00"
-            android:textColor="#ffffff" />
+            android:textColor="#FFFFFF" />
 
-        <SeekBar
-            android:id="@+id/bottom_seek_progress"
-            android:layout_width="0dp"
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1.0"
-            android:background="@null"
-            android:max="100"
-            android:maxHeight="1dp"
-            android:minHeight="1dp"
-            android:paddingLeft="12dp"
-            android:paddingTop="8dp"
-            android:paddingRight="12dp"
-            android:paddingBottom="8dp"
-            android:progressDrawable="@drawable/jz_bottom_seek_progress"
-            android:thumb="@drawable/jz_bottom_seek_poster" />
+            android:text=" | "
+            android:textColor="#FFFFFF" />
 
+        <!-- 总时间 -->
         <TextView
             android:id="@+id/total"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="00:00"
-            android:textColor="#ffffff" />
+            android:textColor="#FFFFFF" />
 
+        <!-- SeekBar -->
+        <SeekBar
+            android:id="@+id/bottom_seek_progress"
+            android:layout_width="0dp"
+            android:layout_height="16dp"
+            android:layout_weight="1"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:progressDrawable="@drawable/jz_bottom_seek_progress"
+            android:thumb="@drawable/jz_bottom_seek_poster"
+            android:background="@null" />
+
+        <!-- 清晰度 -->
         <TextView
             android:id="@+id/clarity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="true"
-            android:paddingLeft="20dp"
             android:text="clarity"
-            android:textAlignment="center"
-            android:textColor="#ffffff" />
+            android:textColor="#FFFFFF" />
 
+        <!-- 全屏按钮 -->
         <ImageView
             android:id="@+id/fullscreen"
-            android:layout_width="52.5dp"
-            android:layout_height="fill_parent"
-            android:paddingLeft="14dp"
-            android:paddingRight="14dp"
+            android:layout_width="52dp"
+            android:layout_height="match_parent"
+            android:paddingStart="14dp"
+            android:paddingEnd="15dp"
             android:scaleType="centerInside"
             android:src="@drawable/jz_enlarge" />
     </LinearLayout>
@@ -129,7 +139,8 @@
             android:layout_height="match_parent"
             android:layout_marginStart="12dp"
             android:scaleType="centerInside"
-            android:src="@drawable/outline_home_24" />
+            android:src="@drawable/outline_home_24"
+            android:tint="@color/white"/>
 
         <TextView
             android:id="@+id/title"
@@ -144,63 +155,75 @@
             android:textSize="18sp"
             tools:text="[中字候补] 一眼顶针，鉴定为纯纯的初生" />
 
-        <TextView
-            android:id="@+id/tv_keyframe"
-            android:layout_width="42dp"
-            android:layout_height="60dp"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="4dp"
-            android:layout_toStartOf="@+id/tv_speed"
-            android:gravity="center"
-            android:text="🥵"
-            android:textColor="#ffffffff"
-            android:visibility="gone"
-            tools:visibility="visible" />
-
-        <TextView
-            android:id="@+id/tv_speed"
-            android:layout_width="42dp"
-            android:layout_height="60dp"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="8dp"
-            android:layout_toStartOf="@+id/battery_time_layout"
-            android:gravity="center"
-            android:text="@string/speed"
-            android:textColor="#ffffffff"
-            android:visibility="gone"
-            tools:visibility="visible" />
-
         <LinearLayout
-            android:id="@+id/battery_time_layout"
+            android:id="@+id/top_bar_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="14dp"
-            android:layout_marginRight="14dp"
+            android:layout_marginEnd="12dp"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="4dp"
+            android:background="@drawable/frosted_glass"
+            android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:orientation="vertical"
-            android:visibility="gone"
+            android:visibility="invisible"
             tools:visibility="visible">
 
-            <ImageView
-                android:id="@+id/battery_level"
-                android:layout_width="23dp"
-                android:layout_height="10dp"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/jz_battery_level_10" />
+            <TextView
+                android:id="@+id/tv_keyframe"
+                android:layout_width="42dp"
+                android:layout_height="match_parent"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:paddingStart="15dp"
+                android:paddingEnd="15dp"
+                android:gravity="center"
+                android:text="🥵"
+                android:textColor="#FFFFFFFF"
+                android:visibility="gone"
+                tools:visibility="visible" />
 
             <TextView
-                android:id="@+id/video_current_time"
+                android:id="@+id/tv_speed"
+                android:layout_width="42dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/speed"
+                android:textColor="#FFFFFFFF"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <LinearLayout
+                android:id="@+id/battery_time_layout"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:gravity="center_vertical"
-                android:maxLines="1"
-                android:textColor="#ffffffff"
-                android:textSize="12.0sp" />
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:paddingStart="15dp"
+                android:paddingEnd="15dp"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:id="@+id/battery_level"
+                    android:layout_width="23dp"
+                    android:layout_height="10dp"
+                    android:layout_gravity="center_horizontal"
+                    android:background="@drawable/jz_battery_level_10" />
+
+                <TextView
+                    android:id="@+id/video_current_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="12sp"
+                    tools:text="11:45"/>
+            </LinearLayout>
         </LinearLayout>
+
+
+
 
     </LinearLayout>
 
@@ -291,4 +314,22 @@
             android:textColor="@android:color/white"
             android:textSize="14sp" />
     </LinearLayout>
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_resume_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="60dp"
+        android:background="@drawable/frosted_glass"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="从头开始"
+        android:textColor="@android:color/white"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:cornerRadius="20dp"
+        app:backgroundTint="@null"/>
+
 </RelativeLayout>
