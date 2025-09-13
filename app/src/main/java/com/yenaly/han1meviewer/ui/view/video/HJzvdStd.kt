@@ -221,6 +221,9 @@ class HJzvdStd @JvmOverloads constructor(
     var savedProgress: Long = 0L
     private lateinit var btnResumeProgress: MaterialButton
     private val handler = Handler(Looper.getMainLooper())
+    private val hideResumeBtnRunnable  = Runnable {
+        btnResumeProgress.visibility = GONE
+    }
     private var hasRestoredProgress  = false
     lateinit var orientationManager: OrientationManager
 
@@ -936,14 +939,8 @@ class HJzvdStd @JvmOverloads constructor(
         if (isNeedResumeProgress()) {
             post {
                 btnResumeProgress.visibility = VISIBLE
-                handler.removeCallbacksAndMessages(null)
-                handler.postDelayed({
-                    btnResumeProgress.visibility = GONE
-                }, 6000)
-            }
-        } else {
-            post {
-                btnResumeProgress.visibility = GONE
+                handler.removeCallbacks(hideResumeBtnRunnable)
+                handler.postDelayed(hideResumeBtnRunnable, 5000)
             }
         }
         if (state == STATE_PREPARED) { //如果是准备完成视频后第一次播放，先判断是否需要跳转进度。
@@ -963,9 +960,6 @@ class HJzvdStd @JvmOverloads constructor(
                     AudioManager.AUDIOFOCUS_GAIN_TRANSIENT
                 )
             }
-            if (isNeedResumeProgress()) {
-                mediaInterface.seekTo(savedProgress)
-            }
             if (seekToInAdvance != 0L) {
                 mediaInterface.seekTo(seekToInAdvance)
                 seekToInAdvance = 0
@@ -978,6 +972,7 @@ class HJzvdStd @JvmOverloads constructor(
         }
         if (isNeedResumeProgress()) {
             mediaInterface.seekTo(savedProgress)
+            hasRestoredProgress = true
         }
         state = STATE_PLAYING
         startProgressTimer()

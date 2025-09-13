@@ -329,6 +329,7 @@
         android:textSize="14sp"
         android:textStyle="bold"
         android:visibility="gone"
+        tools:visibility="visible"
         app:cornerRadius="20dp"
         app:backgroundTint="@null"/>
 
