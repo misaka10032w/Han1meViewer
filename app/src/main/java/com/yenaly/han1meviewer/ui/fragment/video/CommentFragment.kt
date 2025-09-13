@@ -156,6 +156,14 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
                         R.id.sort_most_dislikes -> comments.safeSortedBy({ it.realLikesCount ?: 0 }, descending = false)
                         else -> comments
                     }
+                    binding.btnSort.text = when (item.itemId) {
+                        R.id.sort_latest ->  getString(R.string.sort_by_newest)
+                        R.id.sort_earliest -> getString(R.string.sort_by_oldest)
+                        R.id.sort_most_reply -> getString(R.string.sort_by_replies)
+                        R.id.sort_most_likes -> getString(R.string.sort_most_likes)
+                        R.id.sort_most_dislikes -> getString(R.string.sort_most_dislikes)
+                        else -> getString(R.string.sort_comment)
+                    }
                     commentAdapter.submitList(sortedList) { binding.rvComment.scrollToPosition(0) }
                     true
                 }
@@ -263,6 +271,14 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
                                 R.id.sort_most_likes -> list.safeSortedBy({ it.realLikesCount ?: 0 }, descending = true)
                                 R.id.sort_most_dislikes -> list.safeSortedBy({ it.realLikesCount ?: 0 }, descending = false)
                                 else -> list
+                            }
+                            binding.btnSort.text = when (item.itemId) {
+                                R.id.sort_latest ->  getString(R.string.sort_by_newest)
+                                R.id.sort_earliest -> getString(R.string.sort_by_oldest)
+                                R.id.sort_most_reply -> getString(R.string.sort_by_replies)
+                                R.id.sort_most_likes -> getString(R.string.sort_most_likes)
+                                R.id.sort_most_dislikes -> getString(R.string.sort_most_dislikes)
+                                else -> getString(R.string.sort_comment)
                             }
                             commentAdapter.submitList(sortedList) { binding.rvComment.scrollToPosition(0) }
                             true
