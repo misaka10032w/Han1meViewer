@@ -432,4 +432,8 @@
     <string name="permission_error">权限错误，请尝试重新指定文件夹！</string>
     <string name="resume_playback_title">续播功能</string>
     <string name="resume_playback_summary">如有播放记录，将自动跳转到上次退出时的位置</string>
+    <string name="saved">已保存</string>
+    <string name="i_understand">我明白了</string>
+    <string name="close">关闭</string>
+    <string name="save_image_confirm">是否保存图片？</string>
 </resources>

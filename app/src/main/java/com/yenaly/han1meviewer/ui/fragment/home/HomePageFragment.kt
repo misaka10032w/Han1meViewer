@@ -1,7 +1,11 @@
 package com.yenaly.han1meviewer.ui.fragment.home
 
 import android.annotation.SuppressLint
+import android.app.Dialog
+import android.content.ContentValues
+import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
@@ -9,12 +13,20 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
+import android.text.Spanned
+import android.text.method.LinkMovementMethod
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toBitmapOrNull
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
@@ -34,8 +46,12 @@ import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import coil.ImageLoader
 import coil.load
+import coil.request.ImageRequest
+import coil.request.SuccessResult
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.imageview.ShapeableImageView
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
 import com.yenaly.han1meviewer.HAdvancedSearch
 import com.yenaly.han1meviewer.R
@@ -61,7 +77,12 @@ import com.yenaly.yenaly_libs.utils.application
 import com.yenaly.yenaly_libs.utils.getSpValue
 import com.yenaly.yenaly_libs.utils.putSpValue
 import com.yenaly.yenaly_libs.utils.showShortToast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
 import java.io.Serializable
 
 /**
@@ -680,8 +701,17 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                 }
                 announcementCardAdapter = AnnouncementCardAdapter(
                     sortedList,
-                    onClick = {
-                        showShortToast("点击事件正在绝赞制作中！")
+                    onClick = { item ->
+                        showAnnouncementDialog(
+                            requireContext(),
+                            title = item.title,
+                            content = item.getHighlightedContent(),
+                            imageUrl = item.imageUrl,
+                            positiveText = item.positiveText,
+                            positiveAction = {  },
+                            negativeText = item.negativeText,
+                            negativeAction = {  },
+                            )
                     },
                     onClose = {
                         putSpValue("last_dismiss_time", System.currentTimeMillis(),"setting_pref")
@@ -700,5 +730,131 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
             }
         }
  //       viewModel.loadAnnouncements()
+    }
+    fun showAnnouncementDialog(
+        context: Context,
+        title: String,
+        content: Spanned,
+        imageUrl: String? = null,
+        positiveText: String? = null,
+        positiveAction: (() -> Unit)? = null,
+        negativeText: String? = null,
+        negativeAction: (() -> Unit)? = null
+    ) {
+        val dialogView = LayoutInflater.from(context)
+            .inflate(R.layout.dialog_announcement, null, false)
+
+        val tvTitle = dialogView.findViewById<TextView>(R.id.dialogTitle)
+        val tvContent = dialogView.findViewById<TextView>(R.id.dialogContent)
+        val ivImage = dialogView.findViewById<ShapeableImageView>(R.id.dialogImage)
+        val positiveText = positiveText ?: context.getString(R.string.i_understand)
+
+        tvTitle.text = title
+        tvTitle.visibility = View.VISIBLE
+
+        tvContent.text = content
+        tvContent.movementMethod = LinkMovementMethod.getInstance()
+        tvContent.highlightColor = Color.TRANSPARENT
+
+        if (!imageUrl.isNullOrBlank()) {
+            ivImage.visibility = View.VISIBLE
+            ivImage.load(imageUrl) {
+                placeholder(R.drawable.akarin)
+                error(R.drawable.baseline_error_outline_24)
+            }
+            ivImage.setOnClickListener {
+                val fullScreenDialog = Dialog(requireContext(), android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+                val fullImageView = ImageView(requireContext()).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    scaleType = ImageView.ScaleType.FIT_CENTER
+                    load(imageUrl)
+                }
+
+                fullScreenDialog.setContentView(fullImageView)
+
+                fullImageView.scaleX = 0.8f
+                fullImageView.scaleY = 0.8f
+                fullImageView.animate()
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(200)
+                    .start()
+
+                fullImageView.setOnClickListener {
+                    fullImageView.animate()
+                        .scaleX(0.8f)
+                        .scaleY(0.8f)
+                        .setDuration(200)
+                        .withEndAction { fullScreenDialog.dismiss() }
+                        .start()
+                }
+
+                fullImageView.setOnLongClickListener {
+                    MaterialAlertDialogBuilder(context)
+                        .setTitle(getString(R.string.save_image_confirm))
+                        .setPositiveButton(getString(R.string.sure)) { _, _ ->
+                            saveImageToGallery(imageUrl)
+                        }
+                        .setNegativeButton(getString(R.string.cancel)){ dialog, _ -> dialog.dismiss() }
+                        .create()
+                        .show()
+                    true
+                }
+
+                fullScreenDialog.show()
+            }
+        }
+
+        val builder = MaterialAlertDialogBuilder(context)
+            .setView(dialogView)
+        builder.setPositiveButton(positiveText) { _, _ ->
+            positiveAction?.invoke()
+        }
+
+        if (!negativeText.isNullOrBlank()) {
+            builder.setNegativeButton(negativeText) { _, _ ->
+                negativeAction?.invoke()
+            }
+        }
+
+        builder.show()
+    }
+    private fun saveImageToGallery(imageUrl: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val loader = ImageLoader(requireContext())
+            val request = ImageRequest.Builder(requireContext())
+                .data(imageUrl)
+                .allowHardware(false)
+                .build()
+            val result = (loader.execute(request) as? SuccessResult)?.drawable?.toBitmap()
+            result?.let { bitmap ->
+                val filename = "IMG_${System.currentTimeMillis()}.jpg"
+                val fos = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    val contentValues = ContentValues().apply {
+                        put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
+                        put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+                        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+                    }
+                    val uri = requireContext().contentResolver.insert(
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        contentValues
+                    )
+                    uri?.let { requireContext().contentResolver.openOutputStream(it) }
+                } else {
+                    val file = File(
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                        filename
+                    )
+                    FileOutputStream(file)
+                }
+                fos?.use { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }
+                withContext(Dispatchers.Main) {
+                    showShortToast(getString(R.string.saved))
+                }
+            }
+        }
     }
 }

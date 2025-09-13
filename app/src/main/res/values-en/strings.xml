@@ -426,4 +426,8 @@ Recommendations are as follows:\n
     <string name="permission_error">Permission error, please try to re-specify the folder!</string>
     <string name="resume_playback_title">Resume Playback</string>
     <string name="resume_playback_summary">Automatically jump to the last playback position if there is play history</string>
+    <string name="saved">Saved</string>
+    <string name="i_understand">I understand</string>
+    <string name="close">Close</string>
+    <string name="save_image_confirm">Save image?</string>
 </resources>

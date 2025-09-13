@@ -455,4 +455,8 @@
     <string name="permission_error">權限錯誤，請嘗試重新指定資料夾！</string>
     <string name="resume_playback_title">續播功能</string>
     <string name="resume_playback_summary">如有播放記錄，將自動跳轉到上次退出位置</string>
+    <string name="saved">已儲存</string>
+    <string name="i_understand">我明白了</string>
+    <string name="close">關閉</string>
+    <string name="save_image_confirm">是否儲存圖片？</string>
 </resources>
