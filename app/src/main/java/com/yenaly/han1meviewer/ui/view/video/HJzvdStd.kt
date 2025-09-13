@@ -6,6 +6,7 @@ import android.graphics.Typeface
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
+import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.provider.Settings.SettingNotFoundException
@@ -22,6 +23,7 @@ import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -42,6 +44,7 @@ import cn.jzvd.JZDataSource
 import cn.jzvd.JZMediaInterface
 import cn.jzvd.JZUtils
 import cn.jzvd.JzvdStd
+import com.google.android.material.button.MaterialButton
 import com.itxca.spannablex.spannable
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
@@ -212,8 +215,16 @@ class HJzvdStd @JvmOverloads constructor(
     private lateinit var tvKeyframe: TextView
     private lateinit var tvTimer: TextView
     private lateinit var btnGoHome: ImageView
+    private lateinit var topBarContainer: LinearLayout
     private lateinit var layoutTop: View
     private lateinit var layoutBottom: View
+    var savedProgress: Long = 0L
+    private lateinit var btnResumeProgress: MaterialButton
+    private val handler = Handler(Looper.getMainLooper())
+    private val hideResumeBtnRunnable  = Runnable {
+        btnResumeProgress.visibility = GONE
+    }
+    private var hasRestoredProgress  = false
     lateinit var orientationManager: OrientationManager
 
     var hKeyframe: HKeyframeEntity? = null
@@ -243,6 +254,9 @@ class HJzvdStd @JvmOverloads constructor(
                 startProgressTimer()
             }
         }
+    }
+    private fun isNeedResumeProgress(): Boolean {
+        return savedProgress > 5000 && Preferences.allowResumePlayback && !hasRestoredProgress
     }
 
     /**
@@ -316,11 +330,22 @@ class HJzvdStd @JvmOverloads constructor(
         btnGoHome = findViewById(R.id.go_home)
         layoutTop = findViewById(R.id.layout_top)
         layoutBottom = findViewById(R.id.layout_bottom)
+        btnResumeProgress = findViewById(R.id.btn_resume_progress)
+        topBarContainer = findViewById(R.id.top_bar_container)
         textureViewContainer.isHapticFeedbackEnabled = true
         tvSpeed.setOnClickListener(this)
         tvKeyframe.setOnClickListener(this)
         tvKeyframe.setOnLongClickListener(this)
         btnGoHome.setOnClickListener(this)
+        btnResumeProgress.setOnClickListener {
+            hasRestoredProgress = true
+            mediaInterface.pause()
+            mediaInterface.seekTo(0L)
+            Handler(Looper.getMainLooper()).post {
+                startVideo()
+            }
+            btnResumeProgress.visibility = GONE
+        }
 
         fullscreenButton.setOnClickListener {
             (context as? FragmentActivity)
@@ -486,6 +511,7 @@ class HJzvdStd @JvmOverloads constructor(
         titleTextView.isInvisible = true
         tvTimer.isInvisible = true
         btnGoHome.isVisible = true
+        topBarContainer.isVisible = false
 
         layoutTop.updatePadding(left = 0, right = 0)
         layoutBottom.updatePadding(left = 0, right = 0)
@@ -499,6 +525,7 @@ class HJzvdStd @JvmOverloads constructor(
         if (isHKeyframeEnabled) tvKeyframe.isVisible = true
         titleTextView.isVisible = true
         btnGoHome.isVisible = false
+        topBarContainer.isVisible = true
         clarity.isVisible = true
         val statusBarHeight = statusBarHeight
         val navBarHeight = navBarHeight
@@ -909,10 +936,17 @@ class HJzvdStd @JvmOverloads constructor(
 
     override fun onStatePlaying() {
         Log.i(TAG, "onStatePlaying " + " [" + this.hashCode() + "] ")
+        if (isNeedResumeProgress()) {
+            post {
+                btnResumeProgress.visibility = VISIBLE
+                handler.removeCallbacks(hideResumeBtnRunnable)
+                handler.postDelayed(hideResumeBtnRunnable, 5000)
+            }
+        }
         if (state == STATE_PREPARED) { //如果是准备完成视频后第一次播放，先判断是否需要跳转进度。
             Log.d(TAG, "onStatePlaying:STATE_PREPARED ")
             mAudioManager =
-                getApplicationContext().getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
                     .setOnAudioFocusChangeListener(onAudioFocusChangeListener)
@@ -935,6 +969,10 @@ class HJzvdStd @JvmOverloads constructor(
                     mediaInterface.seekTo(position) //这里为什么区分开呢，第一次的播放和resume播放是不一样的。 这里怎么区分是一个问题。然后
                 }
             }
+        }
+        if (isNeedResumeProgress()) {
+            mediaInterface.seekTo(savedProgress)
+            hasRestoredProgress = true
         }
         state = STATE_PLAYING
         startProgressTimer()

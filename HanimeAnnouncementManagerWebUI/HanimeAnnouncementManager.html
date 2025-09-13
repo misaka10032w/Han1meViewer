@@ -30,19 +30,24 @@
       <input type="text" id="title" placeholder="标题" required>
       <textarea id="content" placeholder="内容" required></textarea>
       <input type="text" id="imageUrl" placeholder="图片URL (可选)">
-      <input type="number" id="priority" placeholder="优先级 (1-3)" value="2">
+      <input type="text" id="positiveText" placeholder="确定按钮文本">
+      <input type="text" id="negativeText" placeholder="取消按钮文本">
+      <input type="number" id="priority" placeholder="优先级 (0-5)" value="2">
       <button type="submit">添加公告</button>
     </form>
 
     <h2>公告列表</h2>
     <table>
       <thead>
-        <tr>
-          <th>标题</th>
-          <th>时间</th>
-          <th>状态</th>
-          <th>操作</th>
-        </tr>
+      <tr>
+        <th>标题</th>
+        <th>内容</th>
+        <th>优先级</th>
+        <th>时间</th>
+        <th>状态</th>
+        <th>图片URL</th>
+        <th>操作</th>
+      </tr>
       </thead>
       <tbody id="announcementList"></tbody>
     </table>
@@ -60,7 +65,7 @@
     appId: "",
     measurementId: ""
   };
-  
+
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -91,8 +96,11 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${data.title}</td>
+          <td>${data.content}</td>
+          <td>${data.priority}</td>
           <td>${new Date(data.timestamp * 1000).toLocaleString()}</td>
           <td>${data.isActive ? '启用' : '停用'}</td>
+          <td><a href="${data.imageUrl}" target="_blank">查看图片</a></td>
           <td>
             <button class="toggle">${data.isActive ? '停用' : '启用'}</button>
             <button class="edit">编辑</button>
@@ -115,7 +123,9 @@
       title: document.getElementById('title').value,
       content: document.getElementById('content').value,
       imageUrl: document.getElementById('imageUrl').value || '',
-      priority: parseInt(document.getElementById('priority').value || 2),
+      positiveText: document.getElementById('positiveText').value || '',
+      negativeText: document.getElementById('negativeText').value || '',
+      priority: parseInt(document.getElementById('priority').value || 1),
       timestamp: Math.floor(Date.now() / 1000),
       isActive: true
     }).then(() => {
@@ -126,26 +136,37 @@
     });
   };
 
+  // 切换公告状态
   function toggleActive(key, active) {
     db.ref('announcements/' + key + '/isActive').set(active).then(loadAnnouncements);
   }
 
+  // 删除公告
   function deleteAnnouncement(key) {
     if (confirm('确定要删除该公告吗？')) {
       db.ref('announcements/' + key).remove().then(loadAnnouncements);
     }
   }
 
+  // 编辑公告
   function editAnnouncement(key, data) {
     const newTitle = prompt('修改标题：', data.title);
-    if (newTitle !== null) {
-      const newContent = prompt('修改内容：', data.content);
-      if (newContent !== null) {
-        db.ref('announcements/' + key).update({
-          title: newTitle,
-          content: newContent
-        }).then(loadAnnouncements);
-      }
+    const newContent = prompt('修改内容：', data.content);
+    const newImageUrl = prompt('修改图片URL：', data.imageUrl);
+    const newPositiveText = prompt('修改确定按钮文本：', data.positiveText);
+    const newNegativeText = prompt('修改取消按钮文本：', data.negativeText);
+    const newPriority = prompt('修改优先级：', data.priority);
+
+    if (newTitle !== null && newContent !== null && newPriority !== null) {
+      db.ref('announcements/' + key).update({
+        title: newTitle,
+        content: newContent,
+        imageUrl: newImageUrl || '',
+        positiveText: newPositiveText || '确定',
+        negativeText: newNegativeText || '取消',
+        priority: parseInt(newPriority),
+        timestamp: Math.floor(Date.now() / 1000), // 更新时间戳
+      }).then(loadAnnouncements);
     }
   }
 </script>
