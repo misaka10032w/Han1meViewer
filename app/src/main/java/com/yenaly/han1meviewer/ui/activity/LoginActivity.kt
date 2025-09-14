@@ -59,10 +59,7 @@ class LoginActivity : FrameActivity() {
     private val dialog = unsafeLazy { LoginDialog(R.layout.dialog_login) }
 
     override fun setUiStyle() {
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
-        )
+        enableEdgeToEdge()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -253,6 +250,7 @@ class LoginActivity : FrameActivity() {
             "zh-rCN" -> Locale.SIMPLIFIED_CHINESE
             "zh" -> Locale.TRADITIONAL_CHINESE
             "en" -> Locale.ENGLISH
+            "ja" -> Locale.JAPANESE
             else -> Resources.getSystem().configuration.locales.get(0)
         }
 

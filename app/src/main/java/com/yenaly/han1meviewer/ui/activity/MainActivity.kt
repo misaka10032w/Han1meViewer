@@ -130,10 +130,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         ActivityMainBinding.inflate(layoutInflater)
 
     override fun setUiStyle() {
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
-        )
+        enableEdgeToEdge()
     }
 
     override val onFragmentResumedListener: (Fragment) -> Unit = { fragment ->
@@ -187,7 +184,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             }
         } else null
         super.onCreate(savedInstanceState)
-        window.decorView.post { setStatusBarIcons() }
+//        window.decorView.post { setStatusBarIcons() }
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val useLock = prefs.getBoolean("use_lock_screen", false)
 

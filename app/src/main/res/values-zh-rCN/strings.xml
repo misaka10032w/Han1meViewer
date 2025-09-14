@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="home_page">主页</string>
     <string name="latest_hanime">最新里番</string>
     <string name="latest_upload">最新上传</string>
@@ -238,8 +237,6 @@
     <string name="name_with_colon">名称：</string>
     <string name="quality_with_colon">画质：</string>
     <string name="after_download_tips">下载完毕后可以在「下载」界面找到下载后的影片，「设置」界面里有详细存储路径</string>
-    <string name="traditional_chinese">繁体中文</string>
-    <string name="simplified_chinese">简体中文</string>
     <string name="restart_or_not_working">修改%s需要重启程序，否则不起作用！</string>
     <string name="sure_to_clear">确定要清除吗？</string>
     <string name="sure_to_clear_cache">确定要清除缓存吗？</string>

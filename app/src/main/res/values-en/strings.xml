@@ -237,8 +237,6 @@
     <string name="name_with_colon">Name:</string>
     <string name="quality_with_colon">Quality:</string>
     <string name="after_download_tips">After downloading, you can find the downloaded video in the "Download" interface. Detailed storage paths are available in the "Settings" interface.</string>
-    <string name="traditional_chinese">Traditional Chinese</string>
-    <string name="simplified_chinese">Simplified Chinese</string>
     <string name="restart_or_not_working">Modifying %s requires restarting the program, otherwise it will not take effect!</string>
     <string name="sure_to_clear">Are you sure you want to clear?</string>
     <string name="sure_to_clear_cache">Are you sure you want to clear the cache?</string>
