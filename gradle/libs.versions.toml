@@ -196,7 +196,7 @@ org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.re
 com-google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 org-jetbrains-kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "serializationPlugin" }
 org-jetbrains-kotlin-plugin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
-com-google-gms-google-services = { id = "com.google.gms.google-services", version = "4.4.2" }
-com-google-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version = "3.0.2" }
-com-google-firebase-firebase-pref = { id = "com.google.firebase.firebase-perf", version = "1.4.2" }
+com-google-gms-google-services = { id = "com.google.gms.google-services", version = "4.4.3" }
+com-google-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version = "3.0.6" }
+com-google-firebase-firebase-pref = { id = "com.google.firebase.firebase-perf", version = "2.0.1" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
