@@ -27,7 +27,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,8 +35,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
-import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
@@ -51,14 +50,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.MySubscriptions
@@ -69,7 +66,7 @@ import com.yenaly.han1meviewer.ui.viewmodel.MySubscriptionsViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscriptionApp(
     navigateBack: () -> Unit,
@@ -145,16 +142,21 @@ fun SubscriptionApp(
             )
         },
     ) { innerPadding ->
-        Box(
+        PullToRefreshBox(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .pullToRefresh(
-                    state = refreshState,
+                .background(MaterialTheme.colorScheme.background),
+            isRefreshing = isRefreshing,
+            onRefresh = onRefresh,
+            state = refreshState,
+            indicator = {
+                Indicator(
+                    modifier = Modifier.align(Alignment.TopCenter),
                     isRefreshing = isRefreshing,
-                    onRefresh = onRefresh
+                    state = refreshState
                 )
-                .background(MaterialTheme.colorScheme.background)
+            }
         ) {
             when (val result = state) {
                 is WebsiteState.Loading -> {
@@ -213,25 +215,7 @@ fun SubscriptionApp(
                     )
                 }
             }
-
             Log.i("VideoCard", cachedVideos.value.toString())
-            // 下拉加载指示器
-            if (isRefreshing || scaleFraction() > 0f) {
-                Box(
-                    Modifier
-                        .align(Alignment.TopCenter)
-                        .graphicsLayer {
-                            scaleX = scaleFraction()
-                            scaleY = scaleFraction()
-                        }
-                        .zIndex(1f)
-                ) {
-                    PullToRefreshDefaults.LoadingIndicator(
-                        state = refreshState,
-                        isRefreshing = isRefreshing
-                    )
-                }
-            }
         }
     }
 }
