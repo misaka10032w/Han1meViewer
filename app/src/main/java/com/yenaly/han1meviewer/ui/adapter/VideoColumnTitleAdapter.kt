@@ -48,12 +48,13 @@ class VideoColumnTitleAdapter : BaseSingleItemAdapter<Unit, QuickViewHolder> {
     }
 
     constructor(
+        context: Context,
         @StringRes title: Int,
         @StringRes subtitle: Int = 0,
         notifyWhenSet: Boolean = false,
     ) : this(
-        applicationContext.getString(title),
-        if (subtitle != 0) applicationContext.getString(subtitle) else null,
+        context.getString(title),
+        if (subtitle != 0) context.getString(subtitle) else null,
         notifyWhenSet
     )
 

@@ -126,8 +126,9 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
     private var checkedQuality: String? = null
 
     private val videoIntroAdapter = VideoIntroductionAdapter()
-    private val playlistTitleAdapter =
-        VideoColumnTitleAdapter(title = R.string.series_video, notifyWhenSet = true)
+    private val playlistTitleAdapter by lazy {
+        VideoColumnTitleAdapter(requireContext(),title = R.string.series_video, notifyWhenSet = true)
+    }
     private val playlistAdapter = HanimeVideoRvAdapter(VIDEO_LAYOUT_WRAP_CONTENT)
     private val playlistWrapper = playlistAdapter
         .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
@@ -145,8 +146,9 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
             }
         }
 
-    private val relatedTitleAdapter =
-        VideoColumnTitleAdapter(title = R.string.related_video)
+    private val relatedTitleAdapter by lazy {
+        VideoColumnTitleAdapter(requireContext(),title = R.string.related_video)
+    }
     private val relatedAdapter = HanimeVideoRvAdapter(VIDEO_LAYOUT_MATCH_PARENT)
 
     private var multi = ConcatAdapter()
