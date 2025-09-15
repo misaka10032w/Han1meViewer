@@ -562,7 +562,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         this.setupWithNavController(navController, appBarConfiguration)
 
         val typedValue = TypedValue()
-        if (context.theme.resolveAttribute(com.google.android.material.R.attr.colorPrimary, typedValue, true)) {
+        if (context.theme.resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true)) {
             (this.navigationIcon as? androidx.appcompat.graphics.drawable.DrawerArrowDrawable)?.color = typedValue.data
         }
     }

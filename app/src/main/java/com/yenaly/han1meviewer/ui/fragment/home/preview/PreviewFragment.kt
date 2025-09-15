@@ -89,7 +89,7 @@ class PreviewFragment : YenalyFragment<FragmentPreviewBinding>() {
     private val colorPrimary by lazy {
         MaterialColors.getColor(
             requireContext(),
-            com.google.android.material.R.attr.colorPrimary,
+            androidx.appcompat.R.attr.colorPrimary,
             Color.BLACK
         )
     }

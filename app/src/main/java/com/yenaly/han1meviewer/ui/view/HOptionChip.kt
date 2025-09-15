@@ -23,7 +23,7 @@ class HOptionChip @JvmOverloads constructor(
 //    private val unselectedColor = context.getColor(R.color.adv_search_unselected_color)
 //    private val selectedColor = context.getColor(R.color.adv_search_selected_color)
 
-    val selectedColor = MaterialColors.getColor(rootView, com.google.android.material.R.attr.colorPrimary)
+    val selectedColor = MaterialColors.getColor(rootView, androidx.appcompat.R.attr.colorPrimary)
     val unselectedColor = MaterialColors.getColor(rootView, com.google.android.material.R.attr.colorPrimaryContainer)
     val unselectedTextColor = MaterialColors.getColor(rootView, com.google.android.material.R.attr.colorOnPrimaryContainer)
     val selectedTextColor = MaterialColors.getColor(rootView, com.google.android.material.R.attr.colorPrimaryContainer)
