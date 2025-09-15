@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DiffUtil
 import coil.load
 import coil.transform.CircleCropTransformation
-import com.chad.library.adapter4.BaseDifferAdapter
+import com.chad.library.adapter4.BaseQuickAdapter
 import com.chad.library.adapter4.viewholder.DataBindingHolder
 import com.drake.spannable.replaceSpanFirst
 import com.drake.spannable.span.HighlightSpan
@@ -38,7 +38,7 @@ class VideoCommentRvAdapter(
     private val fragment: Fragment? = null,
     private val onReportClick: (item : VideoComments.VideoComment) -> Unit
 ) :
-    BaseDifferAdapter<VideoComments.VideoComment, DataBindingHolder<ItemVideoCommentBinding>>(
+    BaseQuickAdapter<VideoComments.VideoComment, DataBindingHolder<ItemVideoCommentBinding>>(
         COMPARATOR
     ) {
 
@@ -79,8 +79,8 @@ class VideoCommentRvAdapter(
         }
     }
 
-    override fun submitList(list: List<VideoComments.VideoComment>?) {
-        super.submitList(list)
+    override fun submitList(list: List<VideoComments.VideoComment>?, commitCallback: Runnable?) {
+        super.submitList(list,commitCallback)
         if (list !== items && fragment != null && fragment is ChildCommentPopupFragment) {
             list?.map { it.username }?.toSet()?.let(::setUsernameRegex)
         }

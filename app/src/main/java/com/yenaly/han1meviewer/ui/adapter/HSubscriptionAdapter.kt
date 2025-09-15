@@ -10,7 +10,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import coil.load
 import coil.transform.CircleCropTransformation
-import com.chad.library.adapter4.BaseDifferAdapter
+import com.chad.library.adapter4.BaseQuickAdapter
 import com.chad.library.adapter4.viewholder.QuickViewHolder
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.Subscription
@@ -19,7 +19,7 @@ import com.yenaly.han1meviewer.util.showAlertDialog
 
 class HSubscriptionAdapter(
     private val fragment: SearchFragment
-) : BaseDifferAdapter<Subscription, QuickViewHolder>(COMPARATOR) {
+) : BaseQuickAdapter<Subscription, QuickViewHolder>(COMPARATOR) {
 
     companion object {
         const val DELETE = 1

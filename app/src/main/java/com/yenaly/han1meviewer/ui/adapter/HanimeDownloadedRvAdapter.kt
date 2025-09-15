@@ -11,7 +11,7 @@ import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.DiffUtil
-import com.chad.library.adapter4.BaseDifferAdapter
+import com.chad.library.adapter4.BaseQuickAdapter
 import com.chad.library.adapter4.viewholder.DataBindingHolder
 import com.yenaly.han1meviewer.FROM_DOWNLOAD
 import com.yenaly.han1meviewer.LOCAL_DATE_TIME_FORMAT
@@ -41,7 +41,7 @@ import kotlin.time.ExperimentalTime
  * @time 2023/11/26 026 16:57
  */
 class HanimeDownloadedRvAdapter(private val fragment: DownloadedFragment) :
-    BaseDifferAdapter<VideoWithCategories, DataBindingHolder<ItemHanimeDownloadedBinding>>(
+    BaseQuickAdapter<VideoWithCategories, DataBindingHolder<ItemHanimeDownloadedBinding>>(
         COMPARATOR
     ) {
 

@@ -4,7 +4,7 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.annotation.LayoutRes
-import com.chad.library.adapter4.BaseDifferAdapter
+import com.chad.library.adapter4.BaseQuickAdapter
 import com.yenaly.han1meviewer.R
 import com.yenaly.yenaly_libs.utils.applicationContext
 import kotlin.contracts.ExperimentalContracts
@@ -39,7 +39,7 @@ fun com.chad.library.adapter4.BaseQuickAdapter<*, *>.setStateViewLayout(
     stateView = view
 }
 
-suspend fun <T : Any> BaseDifferAdapter<T, *>.awaitSubmitList(list: List<T>?) =
+suspend fun <T : Any> BaseQuickAdapter<T, *>.awaitSubmitList(list: List<T>?) =
     suspendCoroutine { cont ->
         submitList(list) {
             cont.resume(Unit)
