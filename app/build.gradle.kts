@@ -37,7 +37,7 @@ android {
         applicationId = "com.yenaly.han1meviewer"
         minSdk = property("min.sdk")?.toString()?.toIntOrNull()
         targetSdk = property("target.sdk")?.toString()?.toIntOrNull()
-        val (code, name) = createVersion(major = 0, minor = 18, patch = 2)
+        val (code, name) = createVersion(major = 0, minor = 19, patch = 0)
         versionCode = code
         versionName = name
 
@@ -169,14 +169,19 @@ dependencies {
 
     // popup
 
-    implementation(libs.xpopup)
-    implementation(libs.xpopup.ext)
+    implementation(libs.xpopup){
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-android-extensions-runtime")
+    }
+    implementation(libs.xpopup.ext){
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-android-extensions-runtime")
+    }
 
     // video
 
     implementation(libs.jiaozi.video.player)
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.exoplayer.hls)
+    implementation(libs.mpv.lib)
 
     // view
 
