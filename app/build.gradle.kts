@@ -64,19 +64,45 @@ android {
         release {
             isMinifyEnabled = true
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
             manifestPlaceholders.put("appIcon", "@mipmap/ic_launcher")
+
+            splits {
+                abi {
+                    isEnable = true
+                    reset()
+                    include("arm64-v8a")
+                    isUniversalApk = false
+                }
+            }
+
             applicationVariants.all variant@{
                 this@variant.outputs.all output@{
                     val output = this@output as BaseVariantOutputImpl
-                    output.outputFileName = "Han1meViewer-v${defaultConfig.versionName}.apk"
+                    val versionName = defaultConfig.versionName
+                    var abi = ""
+                    if (this@variant.outputs.size > 1) {
+                        val outputData = this@output.outputFile.name
+                        if (outputData.contains("arm64-v8a")) {
+                            abi = "-arm64-v8a"
+                        }
+                    }
+                    output.outputFileName = "Han1meViewer-v${versionName}.apk"
                 }
             }
         }
+
         debug {
             isMinifyEnabled = false
+
+            splits {
+                abi {
+                    isEnable = false
+                }
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
