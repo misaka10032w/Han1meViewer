@@ -65,7 +65,7 @@ circularRevealSwitch = "0.4.6"
 desugarJdkLibs = "2.1.5"
 firebaseBom = "34.2.0"
 composeBom = "2025.09.00"
-compose-material3 = "1.4.0-rc01"
+compose-material3 = "1.5.0-alpha04"
 mpv = "v0.1.4"
 
 [libraries]
