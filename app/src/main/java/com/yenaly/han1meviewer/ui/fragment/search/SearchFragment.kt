@@ -1,13 +1,11 @@
 package com.yenaly.han1meviewer.ui.fragment.search
 
 import android.annotation.SuppressLint
-import android.app.Activity.RESULT_OK
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isGone
@@ -32,10 +30,8 @@ import com.yenaly.han1meviewer.logic.model.SearchOption.Companion.flatten
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.ui.StateLayoutMixin
 import com.yenaly.han1meviewer.ui.adapter.FixedGridLayoutManager
-import com.yenaly.han1meviewer.ui.adapter.HSubscriptionAdapter
 import com.yenaly.han1meviewer.ui.adapter.HanimeSearchHistoryRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.HanimeVideoRvAdapter
-import com.yenaly.han1meviewer.ui.viewmodel.MyListViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.SearchViewModel
 import com.yenaly.yenaly_libs.base.YenalyFragment
 import com.yenaly.yenaly_libs.utils.dp
@@ -57,15 +53,7 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
 
 
     val viewModel by viewModels<SearchViewModel>()
-    private val myListViewModel by viewModels<MyListViewModel>()
-    val adapter = HSubscriptionAdapter(this)
     private var hasAdapterLoaded = false
-    val subscribeLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                initSubscription()
-            }
-        }
 
     private val searchAdapter by unsafeLazy { HanimeVideoRvAdapter() }
     private val historyAdapter by unsafeLazy { HanimeSearchHistoryRvAdapter() }
@@ -108,7 +96,6 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
             hasInitAdvancedSearch = true
         }
         initSearchBar()
-        initSubscription()
         binding.state.init()
         binding.searchRv.apply {
             layoutManager = if (viewModel.searchFlow.value.isNotEmpty())
@@ -293,16 +280,12 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
         }
     }
 
-    private fun initSubscription() {
-        myListViewModel.subscription.getSubscriptionsWithSinglePage()
-    }
-
     fun setSearchText(text: String?, canTextChange: Boolean = true) {
         viewModel.query = text
         binding.searchBar.searchText = text
         binding.searchBar.canTextChange = canTextChange
     }
-    val searchText: String? get() = binding.searchBar.searchText
+//    val searchText: String? get() = binding.searchBar.searchText
 
     private fun List<HanimeInfo>.buildFlexibleGridLayoutManager(): GridLayoutManager {
         val counts = if (any { it.itemType == HanimeInfo.NORMAL })
@@ -336,7 +319,7 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
                 hashMapOf(HAdvancedSearch.TAGS to any)
             }
             else -> {
-                throw IllegalArgumentException("Expected Map or String for advanced search but got ${any?.javaClass}")
+                throw IllegalArgumentException("Expected Map or String for advanced search but got ${any.javaClass}")
             }
         }
 
