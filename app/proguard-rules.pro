@@ -31,3 +31,5 @@
 -keep interface com.google.android.gms.** { *; }
 -keep class androidx.appcompat.view.** { *; }
 -keep class androidx.window.extensions.embedding.** { *; }
+-keep class is.xyz.mpv.** { *; }
+-keep class lis.xyz.mpv.** { *; }
