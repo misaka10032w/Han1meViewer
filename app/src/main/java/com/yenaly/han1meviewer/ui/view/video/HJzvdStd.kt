@@ -51,6 +51,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.adapter.HKeyframeRvAdapter
+import com.yenaly.han1meviewer.ui.adapter.SuperResolutionAdapter
 import com.yenaly.han1meviewer.ui.adapter.VideoSpeedAdapter
 import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.han1meviewer.util.setStateViewLayout
@@ -118,6 +119,7 @@ class HJzvdStd @JvmOverloads constructor(
          * 速度列表的字符串
          */
         val speedStringArray = Array(speedArray.size) { "${speedArray[it]}x" }
+        const val DEF_SUPER_RESOLUTION_INDEX = 0
     }
 
     init {
@@ -210,6 +212,24 @@ class HJzvdStd @JvmOverloads constructor(
             }
             jzDataSource.objects[0] = value
         }
+    fun getSuperResolutionArray(): Array<String> = arrayOf(
+        context.getString(R.string.super_resolution_off),
+        context.getString(R.string.super_resolution_performance),
+        context.getString(R.string.super_resolution_quality)
+    )
+    private var superResolutionIndex = 0
+        set(value) {
+            field = value
+            if (value != DEF_SUPER_RESOLUTION_INDEX) {
+                superResolution.text = getSuperResolutionArray()[value]
+            } else {
+                superResolution.text = context.getString(R.string.anime_4k)
+            }
+            if (mediaInterface is MpvMediaKernel) {
+                val kernel = mediaInterface as MpvMediaKernel
+                kernel.setSuperResolution(value)
+            }
+        }
 
     private lateinit var tvSpeed: TextView
     private lateinit var tvKeyframe: TextView
@@ -226,6 +246,7 @@ class HJzvdStd @JvmOverloads constructor(
     }
     private var hasRestoredProgress  = false
     lateinit var orientationManager: OrientationManager
+    private lateinit var superResolution: TextView
 
     var hKeyframe: HKeyframeEntity? = null
         set(value) {
@@ -237,6 +258,7 @@ class HJzvdStd @JvmOverloads constructor(
     var videoCode: String? = null
 
     private val hKeyframeAdapter: HKeyframeRvAdapter by unsafeLazy { initHKeyframeAdapter() }
+    private val switchPlayerKernel = Preferences.switchPlayerKernel
 
     /**
      * 初始化關鍵H幀的 Adapter，最好不用 lazy
@@ -325,6 +347,7 @@ class HJzvdStd @JvmOverloads constructor(
         super.init(context)
         SAVE_PROGRESS = false
         tvSpeed = findViewById(R.id.tv_speed)
+        superResolution = findViewById(R.id.super_resolution)
         tvKeyframe = findViewById(R.id.tv_keyframe)
         tvTimer = findViewById(R.id.tv_timer)
         btnGoHome = findViewById(R.id.go_home)
@@ -337,6 +360,7 @@ class HJzvdStd @JvmOverloads constructor(
         tvKeyframe.setOnClickListener(this)
         tvKeyframe.setOnLongClickListener(this)
         btnGoHome.setOnClickListener(this)
+        superResolution.setOnClickListener(this)
         btnResumeProgress.setOnClickListener {
             hasRestoredProgress = true
             mediaInterface.pause()
@@ -505,6 +529,7 @@ class HJzvdStd @JvmOverloads constructor(
 
     override fun setScreenNormal() {
         super.setScreenNormal()
+        updateVideoPlayerSize(false)
         backButton.isVisible = true
         tvSpeed.isVisible = false
         tvKeyframe.isVisible = false
@@ -512,6 +537,7 @@ class HJzvdStd @JvmOverloads constructor(
         tvTimer.isInvisible = true
         btnGoHome.isVisible = true
         topBarContainer.isVisible = false
+        superResolution.isVisible = false
 
         layoutTop.updatePadding(left = 0, right = 0)
         layoutBottom.updatePadding(left = 0, right = 0)
@@ -521,12 +547,14 @@ class HJzvdStd @JvmOverloads constructor(
 
     override fun setScreenFullscreen() {
         super.setScreenFullscreen()
+        updateVideoPlayerSize(true)
         tvSpeed.isVisible = true
         if (isHKeyframeEnabled) tvKeyframe.isVisible = true
         titleTextView.isVisible = true
         btnGoHome.isVisible = false
         topBarContainer.isVisible = true
         clarity.isVisible = true
+        superResolution.isVisible = switchPlayerKernel == HMediaKernel.Type.MpvPlayer.name
         val statusBarHeight = statusBarHeight
         val navBarHeight = navBarHeight
         layoutTop.updatePadding(left = statusBarHeight, right = navBarHeight)
@@ -560,6 +588,7 @@ class HJzvdStd @JvmOverloads constructor(
         when (v.id) {
             R.id.tv_speed -> clickSpeed()
             R.id.tv_keyframe -> onKeyframeClickListener?.invoke(v)
+            R.id.super_resolution -> clickSuperResolution()
             R.id.go_home -> {
                 if (screen != SCREEN_FULLSCREEN) {
                     findNavController().navigate(
@@ -573,6 +602,27 @@ class HJzvdStd @JvmOverloads constructor(
             }
 
         }
+    }
+    @SuppressLint("InflateParams")
+    fun clickSuperResolution() {
+        onCLickUiToggleToClear()
+        val inflater = LayoutInflater.from(context).inflate(R.layout.jz_layout_speed, null)
+        val rv = inflater.findViewById<RecyclerView>(R.id.rv_video_speed)
+        val popup = PopupWindow(
+            inflater, JZUtils.dip2px(jzvdContext, 240f),
+            LayoutParams.MATCH_PARENT, true
+        ).apply {
+            contentView = inflater
+            animationStyle = cn.jzvd.R.style.pop_animation
+        }
+        rv.layoutManager = LinearLayoutManager(context)
+        rv.adapter = SuperResolutionAdapter(superResolutionIndex,getSuperResolutionArray().toList()).apply {
+            setOnItemClickListener { _, _, position ->
+                superResolutionIndex = position
+                popup.dismiss()
+            }
+        }
+        popup.showAtLocation(textureViewContainer, Gravity.END, 0, 0)
     }
 
     override fun onLongClick(v: View): Boolean {
@@ -770,10 +820,32 @@ class HJzvdStd @JvmOverloads constructor(
             LayoutParams.MATCH_PARENT,
             LayoutParams.MATCH_PARENT
         )
-        val mediaKernel = CURRENT_JZVD?.mediaInterface as? ExoMediaKernel
-        val videoWidth  = mediaKernel?.videoRealWidth?:0
-        val videoHeight = mediaKernel?.videoRealHeight?:0
+
+        var videoWidth = 0
+        var videoHeight = 0
+        when (mediaInterface) {
+            is ExoMediaKernel -> {
+                val mediaKernel = CURRENT_JZVD?.mediaInterface as? ExoMediaKernel
+                videoWidth  = mediaKernel?.videoRealWidth?:0
+                videoHeight = mediaKernel?.videoRealHeight?:0
+                Log.i(TAG,"mediaInterface:$mediaKernel,videoWidth:$videoWidth,videoHeight:$videoHeight")
+            }
+            is MpvMediaKernel -> {
+                val mediaKernel = CURRENT_JZVD?.mediaInterface as? MpvMediaKernel
+                videoWidth  = mediaKernel?.videoRealWidth?:0
+                videoHeight = mediaKernel?.videoRealHeight?:0
+                Log.i(TAG,"mediaInterface:$mediaKernel,videoWidth:$videoWidth,videoHeight:$videoHeight")
+            }
+            is SystemMediaKernel -> {
+                val mediaKernel = CURRENT_JZVD?.mediaInterface as? SystemMediaKernel
+                videoWidth  = mediaKernel?.videoRealWidth?:0
+                videoHeight = mediaKernel?.videoRealHeight?:0
+                Log.i(TAG,"mediaInterface:$mediaKernel,videoWidth:$videoWidth,videoHeight:$videoHeight")
+            }
+        }
+
         val isPortraitVideo = videoWidth > 0 && videoHeight > 0 && videoWidth < videoHeight
+        Log.i(TAG,"mediaInterface:$mediaInterface,videoWidth:$videoWidth,videoHeight:$videoHeight")
         if (isPortraitVideo) {
             pivotY = 0f
             scaleY = 0.5f
@@ -1049,6 +1121,19 @@ class HJzvdStd @JvmOverloads constructor(
             8 -> 20
             9 -> 40
             else -> throw IllegalStateException("Invalid sensitivity value: $this")
+        }
+    }
+    private fun updateVideoPlayerSize(fullscreen: Boolean) {
+        if (mediaInterface is MpvMediaKernel) {
+            val kernel = mediaInterface as MpvMediaKernel
+            post {
+                if (fullscreen) {
+                    Log.i(TAG, "updateVideoPlayerSize: $width x $height")
+                    kernel.updateSurFaceSize(width, height)
+                } else {
+                    kernel.updateSurFaceSize(width, height)
+                }
+            }
         }
     }
 }

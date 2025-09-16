@@ -4,7 +4,7 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
-import com.chad.library.adapter4.BaseDifferAdapter
+import com.chad.library.adapter4.BaseQuickAdapter
 import com.chad.library.adapter4.viewholder.QuickViewHolder
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.SearchHistoryEntity
@@ -15,7 +15,7 @@ import com.yenaly.han1meviewer.logic.entity.SearchHistoryEntity
  * @time 2023/11/26 026 16:42
  */
 class HanimeSearchHistoryRvAdapter :
-    BaseDifferAdapter<SearchHistoryEntity, QuickViewHolder>(COMPARATOR) {
+    BaseQuickAdapter<SearchHistoryEntity, QuickViewHolder>(COMPARATOR) {
 
     init {
         isStateViewEnable = true

@@ -8,9 +8,11 @@ import com.yenaly.han1meviewer.logic.dao.MiscellanyDatabase
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.logic.entity.HKeyframeHeader
 import com.yenaly.han1meviewer.logic.entity.HKeyframeType
+import com.yenaly.han1meviewer.logic.entity.HanimeAdvancedSearchHistoryEntity
 import com.yenaly.han1meviewer.logic.entity.SearchHistoryEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
+import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.yenaly_libs.utils.applicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -140,6 +142,41 @@ object DatabaseRepo {
 
         suspend fun deleteByKeyword(query: String) =
             searchHistoryDao.deleteByKeyword(query)
+    }
+
+    object HanimeAdvancedSearchRepo {
+        private val dao = HistoryDatabase.instance.hanimeAdvancedSearchHistory
+
+        suspend fun saveSearch(
+            query: String?,
+            genre: String?,
+            sort: String?,
+            broad: Boolean?,
+            date: String?,
+            duration: String?,
+            tags: Set<SearchOption>?,
+            brands: Set<SearchOption>?
+        ) {
+            val entity = HanimeAdvancedSearchHistoryEntity(
+                query = query,
+                genre = genre,
+                sort = sort,
+                broad = broad,
+                date = date,
+                duration = duration,
+                tags = tags?.toDbString(),
+                brands = brands?.toDbString()
+            )
+            dao.insertHistory(entity)
+        }
+
+        fun getSearchHistories(limit: Int = 20) = dao.loadHistories(limit)
+        suspend fun deleteHistory(id: Long) = dao.deleteHistory(id)
+        fun Set<SearchOption>.toDbString(): String =
+            mapNotNull { it.searchKey }.joinToString(",")
+        fun String.toSearchOptionSet(): Set<SearchOption> =
+            if (isBlank()) emptySet()
+            else split(",").map { SearchOption(searchKey = it) }.toSet()
     }
 
     object WatchHistory {

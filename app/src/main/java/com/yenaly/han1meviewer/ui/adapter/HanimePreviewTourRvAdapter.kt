@@ -4,7 +4,7 @@ import android.content.Context
 import android.view.ViewGroup
 import android.widget.ImageView
 import coil.load
-import com.chad.library.adapter4.BaseDifferAdapter
+import com.chad.library.adapter4.BaseQuickAdapter
 import com.chad.library.adapter4.viewholder.QuickViewHolder
 import com.lxj.xpopup.XPopup
 import com.yenaly.han1meviewer.R
@@ -16,7 +16,7 @@ import com.yenaly.han1meviewer.ui.popup.CoilImageLoader
  * @author Yenaly Liew
  * @time 2023/11/29 029 20:11
  */
-class HanimePreviewTourRvAdapter : BaseDifferAdapter<HanimeInfo, QuickViewHolder>(
+class HanimePreviewTourRvAdapter : BaseQuickAdapter<HanimeInfo, QuickViewHolder>(
     HanimeVideoRvAdapter.COMPARATOR
 ) {
 

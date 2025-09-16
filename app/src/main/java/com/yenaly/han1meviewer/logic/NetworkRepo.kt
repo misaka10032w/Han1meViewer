@@ -93,13 +93,6 @@ object NetworkRepo {
         action = Parser::myListItems
     )
 
-    fun getSubscriptions(page: Int) = pageIOFlow(
-        request = {
-            HanimeNetwork.myListService.getMyListItems(page, MyListType.SUBSCRIPTION.value)
-        },
-        action = Parser::subscriptionItems
-    )
-
     fun deleteMyListItems(
         typeOrCode: Any,
         videoCode: String,

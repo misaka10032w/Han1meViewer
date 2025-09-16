@@ -9,11 +9,10 @@ import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.annotation.RequiresApi
 import androidx.core.view.updateLayoutParams
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.recyclerview.widget.DiffUtil
-import com.chad.library.adapter4.BaseDifferAdapter
+import com.chad.library.adapter4.BaseQuickAdapter
 import com.chad.library.adapter4.viewholder.DataBindingHolder
 import com.google.android.material.button.MaterialButton
 import com.yenaly.han1meviewer.R
@@ -37,7 +36,7 @@ import java.lang.ref.WeakReference
  * @time 2023/11/26 026 17:05
  */
 class HanimeDownloadingRvAdapter(private val fragment: DownloadingFragment) :
-    BaseDifferAdapter<HanimeDownloadEntity, DataBindingHolder<ItemHanimeDownloadingBinding>>(
+    BaseQuickAdapter<HanimeDownloadEntity, DataBindingHolder<ItemHanimeDownloadingBinding>>(
         COMPARATOR
     ) {
 

@@ -433,4 +433,8 @@
     <string name="i_understand">我明白了</string>
     <string name="close">关闭</string>
     <string name="save_image_confirm">是否保存图片？</string>
+    <string name="super_resolution_off">关闭</string>
+    <string name="super_resolution_performance">性能优先</string>
+    <string name="super_resolution_quality">质量优先</string>
+    <string name="advanced_search_combination">高级搜索组合</string>
 </resources>

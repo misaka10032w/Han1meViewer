@@ -7,7 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import coil.load
-import com.chad.library.adapter4.BaseDifferAdapter
+import com.chad.library.adapter4.BaseQuickAdapter
 import com.chad.library.adapter4.viewholder.QuickViewHolder
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VideoCoverSize
@@ -20,7 +20,7 @@ import com.yenaly.yenaly_libs.utils.requireActivity
  * @author Yenaly Liew
  * @time 2023/11/26 026 16:38
  */
-class HanimeMyListVideoAdapter : BaseDifferAdapter<HanimeInfo, QuickViewHolder>(COMPARATOR) {
+class HanimeMyListVideoAdapter : BaseQuickAdapter<HanimeInfo, QuickViewHolder>(COMPARATOR) {
 
     init {
         isStateViewEnable = true

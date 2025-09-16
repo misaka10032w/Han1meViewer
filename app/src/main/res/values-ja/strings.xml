@@ -433,4 +433,8 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="i_understand">了解</string>
     <string name="close">閉じる</string>
     <string name="save_image_confirm">画像を保存しますか？</string>
+    <string name="super_resolution_off">オフ</string>
+    <string name="super_resolution_performance">パフォーマンス優先</string>
+    <string name="super_resolution_quality">品質優先</string>
+    <string name="advanced_search_combination">高度な検索組み合わせ</string>
 </resources>

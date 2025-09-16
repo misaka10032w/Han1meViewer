@@ -7,17 +7,16 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.webkit.CookieManager
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
-import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -158,16 +157,14 @@ class LoginActivity : FrameActivity() {
                     }
                     return super.shouldOverrideUrlLoading(view, request)
                 }
-
                 override fun onReceivedError(
                     view: WebView?,
-                    errorCode: Int,
-                    description: String?,
-                    failingUrl: String?,
+                    request: WebResourceRequest?,
+                    error: WebResourceError?
                 ) {
                     // #issue-146
                     // #issue-160: 修复字段销毁后调用引发的错误
-                    if (!isDestroyed && !isFinishing) {
+                    if (request?.isForMainFrame == true && !isDestroyed && !isFinishing) {
                         binding.srlLogin.finishRefresh()
                         dialog.value.show()
                     }

@@ -8,7 +8,7 @@ import androidx.core.text.method.LinkMovementMethodCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.chad.library.adapter4.BaseDifferAdapter
+import com.chad.library.adapter4.BaseQuickAdapter
 import com.chad.library.adapter4.viewholder.QuickViewHolder
 import com.itxca.spannablex.spannable
 import com.yenaly.han1meviewer.R
@@ -23,7 +23,7 @@ import com.yenaly.yenaly_libs.utils.requireActivity
  * @author Yenaly Liew
  * @time 2024/04/03 003 21:40
  */
-class SharedHKeyframesRvAdapter : BaseDifferAdapter<HKeyframeType, QuickViewHolder>(COMPARATOR) {
+class SharedHKeyframesRvAdapter : BaseQuickAdapter<HKeyframeType, QuickViewHolder>(COMPARATOR) {
     init {
         isStateViewEnable = true
     }

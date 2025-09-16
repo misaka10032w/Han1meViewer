@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer
 
 import android.content.ComponentName
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
 import com.google.android.material.color.DynamicColors
@@ -17,9 +18,11 @@ import com.scwang.smart.refresh.header.MaterialHeader
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
+import com.yenaly.han1meviewer.util.AnimeShaders
 import com.yenaly.han1meviewer.util.ThemeUtils
 import com.yenaly.yenaly_libs.base.YenalyApplication
 import com.yenaly.yenaly_libs.utils.LanguageHelper
+import `is`.xyz.mpv.MPVLib
 
 /**
  * @project Hanime1
@@ -55,6 +58,12 @@ class HanimeApplication : YenalyApplication() {
         HProxySelector.rebuildNetwork()
         initFirebase()
         initNotificationChannel()
+        MPVLib.create(applicationContext)
+        MPVLib.init()
+
+        if (AnimeShaders.copyShaderAssets(applicationContext) <= 0) {
+            Log.w(TAG, "Shader 复制失败")
+        }
         val selected = Preferences.fakeLauncherIcon
         switchLauncher(selected)
     }

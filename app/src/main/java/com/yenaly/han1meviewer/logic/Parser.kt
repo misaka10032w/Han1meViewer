@@ -14,7 +14,6 @@ import com.yenaly.han1meviewer.logic.model.HomePage
 import com.yenaly.han1meviewer.logic.model.MyListItems
 import com.yenaly.han1meviewer.logic.model.MySubscriptions
 import com.yenaly.han1meviewer.logic.model.Playlists
-import com.yenaly.han1meviewer.logic.model.Subscription
 import com.yenaly.han1meviewer.logic.model.SubscriptionItem
 import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
 import com.yenaly.han1meviewer.logic.model.VideoComments
@@ -721,46 +720,6 @@ object Parser {
             MyListItems(
                 myListHanimeList,
                 desc = desc,
-                csrfToken = csrfToken
-            )
-        )
-    }
-
-    fun subscriptionItems(body: String): PageLoadingState<MyListItems<Subscription>> {
-        val parseBody = Jsoup.parse(body).body()
-        val csrfToken = parseBody.selectFirst("input[name=_token]")?.attr("value")
-
-        val subscriptionList = mutableListOf<Subscription>()
-        val allArtistsClass = parseBody.getElementsByClass("home-rows-videos-wrapper").firstOrNull()
-        allArtistsClass?.let { artistClass ->
-            if (allArtistsClass.childrenSize() == 0) {
-                return PageLoadingState.NoMoreData
-            }
-            allArtistsClass.children().forEach { artistElement ->
-                val title = artistElement.selectFirst("div[class$=search-artist-title]")?.text()
-                    .logIfParseNull(Parser::subscriptionItems.name, "title", loginNeeded = true)
-                val avatarUrl = artistElement.select("img").let {
-                    it.getOrNull(1) ?: it.firstOrNull()
-                }?.absUrl("src")
-                    .logIfParseNull(Parser::subscriptionItems.name, "avatarUrl", loginNeeded = true)
-                val artistId =
-                    artistElement.selectFirst("input[name=playlist-show-video-id]")
-                        ?.attr("value").logIfParseNull(
-                            Parser::subscriptionItems.name, "artistId", loginNeeded = true
-                        )
-                if (title != null) {
-                    subscriptionList += Subscription(
-                        name = title, avatarUrl = avatarUrl,
-                        artistId = artistId
-                    )
-                }
-            }
-        }.logIfParseNull(Parser::subscriptionItems.name, "allArtistsClass_CSS")
-
-        return PageLoadingState.Success(
-            MyListItems(
-                subscriptionList,
-                desc = null,
                 csrfToken = csrfToken
             )
         )

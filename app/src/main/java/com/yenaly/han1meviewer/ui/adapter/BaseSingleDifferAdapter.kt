@@ -3,7 +3,7 @@ package com.yenaly.han1meviewer.ui.adapter
 import androidx.recyclerview.widget.AsyncDifferConfig
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.chad.library.adapter4.BaseDifferAdapter
+import com.chad.library.adapter4.BaseQuickAdapter
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -13,21 +13,23 @@ import kotlin.coroutines.suspendCoroutine
  * @time 2024/04/05 005 20:44
  */
 abstract class BaseSingleDifferAdapter<T : Any, VH : RecyclerView.ViewHolder> :
-    BaseDifferAdapter<T, VH> {
+    BaseQuickAdapter<T, VH> {
 
-    private constructor(config: AsyncDifferConfig<T>, items: List<T>) : super(config, items)
+    private constructor(items: List<T>, config: AsyncDifferConfig<T>) : super(items, config)
 
     constructor(diffCallback: DiffUtil.ItemCallback<T>) : this(
-        AsyncDifferConfig.Builder(diffCallback).build(), emptyList()
+        emptyList(),
+        AsyncDifferConfig.Builder(diffCallback).build()
     )
 
     constructor(diffCallback: DiffUtil.ItemCallback<T>, item: T) : this(
-        AsyncDifferConfig.Builder(diffCallback).build(), listOf(item)
+        listOf(item),
+        AsyncDifferConfig.Builder(diffCallback).build()
     )
 
-    constructor(config: AsyncDifferConfig<T>) : this(config, emptyList())
+    constructor(config: AsyncDifferConfig<T>) : this(emptyList(), config)
 
-    constructor(config: AsyncDifferConfig<T>, item: T) : this(config, listOf(item))
+    constructor(config: AsyncDifferConfig<T>, item: T) : this(listOf(item), config)
 
     var item: T?
         get() = items.firstOrNull()
@@ -56,31 +58,31 @@ abstract class BaseSingleDifferAdapter<T : Any, VH : RecyclerView.ViewHolder> :
         onBindViewHolder(holder, item, payloads)
     }
 
-    override fun add(data: T) {
+    override fun add(data: T, commitCallback: Runnable?) {
         throw RuntimeException("Please use setItem()")
     }
 
-    override fun add(position: Int, data: T) {
+    override fun add(position: Int, data: T, commitCallback: Runnable?) {
         throw RuntimeException("Please use setItem()")
     }
 
-    override fun addAll(collection: Collection<T>) {
+    override fun addAll(collection: Collection<T>, commitCallback: Runnable?) {
         throw RuntimeException("Please use setItem()")
     }
 
-    override fun addAll(position: Int, collection: Collection<T>) {
+    override fun addAll(position: Int, collection: Collection<T>, commitCallback: Runnable?) {
         throw RuntimeException("Please use setItem()")
     }
 
-    override fun remove(data: T) {
+    override fun remove(data: T, commitCallback: Runnable?) {
         throw RuntimeException("Please use setItem()")
     }
 
-    override fun removeAtRange(range: IntRange) {
+    override fun removeAtRange(range: IntRange, commitCallback: Runnable?) {
         throw RuntimeException("Please use setItem()")
     }
 
-    override fun removeAt(position: Int) {
+    override fun removeAt(position: Int, commitCallback: Runnable?) {
         throw RuntimeException("Please use setItem()")
     }
 

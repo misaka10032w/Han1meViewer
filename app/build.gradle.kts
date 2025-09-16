@@ -37,7 +37,7 @@ android {
         applicationId = "com.yenaly.han1meviewer"
         minSdk = property("min.sdk")?.toString()?.toIntOrNull()
         targetSdk = property("target.sdk")?.toString()?.toIntOrNull()
-        val (code, name) = createVersion(major = 0, minor = 18, patch = 2)
+        val (code, name) = createVersion(major = 0, minor = 19, patch = 0)
         versionCode = code
         versionName = name
 
@@ -64,19 +64,45 @@ android {
         release {
             isMinifyEnabled = true
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
             manifestPlaceholders.put("appIcon", "@mipmap/ic_launcher")
+
+            splits {
+                abi {
+                    isEnable = true
+                    reset()
+                    include("arm64-v8a")
+                    isUniversalApk = false
+                }
+            }
+
             applicationVariants.all variant@{
                 this@variant.outputs.all output@{
                     val output = this@output as BaseVariantOutputImpl
-                    output.outputFileName = "Han1meViewer-v${defaultConfig.versionName}.apk"
+                    val versionName = defaultConfig.versionName
+                    var abi = ""
+                    if (this@variant.outputs.size > 1) {
+                        val outputData = this@output.outputFile.name
+                        if (outputData.contains("arm64-v8a")) {
+                            abi = "-arm64-v8a"
+                        }
+                    }
+                    output.outputFileName = "Han1meViewer-v${versionName}.apk"
                 }
             }
         }
+
         debug {
             isMinifyEnabled = false
+
+            splits {
+                abi {
+                    isEnable = false
+                }
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
@@ -169,14 +195,19 @@ dependencies {
 
     // popup
 
-    implementation(libs.xpopup)
-    implementation(libs.xpopup.ext)
+    implementation(libs.xpopup){
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-android-extensions-runtime")
+    }
+    implementation(libs.xpopup.ext){
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-android-extensions-runtime")
+    }
 
     // video
 
     implementation(libs.jiaozi.video.player)
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.exoplayer.hls)
+    implementation(libs.mpv.lib)
 
     // view
 

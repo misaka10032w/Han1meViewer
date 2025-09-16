@@ -428,4 +428,8 @@ Recommendations are as follows:\n
     <string name="i_understand">I understand</string>
     <string name="close">Close</string>
     <string name="save_image_confirm">Save image?</string>
+    <string name="super_resolution_off">Off</string>
+    <string name="super_resolution_performance">Performance First</string>
+    <string name="super_resolution_quality">Quality First</string>
+    <string name="advanced_search_combination">Advanced Search Combination</string>
 </resources>

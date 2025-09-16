@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cn.jzvd.JZUtils
-import com.chad.library.adapter4.BaseDifferAdapter
+import com.chad.library.adapter4.BaseQuickAdapter
 import com.chad.library.adapter4.viewholder.QuickViewHolder
 import com.google.android.material.button.MaterialButton
 import com.itxca.spannablex.spannable
@@ -32,7 +32,7 @@ import kotlinx.serialization.json.Json
  * @author Yenaly Liew
  * @time 2023/11/26 026 17:42
  */
-class HKeyframesRvAdapter : BaseDifferAdapter<HKeyframeEntity, QuickViewHolder>(COMPARATOR) {
+class HKeyframesRvAdapter : BaseQuickAdapter<HKeyframeEntity, QuickViewHolder>(COMPARATOR) {
 
     init {
         isStateViewEnable = true
@@ -175,8 +175,8 @@ class HKeyframesRvAdapter : BaseDifferAdapter<HKeyframeEntity, QuickViewHolder>(
 class HKeyframeRvAdapter(
     private val videoCode: String,
     keyframe: HKeyframeEntity? = null,
-) : BaseDifferAdapter<HKeyframeEntity.Keyframe, QuickViewHolder>(
-    COMPARATOR, keyframe?.keyframes.orEmpty()
+) : BaseQuickAdapter<HKeyframeEntity.Keyframe, QuickViewHolder>(
+    keyframe?.keyframes.orEmpty(),COMPARATOR
 ) {
 
     init {

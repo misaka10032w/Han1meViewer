@@ -8,7 +8,6 @@ import android.view.View
 import android.widget.Checkable
 import androidx.core.util.isNotEmpty
 import androidx.core.view.isVisible
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,22 +22,20 @@ import com.lxj.xpopup.interfaces.SimpleCallback
 import com.lxj.xpopupext.listener.TimePickerListener
 import com.lxj.xpopupext.popup.TimePickerPopup
 import com.yenaly.han1meviewer.FirebaseConstants
-import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SEARCH_YEAR_RANGE_END
 import com.yenaly.han1meviewer.SEARCH_YEAR_RANGE_START
 import com.yenaly.han1meviewer.databinding.PopUpFragmentSearchOptionsBinding
+import com.yenaly.han1meviewer.logic.DatabaseRepo
+import com.yenaly.han1meviewer.logic.model.SearchOption
+import com.yenaly.han1meviewer.logic.model.SearchOption.Companion.flatten
 import com.yenaly.han1meviewer.logic.model.SearchOption.Companion.get
-import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.adapter.HSubscriptionAdapter
+import com.yenaly.han1meviewer.ui.adapter.HanimeAdvancedSearchHistoryAdapter
 import com.yenaly.han1meviewer.ui.popup.HTimePickerPopup
-import com.yenaly.han1meviewer.ui.viewmodel.MyListViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.SearchViewModel
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.base.YenalyBottomSheetDialogFragment
 import com.yenaly.yenaly_libs.utils.mapToArray
-import com.yenaly.yenaly_libs.utils.showShortToast
-import com.yenaly.yenaly_libs.utils.unsafeLazy
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
@@ -56,7 +53,6 @@ class SearchOptionsPopupFragment :
     }
 
     val viewModel by viewModels<SearchViewModel>({ requireParentFragment() })
-    val myListViewModel by activityViewModels<MyListViewModel>()
 
     /**
      * 是否用户真正使用了高级搜索里面的功能
@@ -70,13 +66,19 @@ class SearchOptionsPopupFragment :
     private var durations: Array<String>? = null
     private var timeList: Array<String>? = null
 
-    private val subscriptionAdapter by unsafeLazy {
-        HSubscriptionAdapter(
-            fragment = SearchFragment()
-        )
-    }
+    val adapter = HanimeAdvancedSearchHistoryAdapter(
+        onDelete = { history ->
+            lifecycleScope.launch {
+                DatabaseRepo.HanimeAdvancedSearchRepo.deleteHistory(history.id)
+            }
+        },
+        onClick = { history ->
+            viewModel.restoreSearchMap(history)
+            viewModel.triggerNewSearch()
+            dismiss()
+        }
+    )
 
-    // Popups
 
     private val timePickerPopup: TimePickerPopup
         get() {
@@ -144,10 +146,17 @@ class SearchOptionsPopupFragment :
  //       binding.duration.isAvailable = false
         // 简单的厂商搜索官网取消了
         binding.brand.isAvailable = false
-
+        binding.rvAdvSearchHistory.adapter = adapter
+        binding.rvAdvSearchHistory.layoutManager = LinearLayoutManager(requireContext())
+        lifecycleScope.launch {
+            DatabaseRepo.HanimeAdvancedSearchRepo.getSearchHistories().collect { list ->
+                Log.i("HanimeAdvancedSearchRepo",list.toString())
+                binding.llAdvSearchHistory.isVisible = list.isNotEmpty()
+                adapter.submitList(list)
+            }
+        }
         initOptionsChecked()
         initClick()
-        initSubscription()
     }
 
     private fun initOptionsChecked() {
@@ -364,51 +373,19 @@ class SearchOptionsPopupFragment :
                     appendLine("month: ${viewModel.month}, duration: ${viewModel.duration}, ")
                     appendLine("tagMap: ${viewModel.tagMap}, brandMap: ${viewModel.brandMap}, approxTime:${viewModel.approxTime}")
                 })
+                val date = viewModel.getSearchDate()
                 viewModel.triggerNewSearch()
+                viewModel.insertAdvancedSearchHistory(
+                    viewModel.query,
+                    viewModel.genre,
+                    viewModel.sort,
+                    viewModel.broad,
+                    date,
+                    viewModel.duration,
+                    viewModel.tagMap.flatten().map { SearchOption(searchKey = it) }.toSet(),
+                    viewModel.brandMap.flatten().map { SearchOption(searchKey = it) }.toSet()
+                )
                 dismiss()
-            }
-        }
-    }
-
-    private fun initSubscription() {
-        binding.rvSubscription.layoutManager =
-            LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-        binding.rvSubscription.adapter = subscriptionAdapter
-        if (isAlreadyLogin) {
-            // 暂时只读取第一页
-            lifecycleScope.launch {
-                myListViewModel.subscription.subscriptionFlow.collect {
-                    binding.llSubscription.isVisible = it.isNotEmpty()
-                    subscriptionAdapter.submitList(it.map { subscription ->
-                        subscription.copy(
-                            isDeleteVisible = false,
-                            isCheckBoxVisible = subscription.name == viewModel.subscriptionBrand
-                        )
-                    })
-                }
-            }
-            lifecycleScope.launch {
-                myListViewModel.subscription.deleteSubscriptionFlow.collect { state ->
-                    when (state) {
-                        is WebsiteState.Success -> {
-                            showShortToast(R.string.delete_success)
-                            val position = state.info
-                            val item = subscriptionAdapter.getItem(position) ?: return@collect
-//                            val activity = requireContext()
-//                            if (activity is SearchActivity && item.name == activity.searchText) {
-//                                activity.setSearchText(null)
-//                            }
-
-                        }
-
-                        is WebsiteState.Error -> {
-                            showShortToast(R.string.delete_failed)
-                            state.throwable.printStackTrace()
-                        }
-
-                        WebsiteState.Loading -> Unit
-                    }
-                }
             }
         }
     }

@@ -4,7 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
-import com.chad.library.adapter4.BaseDifferAdapter
+import com.chad.library.adapter4.BaseQuickAdapter
 import com.chad.library.adapter4.viewholder.DataBindingHolder
 import com.yenaly.han1meviewer.LOCAL_DATE_TIME_FORMAT
 import com.yenaly.han1meviewer.databinding.ItemWatchHistoryBinding
@@ -24,7 +24,7 @@ import kotlin.time.ExperimentalTime
  * @time 2023/11/26 026 15:35
  */
 class WatchHistoryRvAdapter :
-    BaseDifferAdapter<WatchHistoryEntity, DataBindingHolder<ItemWatchHistoryBinding>>(COMPARATOR) {
+    BaseQuickAdapter<WatchHistoryEntity, DataBindingHolder<ItemWatchHistoryBinding>>(COMPARATOR) {
 
     init {
         isStateViewEnable = true

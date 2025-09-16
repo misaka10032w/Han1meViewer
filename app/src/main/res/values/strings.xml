@@ -462,4 +462,9 @@
     <string name="save_image_confirm">是否儲存圖片？</string>
     <string name="japanese_lang" translatable="false">日本語</string>
     <string name="simplified_chinese" translatable="false">简体中文</string>
+    <string name="anime_4k" translatable="false">Anime\n4k</string>
+    <string name="super_resolution_off">關閉</string>
+    <string name="super_resolution_performance">效能優先</string>
+    <string name="super_resolution_quality">品質優先</string>
+    <string name="advanced_search_combination">進階搜尋組合</string>
 </resources>

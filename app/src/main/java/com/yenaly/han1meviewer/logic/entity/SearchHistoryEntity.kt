@@ -14,3 +14,17 @@ data class SearchHistoryEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0
 )
+
+@Entity(tableName = "HanimeAdvancedSearchHistory")
+data class HanimeAdvancedSearchHistoryEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val query: String? = null,
+    val genre: String? = null,
+    val sort: String? = null,
+    val broad: Boolean? = null,
+    val date: String? = null,
+    val duration: String? = null,
+    val tags: String? = null,
+    val brands: String? = null,
+    val createdAt: Long = System.currentTimeMillis()
+)

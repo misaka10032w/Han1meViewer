@@ -5,7 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.TooltipCompat
 import androidx.recyclerview.widget.DiffUtil
-import com.chad.library.adapter4.BaseDifferAdapter
+import com.chad.library.adapter4.BaseQuickAdapter
 import com.chad.library.adapter4.viewholder.QuickViewHolder
 import com.google.android.material.button.MaterialButton
 import com.yenaly.han1meviewer.R
@@ -16,7 +16,7 @@ import com.yenaly.yenaly_libs.utils.logFieldsChange
  * @author Yenaly Liew
  * @since 2025/3/11 22:05
  */
-class Hanidapter : BaseDifferAdapter<Hanidokitem, QuickViewHolder>(Hanidiff) {
+class Hanidapter : BaseQuickAdapter<Hanidokitem, QuickViewHolder>(Hanidiff) {
 
     companion object {
         const val ICON = 1 shl 0

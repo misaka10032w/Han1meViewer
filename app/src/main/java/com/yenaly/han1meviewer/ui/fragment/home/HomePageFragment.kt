@@ -118,299 +118,301 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
     }
     private var announcementCardAdapter: AnnouncementCardAdapter? = null
     private lateinit var onBackPressedCallback: OnBackPressedCallback
-    private val concatAdapter = ConcatAdapter(
-        VideoColumnTitleAdapter(R.string.latest_hanime).apply {
-            onMoreHanimeListener = {
-                showSearchFragment(advancedSearchMapOf(HAdvancedSearch.GENRE to "裏番"))
-            }
-        },
-        latestHanimeAdapter
-            .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
-            .apply {
-                doOnWrap {
-                    val key = "latestHanime"
-                    val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
-                    val pos = viewModel.horizontalScrollPositions[key] ?: 0
-                    post { lm.scrollToPositionWithOffset(pos, 0) }
-                    addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                        override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                            viewModel.horizontalScrollPositions[key] = lm.findFirstVisibleItemPosition()
-                        }
-                    })
-                }
-        },
-        VideoColumnTitleAdapter(R.string.latest_release).apply {
-            onMoreHanimeListener = {
-                showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to "最新上市"))
-            }
-        },
-        latestReleaseAdapter
-            .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
-            .apply {
-                doOnWrap {
-                    val key = "latestRelease"
-                    val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
-                    val pos = viewModel.horizontalScrollPositions[key] ?: 0
-                    post { lm.scrollToPositionWithOffset(pos, 0) }
-                    addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                        override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                            viewModel.horizontalScrollPositions[key] = lm.findFirstVisibleItemPosition()
-                        }
-                    })
-                }
-        },
-        VideoColumnTitleAdapter(R.string.latest_upload).apply {
-            onMoreHanimeListener = {
-                showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to "最新上傳"))
-            }
-        },
-        latestUploadAdapter
-            .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
-            .apply {
-                doOnWrap {
-                    val key = "latestUpload"
-                    val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
-                    val pos = viewModel.horizontalScrollPositions[key] ?: 0
-                    post { lm.scrollToPositionWithOffset(pos, 0) }
-                    addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                        override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                            viewModel.horizontalScrollPositions[key] = lm.findFirstVisibleItemPosition()
-                        }
-                    })
-                }
-        },
-        VideoColumnTitleAdapter(R.string.chinese_subtitle).apply {
-            onMoreHanimeListener = {
-                showSearchFragment(advancedSearchMapOf(HAdvancedSearch.TAGS to hashMapOf("video_attributes" to "中文字幕")))
-            }
-        },
-        chineseSubtitleAdapter
-            .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
-            .apply {
-                doOnWrap {
-                    val key = "chineseSubtitle"
-                    val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
-                    val pos = viewModel.horizontalScrollPositions[key] ?: 0
-                    post { lm.scrollToPositionWithOffset(pos, 0) }
-                    addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                        override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                            viewModel.horizontalScrollPositions[key] = lm.findFirstVisibleItemPosition()
-                        }
-                    })
-                }
-        },
-        VideoColumnTitleAdapter(R.string.they_watched).apply {
-            onMoreHanimeListener = {
-                showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to "他們在看"))
-            }
-        },
-        hanimeTheyWatchedAdapter
-            .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
-            .apply {
-                doOnWrap {
-                    val key = "hanimeTheyWatched"
-                    val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
-                    val pos = viewModel.horizontalScrollPositions[key] ?: 0
-                    post { lm.scrollToPositionWithOffset(pos, 0) }
-                    addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                        override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                            viewModel.horizontalScrollPositions[key] = lm.findFirstVisibleItemPosition()
-                        }
-                    })
-                }
-        },
-        VideoColumnTitleAdapter(R.string.ranking_today).apply {
-            onMoreHanimeListener = {
-                showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to "本日排行"))
-            }
-        },
-        hanimeCurrentAdapter
-            .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
-            .apply {
-                doOnWrap {
-                    val key = "hanimeCurrent"
-                    val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
-                    val pos = viewModel.horizontalScrollPositions[key] ?: 0
-                    post { lm.scrollToPositionWithOffset(pos, 0) }
-                    addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                        override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                            viewModel.horizontalScrollPositions[key] = lm.findFirstVisibleItemPosition()
-                        }
-                    })
-                }
-        },
-        VideoColumnTitleAdapter(R.string.ranking_this_month).apply {
-            onMoreHanimeListener = {
-                showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to "本月排行"))
-            }
-        },
-        hotHanimeMonthlyAdapter
-            .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)}
-            .apply {
-                doOnWrap {
-                    val key = "hotHanimeMonthly"
-                    val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
-                    val pos = viewModel.horizontalScrollPositions[key] ?: 0
-                    post { lm.scrollToPositionWithOffset(pos, 0) }
-                    addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                        override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                            viewModel.horizontalScrollPositions[key] = lm.findFirstVisibleItemPosition()
-                        }
-                    })
+    private val concatAdapter by lazy {
+        ConcatAdapter(
+            VideoColumnTitleAdapter(requireContext(),R.string.latest_hanime).apply {
+                onMoreHanimeListener = {
+                    showSearchFragment(advancedSearchMapOf(HAdvancedSearch.GENRE to "裏番"))
                 }
             },
-        VideoColumnTitleAdapter(R.string.new_anime_trailers).apply {
-            onMoreHanimeListener = {
-                findNavController().navigate(R.id.action_nv_home_page_to_nv_preview)
-            }
-        },
-        newAnimeTrailerAdapter
-            .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
-            .apply {
-                doOnWrap {
-                    val key = "newAnimeTrailer"
-                    val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
-                    val pos = viewModel.horizontalScrollPositions[key] ?: 0
-                    post { lm.scrollToPositionWithOffset(pos, 0) }
-                    addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                        override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                            viewModel.horizontalScrollPositions[key] =
-                                lm.findFirstVisibleItemPosition()
-                        }
-                    })
+            latestHanimeAdapter
+                .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
+                .apply {
+                    doOnWrap {
+                        val key = "latestHanime"
+                        val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
+                        val pos = viewModel.horizontalScrollPositions[key] ?: 0
+                        post { lm.scrollToPositionWithOffset(pos, 0) }
+                        addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                                viewModel.horizontalScrollPositions[key] = lm.findFirstVisibleItemPosition()
+                            }
+                        })
+                    }
+                },
+            VideoColumnTitleAdapter(requireContext(),R.string.latest_release).apply {
+                onMoreHanimeListener = {
+                    showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to "最新上市"))
                 }
             },
-        VideoColumnTitleAdapter(R.string.category_instant_noodle).apply {
-            onMoreHanimeListener = {
-                showSearchFragment(
-                    advancedSearchMapOf(
-                        HAdvancedSearch.GENRE to "泡麵番",
-                        HAdvancedSearch.SORT to "最新上傳"
+            latestReleaseAdapter
+                .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
+                .apply {
+                    doOnWrap {
+                        val key = "latestRelease"
+                        val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
+                        val pos = viewModel.horizontalScrollPositions[key] ?: 0
+                        post { lm.scrollToPositionWithOffset(pos, 0) }
+                        addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                                viewModel.horizontalScrollPositions[key] = lm.findFirstVisibleItemPosition()
+                            }
+                        })
+                    }
+                },
+            VideoColumnTitleAdapter(requireContext(),R.string.latest_upload).apply {
+                onMoreHanimeListener = {
+                    showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to "最新上傳"))
+                }
+            },
+            latestUploadAdapter
+                .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
+                .apply {
+                    doOnWrap {
+                        val key = "latestUpload"
+                        val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
+                        val pos = viewModel.horizontalScrollPositions[key] ?: 0
+                        post { lm.scrollToPositionWithOffset(pos, 0) }
+                        addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                                viewModel.horizontalScrollPositions[key] = lm.findFirstVisibleItemPosition()
+                            }
+                        })
+                    }
+                },
+            VideoColumnTitleAdapter(requireContext(),R.string.chinese_subtitle).apply {
+                onMoreHanimeListener = {
+                    showSearchFragment(advancedSearchMapOf(HAdvancedSearch.TAGS to hashMapOf("video_attributes" to "中文字幕")))
+                }
+            },
+            chineseSubtitleAdapter
+                .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
+                .apply {
+                    doOnWrap {
+                        val key = "chineseSubtitle"
+                        val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
+                        val pos = viewModel.horizontalScrollPositions[key] ?: 0
+                        post { lm.scrollToPositionWithOffset(pos, 0) }
+                        addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                                viewModel.horizontalScrollPositions[key] = lm.findFirstVisibleItemPosition()
+                            }
+                        })
+                    }
+                },
+            VideoColumnTitleAdapter(requireContext(),R.string.they_watched).apply {
+                onMoreHanimeListener = {
+                    showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to "他們在看"))
+                }
+            },
+            hanimeTheyWatchedAdapter
+                .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
+                .apply {
+                    doOnWrap {
+                        val key = "hanimeTheyWatched"
+                        val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
+                        val pos = viewModel.horizontalScrollPositions[key] ?: 0
+                        post { lm.scrollToPositionWithOffset(pos, 0) }
+                        addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                                viewModel.horizontalScrollPositions[key] = lm.findFirstVisibleItemPosition()
+                            }
+                        })
+                    }
+                },
+            VideoColumnTitleAdapter(requireContext(),R.string.ranking_today).apply {
+                onMoreHanimeListener = {
+                    showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to "本日排行"))
+                }
+            },
+            hanimeCurrentAdapter
+                .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
+                .apply {
+                    doOnWrap {
+                        val key = "hanimeCurrent"
+                        val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
+                        val pos = viewModel.horizontalScrollPositions[key] ?: 0
+                        post { lm.scrollToPositionWithOffset(pos, 0) }
+                        addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                                viewModel.horizontalScrollPositions[key] = lm.findFirstVisibleItemPosition()
+                            }
+                        })
+                    }
+                },
+            VideoColumnTitleAdapter(requireContext(),R.string.ranking_this_month).apply {
+                onMoreHanimeListener = {
+                    showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to "本月排行"))
+                }
+            },
+            hotHanimeMonthlyAdapter
+                .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)}
+                .apply {
+                    doOnWrap {
+                        val key = "hotHanimeMonthly"
+                        val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
+                        val pos = viewModel.horizontalScrollPositions[key] ?: 0
+                        post { lm.scrollToPositionWithOffset(pos, 0) }
+                        addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                                viewModel.horizontalScrollPositions[key] = lm.findFirstVisibleItemPosition()
+                            }
+                        })
+                    }
+                },
+            VideoColumnTitleAdapter(requireContext(),R.string.new_anime_trailers).apply {
+                onMoreHanimeListener = {
+                    findNavController().navigate(R.id.action_nv_home_page_to_nv_preview)
+                }
+            },
+            newAnimeTrailerAdapter
+                .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
+                .apply {
+                    doOnWrap {
+                        val key = "newAnimeTrailer"
+                        val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
+                        val pos = viewModel.horizontalScrollPositions[key] ?: 0
+                        post { lm.scrollToPositionWithOffset(pos, 0) }
+                        addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                                viewModel.horizontalScrollPositions[key] =
+                                    lm.findFirstVisibleItemPosition()
+                            }
+                        })
+                    }
+                },
+            VideoColumnTitleAdapter(requireContext(), R.string.category_instant_noodle).apply {
+                onMoreHanimeListener = {
+                    showSearchFragment(
+                        advancedSearchMapOf(
+                            HAdvancedSearch.GENRE to "泡麵番",
+                            HAdvancedSearch.SORT to "最新上傳"
+                        )
                     )
-                )
-            }
-        },
-        animeShortAdapter
-            .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
-            .apply {
-                doOnWrap {
-                    val key = "animeShort"
-                    val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
-                    val pos = viewModel.horizontalScrollPositions[key] ?: 0
-                    post { lm.scrollToPositionWithOffset(pos, 0) }
-                    addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                        override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                            viewModel.horizontalScrollPositions[key] =
-                                lm.findFirstVisibleItemPosition()
-                        }
-                    })
                 }
             },
-        VideoColumnTitleAdapter(R.string.category_motion_anime).apply {
-            onMoreHanimeListener = {
-                showSearchFragment(
-                    advancedSearchMapOf(
-                        HAdvancedSearch.GENRE to "Motion Anime",
-                        HAdvancedSearch.SORT to "最新上傳"
+            animeShortAdapter
+                .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
+                .apply {
+                    doOnWrap {
+                        val key = "animeShort"
+                        val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
+                        val pos = viewModel.horizontalScrollPositions[key] ?: 0
+                        post { lm.scrollToPositionWithOffset(pos, 0) }
+                        addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                                viewModel.horizontalScrollPositions[key] =
+                                    lm.findFirstVisibleItemPosition()
+                            }
+                        })
+                    }
+                },
+            VideoColumnTitleAdapter(requireContext(),R.string.category_motion_anime).apply {
+                onMoreHanimeListener = {
+                    showSearchFragment(
+                        advancedSearchMapOf(
+                            HAdvancedSearch.GENRE to "Motion Anime",
+                            HAdvancedSearch.SORT to "最新上傳"
+                        )
                     )
-                )
-            }
-        },
-        motionAnimeAdapter
-            .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
-            .apply {
-                doOnWrap {
-                    val key = "motionAnime"
-                    val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
-                    val pos = viewModel.horizontalScrollPositions[key] ?: 0
-                    post { lm.scrollToPositionWithOffset(pos, 0) }
-                    addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                        override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                            viewModel.horizontalScrollPositions[key] =
-                                lm.findFirstVisibleItemPosition()
-                        }
-                    })
                 }
             },
-        VideoColumnTitleAdapter(R.string.category_3d_animation).apply {
-            onMoreHanimeListener = {
-                showSearchFragment(
-                    advancedSearchMapOf(
-                        HAdvancedSearch.GENRE to "3D動畫",
-                        HAdvancedSearch.SORT to "最新上傳"
+            motionAnimeAdapter
+                .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
+                .apply {
+                    doOnWrap {
+                        val key = "motionAnime"
+                        val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
+                        val pos = viewModel.horizontalScrollPositions[key] ?: 0
+                        post { lm.scrollToPositionWithOffset(pos, 0) }
+                        addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                                viewModel.horizontalScrollPositions[key] =
+                                    lm.findFirstVisibleItemPosition()
+                            }
+                        })
+                    }
+                },
+            VideoColumnTitleAdapter(requireContext(),R.string.category_3d_animation).apply {
+                onMoreHanimeListener = {
+                    showSearchFragment(
+                        advancedSearchMapOf(
+                            HAdvancedSearch.GENRE to "3D動畫",
+                            HAdvancedSearch.SORT to "最新上傳"
+                        )
                     )
-                )
-            }
-        },
-        thereDWorkAdapter
-            .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
-            .apply {
-                doOnWrap {
-                    val key = "thereDWork"
-                    val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
-                    val pos = viewModel.horizontalScrollPositions[key] ?: 0
-                    post { lm.scrollToPositionWithOffset(pos, 0) }
-                    addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                        override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                            viewModel.horizontalScrollPositions[key] =
-                                lm.findFirstVisibleItemPosition()
-                        }
-                    })
                 }
             },
-        VideoColumnTitleAdapter(R.string.category_doujin).apply {
-            onMoreHanimeListener = {
-                showSearchFragment(
-                    advancedSearchMapOf(
-                        HAdvancedSearch.GENRE to "同人作品",
-                        HAdvancedSearch.SORT to "最新上傳"
+            thereDWorkAdapter
+                .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
+                .apply {
+                    doOnWrap {
+                        val key = "thereDWork"
+                        val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
+                        val pos = viewModel.horizontalScrollPositions[key] ?: 0
+                        post { lm.scrollToPositionWithOffset(pos, 0) }
+                        addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                                viewModel.horizontalScrollPositions[key] =
+                                    lm.findFirstVisibleItemPosition()
+                            }
+                        })
+                    }
+                },
+            VideoColumnTitleAdapter(requireContext(),R.string.category_doujin).apply {
+                onMoreHanimeListener = {
+                    showSearchFragment(
+                        advancedSearchMapOf(
+                            HAdvancedSearch.GENRE to "同人作品",
+                            HAdvancedSearch.SORT to "最新上傳"
+                        )
                     )
-                )
-            }
-        },
-        douJinWorkAdapter
-            .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
-            .apply {
-                doOnWrap {
-                    val key = "douJinWork"
-                    val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
-                    val pos = viewModel.horizontalScrollPositions[key] ?: 0
-                    post { lm.scrollToPositionWithOffset(pos, 0) }
-                    addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                        override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                            viewModel.horizontalScrollPositions[key] =
-                                lm.findFirstVisibleItemPosition()
-                        }
-                    })
                 }
             },
-        VideoColumnTitleAdapter(R.string.category_cosplay).apply {
-            onMoreHanimeListener = {
-                showSearchFragment(
-                    advancedSearchMapOf(
-                        HAdvancedSearch.GENRE to "Cosplay",
-                        HAdvancedSearch.SORT to "最新上傳"
+            douJinWorkAdapter
+                .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
+                .apply {
+                    doOnWrap {
+                        val key = "douJinWork"
+                        val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
+                        val pos = viewModel.horizontalScrollPositions[key] ?: 0
+                        post { lm.scrollToPositionWithOffset(pos, 0) }
+                        addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                                viewModel.horizontalScrollPositions[key] =
+                                    lm.findFirstVisibleItemPosition()
+                            }
+                        })
+                    }
+                },
+            VideoColumnTitleAdapter(requireContext(),R.string.category_cosplay).apply {
+                onMoreHanimeListener = {
+                    showSearchFragment(
+                        advancedSearchMapOf(
+                            HAdvancedSearch.GENRE to "Cosplay",
+                            HAdvancedSearch.SORT to "最新上傳"
+                        )
                     )
-                )
-            }
-        },
-        cosplayAdapter
-            .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
-            .apply {
-                doOnWrap {
-                    val key = "cosplay"
-                    val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
-                    val pos = viewModel.horizontalScrollPositions[key] ?: 0
-                    post { lm.scrollToPositionWithOffset(pos, 0) }
-                    addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                        override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                            viewModel.horizontalScrollPositions[key] =
-                                lm.findFirstVisibleItemPosition()
-                        }
-                    })
                 }
             },
-    )
+            cosplayAdapter
+                .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
+                .apply {
+                    doOnWrap {
+                        val key = "cosplay"
+                        val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
+                        val pos = viewModel.horizontalScrollPositions[key] ?: 0
+                        post { lm.scrollToPositionWithOffset(pos, 0) }
+                        addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+                                viewModel.horizontalScrollPositions[key] =
+                                    lm.findFirstVisibleItemPosition()
+                            }
+                        })
+                    }
+                },
+        )
+    }
 
     /**
      * 用於判斷是否需要 setExpanded，防止重複喚出 AppBar

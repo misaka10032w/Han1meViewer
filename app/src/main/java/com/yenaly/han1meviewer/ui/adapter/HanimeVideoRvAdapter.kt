@@ -11,7 +11,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DiffUtil
 import coil.load
-import com.chad.library.adapter4.BaseDifferAdapter
+import com.chad.library.adapter4.BaseQuickAdapter
 import com.chad.library.adapter4.viewholder.QuickViewHolder
 import com.itxca.spannablex.spannable
 import com.yenaly.han1meviewer.R
@@ -39,7 +39,7 @@ class HanimeVideoRvAdapter(
     private val videoWidthType: Int = -1,
     private val hostFragment: Fragment? = null
 ) : // videoWidthType is VIDEO_LAYOUT_MATCH_PARENT or VIDEO_LAYOUT_WRAP_CONTENT or nothing
-    BaseDifferAdapter<HanimeInfo, QuickViewHolder>(COMPARATOR) {
+    BaseQuickAdapter<HanimeInfo, QuickViewHolder>(COMPARATOR) {
 
     init {
         isStateViewEnable = true

@@ -7,6 +7,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.yenaly.han1meviewer.logic.entity.HanimeAdvancedSearchHistoryEntity
 import com.yenaly.han1meviewer.logic.entity.SearchHistoryEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.yenaly_libs.utils.applicationContext
@@ -17,8 +18,10 @@ import com.yenaly.yenaly_libs.utils.applicationContext
  * @time 2022/06/22 022 22:46
  */
 @Database(
-    entities = [SearchHistoryEntity::class, WatchHistoryEntity::class],
-    version = 3, exportSchema = false
+    entities = [SearchHistoryEntity::class,
+        WatchHistoryEntity::class,
+        HanimeAdvancedSearchHistoryEntity::class],
+    version = 4, exportSchema = false
 )
 abstract class HistoryDatabase : RoomDatabase() {
 
@@ -26,13 +29,19 @@ abstract class HistoryDatabase : RoomDatabase() {
 
     abstract val watchHistory: WatchHistoryDao
 
+    abstract val hanimeAdvancedSearchHistory: HanimeAdvancedSearchHistoryDao
+
     companion object {
         val instance by lazy {
             Room.databaseBuilder(
                 applicationContext,
                 HistoryDatabase::class.java,
                 "history.db"
-            ).addMigrations(Migration1To2, Migration2To3).build()
+            ).addMigrations(
+                Migration1To2,
+                Migration2To3,
+                Migration3To4
+            ).build()
         }
     }
 
@@ -67,6 +76,26 @@ abstract class HistoryDatabase : RoomDatabase() {
             db.execSQL(
                 """ALTER TABLE WatchHistoryEntity
                    ADD COLUMN progress INTEGER NOT NULL DEFAULT 0"""
+            )
+        }
+    }
+    object Migration3To4 : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `HanimeAdvancedSearchHistory` (
+                    `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    `query` TEXT,
+                    `genre` TEXT,
+                    `sort` TEXT,
+                    `broad` INTEGER,
+                    `date` TEXT,
+                    `duration` TEXT,
+                    `tags` TEXT,
+                    `brands` TEXT,
+                    `createdAt` INTEGER NOT NULL
+                )
+                """.trimIndent()
             )
         }
     }

@@ -213,9 +213,7 @@ fun SubscriptionApp(
                     )
                 }
             }
-
             Log.i("VideoCard", cachedVideos.value.toString())
-            // 下拉加载指示器
             if (isRefreshing || scaleFraction() > 0f) {
                 Box(
                     Modifier
