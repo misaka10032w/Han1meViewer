@@ -436,4 +436,5 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="super_resolution_off">オフ</string>
     <string name="super_resolution_performance">パフォーマンス優先</string>
     <string name="super_resolution_quality">品質優先</string>
+    <string name="advanced_search_combination">高度な検索組み合わせ</string>
 </resources>

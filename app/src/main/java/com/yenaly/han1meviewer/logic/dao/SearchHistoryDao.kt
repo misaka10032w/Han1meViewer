@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.logic.dao
 
 import androidx.room.*
+import com.yenaly.han1meviewer.logic.entity.HanimeAdvancedSearchHistoryEntity
 import com.yenaly.han1meviewer.logic.entity.SearchHistoryEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -40,4 +41,19 @@ abstract class SearchHistoryDao {
         }
         insert(entity)
     }
+}
+
+@Dao
+interface HanimeAdvancedSearchHistoryDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertHistory(history: HanimeAdvancedSearchHistoryEntity)
+
+    @Query("SELECT * FROM HanimeAdvancedSearchHistory  ORDER BY createdAt DESC LIMIT :limit")
+    fun loadHistories(limit: Int = 20): Flow<List<HanimeAdvancedSearchHistoryEntity>>
+
+    @Query("DELETE FROM HanimeAdvancedSearchHistory  WHERE id = :id")
+    suspend fun deleteHistory(id: Long)
+
+    @Query("DELETE FROM HanimeAdvancedSearchHistory ")
+    suspend fun clearAll()
 }

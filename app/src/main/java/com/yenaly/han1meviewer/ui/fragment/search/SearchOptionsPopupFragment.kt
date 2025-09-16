@@ -7,7 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.Checkable
 import androidx.core.util.isNotEmpty
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.color.MaterialColors
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
@@ -23,12 +26,17 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SEARCH_YEAR_RANGE_END
 import com.yenaly.han1meviewer.SEARCH_YEAR_RANGE_START
 import com.yenaly.han1meviewer.databinding.PopUpFragmentSearchOptionsBinding
+import com.yenaly.han1meviewer.logic.DatabaseRepo
+import com.yenaly.han1meviewer.logic.model.SearchOption
+import com.yenaly.han1meviewer.logic.model.SearchOption.Companion.flatten
 import com.yenaly.han1meviewer.logic.model.SearchOption.Companion.get
+import com.yenaly.han1meviewer.ui.adapter.HanimeAdvancedSearchHistoryAdapter
 import com.yenaly.han1meviewer.ui.popup.HTimePickerPopup
 import com.yenaly.han1meviewer.ui.viewmodel.SearchViewModel
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.base.YenalyBottomSheetDialogFragment
 import com.yenaly.yenaly_libs.utils.mapToArray
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
 
@@ -58,7 +66,19 @@ class SearchOptionsPopupFragment :
     private var durations: Array<String>? = null
     private var timeList: Array<String>? = null
 
-    // Popups
+    val adapter = HanimeAdvancedSearchHistoryAdapter(
+        onDelete = { history ->
+            lifecycleScope.launch {
+                DatabaseRepo.HanimeAdvancedSearchRepo.deleteHistory(history.id)
+            }
+        },
+        onClick = { history ->
+            viewModel.restoreSearchMap(history)
+            viewModel.triggerNewSearch()
+            dismiss()
+        }
+    )
+
 
     private val timePickerPopup: TimePickerPopup
         get() {
@@ -126,6 +146,15 @@ class SearchOptionsPopupFragment :
  //       binding.duration.isAvailable = false
         // 简单的厂商搜索官网取消了
         binding.brand.isAvailable = false
+        binding.rvAdvSearchHistory.adapter = adapter
+        binding.rvAdvSearchHistory.layoutManager = LinearLayoutManager(requireContext())
+        lifecycleScope.launch {
+            DatabaseRepo.HanimeAdvancedSearchRepo.getSearchHistories().collect { list ->
+                Log.i("HanimeAdvancedSearchRepo",list.toString())
+                binding.llAdvSearchHistory.isVisible = list.isNotEmpty()
+                adapter.submitList(list)
+            }
+        }
         initOptionsChecked()
         initClick()
     }
@@ -344,7 +373,18 @@ class SearchOptionsPopupFragment :
                     appendLine("month: ${viewModel.month}, duration: ${viewModel.duration}, ")
                     appendLine("tagMap: ${viewModel.tagMap}, brandMap: ${viewModel.brandMap}, approxTime:${viewModel.approxTime}")
                 })
+                val date = viewModel.getSearchDate()
                 viewModel.triggerNewSearch()
+                viewModel.insertAdvancedSearchHistory(
+                    viewModel.query,
+                    viewModel.genre,
+                    viewModel.sort,
+                    viewModel.broad,
+                    date,
+                    viewModel.duration,
+                    viewModel.tagMap.flatten().map { SearchOption(searchKey = it) }.toSet(),
+                    viewModel.brandMap.flatten().map { SearchOption(searchKey = it) }.toSet()
+                )
                 dismiss()
             }
         }

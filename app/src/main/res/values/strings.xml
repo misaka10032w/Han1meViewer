@@ -466,4 +466,5 @@
     <string name="super_resolution_off">關閉</string>
     <string name="super_resolution_performance">效能優先</string>
     <string name="super_resolution_quality">品質優先</string>
+    <string name="advanced_search_combination">進階搜尋組合</string>
 </resources>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tool="http://schemas.android.com/tools">
+    <data />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardHistory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="64dp"
+            android:padding="12dp">
+
+            <TextView
+                android:id="@+id/tvQuery"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/btnDelete"
+                app:layout_constraintHorizontal_bias="0"
+                tool:text="关键词"/>
+
+            <ImageButton
+                android:id="@+id/btnDelete"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:contentDescription="@string/delete"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_baseline_delete_24"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+            <TextView
+                android:id="@+id/tvConditions"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text=""
+                android:maxLines="2"
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                app:layout_constraintStart_toStartOf="@id/tvQuery"
+                app:layout_constraintTop_toBottomOf="@id/tvQuery"
+                app:layout_constraintEnd_toStartOf="@id/btnDelete"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_goneMarginEnd="8dp"
+                tool:text="标签: xxx、xxx、xxx、xxx、xxx、xxx、xxx、xxx、xxx、xxx、xxx、xxx、xxx、xxx、xxx、xxx、xxx、xxx、 | 品牌: yyy | 排序: 最新"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+</layout>

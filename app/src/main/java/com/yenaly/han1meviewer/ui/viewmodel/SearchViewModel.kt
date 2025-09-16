@@ -6,7 +6,9 @@ import android.util.SparseArray
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.logic.DatabaseRepo
+import com.yenaly.han1meviewer.logic.DatabaseRepo.HanimeAdvancedSearchRepo.toSearchOptionSet
 import com.yenaly.han1meviewer.logic.NetworkRepo
+import com.yenaly.han1meviewer.logic.entity.HanimeAdvancedSearchHistoryEntity
 import com.yenaly.han1meviewer.logic.entity.SearchHistoryEntity
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.SearchOption
@@ -18,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
@@ -57,14 +60,8 @@ class SearchViewModel(
         get() = state["approxTime"]
         set(value) { state["approxTime"] = value }
 
-//    var genre: String? = null
-//    var sort: String? = null
     var broad: Boolean = false
-//    var year: Int? = null
-//    var month: Int? = null
     var duration: String? = null
-
-    var subscriptionBrand: String? = null
 
     var tagMap = SparseArray<Set<SearchOption>>()
     var brandMap = SparseArray<Set<SearchOption>>()
@@ -138,6 +135,55 @@ class SearchViewModel(
         }
     }
 
+    fun getSearchDate(): String? {
+        return when {
+            approxTime != null -> approxTime
+            year != null -> listOfNotNull(
+                year?.let { "$it 年" },
+                month?.let { "$it 月" }
+            ).joinToString(" ")
+            else -> null
+        }
+    }
+
+    fun insertAdvancedSearchHistory(
+        query: String?, genre: String?,
+        sort: String?, broad: Boolean, date: String?,
+        duration: String?, tags: Set<SearchOption>, brands: Set<SearchOption>,
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val histories = DatabaseRepo.HanimeAdvancedSearchRepo.getSearchHistories(limit = 10)
+                .first()
+
+            val isDuplicate = histories.any { history ->
+                history.query == query &&
+                        history.genre == genre &&
+                        history.sort == sort &&
+                        history.broad == broad &&
+                        history.date == date &&
+                        history.duration == duration &&
+                        history.tags?.toSearchOptionSet() == tags &&
+                        history.brands?.toSearchOptionSet() == brands
+            }
+
+            if (!isDuplicate) {
+                DatabaseRepo.HanimeAdvancedSearchRepo.saveSearch(
+                    query = query,
+                    genre = genre,
+                    sort = sort,
+                    broad = broad,
+                    date = date,
+                    duration = duration,
+                    tags = tags,
+                    brands = brands,
+                )
+                return@launch
+            }
+            Log.i("insertAdvancedSearchHistory","记录重复！")
+
+        }
+    }
+
     fun deleteSearchHistory(history: SearchHistoryEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             DatabaseRepo.SearchHistory.delete(history)
@@ -160,5 +206,56 @@ class SearchViewModel(
         page = 1
         clearHanimeSearchResult()
         refreshTriggerFlow.tryEmit(Unit)
+    }
+    fun restoreSearchMap(history: HanimeAdvancedSearchHistoryEntity) {
+        with(this) {
+            page = 1
+            query = history.query
+            genre = history.genre
+            sort = history.sort
+            broad = history.broad == true
+            duration = history.duration
+
+            restoreDate(this, history.date)
+
+            tagMap.clear()
+            brandMap.clear()
+
+            history.tags?.takeIf { it.isNotBlank() }?.let { tagsString ->
+                val tagOptions = tagsString.toSearchOptionSet()
+                tagMap.put(0, tagOptions)
+            }
+
+            history.brands?.takeIf { it.isNotBlank() }?.let { brandsString ->
+                val brandOptions = brandsString.toSearchOptionSet()
+                brandMap.put(0, brandOptions)
+            }
+        }
+    }
+    private fun restoreDate(viewModel: SearchViewModel, date: String?) {
+        if (date.isNullOrBlank()) {
+            viewModel.year = null
+            viewModel.month = null
+            viewModel.approxTime = null
+            return
+        }
+
+        if (date.contains("過去")) {
+            viewModel.approxTime = date
+            viewModel.year = null
+            viewModel.month = null
+        } else {
+            viewModel.approxTime = null
+            val regex = """(\d+)\s*年(?:\s*(\d+)\s*月)?""".toRegex()
+            val match = regex.find(date)
+            if (match != null) {
+                val (y, m) = match.destructured
+                viewModel.year = y.toIntOrNull()
+                viewModel.month = m.toIntOrNull()
+            } else {
+                viewModel.year = null
+                viewModel.month = null
+            }
+        }
     }
 }

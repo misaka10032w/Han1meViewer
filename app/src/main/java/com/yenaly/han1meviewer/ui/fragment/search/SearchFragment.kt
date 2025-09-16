@@ -214,20 +214,14 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
             appendLine("month: ${viewModel.month}, duration: ${viewModel.duration}, ")
             appendLine("tagMap: ${viewModel.tagMap}, brandMap: ${viewModel.brandMap}, approxTime:${viewModel.approxTime}")
         })
-        val date: String? = when {
-            viewModel.approxTime != null -> viewModel.approxTime
-            viewModel.year != null -> listOfNotNull(
-                viewModel.year?.let { "$it 年" },
-                viewModel.month?.let { "$it 月" }
-            ).joinToString(" ")
-            else -> null
-        }
+        val date = viewModel.getSearchDate()
         viewModel.getHanimeSearchResult(
             viewModel.page,
             viewModel.query, viewModel.genre, viewModel.sort, viewModel.broad,
             date, viewModel.duration,
             viewModel.tagMap.flatten(), viewModel.brandMap.flatten()
         )
+        setSearchText(viewModel.query)
     }
 
     /**
@@ -267,6 +261,16 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
                 if (text.isNotBlank()) {
                     viewModel.insertSearchHistory(SearchHistoryEntity(text))
                 }
+                viewModel.insertAdvancedSearchHistory(
+                    viewModel.query,
+                    viewModel.genre,
+                    viewModel.sort,
+                    viewModel.broad,
+                    viewModel.getSearchDate(),
+                    viewModel.duration,
+                    viewModel.tagMap.flatten().map { SearchOption(searchKey = it) }.toSet(),
+                    viewModel.brandMap.flatten().map { SearchOption(searchKey = it) }.toSet()
+                )
                 binding.searchSrl.autoRefresh()
             }
 
