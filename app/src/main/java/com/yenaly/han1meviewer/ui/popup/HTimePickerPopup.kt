@@ -8,6 +8,7 @@ import android.widget.ViewFlipper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.tabs.TabLayout
 import com.lxj.xpopupext.popup.TimePickerPopup
 import com.yenaly.han1meviewer.R
@@ -29,6 +30,14 @@ class HTimePickerPopup(
     private lateinit var tabLayout: TabLayout
     private lateinit var viewFlipper: ViewFlipper
 
+    private lateinit var btnCancel: MaterialButton
+    private lateinit var btnConfirm: MaterialButton
+    private val btnTextColor by lazy {
+        MaterialColors.getColor(
+            rootView,
+            com.google.android.material.R.attr.colorOnPrimary)
+    }
+
     var mode: Mode = Mode.YM
         private set
 
@@ -37,6 +46,12 @@ class HTimePickerPopup(
     override fun onCreate() {
         super.onCreate()
         btnSwitch = findViewById(R.id.btnSwitch)
+        btnCancel = findViewById(R.id.btnCancel)
+        btnConfirm = findViewById(R.id.btnConfirm)
+
+        btnCancel.setTextColor(btnTextColor)
+        btnConfirm.setTextColor(btnTextColor)
+
         btnSwitch.text = when (mode) {
             Mode.YM -> context.getString(R.string.switch_to_year)
             else -> context.getString(R.string.switch_to_year_month)
