@@ -233,12 +233,12 @@ class HanimeDownloadWorker(
     private suspend fun download(): Result {
         return withContext(Dispatchers.IO) {
             val file = HFileManager.getDownloadVideoFile(
-                context=context, title = hanimeName, quality=quality, suffix = videoType, videoCode = videoCode
+                context = context, title = hanimeName, quality = quality, suffix = videoType, videoCode = videoCode
             )
             val safUri = SafFileManager.getDownloadVideoFileUri(context, videoCode, createVideoName(hanimeName, quality, videoType))
             // 检查是否需要重下载
             if (shouldRedownload || shouldDelete) {
-                HFileManager.getDownloadVideoFolder(context,videoCode).deleteRecursively()
+                HFileManager.getDownloadVideoFolder(context, videoCode).deleteRecursively()
                 DatabaseRepo.HanimeDownload.delete(videoCode)
                 if (shouldDelete) {
                     return@withContext Result.success()
@@ -282,6 +282,9 @@ class HanimeDownloadWorker(
             try {
                 if (safUri != null) {
                     outputStream = context.contentResolver.openOutputStream(safUri, "rwt")
+                    if (downloadedLength > 0) {
+                        downloadedLength = 0 // SAF 下不支持断点续传，重新下载时重置进度
+                    }
                 } else {
                     raf = RandomAccessFile(file, "rwd")
                     if (needRange) raf.seek(downloadedLength)
@@ -310,7 +313,7 @@ class HanimeDownloadWorker(
                     downloadedLength += len
 
                     if (System.currentTimeMillis() - delayTime > RESPONSE_INTERVAL) {
-                        val progress = downloadedLength * 100 / entity.length
+                        val progress = (downloadedLength * 100 / entity.length).coerceAtMost(100)
                         setProgress(workDataOf(PROGRESS to progress.toInt()))
                         updateDownloadNotification(progress.toInt())
                         DatabaseRepo.HanimeDownload.update(

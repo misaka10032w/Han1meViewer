@@ -380,7 +380,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="directory_saved">ディレクトリ保存済:%s</string>
     <string name="no_directory_selected">ディレクトリ未選択、変更なし</string>
     <string name="select_download_folder">ダウンロードフォルダ選択</string>
-    <string name="select_folder_message">システムファイルピッカーでフォルダ指定：\n\n✓ 保存場所自由選択\n✓ ダウンロードファイル永続保存\n✓ 他アプリとの共有容易\n✓ アプリ削除影響なし\n\nDownloads下の新規ディレクトリまたはカスタムフォルダ推奨</string>
+    <string name="select_folder_message">システムファイルピッカーでフォルダ指定：\n\n✓ 保存場所自由選択\n✓ ダウンロードファイル永続保存\n✓ 他アプリとの共有容易\n✓ アプリ削除影響なし\n✗ レジューム対応なし\n\nDownloads下の新規ディレクトリまたはカスタムフォルダ推奨</string>
     <string name="restore_default_path">デフォルト保存先に復元</string>
     <string name="restore_default_message">アプリ内部ストレージに復元しますか？\n\n● 現在のダウンロードファイルは移動されない\n● 以降のダウンロードはアプリ内部に保存\n● アプリ削除でファイルも削除\n● 外部パス選択後、ファイル移行機能で移動可</string>
     <string name="default_path_restored">デフォルト保存先復元済</string>

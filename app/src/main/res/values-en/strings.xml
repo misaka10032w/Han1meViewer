@@ -375,7 +375,7 @@ Recommendations are as follows:\n
     <string name="directory_saved">Directory saved: %s</string>
     <string name="no_directory_selected">No directory selected, no changes made</string>
     <string name="select_download_folder">Select Your Download Folder</string>
-    <string name="select_folder_message">Use the system file picker to specify a folder:\n\n✓ Choose storage location freely\n✓ Download files saved permanently\n✓ Easy to share with other apps\n✓ Uninstalling app won\'t affect files\n\nRecommended to create new directory under Downloads or custom folder</string>
+    <string name="select_folder_message">Use the system file picker to specify a folder:\n\n✓ Choose storage location freely\n✓ Download files saved permanently\n✓ Easy to share with other apps\n✓ Uninstalling app won\'t affect files\n✗ Resume not supported\n\nRecommended to create new directory under Downloads or custom folder</string>
     <string name="restore_default_path">Restore Default Storage Path</string>
     <string name="restore_default_message">Confirm to restore to app internal storage?\n\n● Current downloaded files will not be moved\n● Subsequent downloads will save to app internal\n● Files will be cleared when app is uninstalled\n● After selecting external path, you can use file migration feature</string>
     <string name="default_path_restored">Default storage path restored</string>

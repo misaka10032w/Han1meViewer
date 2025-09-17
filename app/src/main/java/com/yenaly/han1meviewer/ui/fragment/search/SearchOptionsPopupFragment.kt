@@ -134,7 +134,6 @@ class SearchOptionsPopupFragment :
                 }
             return XPopup.Builder(requireContext()).setOptionsCheckedCallback("release_dates")
                 .borderRadius(POP_UP_BORDER_RADIUS)
-                .isDarkTheme(true)
                 .asCustom(popup) as TimePickerPopup
         }
 
