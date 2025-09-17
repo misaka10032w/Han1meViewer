@@ -380,7 +380,7 @@
     <string name="directory_saved">目录已保存:%s</string>
     <string name="no_directory_selected">未选择目录，未作变更</string>
     <string name="select_download_folder">选择您的下载文件夹</string>
-    <string name="select_folder_message">使用系统文件选择器指定一个文件夹：\n\n✓ 自主选择存储位置\n✓ 下载文件永久保存\n✓ 方便与其他应用共享\n✓ 卸载应用不影响文件\n\n建议选择Downloads下新建目录或自定义文件夹</string>
+    <string name="select_folder_message">使用系统文件选择器指定一个文件夹：\n\n✓ 自主选择存储位置\n✓ 下载文件永久保存\n✓ 方便与其他应用共享\n✓ 卸载应用不影响文件下\n✗ 不支持断点续传\n\n建议选择Downloads下新建目录或自定义文件夹</string>
     <string name="restore_default_path">恢复默认存储路径</string>
     <string name="restore_default_message">确定要恢复为应用内部存储吗？\n\n● 当前下载的文件不会被移动\n● 后续下载将保存到应用内部\n● 应用卸载后文件将被清除\n● 选择外部路径后，可以使用文件迁移功能移出</string>
     <string name="default_path_restored">已恢复默认存储路径</string>
