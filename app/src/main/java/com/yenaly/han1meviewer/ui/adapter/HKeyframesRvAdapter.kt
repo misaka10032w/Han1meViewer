@@ -268,7 +268,7 @@ class HKeyframeRvAdapter(
                                             prompt = prompt
                                         )
                                     )
-                                     showShortToast("修改成功")
+                                     showShortToast(R.string.modify_success)
                                 }
                             }
                         }
@@ -292,7 +292,7 @@ class HKeyframeRvAdapter(
 
                                 is MainActivity -> {
                                     context.viewModel.removeHKeyframe(videoCode, item)
-                                     showShortToast("刪除成功")
+                                     showShortToast(R.string.delete_success)
                                 }
                             }
                         }
