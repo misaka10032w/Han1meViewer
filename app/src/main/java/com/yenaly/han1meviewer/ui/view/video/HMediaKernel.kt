@@ -32,6 +32,7 @@ import cn.jzvd.JZMediaInterface
 import cn.jzvd.JZMediaSystem
 import cn.jzvd.Jzvd
 import com.yenaly.han1meviewer.BuildConfig
+import com.yenaly.han1meviewer.USER_AGENT
 import com.yenaly.han1meviewer.util.AnimeShaders
 import `is`.xyz.mpv.MPVLib
 import java.util.concurrent.CountDownLatch
@@ -494,20 +495,49 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
     val videoRealHeight: Int
         get() = MPVLib.getPropertyInt("video-params/h") ?: 0
 
+    private val mpvOptions = mapOf(
+        "vo" to "gpu",                // 视频输出驱动：GPU 渲染（支持 GLSL 滤镜/Anime4K/插帧）
+        "profile" to "fast",          // 预设模式：fast（性能优先，画质略低；可改为 gpu-hq 追求高画质）
+        "hwdec" to "auto",            // 硬件解码：自动选择合适的解码器（mediacodec/mediacodec-copy）
+        "msg-level" to "all=" + if (BuildConfig.DEBUG) "debug" else "warn",  // 日志等级：fatal → error → warn → info → status → verbose → debug → trace
+
+        // 插帧相关
+//        "interpolation" to "yes",     // 启用插值渲染（补帧），提升低帧率视频的流畅度
+//        "tscale" to "oversample",     // 时间插值算法：oversample（平滑效果最好，性能开销适中）
+//        "video-sync" to "display-resample",  // 将视频播放节奏重采样到显示器刷新率（避免音画不同步）
+
+        // 缓存 & 性能
+        "cache" to "yes",             // 启用解复用缓存
+        "cache-secs" to "60",         // 预缓存秒数
+        "vd-lavc-threads" to Runtime.getRuntime().availableProcessors().toString(),  // 视频解码线程数：设为 CPU 核心数，提升多核利用率
+        "framedrop" to "vo",          // GPU 繁忙时允许丢帧（保持音画同步，避免卡顿）
+        "deband" to "yes",            // 去色带（dithering），提升渐变/暗场画质
+        "cache-pause" to "no",        // 缓存时是否暂停播放
+
+        //网络
+        "network-timeout" to "10",           // 请求超时 10 秒
+        "tls-verify" to "no",               // 忽略证书验证
+        "user-agent" to USER_AGENT
+    )
+
+    private val observedProperties = listOf(
+        "time-pos" to MPVLib.mpvFormat.MPV_FORMAT_DOUBLE, // 当前播放时间（秒，带小数）
+        "duration" to MPVLib.mpvFormat.MPV_FORMAT_DOUBLE, // 视频总时长（秒）
+        "pause" to MPVLib.mpvFormat.MPV_FORMAT_FLAG,      // 是否暂停（true/false）
+        "playback-active" to MPVLib.mpvFormat.MPV_FORMAT_FLAG, // 播放是否处于活动状态
+        "video-params/w" to MPVLib.mpvFormat.MPV_FORMAT_INT64, // 视频宽度（像素）
+        "video-params/h" to MPVLib.mpvFormat.MPV_FORMAT_INT64, // 视频高度（像素）
+    )
 
     fun init() {
+        mpvOptions.forEach { (key, value) ->
+            MPVLib.setOptionString(key, value)
+        }
 
+        observedProperties.forEach { (name, type) ->
+            MPVLib.observeProperty(name, type)
+        }
         MPVLib.addObserver(mpvEventObserver)
-        MPVLib.setOptionString("vo", "gpu")
-        MPVLib.setOptionString("profile", "fast")
-        MPVLib.setOptionString("hwdec", "auto")
-        MPVLib.setOptionString("msg-level", "all=" + if (BuildConfig.DEBUG) "v" else "warn")
-        MPVLib.observeProperty("time-pos", MPVLib.mpvFormat.MPV_FORMAT_DOUBLE)
-        MPVLib.observeProperty("duration", MPVLib.mpvFormat.MPV_FORMAT_DOUBLE)
-        MPVLib.observeProperty("pause", MPVLib.mpvFormat.MPV_FORMAT_FLAG)
-        MPVLib.observeProperty("playback-active", MPVLib.mpvFormat.MPV_FORMAT_FLAG)
-        MPVLib.observeProperty("video-params/w", MPVLib.mpvFormat.MPV_FORMAT_INT64)
-        MPVLib.observeProperty("video-params/h", MPVLib.mpvFormat.MPV_FORMAT_INT64)
     }
 
     override fun prepare() {
@@ -542,7 +572,7 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
     }
 
     override fun seekTo(time: Long) {
-        MPVLib.command(arrayOf("seek", (time / 1000.0).toString(), "absolute"))
+        MPVLib.command(arrayOf("seek", (time / 1000.0).toString(), "absolute", "exact"))
     }
 
     override fun release() {
