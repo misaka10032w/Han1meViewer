@@ -86,20 +86,19 @@ class PreviewFragment : YenalyFragment<FragmentPreviewBinding>() {
     private var shouldTriggerScroll = false
 
     private val tourSimplifiedAdapter = HanimePreviewTourRvAdapter()
-    private val colorPrimary by lazy {
-        MaterialColors.getColor(
+    private val colorPrimary: Int
+        get() = MaterialColors.getColor(
             requireContext(),
             androidx.appcompat.R.attr.colorPrimary,
             Color.BLACK
         )
-    }
-    private val colorOnPrimary by lazy {
-        MaterialColors.getColor(
+
+    private val colorOnPrimary: Int
+        get() = MaterialColors.getColor(
             requireContext(),
             com.google.android.material.R.attr.colorOnPrimary,
             Color.WHITE
         )
-    }
     private val newsAdapter = HanimePreviewNewsRvAdapter()
 
     override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentPreviewBinding =
