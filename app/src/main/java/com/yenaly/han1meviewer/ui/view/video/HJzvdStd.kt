@@ -363,11 +363,7 @@ class HJzvdStd @JvmOverloads constructor(
         superResolution.setOnClickListener(this)
         btnResumeProgress.setOnClickListener {
             hasRestoredProgress = true
-            mediaInterface.pause()
             mediaInterface.seekTo(0L)
-            Handler(Looper.getMainLooper()).post {
-                startVideo()
-            }
             btnResumeProgress.visibility = GONE
         }
 
