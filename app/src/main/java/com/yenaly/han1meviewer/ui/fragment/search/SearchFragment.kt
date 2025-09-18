@@ -193,10 +193,7 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.searchFlow.collectLatest {
-                    searchAdapter.submitList(it){
-                        binding.searchRv.smoothScrollToPosition(0)
-                    }
-
+                    searchAdapter.submitList(it)
                 }
             }
         }
