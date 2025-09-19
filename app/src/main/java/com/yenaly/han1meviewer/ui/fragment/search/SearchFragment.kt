@@ -112,6 +112,43 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
                         binding.searchBar.hideHistory()
                     }
                 }
+
+                private var scrollDy  = 0
+                private var lastDy = 0
+                private var isVisible = true
+                private val hideThreshold = 200    // 向上滚动多少隐藏
+                private val showThreshold = 200    // 向下滚动多少显示
+
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    if ((dy > 0 && lastDy <= 0) || (dy < 0 && lastDy >= 0)) {
+                        scrollDy = 0
+                    }
+                    lastDy = dy
+                    scrollDy += dy
+                    // dy：向上滑动大于0，向下滑动小于0
+                    if (dy > 0) {
+                        if (isVisible && scrollDy > hideThreshold) {
+                            binding.searchBar.animate()
+                                .translationY(-binding.searchBar.height.toFloat())
+                                .alpha(0f)
+                                .setDuration(500)
+                                .start()
+                            isVisible = false
+                            scrollDy = 0
+                        }
+                    } else if (dy < 0) {
+                        if (!isVisible && scrollDy < -showThreshold) {
+                            binding.searchBar.animate()
+                                .translationY(0f)
+                                .alpha(1f)
+                                .setDuration(200)
+                                .start()
+                            isVisible = true
+                            scrollDy = 0
+                        }
+                    }
+                }
             })
         }
         binding.searchSrl.apply {
