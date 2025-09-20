@@ -437,4 +437,5 @@
     <string name="super_resolution_performance">性能优先</string>
     <string name="super_resolution_quality">质量优先</string>
     <string name="advanced_search_combination">高级搜索组合</string>
+    <string name="app_tampered">本应用已被恶意篡改！请注意信息安全！</string>
 </resources>

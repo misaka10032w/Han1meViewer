@@ -7,6 +7,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.color.MaterialColors
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.FragmentPageListBinding
 import com.yenaly.han1meviewer.ui.StateLayoutMixin
@@ -14,6 +15,7 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.adapter.WatchHistoryRvAdapter
 import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
+import com.yenaly.han1meviewer.util.checkBadGuy
 import com.yenaly.han1meviewer.util.setStateViewLayout
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.base.YenalyFragment
@@ -41,12 +43,21 @@ class WatchHistoryFragment : YenalyFragment<FragmentPageListBinding>(),
 
     override fun initData(savedInstanceState: Bundle?) {
         (activity as MainActivity).setupToolbar()
-
+        checkBadGuy(requireContext(),R.raw.akarin)
         binding.rvPageList.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = historyAdapter
         }
         binding.srlPageList.finishRefreshWithNoMoreData()
+        binding.header.apply {
+            val accentColor = MaterialColors
+                .getColor(this,androidx.appcompat.R.attr.colorPrimary)
+            val backgroundColor = MaterialColors
+                .getColor(this, com.google.android.material.R.attr.colorOnPrimary)
+
+            setColorSchemeColors(accentColor)
+            setProgressBackgroundColorSchemeColor(backgroundColor)
+        }
         historyAdapter.setStateViewLayout(R.layout.layout_empty_view)
         historyAdapter.setOnItemLongClickListener { _, _, position ->
             val data = historyAdapter.getItem(position) ?: return@setOnItemLongClickListener true

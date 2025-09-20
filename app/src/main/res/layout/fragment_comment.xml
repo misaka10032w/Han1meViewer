@@ -4,7 +4,7 @@
 
     <data />
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -15,6 +15,7 @@
             app:srlEnableLoadMore="false">
 
             <com.scwang.smart.refresh.header.MaterialHeader
+                android:id="@+id/header"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
@@ -59,6 +60,6 @@
             android:src="@drawable/ic_baseline_reply_24"
             app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior" />
 
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </FrameLayout>
 
 </layout>
