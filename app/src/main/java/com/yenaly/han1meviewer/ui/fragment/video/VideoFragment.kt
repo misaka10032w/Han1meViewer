@@ -31,6 +31,7 @@ import androidx.preference.PreferenceManager
 import cn.jzvd.JZMediaInterface
 import cn.jzvd.Jzvd
 import coil.load
+import com.google.android.material.appbar.AppBarLayout
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
@@ -128,6 +129,35 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
                 }
             }
         })
+        binding.videoPlayer.onVideoStateChanged = { state ->
+            when (state) {
+                Jzvd.STATE_PLAYING, Jzvd.STATE_PREPARING -> {
+                    disableAppBarScroll()
+                }
+                Jzvd.STATE_PAUSE, Jzvd.STATE_AUTO_COMPLETE ->{
+                    enableAppBarScroll()
+                }
+            }
+
+        }
+    }
+    private fun disableAppBarScroll() {
+        binding.appbar.post {
+            val params = binding.collapsingToolbar.layoutParams as AppBarLayout.LayoutParams
+            params.scrollFlags = 0
+            binding.collapsingToolbar.layoutParams = params
+            binding.appbar.setExpanded(true, true)
+        }
+    }
+
+    private fun enableAppBarScroll() {
+        binding.appbar.post {
+            val params = binding.collapsingToolbar.layoutParams as AppBarLayout.LayoutParams
+            params.scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED or
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP
+            binding.collapsingToolbar.layoutParams = params
+        }
     }
 
     @OptIn(ExperimentalTime::class)

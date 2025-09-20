@@ -259,6 +259,7 @@ class HJzvdStd @JvmOverloads constructor(
 
     private val hKeyframeAdapter: HKeyframeRvAdapter by unsafeLazy { initHKeyframeAdapter() }
     private val switchPlayerKernel = Preferences.switchPlayerKernel
+    var onVideoStateChanged: ((state: Int) -> Unit)? = null
 
     /**
      * 初始化關鍵H幀的 Adapter，最好不用 lazy
@@ -1004,6 +1005,7 @@ class HJzvdStd @JvmOverloads constructor(
 
     override fun onStatePlaying() {
         Log.i(TAG, "onStatePlaying " + " [" + this.hashCode() + "] ")
+        onVideoStateChanged?.invoke(STATE_PLAYING)
         if (isNeedResumeProgress()) {
             post {
                 btnResumeProgress.visibility = VISIBLE
@@ -1045,6 +1047,19 @@ class HJzvdStd @JvmOverloads constructor(
         state = STATE_PLAYING
         startProgressTimer()
         changeUiToPlayingClearSafe()
+    }
+    override fun onStatePause() {
+        super.onStatePause()
+        onVideoStateChanged?.invoke(STATE_PAUSE)
+    }
+    override fun onStateAutoComplete() {
+        super.onStateAutoComplete()
+        onVideoStateChanged?.invoke(STATE_AUTO_COMPLETE)
+    }
+
+    override fun onStatePreparing() {
+        super.onStatePreparing()
+        onVideoStateChanged?.invoke(STATE_PREPARING)
     }
 
     // #issue-14: 之前用 XPopup 三键模式下会有 bug，无法呼出，所以换成这个
