@@ -709,6 +709,7 @@ class HJzvdStd @JvmOverloads constructor(
             val totalTimeDuration = duration
             mSeekTimePosition =
                 (mGestureDownPosition + deltaX * totalTimeDuration / (mScreenWidth * userDefSlideSensitivity)).toLong()
+            if (mSeekTimePosition < 0) mSeekTimePosition = 0
             if (mSeekTimePosition > totalTimeDuration) mSeekTimePosition = totalTimeDuration
             val seekTime = JZUtils.stringForTime(mSeekTimePosition)
             val totalTime = JZUtils.stringForTime(totalTimeDuration)
