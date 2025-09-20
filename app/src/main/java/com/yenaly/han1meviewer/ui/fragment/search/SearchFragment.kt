@@ -18,6 +18,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.color.MaterialColors
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
 import com.yenaly.han1meviewer.AdvancedSearchMap
 import com.yenaly.han1meviewer.HAdvancedSearch
@@ -158,6 +159,15 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
             }
             setOnRefreshListener { getNewHanimeSearchResult() }
             setDisableContentWhenRefresh(true)
+        }
+        binding.searchHeader.apply {
+            val accentColor = MaterialColors
+                .getColor(this,androidx.appcompat.R.attr.colorPrimary)
+            val backgroundColor = MaterialColors
+                .getColor(this, com.google.android.material.R.attr.colorOnPrimary)
+
+            setColorSchemeColors(accentColor)
+            setProgressBackgroundColorSchemeColor(backgroundColor)
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.searchBar) { v, insets ->

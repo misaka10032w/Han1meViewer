@@ -50,6 +50,7 @@ import coil.ImageLoader
 import coil.load
 import coil.request.ImageRequest
 import coil.request.SuccessResult
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.imageview.ShapeableImageView
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
@@ -99,7 +100,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
     }
 
     val viewModel by activityViewModels<MainViewModel>()
-    val checkInviewModel by activityViewModels<CheckInCalendarViewModel>()
+    val checkInViewModel by activityViewModels<CheckInCalendarViewModel>()
     private val latestHanimeAdapter = HanimeVideoRvAdapter()
     private val latestReleaseAdapter = HanimeVideoRvAdapter()
     private val latestUploadAdapter = HanimeVideoRvAdapter()
@@ -455,6 +456,15 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
             }
             setEnableLoadMore(false)
         }
+        binding.header.apply {
+            val accentColor = MaterialColors
+                .getColor(this,androidx.appcompat.R.attr.colorPrimary)
+            val backgroundColor = MaterialColors
+                .getColor(this, com.google.android.material.R.attr.colorOnPrimary)
+
+            setColorSchemeColors(accentColor)
+            setProgressBackgroundColorSchemeColor(backgroundColor)
+        }
         onBackPressedCallback = object : OnBackPressedCallback(false) { // 初始禁用
             override fun handleOnBackPressed() {
                 showExitConfirmationDialog()
@@ -682,7 +692,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                 dialog.dismiss()
             }
             .setNeutralButton(getString(R.string.checkout_exit)) { dialog, _ ->
-                checkInviewModel.incrementCheckIn(java.time.LocalDate.now())
+                checkInViewModel.incrementCheckIn(java.time.LocalDate.now())
                 requireActivity().finish()
             }
             .setPositiveButton(getString(R.string.exit)) { _, _ ->

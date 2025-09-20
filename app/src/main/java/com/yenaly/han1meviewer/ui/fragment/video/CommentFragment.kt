@@ -19,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.lxj.xpopup.XPopup
@@ -177,6 +178,15 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
         }
         binding.srlComment.setOnRefreshListener {
             viewModel.getComment(commentTypePrefix, viewModel.code)
+        }
+        binding.header.apply {
+            val accentColor = MaterialColors
+                .getColor(this,androidx.appcompat.R.attr.colorPrimary)
+            val backgroundColor = MaterialColors
+                .getColor(this, com.google.android.material.R.attr.colorOnPrimary)
+
+            setColorSchemeColors(accentColor)
+            setProgressBackgroundColorSchemeColor(backgroundColor)
         }
         binding.btnComment.isVisible = isAlreadyLogin
         replyPopup.setOnSendListener {
