@@ -432,4 +432,5 @@ Recommendations are as follows:\n
     <string name="super_resolution_performance">Performance First</string>
     <string name="super_resolution_quality">Quality First</string>
     <string name="advanced_search_combination">Advanced Search Combination</string>
+    <string name="app_tampered">This app has been maliciously tampered with! Please pay attention to information security!</string>
 </resources>

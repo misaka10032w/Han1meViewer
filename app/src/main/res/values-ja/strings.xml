@@ -437,4 +437,5 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="super_resolution_performance">パフォーマンス優先</string>
     <string name="super_resolution_quality">品質優先</string>
     <string name="advanced_search_combination">高度な検索組み合わせ</string>
+    <string name="app_tampered">本アプリは悪意を持って改ざんされました！情報セキュリティにご注意ください！</string>
 </resources>

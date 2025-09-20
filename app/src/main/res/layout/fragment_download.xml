@@ -46,7 +46,7 @@
             android:layout_margin="16dp"
             android:contentDescription="@string/manual_import_cookies"
             app:srcCompat="@drawable/ic_baseline_scan_24"
-            app:tint="@android:color/white" />
+            app:layout_behavior="@string/hide_bottom_view_on_scroll_behavior"/>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 

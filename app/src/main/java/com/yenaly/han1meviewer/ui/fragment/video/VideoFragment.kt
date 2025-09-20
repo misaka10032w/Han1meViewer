@@ -31,6 +31,7 @@ import androidx.preference.PreferenceManager
 import cn.jzvd.JZMediaInterface
 import cn.jzvd.Jzvd
 import coil.load
+import com.google.android.material.appbar.AppBarLayout
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
@@ -55,6 +56,7 @@ import com.yenaly.han1meviewer.ui.view.video.HMediaKernel
 import com.yenaly.han1meviewer.ui.view.video.HanimeDataSource
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
+import com.yenaly.han1meviewer.util.checkBadGuy
 import com.yenaly.han1meviewer.util.getOrCreateBadgeOnTextViewAt
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.base.YenalyFragment
@@ -82,7 +84,9 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
     private var videoTitle: String? = null
     private lateinit var orientationManager: OrientationManager
     private var saveJob: Job? = null
-    private val tabNameArray = intArrayOf(R.string.introduction, R.string.comment)
+    private val tabNameArray by lazy {
+        checkBadGuy(requireContext(),R.raw.akarin)
+    }
     companion object {
         fun newInstance(videoCode: String): VideoFragment {
             return VideoFragment().apply {
@@ -100,7 +104,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         viewModel.videoCode = videoCode
         commentViewModel.code = videoCode
         binding.videoPlayer.videoCode = videoCode
-
+        checkBadGuy(requireContext(),R.raw.akarin)
         ViewCompat.setOnApplyWindowInsetsListener(binding.videoPlayer) { v, insets ->
             val navBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
             v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
@@ -128,6 +132,35 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
                 }
             }
         })
+        binding.videoPlayer.onVideoStateChanged = { state ->
+            when (state) {
+                Jzvd.STATE_PLAYING, Jzvd.STATE_PREPARING -> {
+                    disableAppBarScroll()
+                }
+                Jzvd.STATE_PAUSE, Jzvd.STATE_AUTO_COMPLETE ->{
+                    enableAppBarScroll()
+                }
+            }
+
+        }
+    }
+    private fun disableAppBarScroll() {
+        binding.appbar.post {
+            val params = binding.collapsingToolbar.layoutParams as AppBarLayout.LayoutParams
+            params.scrollFlags = 0
+            binding.collapsingToolbar.layoutParams = params
+            binding.appbar.setExpanded(true, true)
+        }
+    }
+
+    private fun enableAppBarScroll() {
+        binding.appbar.post {
+            val params = binding.collapsingToolbar.layoutParams as AppBarLayout.LayoutParams
+            params.scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED or
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP
+            binding.collapsingToolbar.layoutParams = params
+        }
     }
 
     @OptIn(ExperimentalTime::class)

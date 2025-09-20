@@ -23,6 +23,7 @@ import com.yenaly.han1meviewer.logic.dao.download.HanimeDownloadDao
 import com.yenaly.han1meviewer.ui.fragment.home.download.DownloadedFragment
 import com.yenaly.han1meviewer.ui.fragment.home.download.DownloadingFragment
 import com.yenaly.han1meviewer.util.SafFileManager.scanAndImportHanimeDownloads
+import com.yenaly.han1meviewer.util.checkBadGuy
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.base.YenalyFragment
 import com.yenaly.yenaly_libs.utils.showLongToast
@@ -65,7 +66,7 @@ class DownloadFragment : YenalyFragment<FragmentDownloadBinding>(){
 
     override fun initData(savedInstanceState: Bundle?) {
         val activity = requireActivity() as AppCompatActivity
-
+        checkBadGuy(requireContext(),R.raw.akarin)
         activity.setSupportActionBar(binding.toolbar)
         activity.supportActionBar?.let {
             it.title = hbSpannedTitle

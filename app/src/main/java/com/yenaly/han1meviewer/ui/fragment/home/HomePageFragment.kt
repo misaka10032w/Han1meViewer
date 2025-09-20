@@ -50,6 +50,7 @@ import coil.ImageLoader
 import coil.load
 import coil.request.ImageRequest
 import coil.request.SuccessResult
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.imageview.ShapeableImageView
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
@@ -71,6 +72,7 @@ import com.yenaly.han1meviewer.ui.fragment.funny.FunnyTouchListener
 import com.yenaly.han1meviewer.ui.viewmodel.CheckInCalendarViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
 import com.yenaly.han1meviewer.util.addUpdateListener
+import com.yenaly.han1meviewer.util.checkBadGuy
 import com.yenaly.han1meviewer.util.colorTransition
 import com.yenaly.yenaly_libs.base.YenalyFragment
 import com.yenaly.yenaly_libs.utils.application
@@ -99,7 +101,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
     }
 
     val viewModel by activityViewModels<MainViewModel>()
-    val checkInviewModel by activityViewModels<CheckInCalendarViewModel>()
+    val checkInViewModel by activityViewModels<CheckInCalendarViewModel>()
     private val latestHanimeAdapter = HanimeVideoRvAdapter()
     private val latestReleaseAdapter = HanimeVideoRvAdapter()
     private val latestUploadAdapter = HanimeVideoRvAdapter()
@@ -432,7 +434,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
     override fun initData(savedInstanceState: Bundle?) {
         (activity as MainActivity).setupToolbar()
         binding.state.init()
-
+        checkBadGuy(requireContext(),R.raw.akarin)
         view?.setOnTouchListener(someFunnyTouchListener)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             easterEgg()
@@ -454,6 +456,15 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                 viewModel.loadAnnouncements(true)
             }
             setEnableLoadMore(false)
+        }
+        binding.header.apply {
+            val accentColor = MaterialColors
+                .getColor(this,androidx.appcompat.R.attr.colorPrimary)
+            val backgroundColor = MaterialColors
+                .getColor(this, com.google.android.material.R.attr.colorOnPrimary)
+
+            setColorSchemeColors(accentColor)
+            setProgressBackgroundColorSchemeColor(backgroundColor)
         }
         onBackPressedCallback = object : OnBackPressedCallback(false) { // 初始禁用
             override fun handleOnBackPressed() {
@@ -682,7 +693,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                 dialog.dismiss()
             }
             .setNeutralButton(getString(R.string.checkout_exit)) { dialog, _ ->
-                checkInviewModel.incrementCheckIn(java.time.LocalDate.now())
+                checkInViewModel.incrementCheckIn(java.time.LocalDate.now())
                 requireActivity().finish()
             }
             .setPositiveButton(getString(R.string.exit)) { _, _ ->

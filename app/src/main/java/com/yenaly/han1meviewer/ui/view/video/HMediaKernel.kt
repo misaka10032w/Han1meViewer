@@ -572,6 +572,7 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
     }
 
     override fun seekTo(time: Long) {
+        Log.i("seekTo","${ (time / 1000.0)}")
         MPVLib.command(arrayOf("seek", (time / 1000.0).toString(), "absolute", "exact"))
     }
 
