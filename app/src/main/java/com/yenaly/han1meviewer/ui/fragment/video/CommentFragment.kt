@@ -39,6 +39,7 @@ import com.yenaly.han1meviewer.ui.adapter.VideoCommentRvAdapter
 import com.yenaly.han1meviewer.ui.popup.ReplyPopup
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
+import com.yenaly.han1meviewer.util.checkBadGuy
 import com.yenaly.han1meviewer.util.parseTimeStrToMinutes
 import com.yenaly.han1meviewer.util.safeSortedBy
 import com.yenaly.yenaly_libs.base.YenalyFragment
@@ -136,7 +137,7 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
                 findViewById<TextView>(R.id.tv_empty).setText(R.string.comment_not_found)
             }
         }
-
+        checkBadGuy(requireContext(),R.raw.akarin)
         binding.rvComment.layoutManager = LinearLayoutManager(context)
         binding.rvComment.adapter = commentAdapter
         binding.rvComment.clipToPadding = false
@@ -147,6 +148,7 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
             if (comments.isNotEmpty()) {
                 isPreviewCommentPrefetched = true
                 binding.btnSort.isVisible = comments.size >= 3
+                binding.btnSort.text = getString(R.string.sort_by_newest)
                 binding.btnSort.setOnClickListener { sortPopup.show() }
                 sortPopup.setOnMenuItemClickListener { item ->
                     val sortedList = when (item.itemId) {
@@ -272,6 +274,7 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
                 viewModel.videoCommentFlow.collectLatest { list ->
                     if (!isPreviewCommentPrefetched) {
                         binding.btnSort.isVisible = list.size >= 3
+                        binding.btnSort.text = getString(R.string.sort_by_newest)
                         binding.btnSort.setOnClickListener { sortPopup.show() }
                         sortPopup.setOnMenuItemClickListener { item ->
                             val sortedList = when (item.itemId) {

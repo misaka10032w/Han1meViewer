@@ -15,6 +15,7 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.adapter.WatchHistoryRvAdapter
 import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
+import com.yenaly.han1meviewer.util.checkBadGuy
 import com.yenaly.han1meviewer.util.setStateViewLayout
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.base.YenalyFragment
@@ -42,7 +43,7 @@ class WatchHistoryFragment : YenalyFragment<FragmentPageListBinding>(),
 
     override fun initData(savedInstanceState: Bundle?) {
         (activity as MainActivity).setupToolbar()
-
+        checkBadGuy(requireContext(),R.raw.akarin)
         binding.rvPageList.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = historyAdapter

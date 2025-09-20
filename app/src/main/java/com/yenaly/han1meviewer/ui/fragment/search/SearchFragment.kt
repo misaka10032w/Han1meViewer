@@ -22,6 +22,7 @@ import com.google.android.material.color.MaterialColors
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
 import com.yenaly.han1meviewer.AdvancedSearchMap
 import com.yenaly.han1meviewer.HAdvancedSearch
+import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VideoCoverSize
 import com.yenaly.han1meviewer.databinding.FragmentSearchBinding
 import com.yenaly.han1meviewer.logic.entity.SearchHistoryEntity
@@ -34,6 +35,8 @@ import com.yenaly.han1meviewer.ui.adapter.FixedGridLayoutManager
 import com.yenaly.han1meviewer.ui.adapter.HanimeSearchHistoryRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.HanimeVideoRvAdapter
 import com.yenaly.han1meviewer.ui.viewmodel.SearchViewModel
+import com.yenaly.han1meviewer.util.getSha
+import com.yenaly.han1meviewer.util.isLegalBuild
 import com.yenaly.yenaly_libs.base.YenalyFragment
 import com.yenaly.yenaly_libs.utils.dp
 import com.yenaly.yenaly_libs.utils.unsafeLazy
@@ -332,6 +335,10 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
     }
 
     fun setSearchText(text: String?, canTextChange: Boolean = true) {
+        if (!isLegalBuild(requireContext(), getSha(requireContext(),R.raw.akarin))){
+            binding.searchBar.searchText = requireContext().getString(R.string.app_tampered)
+            return
+        }
         viewModel.query = text
         binding.searchBar.searchText = text
         binding.searchBar.canTextChange = canTextChange

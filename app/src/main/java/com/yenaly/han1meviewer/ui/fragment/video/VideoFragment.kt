@@ -56,7 +56,9 @@ import com.yenaly.han1meviewer.ui.view.video.HMediaKernel
 import com.yenaly.han1meviewer.ui.view.video.HanimeDataSource
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
+import com.yenaly.han1meviewer.util.checkBadGuy
 import com.yenaly.han1meviewer.util.getOrCreateBadgeOnTextViewAt
+import com.yenaly.han1meviewer.util.getSha
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.base.YenalyFragment
 import com.yenaly.yenaly_libs.utils.OrientationManager
@@ -83,7 +85,9 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
     private var videoTitle: String? = null
     private lateinit var orientationManager: OrientationManager
     private var saveJob: Job? = null
-    private val tabNameArray = intArrayOf(R.string.introduction, R.string.comment)
+    private val tabNameArray by lazy {
+        checkBadGuy(requireContext(),R.raw.akarin)
+    }
     companion object {
         fun newInstance(videoCode: String): VideoFragment {
             return VideoFragment().apply {
@@ -101,7 +105,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         viewModel.videoCode = videoCode
         commentViewModel.code = videoCode
         binding.videoPlayer.videoCode = videoCode
-
+        checkBadGuy(requireContext(),R.raw.akarin)
         ViewCompat.setOnApplyWindowInsetsListener(binding.videoPlayer) { v, insets ->
             val navBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
             v.updateLayoutParams<ViewGroup.MarginLayoutParams> {

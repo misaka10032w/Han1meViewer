@@ -72,6 +72,7 @@ import com.yenaly.han1meviewer.ui.fragment.funny.FunnyTouchListener
 import com.yenaly.han1meviewer.ui.viewmodel.CheckInCalendarViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
 import com.yenaly.han1meviewer.util.addUpdateListener
+import com.yenaly.han1meviewer.util.checkBadGuy
 import com.yenaly.han1meviewer.util.colorTransition
 import com.yenaly.yenaly_libs.base.YenalyFragment
 import com.yenaly.yenaly_libs.utils.application
@@ -433,7 +434,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
     override fun initData(savedInstanceState: Bundle?) {
         (activity as MainActivity).setupToolbar()
         binding.state.init()
-
+        checkBadGuy(requireContext(),R.raw.akarin)
         view?.setOnTouchListener(someFunnyTouchListener)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             easterEgg()
