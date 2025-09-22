@@ -4,9 +4,11 @@ import android.content.pm.ActivityInfo
 import android.graphics.SurfaceTexture
 import android.media.MediaPlayer
 import android.media.PlaybackParams
+import android.net.Uri
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
+import android.os.ParcelFileDescriptor
 import android.util.Log
 import android.view.Surface
 import androidx.annotation.OptIn
@@ -39,6 +41,14 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.absoluteValue
+import androidx.core.net.toUri
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
 
 /**
  * @project Han1meViewer
@@ -494,12 +504,15 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
 
     val videoRealHeight: Int
         get() = MPVLib.getPropertyInt("video-params/h") ?: 0
-
+    private var currentPfd: ParcelFileDescriptor? = null
+    private var pfdFilePath = false
+    private  val MAX_PATH_LENGTH = 200
+    private var tempFile: File? = null
     private val mpvOptions = mapOf(
         "vo" to "gpu",                // 视频输出驱动：GPU 渲染（支持 GLSL 滤镜/Anime4K/插帧）
         "profile" to "fast",          // 预设模式：fast（性能优先，画质略低；可改为 gpu-hq 追求高画质）
         "hwdec" to "auto",            // 硬件解码：自动选择合适的解码器（mediacodec/mediacodec-copy）
-        "msg-level" to "all=" + if (BuildConfig.DEBUG) "debug" else "warn",  // 日志等级：fatal → error → warn → info → status → verbose → debug → trace
+        "msg-level" to "all=" + if (BuildConfig.DEBUG) "verbose" else "warn",  // 日志等级：fatal → error → warn → info → status → verbose → debug → trace
 
         // 插帧相关
 //        "interpolation" to "yes",     // 启用插值渲染（补帧），提升低帧率视频的流畅度
@@ -539,6 +552,100 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
         }
         MPVLib.addObserver(mpvEventObserver)
     }
+    private fun createTempFileAsync(
+        inputStream: InputStream,
+        callback: (File?) -> Unit
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val startTime = System.currentTimeMillis()
+                tempFile = File.createTempFile("media_", ".tmp", jzvd.context.cacheDir)
+
+                FileOutputStream(tempFile).use { output ->
+                    inputStream.copyTo(output, bufferSize = 8 * 1024)
+                }
+
+                val endTime = System.currentTimeMillis()
+                Log.i(TAG, "创建临时文件事件: ${endTime - startTime}")
+
+                withContext(Dispatchers.Main) {
+                    callback(tempFile)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "创建临时文件失败", e)
+                withContext(Dispatchers.Main) {
+                    callback(null)
+                }
+            } finally {
+                inputStream.close()
+            }
+        }
+    }
+
+    private fun cleanupTempFile() {
+        try {
+            Log.i(TAG, "删除临时文件成功${tempFile?.path}")
+            tempFile?.delete()
+            tempFile = null
+        } catch (e: Exception) {
+            Log.e(TAG, "删除临时文件失败", e)
+        }
+    }
+
+    fun prepareUri(uriStr: String, callback: (String?) -> Unit) {
+        when {
+            uriStr.startsWith("http://") || uriStr.startsWith("https://") -> {
+                callback(uriStr)
+            }
+            uriStr.startsWith("file://") -> {
+                val path = uriStr.removePrefix("file://")
+                if (path.length >= MAX_PATH_LENGTH) {
+                    Log.i(TAG, "超长文件名:${path.length}")
+                    cleanupTempFile()
+                    try {
+                        val uri = uriStr.toUri()
+                        val inputStream = jzvd.context.contentResolver.openInputStream(uri)
+                        createTempFileAsync(inputStream!!) { temp ->
+                            callback(temp?.absolutePath)
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "处理超长文件路径失败: $path", e)
+                        callback(null)
+                    }
+                } else {
+                    Log.i(TAG, "常规文件名:${path.length}")
+                    callback(Uri.decode(path))
+                }
+            }
+            uriStr.startsWith("content://") -> {
+                val uri = uriStr.toUri()
+                try {
+                    pfdFilePath = true
+                    currentPfd = jzvd.context.contentResolver.openFileDescriptor(uri, "r")
+                    callback(currentPfd?.fd?.let { "fd://${it}" })
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    callback(null)
+                }
+            }
+            else -> {
+                callback(uriStr)
+            }
+        }
+    }
+
+    fun releaseCurrentPfd() {
+        if (pfdFilePath){
+            try {
+                currentPfd?.close()
+                Log.i(TAG, "PFD 已关闭: $currentPfd")
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                currentPfd = null
+            }
+        }
+    }
 
     override fun prepare() {
         init()
@@ -552,7 +659,14 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
 
         Log.e(TAG, "URL Link = $url")
         MPVLib.setOptionString("force-window", "yes")
-        MPVLib.command(arrayOf("loadfile", url))
+
+        prepareUri(url){ path ->
+            if (path != null) {
+                MPVLib.command(arrayOf("loadfile", path))
+            } else {
+                Log.e(TAG, "prepareUri 返回 null，无法播放")
+            }
+        }
 
         val surfaceTexture = jzvd.textureView?.surfaceTexture
         surfaceTexture?.let { MPVLib.attachSurface(Surface(it)) }
@@ -584,6 +698,8 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
         MPVLib.setOptionString("force-window", "no")
         MPVLib.detachSurface()
         MPVLib.removeObserver(mpvEventObserver)
+        releaseCurrentPfd()
+        cleanupTempFile()
         SAVED_SURFACE = null
     }
 
@@ -684,6 +800,7 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
                     }
                     MPVLib.mpvEventId.MPV_EVENT_END_FILE -> {
                         // 播放结束
+                        releaseCurrentPfd()
                         jzvd.onCompletion()
                     }
                     MPVLib.mpvEventId.MPV_EVENT_SHUTDOWN -> {
