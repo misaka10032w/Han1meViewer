@@ -172,16 +172,30 @@ class CommentViewModel(application: Application) : YenalyViewModel(application) 
                 if (argState is WebsiteState.Success) {
                     when (commentPlace) {
                         CommentPlace.COMMENT -> _videoCommentFlow.update { prevList ->
-                            prevList.toMutableList().apply {
-                                this[commentPosition] =
-                                    this[commentPosition].handleCommentLike(argState.info)
+                            prevList.map { item ->
+                                if (item.reportableId == comment.reportableId){
+                                    item.handleCommentLike(argState.info)
+                                } else {
+                                    item
+                                }
                             }
+//                            prevList .toMutableList().apply {
+//                                this[commentPosition] =
+//                                    this[commentPosition].handleCommentLike(argState.info)
+//                            }
                         }
 
                         CommentPlace.CHILD_COMMENT -> _videoReplyFlow.update { prevList ->
-                            prevList.toMutableList().apply {
-                                this[commentPosition] =
-                                    this[commentPosition].handleCommentLike(argState.info)
+                            prevList.map { item ->
+                                if (item.reportableId == comment.reportableId){
+                                    item.handleCommentLike(argState.info)
+                                } else {
+                                    item
+                                }
+//                            prevList.toMutableList().apply {
+//                                this[commentPosition] =
+//                                    this[commentPosition].handleCommentLike(argState.info)
+//                            }                            prevList.map { item ->
                             }
                         }
                     }
