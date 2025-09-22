@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.Lifecycle
@@ -45,6 +46,7 @@ import com.yenaly.han1meviewer.pienization
 import com.yenaly.han1meviewer.ui.adapter.HanimePreviewNewsRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.HanimePreviewTourRvAdapter
 import com.yenaly.han1meviewer.ui.view.CenterLinearLayoutManager
+import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
 import com.yenaly.han1meviewer.ui.viewmodel.PreviewViewModel
 import com.yenaly.han1meviewer.util.addUpdateListener
@@ -79,6 +81,7 @@ class PreviewFragment : YenalyFragment<FragmentPreviewBinding>() {
     }
 
     val viewModel by viewModels<PreviewViewModel>()
+    private val commentViewModel: CommentViewModel by activityViewModels()
 
     private val dateUtils = DateUtils()
     private val badgeDrawable by unsafeLazy { BadgeDrawable.create(requireContext()) }
@@ -163,7 +166,7 @@ class PreviewFragment : YenalyFragment<FragmentPreviewBinding>() {
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            PreviewCommentPrefetcher.Companion.here().commentFlow.collectLatest { comments ->
+            PreviewCommentPrefetcher.Companion.here(commentViewModel).commentFlow.collectLatest { comments ->
                 badgeDrawable.apply {
                     isVisible = true
                     number = comments.size
@@ -209,7 +212,7 @@ class PreviewFragment : YenalyFragment<FragmentPreviewBinding>() {
             it.setHomeActionContentDescription(R.string.back)
         }
 
-        PreviewCommentPrefetcher.Companion.here().tag(PreviewCommentPrefetcher.Scope.PREVIEW_ACTIVITY)
+        PreviewCommentPrefetcher.Companion.here(commentViewModel).tag(PreviewCommentPrefetcher.Scope.PREVIEW_ACTIVITY)
 
         dateUtils.current.format(DateUtils.FORMATTED_FORMAT).let { format ->
             viewModel.getHanimePreview(format)
@@ -322,8 +325,13 @@ class PreviewFragment : YenalyFragment<FragmentPreviewBinding>() {
         PreviewCommentPrefetcher.Companion.bye(PreviewCommentPrefetcher.Scope.PREVIEW_ACTIVITY)
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        commentViewModel.clearCommentData()
+    }
+
     private fun loadComments(currentFormat: String) {
-        PreviewCommentPrefetcher.Companion.here()
+        PreviewCommentPrefetcher.Companion.here(commentViewModel)
             .fetch(PREVIEW_COMMENT_PREFIX, currentFormat)
     }
 

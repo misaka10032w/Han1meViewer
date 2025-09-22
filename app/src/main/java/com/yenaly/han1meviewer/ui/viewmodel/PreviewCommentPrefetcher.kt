@@ -3,12 +3,14 @@ package com.yenaly.han1meviewer.ui.viewmodel
 import android.util.Log
 import androidx.annotation.IntDef
 import com.yenaly.han1meviewer.logic.model.VideoComments
-import com.yenaly.yenaly_libs.utils.application
 
 /**
- * 连通 [PreviewActivity] 和 [PreviewCommentActivity] 的预取器
+ * 连通 [com.yenaly.han1meviewer.ui.fragment.home.preview.PreviewFragment] 和
+ * [com.yenaly.han1meviewer.ui.fragment.home.preview.PreviewCommentFragment] 的预取器
  */
-class PreviewCommentPrefetcher {
+class PreviewCommentPrefetcher private constructor(
+    private val commentViewModel: CommentViewModel
+) {
 
     @IntDef(flag = true, value = [Scope.PREVIEW_ACTIVITY, Scope.PREVIEW_COMMENT_ACTIVITY])
     annotation class Scope {
@@ -23,8 +25,8 @@ class PreviewCommentPrefetcher {
 
         private var prefetcher: PreviewCommentPrefetcher? = null
 
-        fun here(): PreviewCommentPrefetcher {
-            return prefetcher ?: PreviewCommentPrefetcher().also { prefetcher = it }
+        fun here(viewModel: CommentViewModel): PreviewCommentPrefetcher {
+            return prefetcher ?: PreviewCommentPrefetcher(viewModel).also { prefetcher = it }
         }
 
         fun bye(@Scope scope: Int) {
@@ -52,8 +54,6 @@ class PreviewCommentPrefetcher {
     }
 
     private var activityMask = 0
-
-    private val commentViewModel = CommentViewModel(application)
 
     val commentFlow get() = commentViewModel.videoCommentFlow
 

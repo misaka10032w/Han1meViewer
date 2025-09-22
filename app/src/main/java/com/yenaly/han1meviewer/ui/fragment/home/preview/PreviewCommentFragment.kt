@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import com.yenaly.han1meviewer.COMMENT_TYPE
 import com.yenaly.han1meviewer.DATE_CODE
 import com.yenaly.han1meviewer.PREVIEW_COMMENT_PREFIX
@@ -18,7 +18,7 @@ import com.yenaly.yenaly_libs.utils.makeBundle
 
 class PreviewCommentFragment : YenalyFragment<FragmentPreviewCommentBinding>() {
 
-    val viewModel by viewModels<CommentViewModel>()
+    private val viewModel: CommentViewModel by activityViewModels()
 
     private val date: String by lazy { requireArguments().getString("date")!! }
     private val dateCode: String by lazy { requireArguments().getString(DATE_CODE)!! }
@@ -49,7 +49,7 @@ class PreviewCommentFragment : YenalyFragment<FragmentPreviewCommentBinding>() {
 
         viewModel.code = dateCode
 
-        PreviewCommentPrefetcher.here()
+        PreviewCommentPrefetcher.here(viewModel)
             .tag(PreviewCommentPrefetcher.Scope.PREVIEW_COMMENT_ACTIVITY)
 
         val commentFragment =
