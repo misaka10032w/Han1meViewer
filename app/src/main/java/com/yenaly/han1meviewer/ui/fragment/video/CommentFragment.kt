@@ -33,6 +33,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VIDEO_COMMENT_PREFIX
 import com.yenaly.han1meviewer.databinding.FragmentCommentBinding
 import com.yenaly.han1meviewer.logic.model.ReportReason
+import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.StateLayoutMixin
 import com.yenaly.han1meviewer.ui.adapter.VideoCommentRvAdapter
@@ -55,18 +56,22 @@ import kotlinx.coroutines.launch
  * @time 2022/06/18 018 21:09
  */
 class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMixin {
+    private var commentType: String? = null
 
     val viewModel: CommentViewModel by lazy {
         val parent = parentFragment
-        if (parent != null) {
-            ViewModelProvider(parent)[CommentViewModel::class.java]
-        } else {
+        if (parent == null || commentType == PREVIEW_COMMENT_PREFIX) {
             ViewModelProvider(requireActivity())[CommentViewModel::class.java]
+        } else {
+            ViewModelProvider(parent)[CommentViewModel::class.java]
         }
     }
     private var reportReason:List<ReportReason>? = null
     private val commentTypePrefix by arguments(COMMENT_TYPE, VIDEO_COMMENT_PREFIX)
     private lateinit var sortPopup: PopupMenu
+    enum class SortType {
+        LATEST, EARLIEST, MOST_REPLY, MOST_LIKES, MOST_DISLIKES
+    }
     private val commentAdapter by unsafeLazy {
         VideoCommentRvAdapter(this){ item ->
             if (reportReason == null) {
@@ -117,7 +122,7 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
      * 是否已经预加载了预览评论
      */
     private var isPreviewCommentPrefetched = false
-    private var commentType: String? = null
+
     override fun getViewBinding(
         inflater: LayoutInflater,
         container: ViewGroup?
@@ -144,33 +149,29 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
         sortPopup = PopupMenu(requireContext(), binding.btnSort)
         sortPopup.menuInflater.inflate(R.menu.menu_comment_sort, sortPopup.menu)
         if (commentType == PREVIEW_COMMENT_PREFIX) {
-            val comments = PreviewCommentPrefetcher.here().commentFlow.value
+            val comments = PreviewCommentPrefetcher.here(viewModel).commentFlow.value
             if (comments.isNotEmpty()) {
                 isPreviewCommentPrefetched = true
                 binding.btnSort.isVisible = comments.size >= 3
-                binding.btnSort.text = getString(R.string.sort_by_newest)
+                binding.btnSort.text = getSortText(viewModel.currentSortType)
                 binding.btnSort.setOnClickListener { sortPopup.show() }
                 sortPopup.setOnMenuItemClickListener { item ->
-                    val sortedList = when (item.itemId) {
-                        R.id.sort_latest -> comments.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = false)
-                        R.id.sort_earliest -> comments.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = true)
-                        R.id.sort_most_reply -> comments.safeSortedBy({ it.replyCount ?: 0 }, descending = true)
-                        R.id.sort_most_likes -> comments.safeSortedBy({ it.realLikesCount ?: 0 }, descending = true)
-                        R.id.sort_most_dislikes -> comments.safeSortedBy({ it.realLikesCount ?: 0 }, descending = false)
-                        else -> comments
+                    val sortType = when (item.itemId) {
+                        R.id.sort_latest -> SortType.LATEST
+                        R.id.sort_earliest -> SortType.EARLIEST
+                        R.id.sort_most_reply -> SortType.MOST_REPLY
+                        R.id.sort_most_likes -> SortType.MOST_LIKES
+                        R.id.sort_most_dislikes -> SortType.MOST_DISLIKES
+                        else -> viewModel.currentSortType
                     }
-                    binding.btnSort.text = when (item.itemId) {
-                        R.id.sort_latest ->  getString(R.string.sort_by_newest)
-                        R.id.sort_earliest -> getString(R.string.sort_by_oldest)
-                        R.id.sort_most_reply -> getString(R.string.sort_by_replies)
-                        R.id.sort_most_likes -> getString(R.string.sort_most_likes)
-                        R.id.sort_most_dislikes -> getString(R.string.sort_most_dislikes)
-                        else -> getString(R.string.sort_comment)
+                    binding.btnSort.text = getSortText(viewModel.currentSortType)
+                    viewModel.setSortType(sortType)
+                    commentAdapter.submitList(sortList(comments, viewModel.currentSortType)) {
+                        binding.rvComment.scrollToPosition(0)
                     }
-                    commentAdapter.submitList(sortedList) { binding.rvComment.scrollToPosition(0) }
                     true
                 }
-                commentAdapter.submitList(comments.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = false))
+                commentAdapter.submitList(sortList(comments, viewModel.currentSortType))
             }
         }
         ViewCompat.setOnApplyWindowInsetsListener(binding.rvComment) { v, insets ->
@@ -274,33 +275,29 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
                 viewModel.videoCommentFlow.collectLatest { list ->
                     if (!isPreviewCommentPrefetched) {
                         binding.btnSort.isVisible = list.size >= 3
-                        binding.btnSort.text = getString(R.string.sort_by_newest)
+                        binding.btnSort.text = getSortText(viewModel.currentSortType)
                         binding.btnSort.setOnClickListener { sortPopup.show() }
                         sortPopup.setOnMenuItemClickListener { item ->
-                            val sortedList = when (item.itemId) {
-                                R.id.sort_latest -> list.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = false)
-                                R.id.sort_earliest -> list.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = true)
-                                R.id.sort_most_reply -> list.safeSortedBy({ it.replyCount ?: 0 }, descending = true)
-                                R.id.sort_most_likes -> list.safeSortedBy({ it.realLikesCount ?: 0 }, descending = true)
-                                R.id.sort_most_dislikes -> list.safeSortedBy({ it.realLikesCount ?: 0 }, descending = false)
-                                else -> list
+                            val sortType = when (item.itemId) {
+                                R.id.sort_latest -> SortType.LATEST
+                                R.id.sort_earliest -> SortType.EARLIEST
+                                R.id.sort_most_reply -> SortType.MOST_REPLY
+                                R.id.sort_most_likes -> SortType.MOST_LIKES
+                                R.id.sort_most_dislikes -> SortType.MOST_DISLIKES
+                                else -> viewModel.currentSortType
                             }
-                            binding.btnSort.text = when (item.itemId) {
-                                R.id.sort_latest ->  getString(R.string.sort_by_newest)
-                                R.id.sort_earliest -> getString(R.string.sort_by_oldest)
-                                R.id.sort_most_reply -> getString(R.string.sort_by_replies)
-                                R.id.sort_most_likes -> getString(R.string.sort_most_likes)
-                                R.id.sort_most_dislikes -> getString(R.string.sort_most_dislikes)
-                                else -> getString(R.string.sort_comment)
+                            viewModel.setSortType(sortType)
+                            binding.btnSort.text = getSortText(viewModel.currentSortType)
+                            commentAdapter.submitList(sortList(list, viewModel.currentSortType)) {
+                                binding.rvComment.scrollToPosition(0)
                             }
-                            commentAdapter.submitList(sortedList) { binding.rvComment.scrollToPosition(0) }
                             true
                         }
-                        commentAdapter.submitList(list.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = false))
                         if (commentType == PREVIEW_COMMENT_PREFIX) {
-                            PreviewCommentPrefetcher.here().update(list)
+                            PreviewCommentPrefetcher.here(viewModel).update(list)
                         }
                     }
+                    commentAdapter.submitList(sortList(list, viewModel.currentSortType))
                 }
             }
         }
@@ -381,4 +378,21 @@ class CommentFragment : YenalyFragment<FragmentCommentBinding>(), StateLayoutMix
         val videoFragment = parentFragment as? VideoFragment
         videoFragment?.showRedDotCount(count)
     }
+    private fun sortList(list: List<VideoComments.VideoComment>, type: SortType): List<VideoComments.VideoComment> =
+        when (type) {
+            SortType.LATEST -> list.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = false)
+            SortType.EARLIEST -> list.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = true)
+            SortType.MOST_REPLY -> list.safeSortedBy({ it.replyCount ?: 0 }, descending = true)
+            SortType.MOST_LIKES -> list.safeSortedBy({ it.realLikesCount ?: 0 }, descending = true)
+            SortType.MOST_DISLIKES -> list.safeSortedBy({ it.realLikesCount ?: 0 }, descending = false)
+        }
+
+    private fun getSortText(type: SortType): String =
+        when (type) {
+            SortType.LATEST -> getString(R.string.sort_by_newest)
+            SortType.EARLIEST -> getString(R.string.sort_by_oldest)
+            SortType.MOST_REPLY -> getString(R.string.sort_by_replies)
+            SortType.MOST_LIKES -> getString(R.string.sort_most_likes)
+            SortType.MOST_DISLIKES -> getString(R.string.sort_most_dislikes)
+        }
 }

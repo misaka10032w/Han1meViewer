@@ -11,6 +11,7 @@ import com.yenaly.han1meviewer.logic.model.ReportReason
 import com.yenaly.han1meviewer.logic.model.VideoCommentArgs
 import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.ui.fragment.video.CommentFragment
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
 import com.yenaly.han1meviewer.util.loadAssetAs
 import com.yenaly.yenaly_libs.base.YenalyViewModel
@@ -70,6 +71,14 @@ class CommentViewModel(application: Application) : YenalyViewModel(application) 
         loadAssetAs<List<ReportReason>>("report_reason.json").orEmpty()
     }
 
+    var currentSortType = CommentFragment.SortType.LATEST
+        private set
+    fun setSortType(type: CommentFragment.SortType) {
+        currentSortType = type
+    }
+    fun clearCommentData(){
+        _videoCommentFlow.value = emptyList()
+    }
     fun getComment(type: String, code: String) {
         viewModelScope.launch {
             _videoCommentStateFlow.value = WebsiteState.Loading
@@ -179,7 +188,7 @@ class CommentViewModel(application: Application) : YenalyViewModel(application) 
                                     item
                                 }
                             }
-//                            prevList .toMutableList().apply {
+//                            prevList.toMutableList().apply {
 //                                this[commentPosition] =
 //                                    this[commentPosition].handleCommentLike(argState.info)
 //                            }
@@ -195,7 +204,7 @@ class CommentViewModel(application: Application) : YenalyViewModel(application) 
 //                            prevList.toMutableList().apply {
 //                                this[commentPosition] =
 //                                    this[commentPosition].handleCommentLike(argState.info)
-//                            }                            prevList.map { item ->
+//                            }
                             }
                         }
                     }
