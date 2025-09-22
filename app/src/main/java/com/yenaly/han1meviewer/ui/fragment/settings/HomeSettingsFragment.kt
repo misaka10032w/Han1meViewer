@@ -428,7 +428,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
             setOnPreferenceClickListener {
                 LibsBuilder()
                     .withShowLoadingProgress(true)
-                    .withSearchEnabled(true)
+                    .withSearchEnabled(false)
                     .withActivityTitle(getString(R.string.open_source_license) )
                     .withAboutIconShown(true)
                     .withAboutVersionShown(true)
