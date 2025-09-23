@@ -140,7 +140,9 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
             when (state) {
                 Jzvd.STATE_PLAYING, Jzvd.STATE_PREPARING -> {
                     behavior.disableScroll = true
-                    binding.appbar.setExpanded(true, true)
+                    binding.appbar.post {
+                        binding.appbar.setExpanded(true, true)
+                    }
                 }
                 Jzvd.STATE_PAUSE, Jzvd.STATE_AUTO_COMPLETE ->{
                     behavior.disableScroll = false
