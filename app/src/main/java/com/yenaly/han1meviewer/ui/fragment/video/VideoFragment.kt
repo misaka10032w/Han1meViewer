@@ -16,6 +16,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.activity.OnBackPressedCallback
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -54,6 +55,7 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.view.video.ExoMediaKernel
 import com.yenaly.han1meviewer.ui.view.video.HMediaKernel
 import com.yenaly.han1meviewer.ui.view.video.HanimeDataSource
+import com.yenaly.han1meviewer.ui.view.video.VideoPlayerAppBarBehavior
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.checkBadGuy
@@ -132,34 +134,18 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
                 }
             }
         })
+        val behavior = (binding.appbar.layoutParams as CoordinatorLayout.LayoutParams)
+            .behavior as VideoPlayerAppBarBehavior
         binding.videoPlayer.onVideoStateChanged = { state ->
             when (state) {
                 Jzvd.STATE_PLAYING, Jzvd.STATE_PREPARING -> {
-                    disableAppBarScroll()
+                    behavior.disableScroll = true
+                    binding.appbar.setExpanded(true, true)
                 }
                 Jzvd.STATE_PAUSE, Jzvd.STATE_AUTO_COMPLETE ->{
-                    enableAppBarScroll()
+                    behavior.disableScroll = false
                 }
             }
-
-        }
-    }
-    private fun disableAppBarScroll() {
-        binding.appbar.post {
-            val params = binding.collapsingToolbar.layoutParams as AppBarLayout.LayoutParams
-            params.scrollFlags = 0
-            binding.collapsingToolbar.layoutParams = params
-            binding.appbar.setExpanded(true, true)
-        }
-    }
-
-    private fun enableAppBarScroll() {
-        binding.appbar.post {
-            val params = binding.collapsingToolbar.layoutParams as AppBarLayout.LayoutParams
-            params.scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or
-                    AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED or
-                    AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP
-            binding.collapsingToolbar.layoutParams = params
         }
     }
 
