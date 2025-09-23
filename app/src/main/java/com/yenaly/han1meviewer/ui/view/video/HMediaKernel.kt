@@ -1,15 +1,19 @@
 package com.yenaly.han1meviewer.ui.view.video
 
+import android.content.Context
 import android.content.pm.ActivityInfo
 import android.graphics.SurfaceTexture
 import android.media.MediaPlayer
 import android.media.PlaybackParams
+import android.net.Uri
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
+import android.os.ParcelFileDescriptor
 import android.util.Log
 import android.view.Surface
 import androidx.annotation.OptIn
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
@@ -494,12 +498,14 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
 
     val videoRealHeight: Int
         get() = MPVLib.getPropertyInt("video-params/h") ?: 0
-
+    private var currentPfd: ParcelFileDescriptor? = null
+    private var detachFd: Int? = null
+    private var pfdFilePath = false
     private val mpvOptions = mapOf(
         "vo" to "gpu",                // 视频输出驱动：GPU 渲染（支持 GLSL 滤镜/Anime4K/插帧）
         "profile" to "fast",          // 预设模式：fast（性能优先，画质略低；可改为 gpu-hq 追求高画质）
         "hwdec" to "auto",            // 硬件解码：自动选择合适的解码器（mediacodec/mediacodec-copy）
-        "msg-level" to "all=" + if (BuildConfig.DEBUG) "debug" else "warn",  // 日志等级：fatal → error → warn → info → status → verbose → debug → trace
+        "msg-level" to "all=" + if (BuildConfig.DEBUG) "verbose" else "warn",  // 日志等级：fatal → error → warn → info → status → verbose → debug → trace
 
         // 插帧相关
 //        "interpolation" to "yes",     // 启用插值渲染（补帧），提升低帧率视频的流畅度
@@ -540,6 +546,59 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
         MPVLib.addObserver(mpvEventObserver)
     }
 
+    fun prepareUri(context: Context, uri: Uri): String? {
+        return when (uri.scheme) {
+            "http", "https" -> {
+                uri.toString()
+            }
+            "file", "content" -> {
+                try {
+                    currentPfd = context.contentResolver.openFileDescriptor(uri, "r")
+                    detachFd = currentPfd?.detachFd()
+                    Log.d(TAG, "Detached FD = $detachFd")
+                    pfdFilePath = true
+                    if (detachFd != null) {
+                        "fd://$detachFd"
+                    } else null
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    null
+                }
+            }
+            else -> {
+                null
+            }
+        }
+    }
+
+    fun releaseCurrentPfd(from: String? = null) {
+        if (!pfdFilePath) return
+        try {
+            currentPfd?.let {
+                Log.i(TAG, "Closing currentPfd: $it")
+                it.close()
+            }
+
+            detachFd?.let { fd ->
+                Log.i(TAG, "Closing detachFd: $fd")
+                try {
+                    ParcelFileDescriptor.adoptFd(fd).close()
+                } catch (e: Exception) {
+                    Log.w(TAG, "detachFd $fd already closed or invalid", e)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error releasing PFD", e)
+        } finally {
+            currentPfd = null
+            detachFd = null
+            handler.postDelayed({
+                Log.i(TAG, "${from ?: "releaseCurrentPfd"} completed. PFD cleared.")
+            }, 200)
+        }
+    }
+
+
     override fun prepare() {
         init()
         handler = Handler(Looper.getMainLooper())
@@ -552,10 +611,14 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
 
         Log.e(TAG, "URL Link = $url")
         MPVLib.setOptionString("force-window", "yes")
-        MPVLib.command(arrayOf("loadfile", url))
 
-        val surfaceTexture = jzvd.textureView?.surfaceTexture
-        surfaceTexture?.let { MPVLib.attachSurface(Surface(it)) }
+        val uri = url.toUri()
+        val path = prepareUri(jzvd.context, uri)
+        if (path != null) {
+            MPVLib.command(arrayOf("loadfile", path))
+            val surfaceTexture = jzvd.textureView?.surfaceTexture
+            surfaceTexture?.let { MPVLib.attachSurface(Surface(it)) }
+        }
     }
 
     override fun start() {
@@ -584,6 +647,9 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
         MPVLib.setOptionString("force-window", "no")
         MPVLib.detachSurface()
         MPVLib.removeObserver(mpvEventObserver)
+        handler.postDelayed({
+            releaseCurrentPfd("jzvd-release")
+        },200)
         SAVED_SURFACE = null
     }
 
@@ -684,6 +750,7 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
                     }
                     MPVLib.mpvEventId.MPV_EVENT_END_FILE -> {
                         // 播放结束
+                        releaseCurrentPfd("MPV_EVENT_END_FILE")
                         jzvd.onCompletion()
                     }
                     MPVLib.mpvEventId.MPV_EVENT_SHUTDOWN -> {
