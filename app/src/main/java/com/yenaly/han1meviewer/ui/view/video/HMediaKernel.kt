@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.view.video
 
+import android.content.Context
 import android.content.pm.ActivityInfo
 import android.graphics.SurfaceTexture
 import android.media.MediaPlayer
@@ -12,6 +13,7 @@ import android.os.ParcelFileDescriptor
 import android.util.Log
 import android.view.Surface
 import androidx.annotation.OptIn
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
@@ -41,14 +43,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.absoluteValue
-import androidx.core.net.toUri
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
 
 /**
  * @project Han1meViewer
@@ -505,9 +499,8 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
     val videoRealHeight: Int
         get() = MPVLib.getPropertyInt("video-params/h") ?: 0
     private var currentPfd: ParcelFileDescriptor? = null
+    private var detachFd: Int? = null
     private var pfdFilePath = false
-    private  val MAX_PATH_LENGTH = 200
-    private var tempFile: File? = null
     private val mpvOptions = mapOf(
         "vo" to "gpu",                // 视频输出驱动：GPU 渲染（支持 GLSL 滤镜/Anime4K/插帧）
         "profile" to "fast",          // 预设模式：fast（性能优先，画质略低；可改为 gpu-hq 追求高画质）
@@ -552,100 +545,59 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
         }
         MPVLib.addObserver(mpvEventObserver)
     }
-    private fun createTempFileAsync(
-        inputStream: InputStream,
-        callback: (File?) -> Unit
-    ) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val startTime = System.currentTimeMillis()
-                tempFile = File.createTempFile("media_", ".tmp", jzvd.context.cacheDir)
 
-                FileOutputStream(tempFile).use { output ->
-                    inputStream.copyTo(output, bufferSize = 8 * 1024)
-                }
-
-                val endTime = System.currentTimeMillis()
-                Log.i(TAG, "创建临时文件事件: ${endTime - startTime}")
-
-                withContext(Dispatchers.Main) {
-                    callback(tempFile)
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "创建临时文件失败", e)
-                withContext(Dispatchers.Main) {
-                    callback(null)
-                }
-            } finally {
-                inputStream.close()
+    fun prepareUri(context: Context, uri: Uri): String? {
+        return when (uri.scheme) {
+            "http", "https" -> {
+                uri.toString()
             }
-        }
-    }
-
-    private fun cleanupTempFile() {
-        try {
-            Log.i(TAG, "删除临时文件成功${tempFile?.path}")
-            tempFile?.delete()
-            tempFile = null
-        } catch (e: Exception) {
-            Log.e(TAG, "删除临时文件失败", e)
-        }
-    }
-
-    fun prepareUri(uriStr: String, callback: (String?) -> Unit) {
-        when {
-            uriStr.startsWith("http://") || uriStr.startsWith("https://") -> {
-                callback(uriStr)
-            }
-            uriStr.startsWith("file://") -> {
-                val path = uriStr.removePrefix("file://")
-                if (path.length >= MAX_PATH_LENGTH) {
-                    Log.i(TAG, "超长文件名:${path.length}")
-                    cleanupTempFile()
-                    try {
-                        val uri = uriStr.toUri()
-                        val inputStream = jzvd.context.contentResolver.openInputStream(uri)
-                        createTempFileAsync(inputStream!!) { temp ->
-                            callback(temp?.absolutePath)
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "处理超长文件路径失败: $path", e)
-                        callback(null)
-                    }
-                } else {
-                    Log.i(TAG, "常规文件名:${path.length}")
-                    callback(Uri.decode(path))
-                }
-            }
-            uriStr.startsWith("content://") -> {
-                val uri = uriStr.toUri()
+            "file", "content" -> {
                 try {
+                    currentPfd = context.contentResolver.openFileDescriptor(uri, "r")
+                    detachFd = currentPfd?.detachFd()
+                    Log.d(TAG, "Detached FD = $detachFd")
                     pfdFilePath = true
-                    currentPfd = jzvd.context.contentResolver.openFileDescriptor(uri, "r")
-                    callback(currentPfd?.fd?.let { "fd://${it}" })
+                    if (detachFd != null) {
+                        "fd://$detachFd"
+                    } else null
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    callback(null)
+                    null
                 }
             }
             else -> {
-                callback(uriStr)
+                null
             }
         }
     }
 
-    fun releaseCurrentPfd() {
-        if (pfdFilePath){
-            try {
-                currentPfd?.close()
-                Log.i(TAG, "PFD 已关闭: $currentPfd")
-            } catch (e: Exception) {
-                e.printStackTrace()
-            } finally {
-                currentPfd = null
+    fun releaseCurrentPfd(from: String? = null) {
+        if (!pfdFilePath) return
+        try {
+            currentPfd?.let {
+                Log.i(TAG, "Closing currentPfd: $it")
+                it.close()
             }
+
+            detachFd?.let { fd ->
+                Log.i(TAG, "Closing detachFd: $fd")
+                try {
+                    ParcelFileDescriptor.adoptFd(fd).close()
+                } catch (e: Exception) {
+                    Log.w(TAG, "detachFd $fd already closed or invalid", e)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error releasing PFD", e)
+        } finally {
+            currentPfd = null
+            detachFd = null
+            handler.postDelayed({
+                Log.i(TAG, "${from ?: "releaseCurrentPfd"} completed. PFD cleared.")
+            }, 200)
         }
     }
+
 
     override fun prepare() {
         init()
@@ -660,16 +612,13 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
         Log.e(TAG, "URL Link = $url")
         MPVLib.setOptionString("force-window", "yes")
 
-        prepareUri(url){ path ->
-            if (path != null) {
-                MPVLib.command(arrayOf("loadfile", path))
-            } else {
-                Log.e(TAG, "prepareUri 返回 null，无法播放")
-            }
+        val uri = url.toUri()
+        val path = prepareUri(jzvd.context, uri)
+        if (path != null) {
+            MPVLib.command(arrayOf("loadfile", path))
+            val surfaceTexture = jzvd.textureView?.surfaceTexture
+            surfaceTexture?.let { MPVLib.attachSurface(Surface(it)) }
         }
-
-        val surfaceTexture = jzvd.textureView?.surfaceTexture
-        surfaceTexture?.let { MPVLib.attachSurface(Surface(it)) }
     }
 
     override fun start() {
@@ -698,8 +647,9 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
         MPVLib.setOptionString("force-window", "no")
         MPVLib.detachSurface()
         MPVLib.removeObserver(mpvEventObserver)
-        releaseCurrentPfd()
-        cleanupTempFile()
+        handler.postDelayed({
+            releaseCurrentPfd("jzvd-release")
+        },200)
         SAVED_SURFACE = null
     }
 
@@ -800,7 +750,7 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
                     }
                     MPVLib.mpvEventId.MPV_EVENT_END_FILE -> {
                         // 播放结束
-                        releaseCurrentPfd()
+                        releaseCurrentPfd("MPV_EVENT_END_FILE")
                         jzvd.onCompletion()
                     }
                     MPVLib.mpvEventId.MPV_EVENT_SHUTDOWN -> {
