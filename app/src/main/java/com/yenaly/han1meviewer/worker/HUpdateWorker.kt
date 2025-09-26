@@ -5,6 +5,7 @@ import android.app.Notification
 import android.content.Context
 import android.content.pm.ServiceInfo
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toFile
@@ -29,6 +30,7 @@ import com.yenaly.han1meviewer.util.installApkPackage
 import com.yenaly.han1meviewer.util.runSuspendCatching
 import com.yenaly.han1meviewer.util.updateFile
 import com.yenaly.yenaly_libs.utils.showShortToast
+import java.util.Locale
 import kotlin.random.Random
 
 /**
@@ -105,8 +107,8 @@ class HUpdateWorker(
             val file = context.updateFile.apply { delete() }
             val inject = runSuspendCatching {
                 setForeground(createForegroundInfo())
-                file.injectUpdate(downloadLink) { progress ->
-                    updateNotification(progress)
+                file.injectUpdate(downloadLink) { progress, fileSize, downloadedSize ->
+                    updateNotification(progress, fileSize, downloadedSize)
                 }
             }
             if (inject.isSuccess) {
@@ -121,20 +123,38 @@ class HUpdateWorker(
         }
     }
 
-    private fun createNotification(progress: Int = 0): Notification {
+    private fun createNotification(progress: Int = 0, fileSizeMB: String = "0", downloadedSizeMB: String = "0"): Notification {
         return NotificationCompat.Builder(context, UPDATE_NOTIFICATION_CHANNEL)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setOngoing(true)
-            .setContentTitle(context.getString(R.string.downloading_update_percent, progress))
+            .setContentTitle(
+                context.getString(
+                    R.string.downloading_update_percent, progress
+                ) + " ($downloadedSizeMB MB / $fileSizeMB MB)"
+            )
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setOnlyAlertOnce(true)
             .setProgress(100, progress, false)
             .build()
     }
 
+    private var lastNotifyTime = 0L  // 节流，通知更新太快Android会抛异常
     @SuppressLint("MissingPermission")
-    private fun updateNotification(progress: Int) {
-        notificationManager.notify(downloadId, createNotification(progress))
+    private fun updateNotification(progress: Int, fileSize: Long, downloadedSize: Long) {
+        val now = System.currentTimeMillis()
+        if (progress == 100 || now - lastNotifyTime > 1000) {
+            lastNotifyTime = now
+            val fileSizeMB = String.format(Locale.US, "%.2f", fileSize.toDouble() / (1024 * 1024))
+            val downloadedSizeMB = String.format(Locale.US, "%.2f", downloadedSize.toDouble() / (1024 * 1024))
+            notificationManager.notify(
+                downloadId,
+                createNotification(
+                    progress,
+                    fileSizeMB,
+                    downloadedSizeMB
+                )
+            )
+        }
     }
 
     private fun createForegroundInfo(progress: Int = 0): ForegroundInfo {

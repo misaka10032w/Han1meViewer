@@ -81,7 +81,7 @@ object HUpdater {
      *
      * @param url update url
      */
-    suspend fun File.injectUpdate(url: String, progress: (suspend (Int) -> Unit)? = null) {
+    suspend fun File.injectUpdate(url: String, progress: (suspend (Int, Long, Long) -> Unit)? = null) {
         val res = HanimeNetwork.githubService.request(url)
         if (url.endsWith("zip")) {
             Log.d(TAG, "Injecting update from zip ($url)")
@@ -90,7 +90,9 @@ object HUpdater {
                     ZipInputStream(stream).use { zip ->
                         zip.nextEntry
                         this.outputStream().use {
-                            zip.copyTo(it, body.contentLength(), progress = progress)
+                            Log.i(TAG, "content length: ${body.contentLength()}")
+                            // 估摸着压缩率为0.56左右，稍微估算解压后大小，防止进度卡在100%时间过长
+                            zip.copyTo(it, (body.contentLength() * 1.79).toLong(), progress = progress)
                         }
                     }
                 }
@@ -99,6 +101,7 @@ object HUpdater {
             Log.d(TAG, "Injecting update from release ($url)")
             this.outputStream().use {
                 res.body()?.use { body ->
+                    Log.i(TAG, "content length: ${body.contentLength()}")
                     body.byteStream().copyTo(it, body.contentLength(), progress = progress)
                 }
             }
