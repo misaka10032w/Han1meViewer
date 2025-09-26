@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import com.yenaly.han1meviewer.FILE_PROVIDER_AUTHORITY
@@ -110,7 +111,7 @@ suspend fun InputStream.copyTo(
     out: OutputStream,
     contentLength: Long,
     bufferSize: Int = DEFAULT_BUFFER_SIZE,
-    progress: (suspend (Int) -> Unit)? = null,
+    progress: (suspend (Int, Long, Long) -> Unit)? = null,
 ): Long {
     return withContext(Dispatchers.IO) {
         this@copyTo.use {
@@ -125,10 +126,11 @@ suspend fun InputStream.copyTo(
                 val newPercent = (bytesCopied * 100 / contentLength).toInt()
                 if (newPercent != percent) {
                     percent = newPercent
-                    progress?.invoke(percent.coerceAtMost(100))
+                    progress?.invoke(percent.coerceAtMost(100), contentLength, bytesCopied)
                 }
                 bytes = read(buffer)
             }
+            Log.i("progress",bytesCopied.toString())
             bytesCopied
         }
     }
