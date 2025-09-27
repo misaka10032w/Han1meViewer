@@ -47,7 +47,7 @@ interface HanimeMyListService {
         @Header("X-CSRF-TOKEN") csrfToken_1: String? = csrfToken,
     ): Response<ResponseBody>
 
-    @GET("playlists")
+    @GET("playlist?list=PL")
     suspend fun getPlaylists(): Response<ResponseBody>
 
     @FormUrlEncoded
