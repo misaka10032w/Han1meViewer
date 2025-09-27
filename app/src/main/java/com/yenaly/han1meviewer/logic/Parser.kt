@@ -728,17 +728,17 @@ object Parser {
     fun playlists(body: String): WebsiteState<Playlists> {
         val parseBody = Jsoup.parse(body).body()
         val csrfToken = parseBody.selectFirst("input[name=_token]")?.attr("value")
-        val lists = parseBody.select("div[class~=single-user-playlist]")
+        val lists = parseBody.select("div[class~=col-xs-12][class~=search-doujin-videos]")
         val playlists = mutableListOf<Playlists.Playlist>()
         lists.forEach {
             val listCode = it.childOrNull(0)?.absUrl("href")?.substringAfter('=')
                 .throwIfParseNull(Parser::playlists.name, "listCode")
             val listTitle = it.selectFirst("div[class=card-mobile-title]")?.ownText()
                 .throwIfParseNull(Parser::playlists.name, "listTitle")
-            val listTotal = it.selectFirst("div[style]")?.text()?.toIntOrNull()
-                .throwIfParseNull(Parser::playlists.name, "listName")
+            val listTotal = it.selectFirst("div[class=card-mobile-duration]")?.text()
+            val formatedTotal = listTotal?.filter { char -> char.isDigit() }?.toIntOrNull() ?: -1
             playlists += Playlists.Playlist(
-                listCode = listCode, title = listTitle, total = listTotal
+                listCode = listCode, title = listTitle, total = formatedTotal
             )
         }
         return WebsiteState.Success(Playlists(playlists = playlists, csrfToken = csrfToken))
