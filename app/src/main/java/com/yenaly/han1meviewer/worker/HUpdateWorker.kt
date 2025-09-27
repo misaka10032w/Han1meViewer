@@ -2,12 +2,14 @@ package com.yenaly.han1meviewer.worker
 
 import android.annotation.SuppressLint
 import android.app.Notification
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.work.Constraints
@@ -21,6 +23,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.yenaly.han1meviewer.EMPTY_STRING
+import com.yenaly.han1meviewer.FILE_PROVIDER_AUTHORITY
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.UPDATE_NOTIFICATION_CHANNEL
@@ -30,6 +33,7 @@ import com.yenaly.han1meviewer.util.installApkPackage
 import com.yenaly.han1meviewer.util.runSuspendCatching
 import com.yenaly.han1meviewer.util.updateFile
 import com.yenaly.yenaly_libs.utils.showShortToast
+import java.io.File
 import java.util.Locale
 import kotlin.random.Random
 
@@ -114,6 +118,7 @@ class HUpdateWorker(
             if (inject.isSuccess) {
                 val outputData = workDataOf(UPDATE_APK to file.toUri().toString())
                 Preferences.updateNodeId = nodeId
+                showInstallNotification(file)
                 return Result.success(outputData)
             } else {
                 inject.exceptionOrNull()?.printStackTrace()
@@ -123,9 +128,9 @@ class HUpdateWorker(
         }
     }
 
-    private fun createNotification(progress: Int = 0, fileSizeMB: String = "0", downloadedSizeMB: String = "0"): Notification {
+    private fun createNotification(progress: Int = 0, fileSizeMB: String = "0", downloadedSizeMB: String = "0", isPending: Boolean = true): Notification {
         return NotificationCompat.Builder(context, UPDATE_NOTIFICATION_CHANNEL)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.baseline_h_24)
             .setOngoing(true)
             .setContentTitle(
                 context.getString(
@@ -134,7 +139,7 @@ class HUpdateWorker(
             )
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setOnlyAlertOnce(true)
-            .setProgress(100, progress, false)
+            .setProgress(100, progress, isPending)
             .build()
     }
 
@@ -151,7 +156,8 @@ class HUpdateWorker(
                 createNotification(
                     progress,
                     fileSizeMB,
-                    downloadedSizeMB
+                    downloadedSizeMB,
+                    false
                 )
             )
         }
@@ -160,10 +166,44 @@ class HUpdateWorker(
     private fun createForegroundInfo(progress: Int = 0): ForegroundInfo {
         return ForegroundInfo(
             downloadId,
-            createNotification(progress),
+            createNotification(progress, isPending = false),
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
             } else 0
         )
+    }
+    @SuppressLint("MissingPermission")
+    private fun showInstallNotification(file: File) {
+        val installIntent = Intent(Intent.ACTION_VIEW).apply {
+            val uri = FileProvider.getUriForFile(
+                context,
+                FILE_PROVIDER_AUTHORITY,
+                file
+            )
+            setDataAndType(uri, "application/vnd.android.package-archive")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+
+        val pendingIntent = PendingIntent.getActivity(
+            context, 0, installIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(context, UPDATE_NOTIFICATION_CHANNEL)
+            .setContentTitle(context.getString(R.string.download_complete))
+            .setContentText(context.getString(R.string.click_to_install_update))
+            .setSmallIcon(R.drawable.baseline_h_24)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .addAction(
+                NotificationCompat.Action.Builder(
+                    R.drawable.baseline_h_24,
+                    context.getString(R.string.install),
+                    pendingIntent
+                ).build()
+            )
+            .build()
+        notificationManager.notify(downloadId + 1, notification)
     }
 }
