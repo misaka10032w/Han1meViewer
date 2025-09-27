@@ -61,7 +61,7 @@ class DownloadedFragment : YenalyFragment<FragmentListOnlyBinding>(), StateLayou
             viewModel.downloaded.flowWithLifecycle(viewLifecycleOwner.lifecycle)
                 .collect {
                     adapter.submitList(it) {
-                        binding.rvList.scrollToPosition(0)
+                      //  binding.rvList.scrollToPosition(0)
                     }
                 }
         }
