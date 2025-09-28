@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -338,26 +339,32 @@ fun PlaylistDetailContent(
         Spacer(Modifier.height(8.dp))
 
         // 视频列表
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            itemsIndexed(playlist) { index, item ->
-                VideoCardItem(
-                    item,
-                    onClickItem
-                ) { videoCode, _ ->
-                    context.showAlertDialog {
-                        setTitle(R.string.delete_playlist)
-                        setMessage(context.getString(R.string.sure_to_delete_s, item.title))
-                        setPositiveButton(R.string.confirm) { _, _ ->
-                            listCode.let { listCode ->
-                                vm.deleteFromPlaylist(listCode, videoCode, index)
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val sheetWidth = maxWidth
+            val minItemWidth = 180.dp
+            val columns = maxOf(2, (sheetWidth / minItemWidth).toInt())
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(columns),
+                contentPadding = PaddingValues(4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                itemsIndexed(playlist) { index, item ->
+                    VideoCardItem(
+                        item,
+                        onClickItem
+                    ) { videoCode, _ ->
+                        context.showAlertDialog {
+                            setTitle(R.string.delete_playlist)
+                            setMessage(context.getString(R.string.sure_to_delete_s, item.title))
+                            setPositiveButton(R.string.confirm) { _, _ ->
+                                listCode.let { listCode ->
+                                    vm.deleteFromPlaylist(listCode, videoCode, index)
+                                }
                             }
+                            setNegativeButton(R.string.cancel, null)
                         }
-                        setNegativeButton(R.string.cancel, null)
                     }
                 }
             }

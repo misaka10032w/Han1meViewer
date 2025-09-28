@@ -11,6 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -50,4 +53,13 @@ fun RetryableImage(
         },
         contentScale = contentScale?: ContentScale.Fit
     )
+}
+
+@Composable
+fun getColumnCount(itemWidth: Int): Int{
+    val density = LocalDensity.current
+    val windowInfo = LocalWindowInfo.current
+    val screenWidthPx = windowInfo.containerSize.width
+    val screenWidthDp = with(density) { screenWidthPx.toDp() }
+    return maxOf(2, (screenWidthDp / itemWidth.dp).toInt())
 }
