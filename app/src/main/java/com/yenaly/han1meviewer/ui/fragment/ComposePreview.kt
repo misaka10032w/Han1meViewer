@@ -32,7 +32,6 @@ import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.ui.activity.CookieGuideDialog
 import com.yenaly.han1meviewer.ui.fragment.dailycheckin.CalendarGrid
 import com.yenaly.han1meviewer.ui.fragment.home.subscription.SubscriptionPageContent
-import com.yenaly.han1meviewer.ui.fragment.home.subscription.VideoCardItem
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import java.time.YearMonth
 
@@ -173,5 +172,16 @@ fun SubscriptionAppPreviewBody() {
                 onLongClickArtist = {_->}
             )
         }
+    }
+}
+
+@Preview
+@Composable
+fun PlaylistItemPreview(){
+    HanimeTheme {
+        PlaylistItem(
+            playlist = fakePlaylists.first(),
+            modifier = Modifier.padding(8.dp).height(140.dp)
+        )
     }
 }

@@ -18,11 +18,11 @@ data class SubscriptionItem(
 
 @Parcelize
 data class SubscriptionVideosItem(
-    val title: String,
-    val coverUrl: String,
-    val videoCode: String,
-    val duration: String? = null,
-    val views: String? = null,
-    val reviews: String? = null,
-    val currentArtist: String? = null
-) : Parcelable
+    override val title: String,
+    override val coverUrl: String,
+    override val videoCode: String,
+    override val duration: String? = null,
+    override val views: String? = null,
+    override val reviews: String? = null,
+    override val currentArtist: String? = null
+) : Parcelable, VideoItemType

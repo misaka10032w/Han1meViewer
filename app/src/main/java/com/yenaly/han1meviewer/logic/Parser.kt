@@ -737,8 +737,9 @@ object Parser {
                 .throwIfParseNull(Parser::playlists.name, "listTitle")
             val listTotal = it.selectFirst("div[class=card-mobile-duration]")?.text()
             val formatedTotal = listTotal?.filter { char -> char.isDigit() }?.toIntOrNull() ?: -1
+            val coverUrl = it.select("div > div > img[style*='position: absolute']").first()?.attr("src")
             playlists += Playlists.Playlist(
-                listCode = listCode, title = listTitle, total = formatedTotal
+                listCode = listCode, title = listTitle, total = formatedTotal, coverUrl = coverUrl
             )
         }
         return WebsiteState.Success(Playlists(playlists = playlists, csrfToken = csrfToken))

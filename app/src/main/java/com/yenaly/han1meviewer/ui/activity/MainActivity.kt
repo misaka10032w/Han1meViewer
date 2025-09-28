@@ -338,7 +338,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             R.id.nv_home_page -> safeNavigateTo(R.id.nv_home_page)
             R.id.nv_watch_history -> safeNavigateTo(R.id.action_nv_home_page_to_nv_watch_history)
             R.id.nv_fav_video -> safeNavigateTo(R.id.action_nv_home_page_to_nv_fav_video)
-            R.id.nv_playlist -> safeNavigateTo(R.id.action_nv_home_page_to_nv_playlist)
+            R.id.nv_playlist -> safeNavigateTo(R.id.action_nv_home_page_to_myPlayListFragmentV2)
             R.id.nv_watch_later -> safeNavigateTo(R.id.action_nv_home_page_to_nv_watch_later)
             R.id.nv_subscription -> safeNavigateTo(R.id.action_nv_home_page_to_nv_subscription)
             R.id.nv_daily_check_in -> safeNavigateTo(R.id.action_nv_home_page_to_nv_daily_check_in)

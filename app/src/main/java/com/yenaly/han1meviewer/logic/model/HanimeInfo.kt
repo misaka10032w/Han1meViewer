@@ -12,19 +12,21 @@ interface HanimeInfoType : MultiItemEntity
  * @time 2022/06/08 008 22:56
  */
 data class HanimeInfo(
-    val title: String,
-    val coverUrl: String,
-    val videoCode: String,
-    val duration: String? = null,
+    override val title: String,
+    override val coverUrl: String,
+    override val videoCode: String,
+    override val duration: String? = null,
     val artist: String? = null,
-    val views: String? = null,
+    override val views: String? = null,
     val uploadTime: String? = null,
     val genre: String? = null,
 
     val isPlaying: Boolean = false, // for video playlist only.
 
     override var itemType: Int,
-) : HanimeInfoType {
+    override val reviews: String? = "",
+    override val currentArtist: String? = "",
+): VideoItemType , HanimeInfoType {
     companion object {
         const val NORMAL = 0
         const val SIMPLIFIED = 1
