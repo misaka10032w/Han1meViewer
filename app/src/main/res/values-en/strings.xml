@@ -436,4 +436,7 @@ Recommendations are as follows:\n
     <string name="download_complete">Download Complete</string>
     <string name="click_to_install_update">Click to Install Update</string>
     <string name="install">Install</string>
+    <string name="empty_content">Nothing here</string>
+    <string name="load_failed_retry">Load failed, please retry</string>
+    <string name="video_count">%d videos</string>
 </resources>

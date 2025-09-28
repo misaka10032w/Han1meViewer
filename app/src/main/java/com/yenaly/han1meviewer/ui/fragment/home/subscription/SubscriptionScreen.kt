@@ -65,6 +65,8 @@ import com.yenaly.han1meviewer.logic.model.MySubscriptions
 import com.yenaly.han1meviewer.logic.model.SubscriptionItem
 import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.ui.fragment.ArtistItem
+import com.yenaly.han1meviewer.ui.fragment.VideoCardItem
 import com.yenaly.han1meviewer.ui.viewmodel.MySubscriptionsViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map

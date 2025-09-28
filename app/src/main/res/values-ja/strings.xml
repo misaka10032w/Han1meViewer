@@ -441,4 +441,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="download_complete">ダウンロード完了</string>
     <string name="click_to_install_update">クリックして更新をインストール</string>
     <string name="install">インストール</string>
+    <string name="empty_content">ここには何もありません</string>
+    <string name="load_failed_retry">読み込み失敗、再試行してください</string>
+    <string name="video_count">%d本の動画</string>
 </resources>

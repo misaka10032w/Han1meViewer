@@ -471,4 +471,7 @@
     <string name="download_complete">下載完成</string>
     <string name="click_to_install_update">點擊安裝更新</string>
     <string name="install">安裝</string>
+    <string name="empty_content">這裡什麼都沒有哦</string>
+    <string name="load_failed_retry">載入失敗，請重試</string>
+    <string name="video_count">%d部影片</string>
 </resources>

@@ -44,6 +44,9 @@
         <action
             android:id="@+id/action_nv_home_page_to_nv_download"
             app:destination="@id/nv_download" />
+        <action
+            android:id="@+id/action_nv_home_page_to_myPlayListFragmentV2"
+            app:destination="@id/myPlayListFragmentV2" />
     </fragment>
 
     <!-- 搜索页 -->
@@ -112,4 +115,8 @@
     <action
         android:id="@+id/action_global_to_hKeyframeSettingsFragment"
         app:destination="@id/hKeyframeSettingsFragment" />
+    <fragment
+        android:id="@+id/myPlayListFragmentV2"
+        android:name="com.yenaly.han1meviewer.ui.fragment.home.MyPlayListFragmentV2"
+        android:label="MyPlayListFragmentV2" />
 </navigation>

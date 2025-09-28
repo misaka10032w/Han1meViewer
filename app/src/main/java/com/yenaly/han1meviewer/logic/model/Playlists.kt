@@ -13,6 +13,7 @@ data class Playlists(
         val listCode: String,
         var title: String,
         var total: Int,
+        val coverUrl: String? = null
     )
 }
 
