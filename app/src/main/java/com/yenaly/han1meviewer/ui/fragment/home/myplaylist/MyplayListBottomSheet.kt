@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -341,8 +342,8 @@ fun PlaylistDetailContent(
         // 视频列表
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             val sheetWidth = maxWidth
-            val minItemWidth = 180.dp
-            val columns = maxOf(2, (sheetWidth / minItemWidth).toInt())
+            val cardWidth = dimensionResource(id = R.dimen.video_cover_simplified_width)
+            val columns = maxOf(2, (sheetWidth / cardWidth).toInt())
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(columns),
@@ -353,7 +354,8 @@ fun PlaylistDetailContent(
                 itemsIndexed(playlist) { index, item ->
                     VideoCardItem(
                         item,
-                        onClickItem
+                        isHorizontalCard = false,
+                        onClickItem,
                     ) { videoCode, _ ->
                         context.showAlertDialog {
                             setTitle(R.string.delete_playlist)

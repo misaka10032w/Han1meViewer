@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,6 +34,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,11 +79,12 @@ fun ArtistItem(artist: SubscriptionItem, onClickArtist: (String) -> Unit, onLong
 @Composable
 fun VideoCardItem(
     videoItem: VideoItemType,
+    isHorizontalCard: Boolean = true,
     onClickVideosItem: (String) -> Unit,
     onLongClickVideosItem: (String, String) -> Unit
 ) {
-    val cardWidth = dimensionResource(id = R.dimen.video_cover_width)
-    val cardHeight = dimensionResource(id = R.dimen.video_cover_height)
+    val cardWidth = if (isHorizontalCard) dimensionResource(id = R.dimen.video_cover_width) else dimensionResource(id = R.dimen.video_cover_simplified_width)
+    val cardHeight = if (isHorizontalCard) dimensionResource(id = R.dimen.video_cover_height) else dimensionResource(id = R.dimen.video_cover_simplified_height)
     val textFontSize = dimensionResource(id = R.dimen.video_view_and_time_and_duration).value.sp
     val iconSize = dimensionResource(id = R.dimen.view_view_and_time_icon_size)
     Surface(
@@ -145,13 +148,13 @@ fun VideoCardItem(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_baseline_play_circle_outline_24),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(iconSize)
-                        )
                         videoItem.views?.let {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_baseline_play_circle_outline_24),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(iconSize)
+                            )
                             Text(
                                 modifier = Modifier
                                     .padding(horizontal = 2.dp),
@@ -162,13 +165,13 @@ fun VideoCardItem(
                         }
 
                         Spacer(modifier = Modifier.weight(1f))
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_baseline_access_time_24),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(iconSize)
-                        )
                         videoItem.duration?.let {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_baseline_access_time_24),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(iconSize)
+                            )
                             Text(
                                 modifier = Modifier
                                     .padding(horizontal = 2.dp),
@@ -181,18 +184,19 @@ fun VideoCardItem(
                 }
             }
 
-            //作者
+            //  标题
             Text(
                 text = videoItem.title,
-                maxLines = 1,
-                style = MaterialTheme.typography.titleMedium,
+                maxLines = 2,
+                style = MaterialTheme.typography.titleSmall,
                 overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(40.dp)
                     .padding(horizontal = 8.dp)
             )
-            // 视频标题
+            // 视频作者
             Text(
                 text = videoItem.currentArtist ?: "作者",
                 maxLines = 1,
@@ -211,15 +215,15 @@ fun VideoCardItem(
                     .padding(horizontal = 8.dp)
                     .fillMaxWidth()
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_baseline_thumb_up_alt_24),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(iconSize)
-                )
-                videoItem.reviews?.let {
+                if (!videoItem.reviews.isNullOrEmpty()) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_baseline_thumb_up_alt_24),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(iconSize)
+                    )
                     Text(
-                        text = it,
+                        text = videoItem.reviews!!,
                         fontSize = 11.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -307,19 +311,27 @@ fun BottomSheetHandler(){
 }
 
 @Composable
-fun EmptyView(hint: String){
+fun EmptyView(hint: String) {
     Box(
-        Modifier
+        modifier = Modifier
             .fillMaxSize()
-            .padding(10.dp), contentAlignment = Alignment.TopCenter
+            .padding(10.dp),
+        contentAlignment = Alignment.Center // 整体居中
     ) {
-        Column {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally, // 图片和文字水平居中
+            verticalArrangement = Arrangement.Center
+        ) {
             Image(
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier.padding(16.dp).width(150.dp),
                 painter = painterResource(R.drawable.neuro_sad),
                 contentDescription = stringResource(R.string.here_is_empty),
             )
-            Text(hint)
+            Text(
+                text = hint,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
