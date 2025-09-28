@@ -76,7 +76,7 @@ fun PlaylistBottomSheet(
     val playlistState by vm.playlistStateFlow.collectAsState()
     val playlist by vm.playlistFlow.collectAsState()
     val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false
+        skipPartiallyExpanded = true
     )
     LaunchedEffect(listCode) {
         vm.getPlaylistItems(1, listCode)
@@ -144,9 +144,9 @@ fun PlaylistBottomSheet(
 
         }
     }
-    LaunchedEffect(sheetState) {
-        sheetState.partialExpand()
-    }
+//    LaunchedEffect(sheetState) {
+//        sheetState.partialExpand()
+//    }
     // 收集修改playlist结果
     LaunchedEffect(Unit) {
         vm.modifyPlaylistFlow.collect { result ->
@@ -263,7 +263,7 @@ fun PlaylistDetailContent(
                     ) {
                         Text(
                             text = playlistDesc.value ?: "",
-                            style = MaterialTheme.typography.bodyMedium.copy(
+                            style = MaterialTheme.typography.bodyLarge.copy(
                                 color = Color.White.copy(alpha = 0.8f)
                             ),
                             maxLines = 2,

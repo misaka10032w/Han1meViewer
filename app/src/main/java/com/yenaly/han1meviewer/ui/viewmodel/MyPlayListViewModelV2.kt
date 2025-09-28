@@ -43,6 +43,13 @@ class MyPlayListViewModelV2 : ViewModel() {
     private val _refreshCompleted = MutableSharedFlow<Unit>()
     val refreshCompleted: SharedFlow<Unit> = _refreshCompleted
 
+    private val _showSheet = MutableStateFlow(false)
+    val showSheet: StateFlow<Boolean> = _showSheet.asStateFlow()
+
+    fun setShowSheet(value: Boolean) {
+        _showSheet.value = value
+    }
+
     // 加载所有playlist
     fun loadMyPlayList(forceReload: Boolean = false) {
         viewModelScope.launch {
@@ -59,9 +66,11 @@ class MyPlayListViewModelV2 : ViewModel() {
     // 获取单个playlist内容
     fun getPlaylistItems(page: Int = 1, listCode: String) {
         viewModelScope.launch {
+            if (listCode.isBlank()) return@launch
             if (page == 1) {
                 _playlistFlow.value = emptyList()
                 _playlistDesc.value = null
+                _playlistStateFlow.value = PageLoadingState.Loading
             }
             NetworkRepo.getMyListItems(page, listCode).collect { state ->
                 val prev = _playlistStateFlow.getAndUpdate { state }

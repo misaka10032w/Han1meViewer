@@ -77,7 +77,7 @@ fun MyPlayListScreen(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     var isRefreshing by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()
-    val showSheet = remember { mutableStateOf(false) }
+    val showSheet by viewModel.showSheet.collectAsState()
     val selectedListCode = remember { mutableStateOf("") }
     val listTitle = remember { mutableStateOf("") }
     val context = LocalContext.current
@@ -197,7 +197,7 @@ fun MyPlayListScreen(
                             playlists = playlists
                         ){ listCode, playListTitle ->
                             selectedListCode.value = listCode
-                            showSheet.value = true
+                            viewModel.setShowSheet(true)
                             listTitle.value = playListTitle
                         }
                     }
@@ -216,7 +216,7 @@ fun MyPlayListScreen(
                             playlists = playlists
                         ){ listCode, playListTitle ->
                             selectedListCode.value = listCode
-                            showSheet.value = true
+                            viewModel.setShowSheet(true)
                             listTitle.value = playListTitle
                         }
                     }
@@ -229,7 +229,7 @@ fun MyPlayListScreen(
                         playlists = playlists
                     ) { listCode, playListTitle ->
                         selectedListCode.value = listCode
-                        showSheet.value = true
+                        viewModel.setShowSheet(true)
                         listTitle.value = playListTitle
                     }
                 }
@@ -251,15 +251,15 @@ fun MyPlayListScreen(
                     )
                 }
             }
-            if (showSheet.value) {
+            if (showSheet) {
                 PlaylistBottomSheet(
                     listCode = selectedListCode.value,
-                    onDismiss = { showSheet.value = false },
+                    onDismiss = { viewModel.setShowSheet(false)},
                     playListTitle = listTitle.value,
                     onClickItem = onClickItem ,
                     onLongClickItem = onLongClickItem,
                     vm = viewModel,
-                    context
+                    context = context
                 )
             }
         }
