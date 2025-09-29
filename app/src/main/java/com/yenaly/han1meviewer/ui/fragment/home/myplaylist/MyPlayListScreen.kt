@@ -58,6 +58,7 @@ import androidx.compose.ui.zIndex
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.Playlists
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.ui.fragment.EmptyView
 import com.yenaly.han1meviewer.ui.fragment.PlaylistItem
 import com.yenaly.han1meviewer.ui.fragment.getColumnCount
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
@@ -301,6 +302,10 @@ fun AnimatedPageContent(
             }
 
             is WebsiteState.Success -> {
+                if (target.info.playlists.isEmpty()){
+                    EmptyView(stringResource(R.string.empty_content))
+                    return@AnimatedContent
+                }
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(getColumnCount(180)),
                     contentPadding = PaddingValues(16.dp),
