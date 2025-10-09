@@ -255,7 +255,10 @@ fun MyPlayListScreen(
             if (showSheet) {
                 PlaylistBottomSheet(
                     listCode = selectedListCode.value,
-                    onDismiss = { viewModel.setShowSheet(false)},
+                    onDismiss = {
+                        viewModel.setShowSheet(false)
+                        viewModel.currentPage = 1
+                                },
                     playListTitle = listTitle.value,
                     onClickItem = onClickItem ,
                     onLongClickItem = onLongClickItem,

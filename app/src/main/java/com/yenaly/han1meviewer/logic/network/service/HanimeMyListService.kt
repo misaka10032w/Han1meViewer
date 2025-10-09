@@ -48,7 +48,9 @@ interface HanimeMyListService {
     ): Response<ResponseBody>
 
     @GET("playlist?list=PL")
-    suspend fun getPlaylists(): Response<ResponseBody>
+    suspend fun getPlaylists(
+        @Query("page") @IntRange(from = 1) page: Int,
+    ): Response<ResponseBody>
 
     @FormUrlEncoded
     @POST("createPlaylist")

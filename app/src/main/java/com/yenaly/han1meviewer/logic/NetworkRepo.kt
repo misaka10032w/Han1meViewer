@@ -127,8 +127,8 @@ object NetworkRepo {
         return@websiteIOFlow WebsiteState.Error(IllegalStateException("cannot delete it ?!"))
     }
 
-    fun getPlaylists() = websiteIOFlow(
-        request = HanimeNetwork.myListService::getPlaylists,
+    fun getPlaylists(page: Int) = websiteIOFlow(
+        request = { HanimeNetwork.myListService.getPlaylists(page) },
         action = Parser::playlists
     )
 

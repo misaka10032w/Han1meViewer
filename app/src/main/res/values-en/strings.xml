@@ -439,4 +439,5 @@ Recommendations are as follows:\n
     <string name="empty_content">Nothing here</string>
     <string name="load_failed_retry">Load failed, please retry</string>
     <string name="video_count">%d videos</string>
+    <string name="load_complete_with_pages">Load complete, %d pages in total</string>
 </resources>

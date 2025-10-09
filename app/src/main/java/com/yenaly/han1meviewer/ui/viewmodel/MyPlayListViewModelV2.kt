@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -45,15 +44,17 @@ class MyPlayListViewModelV2 : ViewModel() {
 
     private val _showSheet = MutableStateFlow(false)
     val showSheet: StateFlow<Boolean> = _showSheet.asStateFlow()
-
+    var currentPage = 1
+    var isLoadingMore = false
+        private set
     fun setShowSheet(value: Boolean) {
         _showSheet.value = value
     }
 
     // 加载所有playlist
-    fun loadMyPlayList(forceReload: Boolean = false) {
+    fun loadMyPlayList(page: Int = 1, forceReload: Boolean = false) {
         viewModelScope.launch {
-            NetworkRepo.getPlaylists().collect { state ->
+            NetworkRepo.getPlaylists(page).collect { state ->
                 _myPlaylistsFlow.value = state
                 if (state is WebsiteState.Success) {
                     _cachedMyPlayList.value = state.info.playlists
@@ -64,31 +65,54 @@ class MyPlayListViewModelV2 : ViewModel() {
     }
 
     // 获取单个playlist内容
-    fun getPlaylistItems(page: Int = 1, listCode: String) {
+    fun getPlaylistItems(page: Int = 1, listCode: String, refresh: Boolean = false) {
+        if (isLoadingMore) return
+        isLoadingMore = true
+
         viewModelScope.launch {
             if (listCode.isBlank()) return@launch
-            if (page == 1) {
+            Log.i("getPlaylistItems","$page,$refresh")
+            // 如果是第一页或刷新，重置状态
+            if (page == 1 || refresh) {
                 _playlistFlow.value = emptyList()
                 _playlistDesc.value = null
                 _playlistStateFlow.value = PageLoadingState.Loading
+            } else {
+                _playlistStateFlow.value = PageLoadingState.Loading
             }
             NetworkRepo.getMyListItems(page, listCode).collect { state ->
-                val prev = _playlistStateFlow.getAndUpdate { state }
-                if (prev is PageLoadingState.Loading) {
-                    _playlistFlow.value = emptyList()
-                    _playlistDesc.value = null
-                }
-                if (state is PageLoadingState.Success) {
-                    _playlistDesc.value = state.info.desc
-                }
-                _playlistFlow.update { prevList ->
-                    when (state) {
-                        is PageLoadingState.Success -> prevList + state.info.hanimeInfo
-                        is PageLoadingState.Loading -> emptyList()
-                        else -> prevList
+                Log.i("getPlaylistItems","$state")
+                when (state) {
+                    is PageLoadingState.Success -> {
+                        Log.i("getPlaylistItems","${state.info.hanimeInfo.size}")
+                        _playlistDesc.value = state.info.desc
+                        val newList = state.info.hanimeInfo
+                        if (newList.isEmpty()) {
+                            _playlistStateFlow.value = PageLoadingState.NoMoreData
+                        } else {
+                            _playlistFlow.update { prevList ->
+                                if (page == 1 || refresh) newList else prevList + newList
+                            }
+                            _playlistStateFlow.value = PageLoadingState.Success(state.info)
+                        }
+                    }
+
+                    is PageLoadingState.Error -> {
+                        _playlistStateFlow.value = PageLoadingState.Error(state.throwable)
+                    }
+
+                    is PageLoadingState.Loading -> {
+                        if (page == 1 || refresh) {
+                            _playlistFlow.value = emptyList()
+                        }
+                    }
+
+                    is PageLoadingState.NoMoreData -> {
+                        _playlistStateFlow.value = PageLoadingState.NoMoreData
                     }
                 }
             }
+            isLoadingMore = false
         }
     }
 

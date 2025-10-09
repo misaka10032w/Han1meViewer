@@ -31,9 +31,9 @@ class PlaylistSubViewModel(application: Application) : YenalyViewModel(applicati
         MutableStateFlow<WebsiteState<Playlists>>(WebsiteState.Loading)
     val playlistsFlow = _playlistsFlow.asStateFlow()
 
-    fun getPlaylists() {
+    fun getPlaylists(page: Int = 1) {
         viewModelScope.launch {
-            NetworkRepo.getPlaylists().collect {
+            NetworkRepo.getPlaylists(page).collect {
                 _playlistsFlow.value = it
             }
         }
