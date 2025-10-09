@@ -20,7 +20,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fitsSystemWindows="true"
-                app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed"
                 app:expandedTitleMarginStart="0dp"
                 app:expandedTitleMarginEnd="0dp"
                 app:collapsedTitleTextAppearance="@android:color/transparent"
