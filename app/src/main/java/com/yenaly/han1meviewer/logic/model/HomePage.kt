@@ -22,7 +22,8 @@ data class HomePage(
     val thereDWork: MutableList<HanimeInfo>, //3D作品
     val douJinWork: MutableList<HanimeInfo>,  //同人
     val cosplay: MutableList<HanimeInfo>,
-    val newAnimeTrailer: MutableList<HanimeInfo>
+    val newAnimeTrailer: MutableList<HanimeInfo>,
+    val timestamp: Long = System.currentTimeMillis()
 ) {
     data class Banner(
         val title: String,
