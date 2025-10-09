@@ -3,11 +3,13 @@ package com.yenaly.han1meviewer.ui.viewmodel
 import android.app.Application
 import android.os.Parcelable
 import android.util.Log
+import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.EMPTY_STRING
 import com.yenaly.han1meviewer.HCacheManager
+import com.yenaly.han1meviewer.HanimeResolution
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.NetworkRepo
@@ -76,7 +78,32 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
     fun setVideoList(list: List<HanimeInfo>) {
         _videoList.value = list
     }
-    fun getHanimeVideo(videoCode: String) {
+    fun buildLocalPlayInfo(localPath: String? = null): HanimeVideo {
+        val resolution = HanimeResolution()
+        resolution.parseResolution(
+            HanimeResolution.RES_1080P,
+            resLink = localPath?:"",
+            type = "video/mp4"
+        )
+        return HanimeVideo(
+            title = "",
+            coverUrl = "",
+            chineseTitle = localPath?.toUri()?.lastPathSegment,
+            introduction = "",
+            uploadTime = null,
+            views = "0",
+            videoUrls = resolution.toResolutionLinkMap(),
+            tags = emptyList(),
+        )
+    }
+    fun getHanimeVideo(videoCode: String,localUri: String? = null) {
+        if (videoCode == "-1"){
+            _hanimeVideoStateFlow.value = VideoLoadingState.Success(
+                buildLocalPlayInfo(localUri)
+            )
+            _hanimeVideoFlow.value = buildLocalPlayInfo(localUri)
+            return
+        }
         if (videoIntroRestoredSet.contains(videoCode)) return
         viewModelScope.launch {
             val flow = if (fromDownload) {
