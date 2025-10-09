@@ -3,6 +3,7 @@ package com.yenaly.han1meviewer.util
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import com.yenaly.han1meviewer.R
 import com.yenaly.yenaly_libs.utils.showShortToast
 import java.security.MessageDigest
@@ -12,7 +13,14 @@ fun isLegalBuild(context: Context, sha: String): Boolean {
     return try {
         val pm = context.packageManager
         val packageName = context.packageName
-        val packageInfo = pm.getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            PackageManager.GET_SIGNING_CERTIFICATES
+        } else {
+            @Suppress("DEPRECATION")
+            PackageManager.GET_SIGNATURES
+        }
+
+        val packageInfo = pm.getPackageInfo(packageName, flags)
 
         val signatures = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             packageInfo.signingInfo?.apkContentsSigners

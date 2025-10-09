@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.widget.EditText
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +21,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material3.Button
@@ -39,6 +40,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -78,8 +81,11 @@ fun PlaylistBottomSheet(
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+    val gridState = rememberSaveable(saver = LazyGridState.Saver) {
+        LazyGridState()
+    }
     LaunchedEffect(listCode) {
-        vm.getPlaylistItems(1, listCode)
+        vm.getPlaylistItems(1, listCode,true)
     }
 
     ModalBottomSheet(
@@ -87,61 +93,35 @@ fun PlaylistBottomSheet(
         sheetState = sheetState,
         dragHandle = null
     ) {
-        when (playlistState) {
-            is PageLoadingState.Loading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
+        if (playlist.isEmpty() && playlistState is PageLoadingState.Loading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
-            is PageLoadingState.Error -> {
-                Box(modifier = Modifier
-                    .fillMaxSize()
-                    .height(200.dp), contentAlignment = Alignment.Center) {
-                    Text(stringResource(R.string.load_failed_retry))
-                }
+        } else if (playlist.isEmpty() && playlistState is PageLoadingState.Error) {
+            Box(modifier = Modifier.fillMaxSize().height(200.dp), contentAlignment = Alignment.Center) {
+                Text(stringResource(R.string.load_failed_retry))
             }
-            is PageLoadingState.Success -> {
-                AnimatedVisibility(
-                    visible = playlist.isNotEmpty(),
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    PlaylistDetailContent(
-                        listCode,
-                        playlist,
-                        onDismiss,
-                        playListTitle,
-                        vm.playlistDesc,
-                        onClickItem,
-                        onLongClickItem,
-                        vm,
-                        context
-                    )
-                }
-            }
-            is PageLoadingState.NoMoreData -> {
-                AnimatedVisibility(
-                    visible = playlist.isEmpty(),
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    BottomSheetHandler()
-                    PlaylistDetailContent(
-                        listCode,
-                        playlist,
-                        onDismiss,
-                        playListTitle,
-                        vm.playlistDesc,
-                        onClickItem,
-                        onLongClickItem,
-                        vm,
-                        context,
-                        true
-                    )
+        } else {
+            AnimatedVisibility(
+                visible = true,
+                enter = fadeIn()
+            ) {
+                PlaylistDetailContent(
+                    gridState,
+                    listCode,
+                    playlist,
+                    onDismiss,
+                    playListTitle,
+                    vm.playlistDesc,
+                    onClickItem,
+                    onLongClickItem,
+                    vm,
+                    context
+                )
+                if (playlist.isEmpty()) {
                     EmptyView(stringResource(R.string.empty_content))
                 }
             }
-
         }
     }
 //    LaunchedEffect(sheetState) {
@@ -162,7 +142,7 @@ fun PlaylistBottomSheet(
                         return@collect
                     }
                     showShortToast(R.string.modify_success)
-                    vm.getPlaylistItems(1, listCode)
+                    vm.getPlaylistItems(1, listCode,true)
                     vm.loadMyPlayList()
                 }
             }
@@ -190,6 +170,7 @@ fun PlaylistBottomSheet(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaylistDetailContent(
+    gridState: LazyGridState,
     listCode: String,
     playlist: List<HanimeInfo>,
     onDismiss: () -> Unit,
@@ -201,6 +182,7 @@ fun PlaylistDetailContent(
     context: Context,
     onlyEdit: Boolean = false
 ) {
+    val playlistState by vm.playlistStateFlow.collectAsState()
     Column(modifier = Modifier.fillMaxSize()) {
         // 顶部图片区域
         Box(
@@ -346,6 +328,7 @@ fun PlaylistDetailContent(
             val columns = maxOf(2, (sheetWidth / cardWidth).toInt())
 
             LazyVerticalGrid(
+                state = gridState,
                 columns = GridCells.Fixed(columns),
                 contentPadding = PaddingValues(4.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -369,6 +352,57 @@ fun PlaylistDetailContent(
                         }
                     }
                 }
+
+                // 加载中占位
+                item(span = { GridItemSpan(columns) }) {
+                    if (playlistState is PageLoadingState.Loading && vm.currentPage > 1) {
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                }
+
+                // 没有更多数据提示
+                if (playlistState is PageLoadingState.NoMoreData && playlist.isNotEmpty()) {
+                    item(span = { GridItemSpan(columns) }) {
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = stringResource(R.string.load_complete_with_pages,vm.currentPage - 1),
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 加载更多
+            LaunchedEffect(gridState) {
+                snapshotFlow { gridState.layoutInfo }
+                    .collect { layoutInfo ->
+                        val totalItems = layoutInfo.totalItemsCount
+                        val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+                        // 滑到倒数第3个时触发加载下一页
+                        if (lastVisibleItem >= totalItems - 3 &&
+                            playlistState !is PageLoadingState.Loading &&
+                            playlistState !is PageLoadingState.NoMoreData &&
+                            !vm.isLoadingMore
+                        ) {
+                            vm.currentPage++
+                            vm.getPlaylistItems(vm.currentPage, listCode)
+                        }
+                    }
             }
         }
     }

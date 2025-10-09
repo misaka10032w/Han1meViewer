@@ -444,4 +444,5 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="empty_content">ここには何もありません</string>
     <string name="load_failed_retry">読み込み失敗、再試行してください</string>
     <string name="video_count">%d本の動画</string>
+    <string name="load_complete_with_pages">読み込み完了、全%dページ</string>
 </resources>
