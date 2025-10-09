@@ -65,8 +65,15 @@ object Parser {
         val bannerPic = bannerImg?.select("img")?.getOrNull(1)?.absUrl("src")
             .logIfParseNull(Parser::homePageVer2.name, "bannerPic")
         val bannerDesc = bannerCSS?.selectFirst("h4")?.ownText()
-        var bannerVideoCode =
-            bannerCSS?.selectFirst("a[class~=play-btn]")?.absUrl("href")?.toVideoCode()
+//        var bannerVideoCode =
+//            bannerCSS?.selectFirst("a[class~=play-btn]")?.absUrl("href")?.toVideoCode()
+        val bannerVideoCodeScript = parseBody.select("script")
+            .firstOrNull{ it.data().contains("watch?v=")}
+            ?.data()
+        val regex = Regex("""watch\?v=(\d+)""")
+        var bannerVideoCode = bannerVideoCodeScript?.let { script ->
+            regex.find(script)?.groupValues?.get(1)
+        }
         // 目前先判断注释里的，以后可能会有变化
         if (bannerVideoCode == null) {
             bannerCSS?.traverse { node, _ ->
