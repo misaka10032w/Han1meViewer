@@ -2,12 +2,12 @@ package com.yenaly.han1meviewer.ui.fragment.settings
 
 import android.os.Bundle
 import androidx.annotation.IntRange
-import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.Preference
 import androidx.preference.SeekBarPreference
 import androidx.preference.SwitchPreferenceCompat
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.ui.activity.SettingsActivity
-import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
+import com.yenaly.han1meviewer.ui.activity.SettingsRouter
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
 import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
@@ -24,6 +24,7 @@ import com.yenaly.yenaly_libs.utils.toStringArray
 class PlayerSettingsFragment : YenalySettingsFragment(R.xml.settings_player) {
     companion object {
         const val SWITCH_PLAYER_KERNEL = "switch_player_kernel"
+        const val MPV_PLAYER_SETTINGS = "mpv_advanced_settings"
         const val SHOW_BOTTOM_PROGRESS = "show_bottom_progress"
         const val PLAYER_SPEED = "player_speed"
         const val SLIDE_SENSITIVITY = "slide_sensitivity"
@@ -34,6 +35,8 @@ class PlayerSettingsFragment : YenalySettingsFragment(R.xml.settings_player) {
             by safePreference<MaterialDialogPreference>(SWITCH_PLAYER_KERNEL)
     private val showBottomProgressPref
             by safePreference<SwitchPreferenceCompat>(SHOW_BOTTOM_PROGRESS)
+    private val mpvPlayerSettings
+            by safePreference<Preference>(MPV_PLAYER_SETTINGS)
     private val playerSpeed
             by safePreference<MaterialDialogPreference>(PLAYER_SPEED)
     private val slideSensitivity
@@ -55,6 +58,28 @@ class PlayerSettingsFragment : YenalySettingsFragment(R.xml.settings_player) {
             entries = kernelNames
             entryValues = kernelNames
             if (value == null) setValueIndex(HMediaKernel.Type.ExoPlayer.ordinal)
+            setOnPreferenceChangeListener { _, newValue ->
+                if (newValue == "MpvPlayer") {
+                    mpvPlayerSettings.isEnabled = true
+                    mpvPlayerSettings.summary = getString(R.string.mpv_advanced_settings)
+                } else {
+                    mpvPlayerSettings.isEnabled = false
+                    mpvPlayerSettings.summary = getString(R.string.mpv_settings_disabled_summary)
+                }
+                return@setOnPreferenceChangeListener true
+            }
+        }
+        mpvPlayerSettings.apply {
+            val isMpvPlayer = Preferences.switchPlayerKernel == "MpvPlayer"
+            isEnabled =isMpvPlayer
+            if (!isMpvPlayer) {
+                summary = getString(R.string.mpv_settings_disabled_summary)
+            }
+            setOnPreferenceClickListener {
+                SettingsRouter.with(this@PlayerSettingsFragment)
+                    .navigateWithinSettings(R.id.mpvPlayerSettings)
+                return@setOnPreferenceClickListener true
+            }
         }
         playerSpeed.apply {
             entries = HJzvdStd.speedStringArray

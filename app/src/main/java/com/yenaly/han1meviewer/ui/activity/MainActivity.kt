@@ -232,8 +232,17 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         //外部跳转Deeplink
         if (intent.action == Intent.ACTION_VIEW) {
             val uri = intent.data ?: return
-            val videoCode = uri.getQueryParameter("v") ?: return
-            showVideoDetailFragment(videoCode)
+            when (uri.scheme) {
+                "http", "https" -> {
+                    val videoCode = uri.getQueryParameter("v")
+                    if (videoCode != null) {
+                        showVideoDetailFragment(videoCode)
+                    }
+                }
+                "file", "content" -> {
+                    showVideoDetailFragment("-1",uri.toString())
+                }
+            }
             return
         }
 
@@ -642,13 +651,16 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         binding.toolbar.visibility = View.VISIBLE
     }
 
-    fun showVideoDetailFragment(videoCode: String) {
+    fun showVideoDetailFragment(videoCode: String, fileUri: String? = null) {
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.fcv_main)
         val childFragmentManager = navHostFragment?.childFragmentManager
 
         if (childFragmentManager != null && !childFragmentManager.isStateSaved) {
 //            val navController = navHostFragment.findNavController()
-            val args = bundleOf(VIDEO_CODE to videoCode) // KEY 要与 Fragment 中读取的 key 对应
+            val args = bundleOf(
+                VIDEO_CODE to videoCode,
+                "LOCAL_URI" to fileUri
+            ) // KEY 要与 Fragment 中读取的 key 对应
             navController.navigate(
                 R.id.videoFragment,
                 args

@@ -28,6 +28,7 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    app:layout_collapseMode="parallax"
                     android:fitsSystemWindows="true">
 
                     <ImageView
@@ -36,8 +37,7 @@
                         android:layout_height="match_parent"
                         android:contentDescription="@null"
                         android:fitsSystemWindows="true"
-                        android:scaleType="centerCrop"
-                        app:layout_collapseMode="parallax" />
+                        android:scaleType="centerCrop" />
 
                     <View
                         android:layout_width="match_parent"

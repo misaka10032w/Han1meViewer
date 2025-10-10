@@ -706,7 +706,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         val lastDismissTime = getSpValue("last_dismiss_time",0L,"setting_pref")
         val shouldShowAnno = System.currentTimeMillis() - lastDismissTime > 24*60*60*1000L
         if (!shouldShowAnno) return
-
+        if (view == null) return
         viewModel.announcements.observe(viewLifecycleOwner) { sortedList ->
             if (sortedList.isNotEmpty()) {
                 announcementCardAdapter?.let {

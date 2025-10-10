@@ -8,6 +8,7 @@ import com.yenaly.han1meviewer.logic.network.interceptor.SpeedLimitInterceptor
 import com.yenaly.han1meviewer.ui.fragment.settings.DownloadSettingsFragment
 import com.yenaly.han1meviewer.ui.fragment.settings.HKeyframeSettingsFragment
 import com.yenaly.han1meviewer.ui.fragment.settings.HomeSettingsFragment
+import com.yenaly.han1meviewer.ui.fragment.settings.MpvPlayerSettings
 import com.yenaly.han1meviewer.ui.fragment.settings.NetworkSettingsFragment
 import com.yenaly.han1meviewer.ui.fragment.settings.PlayerSettingsFragment
 import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
@@ -205,6 +206,40 @@ object Preferences {
         get() = preferenceSp.getBoolean(HomeSettingsFragment.USE_DYNAMIC_COLOR,false)
     val allowResumePlayback: Boolean
         get() = preferenceSp.getBoolean(HomeSettingsFragment.ALLOW_RESUME_PLAYBACK,true)
+
+    /**
+     * MPV播放器设置
+     */
+    val mpvProfile: String // 预设模式
+        get() = preferenceSp.getString(MpvPlayerSettings.MPV_PROFILE, "fast") ?: "fast"
+
+    val enableGPUNextRenderer: Boolean // gpu-next 渲染器
+        get() = preferenceSp.getBoolean(MpvPlayerSettings.ENABLE_GPU_NEXT_RENDERER, false)
+
+    val mpvInterpolation: Boolean  // 插帧相关
+        get() = preferenceSp.getBoolean(MpvPlayerSettings.MPV_INTERPOLATION, false)
+
+    val mpvDeband: Boolean  // 去色带
+        get() = preferenceSp.getBoolean(MpvPlayerSettings.MPV_DEBAND, true)
+
+    val mpvFramedrop: Boolean  // GPU 繁忙时允许丢帧
+        get() = preferenceSp.getBoolean(MpvPlayerSettings.MPV_FRAMEDROP, true)
+
+    val mpvHwdec: Boolean  // 硬件解码
+        get() = preferenceSp.getBoolean(MpvPlayerSettings.MPV_HWDEC, true)
+
+    val mpvCacheSecs: Int  // 预缓存秒数
+        get() = preferenceSp.getInt(MpvPlayerSettings.MPV_CACHE_SECS, 60)
+
+    val mpvTlsVerify: Boolean  // 忽略证书验证
+        get() = preferenceSp.getBoolean(MpvPlayerSettings.MPV_TLS_VERIFY, true)
+
+    val mpvNetworkTimeout: Int  // 请求超时
+        get() = preferenceSp.getInt(MpvPlayerSettings.MPV_NETWORK_TIMEOUT, 10)
+
+    val customMpvParams: String
+        get() = preferenceSp.getString(MpvPlayerSettings.CUSTOM_PARAMS,"")?: ""
+
     /**
      * 对应关系详见 [SpeedLimitInterceptor.SPEED_BYTES]
      */

@@ -32,7 +32,6 @@ import androidx.preference.PreferenceManager
 import cn.jzvd.JZMediaInterface
 import cn.jzvd.Jzvd
 import coil.load
-import com.google.android.material.appbar.AppBarLayout
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
@@ -70,7 +69,6 @@ import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.startActivity
 import com.yenaly.yenaly_libs.utils.view.attach
 import com.yenaly.yenaly_libs.utils.view.setUpFragmentStateAdapter
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 
@@ -83,9 +81,10 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
 
     private val fromDownload by lazy { requireArguments().getBoolean(FROM_DOWNLOAD, false) }
     private val videoCode by lazy { requireArguments().getString(VIDEO_CODE) ?: error("Missing video code") }
+    private val videoUri by lazy { requireArguments().getString("LOCAL_URI") }
     private var videoTitle: String? = null
     private lateinit var orientationManager: OrientationManager
-    private var saveJob: Job? = null
+ //   private var saveJob: Job? = null
     private val tabNameArray by lazy {
         checkBadGuy(requireContext(),R.raw.akarin)
     }
@@ -102,7 +101,11 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
     }
 
     override fun initData(savedInstanceState: Bundle?) {
-        viewModel.fromDownload = fromDownload
+        if (videoCode == "-1"){
+            viewModel.fromDownload = true
+        }else{
+            viewModel.fromDownload = fromDownload
+        }
         viewModel.videoCode = videoCode
         commentViewModel.code = videoCode
         binding.videoPlayer.videoCode = videoCode
@@ -119,7 +122,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         binding.videoPlayer.orientationManager = orientationManager
         initViewPager()
         initHKeyframe()
-        viewModel.getHanimeVideo(videoCode)
+        viewModel.getHanimeVideo(videoCode, videoUri)
         Log.i("video_ui", "initData: $videoCode")
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
@@ -243,8 +246,8 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         }
     }
 
-    override fun onResume() {
-        super.onResume()
+//    override fun onResume() {
+//        super.onResume()
 //        saveJob = lifecycleScope.launch {
 //            while (isActive) {
 //                delay(5000)
@@ -253,7 +256,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
 //                DatabaseRepo.WatchHistory.updateProgress(videoCode, progress)
 //            }
 //        }
-    }
+//    }
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -421,7 +424,6 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
     fun shouldEnterPip(): Boolean {
         val isPlaying = (binding.videoPlayer.state == Jzvd.STATE_PLAYING ||
                 binding.videoPlayer.state == Jzvd.STATE_PAUSE)
-        Log.i("pipmode","enter pip mode?:$isPlaying\n")
         return  isPlaying
     }
     fun onPipModeChanged(isInPip: Boolean) {

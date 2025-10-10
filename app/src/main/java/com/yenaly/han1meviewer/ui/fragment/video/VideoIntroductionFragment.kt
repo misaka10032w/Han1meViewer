@@ -204,7 +204,9 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
         super.onViewCreated(view, savedInstanceState)
         val code = viewModel.videoCode
         if (!viewModel.restoreFromCacheIfExists(code)) {
-            viewModel.getHanimeVideo(code)
+            if (code != "-1"){
+                viewModel.getHanimeVideo(code)
+            }
         }
     }
 

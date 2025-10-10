@@ -36,8 +36,10 @@ import cn.jzvd.JZMediaInterface
 import cn.jzvd.JZMediaSystem
 import cn.jzvd.Jzvd
 import com.yenaly.han1meviewer.BuildConfig
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.USER_AGENT
 import com.yenaly.han1meviewer.util.AnimeShaders
+import com.yenaly.yenaly_libs.utils.showShortToast
 import `is`.xyz.mpv.MPVLib
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -501,30 +503,59 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
     private var currentPfd: ParcelFileDescriptor? = null
     private var detachFd: Int? = null
     private var pfdFilePath = false
-    private val mpvOptions = mapOf(
-        "vo" to "gpu",                // 视频输出驱动：GPU 渲染（支持 GLSL 滤镜/Anime4K/插帧）
-        "profile" to "fast",          // 预设模式：fast（性能优先，画质略低；可改为 gpu-hq 追求高画质）
-        "hwdec" to "auto",            // 硬件解码：自动选择合适的解码器（mediacodec/mediacodec-copy）
-        "msg-level" to "all=" + if (BuildConfig.DEBUG) "verbose" else "warn",  // 日志等级：fatal → error → warn → info → status → verbose → debug → trace
+    private val mpvOptions: Map<String, String>
+        get() = buildMap {
+            // 视频输出驱动：GPU 渲染（支持 GLSL 滤镜/Anime4K/插帧）
+            if (Preferences.enableGPUNextRenderer){
+                put("vo", "gpu-next")
+            } else {
+                put("vo", "gpu")
+            }
 
-        // 插帧相关
-//        "interpolation" to "yes",     // 启用插值渲染（补帧），提升低帧率视频的流畅度
-//        "tscale" to "oversample",     // 时间插值算法：oversample（平滑效果最好，性能开销适中）
-//        "video-sync" to "display-resample",  // 将视频播放节奏重采样到显示器刷新率（避免音画不同步）
+            // 预设模式：fast（性能优先，画质略低；可改为 gpu-hq 追求高画质）
+            put("profile", when (Preferences.mpvProfile) {
+                "gpu-hq" -> "gpu-hq"
+                "fast" -> "fast"
+                else -> "default"
+            })
 
-        // 缓存 & 性能
-        "cache" to "yes",             // 启用解复用缓存
-        "cache-secs" to "60",         // 预缓存秒数
-        "vd-lavc-threads" to Runtime.getRuntime().availableProcessors().toString(),  // 视频解码线程数：设为 CPU 核心数，提升多核利用率
-        "framedrop" to "vo",          // GPU 繁忙时允许丢帧（保持音画同步，避免卡顿）
-        "deband" to "yes",            // 去色带（dithering），提升渐变/暗场画质
-        "cache-pause" to "no",        // 缓存时是否暂停播放
+            // 硬件解码：自动选择合适的解码器（mediacodec/mediacodec-copy）
+            if (Preferences.mpvHwdec) {
+                put("hwdec", "auto")
+            } else {
+                put("hwdec", "no")
+            }
 
-        //网络
-        "network-timeout" to "10",           // 请求超时 10 秒
-        "tls-verify" to "no",               // 忽略证书验证
-        "user-agent" to USER_AGENT
-    )
+            // 日志等级：fatal → error → warn → info → status → verbose → debug → trace
+            put("msg-level", "all=" + if (BuildConfig.DEBUG) "verbose" else "warn")
+
+            // 插帧设置
+            if (Preferences.mpvInterpolation) {
+                put("interpolation", "yes")      // 启用插帧
+                put("tscale", "oversample")      // 时间插值算法
+                put("video-sync", "display-resample") // 同步刷新率
+            }
+
+            // 缓存与性能
+            put("cache", "yes")  // 启用解复用缓存
+            put("cache-secs", Preferences.mpvCacheSecs.toString())   // 预缓存秒数
+            put("vd-lavc-threads", Runtime.getRuntime().availableProcessors().toString())  // 视频解码线程数：设为 CPU 核心数，提升多核利用率
+
+            if (Preferences.mpvFramedrop) {
+                put("framedrop", "vo")  // GPU 繁忙时允许丢帧（保持音画同步，避免卡顿）
+            } else {
+                put("framedrop", "no")
+            }
+
+            put("deband", if (Preferences.mpvDeband) "yes" else "no")  // 去色带
+
+            put("cache-pause", "no")  // 缓存时是否暂停播放
+
+            put("network-timeout", Preferences.mpvNetworkTimeout.toString())  // 请求超时
+            put("tls-verify", if (Preferences.mpvTlsVerify) "no" else "yes")  // 是否证书验证 yes、no
+            put("user-agent", USER_AGENT)
+        }
+
 
     private val observedProperties = listOf(
         "time-pos" to MPVLib.mpvFormat.MPV_FORMAT_DOUBLE, // 当前播放时间（秒，带小数）
@@ -534,10 +565,39 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
         "video-params/w" to MPVLib.mpvFormat.MPV_FORMAT_INT64, // 视频宽度（像素）
         "video-params/h" to MPVLib.mpvFormat.MPV_FORMAT_INT64, // 视频高度（像素）
     )
+    fun parseCustomMpvParams(): LinkedHashMap<String, String> {
+        val rawInput = Preferences.customMpvParams
+        val map = linkedMapOf<String, String>()
+
+        rawInput.split(";").forEach { entry ->
+            val trimmedEntry = entry.trim()
+            if (trimmedEntry.isEmpty() || trimmedEntry.startsWith("#")) return@forEach
+
+            val parts = trimmedEntry.split(",", limit = 2)
+            if (parts.size == 2) {
+                val key = parts[0].trim()
+                val value = parts[1].trim()
+                if (key.isNotEmpty() && value.isNotEmpty()) {
+                    map[key] = value
+                }
+            }
+        }
+        return map
+    }
 
     fun init() {
         mpvOptions.forEach { (key, value) ->
+            Log.i("MPV_config","$key,$value")
             MPVLib.setOptionString(key, value)
+        }
+        try {
+            val customParams = parseCustomMpvParams()
+            customParams.forEach { (key, value) ->
+                Log.i("MPV_config","custom: $key,$value")
+                MPVLib.setOptionString(key, value)
+            }
+        } catch (e: Exception){
+            showShortToast(e.message)
         }
 
         observedProperties.forEach { (name, type) ->

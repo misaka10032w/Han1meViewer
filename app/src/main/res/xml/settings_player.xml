@@ -7,6 +7,12 @@
         app:key="switch_player_kernel"
         app:title="@string/switch_player_kernel"
         app:useSimpleSummaryProvider="true" />
+    <Preference
+        app:key="mpv_advanced_settings"
+        app:title="@string/mpv_advanced_settings"
+        app:summary="@string/mpv_advanced_settings_summary"
+        app:iconSpaceReserved="false"
+        app:fragment="com.yenaly.han1meviewer.ui.fragment.MpvSettingsFragment" />
 
     <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
         app:defaultValue="true"
