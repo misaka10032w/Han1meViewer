@@ -36,5 +36,9 @@
         app:destination="@id/nv_home_page"
         app:popUpTo="@id/nav_main"
         app:popUpToInclusive="true" />
+    <fragment
+        android:id="@+id/mpvPlayerSettings"
+        android:name="com.yenaly.han1meviewer.ui.fragment.settings.MpvPlayerSettings"
+        android:label="MpvPlayerSettings" />
 
 </navigation>

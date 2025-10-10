@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:title="@string/player_settings_quality_performance"
+        app:iconSpaceReserved="false">
+
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
+            app:key="mpv_profile"
+            app:title="@string/mpv_profile"
+            app:useSimpleSummaryProvider="true"
+            app:iconSpaceReserved="false" />
+        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
+            app:key="mpv_gpu_next_render"
+            app:title="@string/enable_gpu_next"
+            app:summary="@string/enable_gpu_next_summary"
+            app:defaultValue="false"
+            app:iconSpaceReserved="false" />
+
+        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
+            app:key="mpv_interpolation"
+            app:title="@string/mpv_interpolation"
+            app:summary="@string/mpv_interpolation_summary"
+            app:defaultValue="false"
+            app:iconSpaceReserved="false" />
+
+        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
+            app:key="mpv_deband"
+            app:title="@string/mpv_deband"
+            app:summary="@string/mpv_deband_summary"
+            app:defaultValue="true"
+            app:iconSpaceReserved="false" />
+
+        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
+            app:key="mpv_framedrop"
+            app:title="@string/mpv_framedrop"
+            app:summary="@string/mpv_framedrop_summary"
+            app:defaultValue="true"
+            app:iconSpaceReserved="false" />
+
+        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
+            app:key="mpv_hwdec"
+            app:title="@string/mpv_hwdec"
+            app:summary="@string/mpv_hwdec_summary"
+            app:defaultValue="true"
+            app:iconSpaceReserved="false" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="@string/player_settings_network_cache"
+        app:iconSpaceReserved="false">
+
+        <SeekBarPreference
+            android:max="120"
+            app:min="10"
+            app:defaultValue="60"
+            app:key="mpv_cache_secs"
+            app:title="@string/mpv_cache_secs"
+            app:summary="@string/mpv_cache_secs_summary"
+            app:iconSpaceReserved="false"
+            app:updatesContinuously="true" />
+
+        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
+            app:key="mpv_tls_verify"
+            app:title="@string/mpv_tls_verify"
+            app:summary="@string/mpv_tls_verify_summary"
+            app:defaultValue="true"
+            app:iconSpaceReserved="false" />
+        <SeekBarPreference
+            android:max="30"
+            app:min="5"
+            app:defaultValue="10"
+            app:key="mpv_network_timeout"
+            app:title="@string/mpv_network_timeout"
+            app:summary="@string/mpv_network_timeout_summary"
+            app:iconSpaceReserved="false"
+            app:updatesContinuously="true" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        app:title="@string/advanced"
+        app:summary="@string/advanced_summary"
+        app:iconSpaceReserved="false">
+        <EditTextPreference
+            app:title="@string/custom_parameters"
+            app:summary="@string/custom_parameters_summary"
+            app:key="mpv_custom_parameters"
+            app:iconSpaceReserved="false"
+            app:dialogTitle="@string/custom_parameters_title"
+            app:dialogMessage="@string/custom_parameters_example"/>
+    </PreferenceCategory>
+    <Preference
+        app:title=""
+        app:summary=""/>
+
+</PreferenceScreen>
