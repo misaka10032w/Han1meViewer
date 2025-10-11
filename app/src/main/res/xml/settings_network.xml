@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
     <com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
-        app:iconSpaceReserved="false"
         app:key="domain_name"
         app:title="@string/domain_name"
+        app:icon="@drawable/baseline_domain_24"
         app:useSimpleSummaryProvider="true" />
 
     <Preference
-        app:iconSpaceReserved="false"
+        app:icon="@drawable/baseline_vpn_24"
         app:key="proxy"
         app:title="@string/proxy" />
 
     <PreferenceCategory
-        app:title="@string/builtin_dns"
-        app:iconSpaceReserved="false">
+        app:title="@string/builtin_dns">
 
         <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
-            app:iconSpaceReserved="false"
             app:key="use_built_in_hosts"
             app:summary="@string/use_built_in_hosts_summary"
-            app:title="@string/use_built_in_hosts" />
+            app:title="@string/use_built_in_hosts"
+            app:icon="@drawable/baseline_hosts_24"/>
+
         <Preference
-            app:iconSpaceReserved="false"
             app:key="delay_test"
             app:summary="@string/node_latency_sum"
-            app:title="@string/view_node_latency" />
+            app:title="@string/view_node_latency"
+            app:icon="@drawable/baseline_delay_24"/>
 
     </PreferenceCategory>
 
