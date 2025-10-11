@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.viewmodel
 
 import android.app.Application
+import android.os.Parcelable
 import android.util.Log
 import android.util.SparseArray
 import androidx.lifecycle.SavedStateHandle
@@ -101,6 +102,7 @@ class SearchViewModel(
 
     private val _searchFlow = MutableStateFlow(emptyList<HanimeInfo>())
     val searchFlow = _searchFlow.asStateFlow()
+    var recyclerViewState: Parcelable? = null
 
     fun clearHanimeSearchResult() = _searchStateFlow.update { PageLoadingState.Loading }
 

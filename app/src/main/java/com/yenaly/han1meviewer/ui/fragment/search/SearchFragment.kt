@@ -194,8 +194,16 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
             sfBindDataObservers()
             observersBound = true
         }
+        binding.searchRv.post {
+            // 手动修正因在[binding.searchBar]的offset插入之前恢复RV位置过早引起的位置错误，等到所有布局就绪再次恢复
+            binding.searchRv.layoutManager?.onRestoreInstanceState(viewModel.recyclerViewState)
+        }
     }
 
+    override fun onPause() {
+        super.onPause()
+        viewModel.recyclerViewState = binding.searchRv.layoutManager?.onSaveInstanceState()
+    }
 
     @SuppressLint("SetTextI18n")
     private fun sfBindDataObservers() {
