@@ -519,15 +519,19 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
                 else -> "default"
             })
 
-            // 硬件解码：自动选择合适的解码器（mediacodec/mediacodec-copy）
-            if (Preferences.mpvHwdec) {
-                put("hwdec", "auto")
-            } else {
-                put("hwdec", "no")
-            }
+            // 解码方式：选择合适的解码器（mediacodec/mediacodec-copy）
+            put("hwdec", when (Preferences.mpvHwdec) {
+                "Auto" -> "auto"
+                "HW" -> "mediacodec-copy"
+                "HW+" -> "mediacodec"
+                "Vulkan" -> "vulkan-copy"
+                "vulkan+" -> "vulkan"
+                "SW" -> "no"
+                else -> "auto"
+            })
 
             // 日志等级：fatal → error → warn → info → status → verbose → debug → trace
-            put("msg-level", "all=" + if (BuildConfig.DEBUG) "verbose" else "warn")
+            put("msg-level", "all=" + if (BuildConfig.DEBUG) "debug" else "warn")
 
             // 插帧设置
             if (Preferences.mpvInterpolation) {

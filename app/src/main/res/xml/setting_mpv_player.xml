@@ -39,12 +39,12 @@
             app:defaultValue="true"
             app:iconSpaceReserved="false" />
 
-        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
-            app:key="mpv_hwdec"
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
+            app:key="mpv_hwdecx"
             app:title="@string/mpv_hwdec"
             app:summary="@string/mpv_hwdec_summary"
-            app:defaultValue="true"
             app:iconSpaceReserved="false" />
+
     </PreferenceCategory>
 
     <PreferenceCategory

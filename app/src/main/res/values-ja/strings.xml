@@ -458,7 +458,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="mpv_deband_summary">暗部やグラデーション領域のカラーバンディングを軽減します</string>
     <string name="mpv_framedrop">フレームドロップを許可 (framedrop)</string>
     <string name="mpv_framedrop_summary">GPU負荷時に軽微なフレームドロップでカクつきを防止</string>
-    <string name="mpv_hwdec">ハードウェアデコードを有効化 (hwdec)</string>
+    <string name="mpv_hwdec">デコード方式 (hwdec)</string>
     <string name="mpv_hwdec_summary">ハードウェアアクセラレーションで再生性能を向上，一部端末でハードウェアデコード時に黒画面が発生する場合は無効化を試してください</string>
     <string name="mpv_cache_secs">プリキャッシュ時間</string>
     <string name="mpv_cache_secs_summary">ネットワーク変動に対応するキャッシュサイズの調整</string>
@@ -476,4 +476,10 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="advanced_summary">再生安定性に影響する可能性があります</string>
     <string name="custom_parameters_example">例: vo,gpu;profile,gpu-hq;framedrop,no</string>
     <string name="custom_parameters_title">注意：プレイヤープラットフォームが異なるため、一部パラメータが有効にならない場合があります</string>
+    <string name="decoding_sw">ソフトウェアデコード (SW: no)</string>
+    <string name="decoding_hw_plus">標準ハードウェアデコード+ レンダーパススルー (HW+: mediacodec)</string>
+    <string name="decoding_hw">ハードウェアデコード  (HW: mediacodec-copy)</string>
+    <string name="decoding_auto">自動選択 (auto)</string>
+    <string name="decoding_vulkan_copy">Vulkan (実験的: vulkan-copy)</string>
+    <string name="decoding_vulkan">Vulkan + レンダーパススルー (実験的: vulkan)</string>
 </resources>
