@@ -488,7 +488,7 @@
     <string name="mpv_deband_summary">減少暗場或漸變區域的色帶現象</string>
     <string name="mpv_framedrop">允許跳幀保持流暢 (framedrop)</string>
     <string name="mpv_framedrop_summary">GPU 繁忙時可略微丟幀以避免卡頓</string>
-    <string name="mpv_hwdec">啟用硬體解碼 (hwdec)</string>
+    <string name="mpv_hwdec">解碼方式 (hwdec)</string>
     <string name="mpv_hwdec_summary">利用硬體加速提升播放效能，部分裝置無法使用硬解播放黑屏可嘗試關閉</string>
     <string name="mpv_cache_secs">預快取時長</string>
     <string name="mpv_cache_secs_summary">調整快取大小以適應網路波動</string>
@@ -506,4 +506,10 @@
     <string name="advanced_summary">可能會影響播放穩定性</string>
     <string name="custom_parameters_example">例如：vo,gpu;profile,gpu-hq;framedrop,no</string>
     <string name="custom_parameters_title">注意：因播放器平台不同，部分參數可能不會生效</string>
+    <string name="decoding_sw">軟體解碼 (SW: no)</string>
+    <string name="decoding_hw_plus">標準硬體解碼 + 渲染直通 (HW+: mediacodec)</string>
+    <string name="decoding_hw">硬體解碼 (HW: mediacodec-copy)</string>
+    <string name="decoding_auto">自動選擇 (auto)</string>
+    <string name="decoding_vulkan_copy">Vulkan (實驗性: vulkan-copy)</string>
+    <string name="decoding_vulkan">Vulkan + 渲染直通 (實驗性: vulkan)</string>
 </resources>

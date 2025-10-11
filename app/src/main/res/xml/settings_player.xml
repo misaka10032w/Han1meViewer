@@ -3,43 +3,42 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
-        app:iconSpaceReserved="false"
         app:key="switch_player_kernel"
         app:title="@string/switch_player_kernel"
+        app:icon="@drawable/baseline_atomic_24"
         app:useSimpleSummaryProvider="true" />
     <Preference
         app:key="mpv_advanced_settings"
         app:title="@string/mpv_advanced_settings"
         app:summary="@string/mpv_advanced_settings_summary"
-        app:iconSpaceReserved="false"
+        app:icon="@drawable/baseline_player_24"
         app:fragment="com.yenaly.han1meviewer.ui.fragment.MpvSettingsFragment" />
 
     <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
         app:defaultValue="true"
-        app:iconSpaceReserved="false"
         app:key="show_bottom_progress"
-        app:title="@string/show_bottom_progress" />
+        app:title="@string/show_bottom_progress"
+        app:icon="@drawable/baseline_seek_24"/>
 
     <com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
-        app:iconSpaceReserved="false"
         app:key="player_speed"
         app:title="@string/default_playback_speed"
+        app:icon="@drawable/baseline_speed2_24"
         app:useSimpleSummaryProvider="true" />
 
     <com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
-        app:iconSpaceReserved="false"
         app:key="long_press_speed_times"
         app:title="@string/long_press_speed_multiplier"
+        app:icon="@drawable/baseline_touch_24"
         app:useSimpleSummaryProvider="true" />
 
     <SeekBarPreference
         android:max="9"
         app:defaultValue="5"
-        app:iconSpaceReserved="false"
         app:key="slide_sensitivity"
         app:min="1"
         app:title="@string/slide_sensitivity"
+        app:icon="@drawable/baseline_speed_24"
         app:updatesContinuously="true" />
-
 
 </PreferenceScreen>

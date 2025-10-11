@@ -16,7 +16,7 @@ class MpvPlayerSettings: YenalySettingsFragment(R.xml.setting_mpv_player) {
         const val MPV_INTERPOLATION = "mpv_interpolation"
         const val MPV_DEBAND = "mpv_deband"
         const val MPV_FRAMEDROP = "mpv_framedrop"
-        const val MPV_HWDEC = "mpv_hwdec"
+        const val MPV_HWDEC = "mpv_hwdecx"
         const val MPV_CACHE_SECS = "mpv_cache_secs"
         const val MPV_TLS_VERIFY = "mpv_tls_verify"
         const val MPV_NETWORK_TIMEOUT = "mpv_network_timeout"
@@ -27,7 +27,7 @@ class MpvPlayerSettings: YenalySettingsFragment(R.xml.setting_mpv_player) {
     private val mpvInterpolation by safePreference<SwitchPreferenceCompat>(MPV_INTERPOLATION)
     private val mpvDeband by safePreference<SwitchPreferenceCompat>(MPV_DEBAND)
     private val mpvFramedrop by safePreference<SwitchPreferenceCompat>(MPV_FRAMEDROP)
-    private val mpvHwdec by safePreference<SwitchPreferenceCompat>(MPV_HWDEC)
+    private val mpvHwdec by safePreference<MaterialDialogPreference>(MPV_HWDEC)
     private val mpvCacheSecs by safePreference<SeekBarPreference>(MPV_CACHE_SECS)
     private val mpvTlsVerify by safePreference<SwitchPreferenceCompat>(MPV_TLS_VERIFY)
     private val mpvNetworkTimeout by safePreference<SeekBarPreference>(MPV_NETWORK_TIMEOUT)
@@ -64,7 +64,22 @@ class MpvPlayerSettings: YenalySettingsFragment(R.xml.setting_mpv_player) {
         }
 
         mpvHwdec.apply {
-            summary = getString(R.string.mpv_hwdec_summary)
+            entries = arrayOf(
+                getString(R.string.decoding_auto),
+                getString(R.string.decoding_hw),
+                getString(R.string.decoding_hw_plus),
+                getString(R.string.decoding_vulkan_copy),
+                getString(R.string.decoding_vulkan),
+                getString(R.string.decoding_sw)
+            )
+            entryValues = arrayOf("Auto", "HW", "HW+", "Vulkan", "Vulkan+" , "SW")
+            if (value == null) setValueIndex(0)
+
+            summary = "${getString(R.string.mpv_hwdec_summary)} (${Preferences.mpvHwdec})"
+            setOnPreferenceChangeListener { _, newValue ->
+                summary = "${getString(R.string.mpv_hwdec_summary)} ($newValue)"
+                return@setOnPreferenceChangeListener true
+            }
         }
 
         mpvCacheSecs.apply {

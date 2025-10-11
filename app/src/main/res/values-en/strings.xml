@@ -453,7 +453,7 @@ Recommendations are as follows:\n
     <string name="mpv_deband_summary">Reduce color banding in dark scenes or gradient areas</string>
     <string name="mpv_framedrop">Allow Frame Dropping (framedrop)</string>
     <string name="mpv_framedrop_summary">Slightly drop frames when GPU is busy to avoid stuttering</string>
-    <string name="mpv_hwdec">Enable Hardware Decoding (hwdec)</string>
+    <string name="mpv_hwdec">Decoding Method (hwdec)</string>
     <string name="mpv_hwdec_summary">Use hardware acceleration to improve playback performance, If black screen occurs with hardware decoding on some devices, try disabling it</string>
     <string name="mpv_cache_secs">Pre-cache Duration</string>
     <string name="mpv_cache_secs_summary">Adjust cache size to adapt to network fluctuations</string>
@@ -471,4 +471,10 @@ Recommendations are as follows:\n
     <string name="advanced_summary">May affect playback stability</string>
     <string name="custom_parameters_example">Example: vo,gpu;profile,gpu-hq;framedrop,no</string>
     <string name="custom_parameters_title">Note: Some parameters may not take effect due to different player platforms</string>
+    <string name="decoding_sw">Software Decoding (SW: no)</string>
+    <string name="decoding_hw_plus">Standard Hardware Decoding + Render Passthrough (HW+: mediacodec)</string>
+    <string name="decoding_hw">Hardware Decoding (HW: mediacodec-copy)</string>
+    <string name="decoding_auto">Auto Select (auto)</string>
+    <string name="decoding_vulkan">Vulkan + Render Passthrough  (Experimental: vulkan)</string>
+    <string name="decoding_vulkan_copy">Vulkan (Experimental: vulkan-copy)</string>
 </resources>

@@ -225,8 +225,8 @@ object Preferences {
     val mpvFramedrop: Boolean  // GPU 繁忙时允许丢帧
         get() = preferenceSp.getBoolean(MpvPlayerSettings.MPV_FRAMEDROP, true)
 
-    val mpvHwdec: Boolean  // 硬件解码
-        get() = preferenceSp.getBoolean(MpvPlayerSettings.MPV_HWDEC, true)
+    val mpvHwdec: String  // 硬件解码
+        get() = preferenceSp.getString(MpvPlayerSettings.MPV_HWDEC, "Auto")?: "Auto"
 
     val mpvCacheSecs: Int  // 预缓存秒数
         get() = preferenceSp.getInt(MpvPlayerSettings.MPV_CACHE_SECS, 60)

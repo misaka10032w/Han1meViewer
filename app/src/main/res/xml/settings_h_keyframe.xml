@@ -4,70 +4,67 @@
 
     <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
         app:defaultValue="true"
-        app:iconSpaceReserved="false"
         app:key="h_keyframes_enable"
         app:summary="@string/h_keyframes_disable_tip"
-        app:title="@string/h_keyframes_enable" />
+        app:title="@string/h_keyframes_enable"
+        app:icon="@drawable/baseline_h_24"/>
 
     <PreferenceCategory
-        app:iconSpaceReserved="false"
         app:key="h_keyframe_manage_category"
         app:title="@string/manage">
 
         <Preference
-            app:iconSpaceReserved="false"
             app:key="h_keyframe_manage"
-            app:title="@string/h_keyframe_manage" />
+            app:title="@string/h_keyframe_manage"
+            app:icon="@drawable/baseline_manage_24"/>
 
 
     </PreferenceCategory>
 
     <PreferenceCategory
-        app:iconSpaceReserved="false"
         app:key="shared_h_keyframes_category"
         app:title="@string/shared">
 
         <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
             app:defaultValue="true"
-            app:iconSpaceReserved="false"
             app:key="shared_h_keyframes_enable"
             app:summary="@string/shared_h_keyframes_enable_tip"
-            app:title="@string/shared_h_keyframes_enable" />
+            app:title="@string/shared_h_keyframes_enable"
+            app:icon="@drawable/baseline_share_24"/>
 
         <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
             app:defaultValue="false"
-            app:iconSpaceReserved="false"
             app:key="shared_h_keyframes_use_first"
             app:summary="@string/shared_h_keyframes_use_first_tip"
-            app:title="@string/shared_h_keyframes_use_first" />
+            app:title="@string/shared_h_keyframes_use_first"
+            app:icon="@drawable/baseline_share_first_24"/>
 
         <Preference
-            app:iconSpaceReserved="false"
             app:key="shared_h_keyframe_manage"
             app:summary="@string/shared_h_keyframe_manage_tip"
-            app:title="@string/shared_h_keyframe_manage" />
+            app:title="@string/shared_h_keyframe_manage"
+            app:icon="@drawable/baseline_online_manage_24"/>
 
     </PreferenceCategory>
 
     <PreferenceCategory
-        app:iconSpaceReserved="false"
         app:key="h_keyframe_custom_category"
         app:title="@string/custom">
 
         <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
             app:defaultValue="false"
-            app:iconSpaceReserved="false"
             app:key="show_comment_when_countdown"
-            app:title="@string/show_prompt_when_countdown" />
+            app:title="@string/show_prompt_when_countdown"
+            app:icon="@drawable/baseline_count_down_24"/>
 
         <SeekBarPreference
             android:max="30"
             app:defaultValue="10"
-            app:iconSpaceReserved="false"
             app:key="when_countdown_remind"
             app:min="5"
             app:title="@string/when_countdown_remind"
-            app:updatesContinuously="true" />
+            app:updatesContinuously="true"
+            app:icon="@drawable/ic_baseline_alert_24"/>
 
     </PreferenceCategory>
 

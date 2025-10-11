@@ -4,34 +4,33 @@
 
     <PreferenceCategory
         app:title="@string/download_category"
-        app:summary="@string/download_category_summary"
-        app:iconSpaceReserved="false">
+        app:summary="@string/download_category_summary">
 
         <com.yenaly.yenaly_libs.base.preference.LongClickablePreference
-            app:iconSpaceReserved="false"
             app:key="download_path"
-            app:title="@string/download_path" />
+            app:title="@string/download_path"
+            app:icon="@drawable/baseline_path_24"/>
 
         <Preference
-            app:iconSpaceReserved="false"
             app:key="import_downloaded_file"
             app:title="@string/pref_export_downloads_title"
-            app:summary="@string/pref_export_downloads_summary"/>
+            app:summary="@string/pref_export_downloads_summary"
+            app:icon="@drawable/baseline_export_24"/>
     </PreferenceCategory>
 
         <SeekBarPreference
             android:max="10"
             app:defaultValue="2"
-            app:iconSpaceReserved="false"
             app:key="download_count_limit"
             app:min="0"
             app:title="@string/download_count_limit"
+            app:icon="@drawable/baseline_count_24"
             app:updatesContinuously="true" />
 
         <SeekBarPreference
-            app:iconSpaceReserved="false"
             app:key="download_speed_limit"
             app:title="@string/download_speed_limit"
+            app:icon="@drawable/baseline_speed2_24"
             app:updatesContinuously="true" />
 
 </androidx.preference.PreferenceScreen>

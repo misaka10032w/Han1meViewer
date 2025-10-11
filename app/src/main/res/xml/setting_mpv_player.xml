@@ -3,53 +3,51 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory
-        app:title="@string/player_settings_quality_performance"
-        app:iconSpaceReserved="false">
+        app:title="@string/player_settings_quality_performance">
 
         <com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
             app:key="mpv_profile"
             app:title="@string/mpv_profile"
-            app:useSimpleSummaryProvider="true"
-            app:iconSpaceReserved="false" />
+            app:icon="@drawable/baseline_render_24"
+            app:useSimpleSummaryProvider="true" />
         <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
             app:key="mpv_gpu_next_render"
             app:title="@string/enable_gpu_next"
             app:summary="@string/enable_gpu_next_summary"
-            app:defaultValue="false"
-            app:iconSpaceReserved="false" />
+            app:icon="@drawable/baseline_chip_24"
+            app:defaultValue="false" />
 
         <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
             app:key="mpv_interpolation"
             app:title="@string/mpv_interpolation"
             app:summary="@string/mpv_interpolation_summary"
-            app:defaultValue="false"
-            app:iconSpaceReserved="false" />
+            app:icon="@drawable/baseline_frame_inter_24"
+            app:defaultValue="false" />
 
         <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
             app:key="mpv_deband"
             app:title="@string/mpv_deband"
             app:summary="@string/mpv_deband_summary"
-            app:defaultValue="true"
-            app:iconSpaceReserved="false" />
+            app:icon="@drawable/baseline_deband_24"
+            app:defaultValue="true" />
 
         <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
             app:key="mpv_framedrop"
             app:title="@string/mpv_framedrop"
             app:summary="@string/mpv_framedrop_summary"
-            app:defaultValue="true"
-            app:iconSpaceReserved="false" />
+            app:icon="@drawable/baseline_frame_jump_24"
+            app:defaultValue="true" />
 
-        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
-            app:key="mpv_hwdec"
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
+            app:key="mpv_hwdecx"
             app:title="@string/mpv_hwdec"
             app:summary="@string/mpv_hwdec_summary"
-            app:defaultValue="true"
-            app:iconSpaceReserved="false" />
+            app:icon="@drawable/baseline_decoder_24" />
+
     </PreferenceCategory>
 
     <PreferenceCategory
-        app:title="@string/player_settings_network_cache"
-        app:iconSpaceReserved="false">
+        app:title="@string/player_settings_network_cache">
 
         <SeekBarPreference
             android:max="120"
@@ -58,15 +56,15 @@
             app:key="mpv_cache_secs"
             app:title="@string/mpv_cache_secs"
             app:summary="@string/mpv_cache_secs_summary"
-            app:iconSpaceReserved="false"
+            app:icon="@drawable/baseline_cache_24"
             app:updatesContinuously="true" />
 
         <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
             app:key="mpv_tls_verify"
             app:title="@string/mpv_tls_verify"
             app:summary="@string/mpv_tls_verify_summary"
-            app:defaultValue="true"
-            app:iconSpaceReserved="false" />
+            app:icon="@drawable/baseline_cert_24"
+            app:defaultValue="true" />
         <SeekBarPreference
             android:max="30"
             app:min="5"
@@ -74,18 +72,17 @@
             app:key="mpv_network_timeout"
             app:title="@string/mpv_network_timeout"
             app:summary="@string/mpv_network_timeout_summary"
-            app:iconSpaceReserved="false"
+            app:icon="@drawable/baseline_overtime_24"
             app:updatesContinuously="true" />
     </PreferenceCategory>
     <PreferenceCategory
         app:title="@string/advanced"
-        app:summary="@string/advanced_summary"
-        app:iconSpaceReserved="false">
+        app:summary="@string/advanced_summary">
         <EditTextPreference
             app:title="@string/custom_parameters"
             app:summary="@string/custom_parameters_summary"
+            app:icon="@drawable/baseline_custom_24"
             app:key="mpv_custom_parameters"
-            app:iconSpaceReserved="false"
             app:dialogTitle="@string/custom_parameters_title"
             app:dialogMessage="@string/custom_parameters_example"/>
     </PreferenceCategory>

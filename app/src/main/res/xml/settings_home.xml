@@ -40,7 +40,6 @@
             app:title="@string/h_keyframe_settings" />
         <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
             app:icon="@drawable/ic_comments"
-            app:iconSpaceReserved="false"
             app:key="disable_comments"
             app:summary="@string/disable_comments_sum"
             app:title="@string/disable_comments_title" />
@@ -92,8 +91,7 @@
             app:entries="@array/lang_display_names"
             app:entryValues="@array/lang_values"
             app:defaultValue="system"
-            app:icon="@drawable/ic_setting_lang"
-            app:iconSpaceReserved="false"/>
+            app:icon="@drawable/ic_setting_lang" />
 
     </PreferenceCategory>
 
@@ -132,7 +130,6 @@
             app:title="@string/analytics_title" />
         <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
             app:icon="@drawable/ic_setting_applock"
-            app:iconSpaceReserved="false"
             app:key="use_lock_screen"
             app:summary="@string/use_lock_screen_sum"
             app:title="@string/use_lock_screen" />
