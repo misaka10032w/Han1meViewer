@@ -56,6 +56,7 @@ import com.yenaly.han1meviewer.getHanimeVideoDownloadLink
 import com.yenaly.han1meviewer.getHanimeVideoLink
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
+import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
@@ -67,6 +68,7 @@ import com.yenaly.han1meviewer.ui.adapter.VideoColumnTitleAdapter
 import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
 import com.yenaly.han1meviewer.ui.fragment.PlaylistBottomSheetFragment
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
+import com.yenaly.han1meviewer.util.loadAssetAs
 import com.yenaly.han1meviewer.util.requestPostNotificationPermission
 import com.yenaly.han1meviewer.util.setDrawableTop
 import com.yenaly.han1meviewer.util.showAlertDialog
@@ -77,6 +79,7 @@ import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.shareText
 import com.yenaly.yenaly_libs.utils.showShortToast
+import com.yenaly.yenaly_libs.utils.unsafeLazy
 import com.yenaly.yenaly_libs.utils.view.clickTrigger
 import com.yenaly.yenaly_libs.utils.view.clickWithCondition
 import com.yenaly.yenaly_libs.utils.view.findParent
@@ -85,6 +88,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.format
 import java.io.Serializable
+import kotlin.collections.orEmpty
+import kotlin.getValue
 
 /**
  * @project Hanime1
@@ -121,7 +126,9 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
     }
 
     val viewModel: VideoViewModel by viewModels({ requireParentFragment() })
-
+    val genres by unsafeLazy {
+        loadAssetAs<List<SearchOption>>("search_options/genre.json").orEmpty()
+    }
 
     private var checkedQuality: String? = null
 
@@ -651,9 +658,10 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
             } else {
                 vgArtist.isGone = false
                 vgArtist.setOnClickListener {
+                    val searchKey = genres.firstOrNull { it.value == artist.genre }?.searchKey.orEmpty()
                     val map = hashMapOf<HAdvancedSearch, Serializable>(
                         HAdvancedSearch.QUERY to artist.name,
-                        HAdvancedSearch.GENRE to artist.genre
+                        HAdvancedSearch.GENRE to searchKey
                     )
                     val bundleMap = HashMap<String, Serializable>().apply {
                         map.forEach { (k, v) -> put(k.name, v) }
