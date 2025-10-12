@@ -84,8 +84,22 @@ fun PlaylistBottomSheet(
     val gridState = rememberSaveable(saver = LazyGridState.Saver) {
         LazyGridState()
     }
-    LaunchedEffect(listCode) {
-        vm.getPlaylistItems(1, listCode,true)
+    if (listCode.isNotEmpty()){
+        vm.setListInfo(listCode, playListTitle)
+    }
+
+    val listInfo by vm.currentListInfo.collectAsState()
+    val currentCode = listInfo?.first ?: ""
+    val currentTitle = listInfo?.second ?: ""
+
+    LaunchedEffect(currentCode) {
+        if (currentCode.isNotEmpty()){
+            if (playlist.isEmpty()){
+                vm.getPlaylistItems(1, currentCode,true)
+            }
+        } else {
+            showShortToast("listCode is Null")
+        }
     }
 
     ModalBottomSheet(
@@ -108,10 +122,10 @@ fun PlaylistBottomSheet(
             ) {
                 PlaylistDetailContent(
                     gridState,
-                    listCode,
+                    currentCode,
                     playlist,
                     onDismiss,
-                    playListTitle,
+                    currentTitle,
                     vm.playlistDesc,
                     onClickItem,
                     onLongClickItem,
@@ -142,7 +156,7 @@ fun PlaylistBottomSheet(
                         return@collect
                     }
                     showShortToast(R.string.modify_success)
-                    vm.getPlaylistItems(1, listCode,true)
+                    vm.getPlaylistItems(1, currentCode,true)
                     vm.loadMyPlayList()
                 }
             }

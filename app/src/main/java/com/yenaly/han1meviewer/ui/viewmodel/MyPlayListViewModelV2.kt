@@ -37,6 +37,8 @@ class MyPlayListViewModelV2 : ViewModel() {
 
     private val _playlistFlow = MutableStateFlow(emptyList<HanimeInfo>())
     val playlistFlow = _playlistFlow.asStateFlow()
+    private val _currentListInfo = MutableStateFlow<Pair<String, String>?>(null)
+    val currentListInfo = _currentListInfo.asStateFlow()
 
 
     private val _refreshCompleted = MutableSharedFlow<Unit>()
@@ -49,6 +51,9 @@ class MyPlayListViewModelV2 : ViewModel() {
         private set
     fun setShowSheet(value: Boolean) {
         _showSheet.value = value
+    }
+    fun setListInfo(code: String, title: String) {
+        _currentListInfo.value = code to title
     }
 
     // 加载所有playlist
@@ -66,12 +71,13 @@ class MyPlayListViewModelV2 : ViewModel() {
 
     // 获取单个playlist内容
     fun getPlaylistItems(page: Int = 1, listCode: String, refresh: Boolean = false) {
+        Log.i("getPlaylistItems","isLoadingMore:$isLoadingMore,listCode:$listCode,")
         if (isLoadingMore) return
         isLoadingMore = true
 
         viewModelScope.launch {
             if (listCode.isBlank()) return@launch
-            Log.i("getPlaylistItems","$page,$refresh")
+            Log.i("getPlaylistItems","page:$page,refresh:$refresh")
             // 如果是第一页或刷新，重置状态
             if (page == 1 || refresh) {
                 _playlistFlow.value = emptyList()
@@ -81,10 +87,10 @@ class MyPlayListViewModelV2 : ViewModel() {
                 _playlistStateFlow.value = PageLoadingState.Loading
             }
             NetworkRepo.getMyListItems(page, listCode).collect { state ->
-                Log.i("getPlaylistItems","$state")
+                Log.i("getPlaylistItems","state:$state")
                 when (state) {
                     is PageLoadingState.Success -> {
-                        Log.i("getPlaylistItems","${state.info.hanimeInfo.size}")
+                        Log.i("getPlaylistItems","list size:${state.info.hanimeInfo.size}")
                         _playlistDesc.value = state.info.desc
                         val newList = state.info.hanimeInfo
                         if (newList.isEmpty()) {
@@ -148,6 +154,9 @@ class MyPlayListViewModelV2 : ViewModel() {
     }
     fun clearMyListItems() {
         _playlistStateFlow.value = PageLoadingState.Loading
+    }
+    fun clearCurrentList(){
+        _playlistFlow.value = emptyList()
     }
     private val _createPlaylistFlow = MutableSharedFlow<WebsiteState<Unit>>()
     val createPlaylistFlow = _createPlaylistFlow.asSharedFlow()

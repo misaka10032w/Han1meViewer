@@ -258,6 +258,7 @@ fun MyPlayListScreen(
                     onDismiss = {
                         viewModel.setShowSheet(false)
                         viewModel.currentPage = 1
+                        viewModel.clearCurrentList()
                                 },
                     playListTitle = listTitle.value,
                     onClickItem = onClickItem ,
