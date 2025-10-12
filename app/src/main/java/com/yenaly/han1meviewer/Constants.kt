@@ -27,7 +27,7 @@ val LOCAL_DATE_TIME_FORMAT = LocalDateTime.Format {
 // 网络基本设置
 
 const val USER_AGENT =
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
+    "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36"
 
 // 設置發佈日期年份，在搜索的tag裏
 
@@ -112,6 +112,8 @@ const val FIREBASE_REALTIME_DATABASE = "https://han1meviewer-86e5f-default-rtdb.
 // for Shared Preference
 
 const val LOGIN_COOKIE = "cookie"
+
+const val CLOUDFLARE_COOKIE = "cf_cookie"
 
 const val ALREADY_LOGIN = "already_login"
 

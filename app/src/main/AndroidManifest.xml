@@ -37,6 +37,11 @@
             android:label="@string/title_activity_qrcode_scanner"
             android:theme="@style/Theme.Hanime" />
 
+        <activity
+            android:name=".ui.activity.CloudflareActivity"
+            android:theme="@style/Theme.Hanime"
+            android:exported="false" />
+
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"
             android:foregroundServiceType="dataSync"

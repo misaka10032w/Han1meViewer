@@ -482,4 +482,6 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="decoding_auto">自動選択 (auto)</string>
     <string name="decoding_vulkan_copy">Vulkan (実験的: vulkan-copy)</string>
     <string name="decoding_vulkan">Vulkan + レンダーパススルー (実験的: vulkan)</string>
+    <string name="complete_cloudflare_verification">Cloudflare認証</string>
+    <string name="complete_cloudflare_verification_with_warning">Cloudflare認証を完了し、ページが自動的に閉じるのを待ってください。\n WebViewコンポーネントのバージョンが古いと認証失敗やループ認証が発生する可能性があります！認証に失敗した場合は、WebViewをアップグレードするか、設定→ネットワーク設定→ドメインで代替ドメインに切り替えてください（他のドメインはリスク制限が低い場合があります）。</string>
 </resources>

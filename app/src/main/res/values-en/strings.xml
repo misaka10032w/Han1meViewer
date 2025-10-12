@@ -477,4 +477,6 @@ Recommendations are as follows:\n
     <string name="decoding_auto">Auto Select (auto)</string>
     <string name="decoding_vulkan">Vulkan + Render Passthrough  (Experimental: vulkan)</string>
     <string name="decoding_vulkan_copy">Vulkan (Experimental: vulkan-copy)</string>
+    <string name="complete_cloudflare_verification">Cloudflare verification</string>
+    <string name="complete_cloudflare_verification_with_warning">Please complete Cloudflare verification and wait for the page to close automatically.\n Outdated WebView component may cause verification failure or loop verification! If verification fails, please upgrade WebView or go to Settings->Network Settings->Domain to switch to alternative domains (other domains may have lower risk control restrictions).</string>
 </resources>

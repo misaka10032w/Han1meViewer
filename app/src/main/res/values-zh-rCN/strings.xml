@@ -482,4 +482,6 @@
     <string name="decoding_auto">自动选择 (auto)</string>
     <string name="decoding_vulkan">Vulkan + 渲染直通 (实验性: vulkan)</string>
     <string name="decoding_vulkan_copy">Vulkan (实验性: vulkan-copy)</string>
+    <string name="complete_cloudflare_verification">Cloudflare 验证</string>
+    <string name="complete_cloudflare_verification_with_warning">请完成 Cloudflare 验证，并等待页面主动关闭。\n WebView组件版本过低可能会验证失败，如循环验证！如验证失败，请升级WebView或到 设置->网络设置->域名 更换其他备选域名（其他域名可能风控程度较低）。</string>
 </resources>
