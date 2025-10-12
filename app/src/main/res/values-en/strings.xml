@@ -479,4 +479,6 @@ Recommendations are as follows:\n
     <string name="decoding_vulkan_copy">Vulkan (Experimental: vulkan-copy)</string>
     <string name="complete_cloudflare_verification">Cloudflare verification</string>
     <string name="complete_cloudflare_verification_with_warning">Please complete Cloudflare verification and wait for the page to close automatically.\n Outdated WebView component may cause verification failure or loop verification! If verification fails, please upgrade WebView or go to Settings->Network Settings->Domain to switch to alternative domains (other domains may have lower risk control restrictions).</string>
+    <string name="search_artist_ignore_video_type">Search Artist Ignore Video Type</string>
+    <string name="search_artist_ignore_video_type_summary">When enabled, clicking avatar on details page to search artist will not include video type.</string>
 </resources>

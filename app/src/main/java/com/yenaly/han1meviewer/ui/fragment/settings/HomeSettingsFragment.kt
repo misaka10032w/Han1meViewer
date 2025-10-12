@@ -102,6 +102,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
         const val USE_DARK_MODE = "use_dark_mode"
         const val USE_DYNAMIC_COLOR = "use_dynamic_color"
         const val ALLOW_RESUME_PLAYBACK = "allow_resume_playback"
+        const val SEARCH_ARTIST_IGNORE_VIDEO_TYPE = "search_artist_ignore_video_type"
     }
 
     private val videoLanguage

@@ -215,6 +215,9 @@ object Preferences {
     val allowResumePlayback: Boolean
         get() = preferenceSp.getBoolean(HomeSettingsFragment.ALLOW_RESUME_PLAYBACK,true)
 
+    val searchArtistIgnoreVideoType: Boolean
+        get() = preferenceSp.getBoolean(HomeSettingsFragment.SEARCH_ARTIST_IGNORE_VIDEO_TYPE,false)
+
     /**
      * MPV播放器设置
      */
