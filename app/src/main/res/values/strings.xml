@@ -514,4 +514,6 @@
     <string name="decoding_vulkan">Vulkan + 渲染直通 (實驗性: vulkan)</string>
     <string name="complete_cloudflare_verification">Cloudflare 驗證</string>
     <string name="complete_cloudflare_verification_with_warning">請完成 Cloudflare 驗證，並等待頁面主動關閉。\n WebView元件版本過低可能會驗證失敗，如循環驗證！如驗證失敗，請升級WebView或到 設定->網路設定->網域 更換其他備選網域（其他網域可能風控程度較低）。</string>
+    <string name="search_artist_ignore_video_type">搜尋藝術家忽略影片類型</string>
+    <string name="search_artist_ignore_video_type_summary">開啟後，點選詳細頁頭像搜尋藝術家時，不再附帶影片類型。</string>
 </resources>

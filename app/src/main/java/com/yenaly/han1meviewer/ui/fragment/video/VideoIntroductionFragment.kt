@@ -44,6 +44,7 @@ import com.yenaly.han1meviewer.HAdvancedSearch
 import com.yenaly.han1meviewer.HCacheManager
 import com.yenaly.han1meviewer.HanimeResolution
 import com.yenaly.han1meviewer.LOCAL_DATE_FORMAT
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VIDEO_LAYOUT_MATCH_PARENT
@@ -658,11 +659,17 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
             } else {
                 vgArtist.isGone = false
                 vgArtist.setOnClickListener {
-                    val searchKey = genres.firstOrNull { it.value == artist.genre }?.searchKey.orEmpty()
-                    val map = hashMapOf<HAdvancedSearch, Serializable>(
-                        HAdvancedSearch.QUERY to artist.name,
-                        HAdvancedSearch.GENRE to searchKey
-                    )
+                    val searchKey = genres.firstOrNull { option ->
+                        option.lang?.let { lang ->
+                            artist.genre == lang.zhrCN ||
+                                    artist.genre == lang.zhrTW ||
+                                    artist.genre == lang.en
+                        } == true
+                    }?.searchKey ?: ""
+                    val map = buildMap<HAdvancedSearch, Serializable> {
+                        put(HAdvancedSearch.QUERY, artist.name)
+                        if (searchKey.isNotEmpty() && !Preferences.searchArtistIgnoreVideoType) put(HAdvancedSearch.GENRE, searchKey)
+                    }
                     val bundleMap = HashMap<String, Serializable>().apply {
                         map.forEach { (k, v) -> put(k.name, v) }
                     }
