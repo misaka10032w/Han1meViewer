@@ -58,6 +58,14 @@ object Preferences {
 
     val loginCookieStateFlow = MutableStateFlow(loginCookie)
 
+    var cloudFlareCookie
+        get() = CookieString(getSpValue(CLOUDFLARE_COOKIE   , EMPTY_STRING))
+        set(value) {
+            cloudFlareCookieStateFlow.value = value
+            putSpValue(CLOUDFLARE_COOKIE, value.cookie)
+        }
+    val cloudFlareCookieStateFlow = MutableStateFlow(cloudFlareCookie)
+
     // 更新 相關
 
     private const val UPDATE_NODE_ID = "update_node_id"

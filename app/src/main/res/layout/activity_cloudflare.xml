@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data />
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        android:background="?android:windowBackground"
+        tools:context=".ui.activity.CloudflareActivity">
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/topAppBar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:title="@string/complete_cloudflare_verification"
+                app:titleTextColor="?attr/colorPrimary"
+                app:navigationIcon="@drawable/ic_baseline_close_24" />
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <WebView
+            android:id="@+id/wvCloudflare"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressBar"
+            style="@style/Widget.Material3.LinearProgressIndicator"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_gravity="top"
+            android:visibility="gone"
+            app:trackColor="?attr/colorSurfaceVariant"
+            app:indicatorColor="?attr/colorPrimary" />
+
+        <!-- 悬浮提示框 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/floatingTipCard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_margin="16dp"
+            android:visibility="visible"
+            app:cardBackgroundColor="?attr/colorPrimaryContainer"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="8dp"
+            app:layout_anchorGravity="bottom|center">
+
+            <TextView
+                android:id="@+id/tipText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:text="@string/complete_cloudflare_verification_with_warning"
+                android:textColor="?attr/colorOnError"
+                android:background="?attr/colorError"
+                android:textSize="14sp" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>
