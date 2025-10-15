@@ -3,6 +3,7 @@ package com.yenaly.han1meviewer.ui.fragment.home.preview
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -383,6 +384,10 @@ class PreviewFragment : YenalyFragment<FragmentPreviewBinding>() {
     }
 
     private fun handleHeaderPalette(p: Palette) {
+        if (!isAdded || context == null) {
+            Log.i("PreviewFragment","图片加载完成前退出，context is null")
+            return
+        }
         val lightVibrant = p.getLightVibrantColor(colorPrimary)
         val per70lightVibrantStateList =
             ColorUtils.setAlphaComponent(lightVibrant, 0xB3).toColorStateList()
