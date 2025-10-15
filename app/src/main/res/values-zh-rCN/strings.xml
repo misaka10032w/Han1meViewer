@@ -17,7 +17,7 @@
     <string name="alert_cancel_all_tags">确认将会取消你所选的所有标签</string>
     <string name="confirm">确认</string>
     <string name="cancel">取消</string>
-    <string name="pair_widely">广泛配对</string>
+    <string name="pair_widely">模糊搜索</string>
     <string name="pair_widely_alert">较多结果，较不精准。配对所有包含任何一个选择的标签的影片，而非全部标签</string>
     <string name="reset">重置</string>
     <string name="save">保存</string>
@@ -159,7 +159,7 @@
     <string name="use_ci_update_channel_summary">CI 更新频道能更快地获取最新变更\n但不保证稳定性</string>
     <string name="update_popup_interval_days">检查更新弹窗间隔天数</string>
     <string name="update_failed">更新失败</string>
-    <string name="update_download_background">在背景下载更新</string>
+    <string name="update_download_background">在后台下载更新</string>
     <string name="allow_install_from_unknown_app_sources">准许当前 App 来源安装</string>
     <string name="reason_for_allow_install_from_unknown_app_sources">别担心，这只是为了更新。\n你如果不放心，可以直接去 Github 上下载</string>
     <string name="go_to_settings">前往设置</string>

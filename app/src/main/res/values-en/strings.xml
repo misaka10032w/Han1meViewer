@@ -17,7 +17,7 @@
     <string name="alert_cancel_all_tags">Are you sure you want to cancel all selected tags?</string>
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
-    <string name="pair_widely">Pair Widely</string>
+    <string name="pair_widely">Fuzzy Search</string>
     <string name="pair_widely_alert">More Results, Less Precision. Pair anime with any selected tag rather than all.</string>
     <string name="reset">Reset</string>
     <string name="save">Save</string>
