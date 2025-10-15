@@ -17,7 +17,7 @@
     <string name="alert_cancel_all_tags">選択中のすべてのタグを解除します</string>
     <string name="confirm">確認</string>
     <string name="cancel">キャンセル</string>
-    <string name="pair_widely">OR検索</string>
+    <string name="pair_widely">あいまい検索</string>
     <string name="pair_widely_alert">結果多め、精度低め。選択したタグのいずれかを含む動画を検索（AND検索ではありません）</string>
     <string name="reset">リセット</string>
     <string name="save">保存</string>
