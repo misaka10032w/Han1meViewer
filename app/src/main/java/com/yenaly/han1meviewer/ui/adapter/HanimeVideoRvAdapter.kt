@@ -14,6 +14,7 @@ import coil.load
 import com.chad.library.adapter4.BaseQuickAdapter
 import com.chad.library.adapter4.viewholder.QuickViewHolder
 import com.itxca.spannablex.spannable
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VIDEO_LAYOUT_MATCH_PARENT
 import com.yenaly.han1meviewer.VIDEO_LAYOUT_WRAP_CONTENT
@@ -76,6 +77,8 @@ class HanimeVideoRvAdapter(
                     crossfade(true)
                 }
                 holder.getView<TextView>(R.id.title).text = item.title
+                if (Preferences.showPlayedIndicator)
+                    holder.getView<ImageView>(R.id.watched_icon).isVisible = item.watched == true
             }
 
             HanimeInfo.NORMAL -> {
@@ -121,6 +124,8 @@ class HanimeVideoRvAdapter(
                         item.artist.text()
                     }
                 }
+                if (Preferences.showPlayedIndicator)
+                    holder.getView<ImageView>(R.id.watched_icon).isVisible = item.watched == true
             }
         }
     }

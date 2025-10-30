@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * @project Hanime1
@@ -121,7 +122,18 @@ class SearchViewModel(
                 if (prev is PageLoadingState.Loading) _searchFlow.value = emptyList()
                 _searchFlow.update { prevList ->
                     when (state) {
-                        is PageLoadingState.Success -> prevList + state.info
+//                        is PageLoadingState.Success -> prevList + state.info
+                        is PageLoadingState.Success -> {
+                            val list = state.info
+                            val codes = list.map { it.videoCode }
+                            val watchedCodes= withContext(Dispatchers.IO) {
+                                DatabaseRepo.WatchHistory.getWatched(codes).toSet()
+                            }
+                            val updatedList = list.map { item ->
+                                item.copy(watched = watchedCodes.contains(item.videoCode))
+                            }
+                            prevList + updatedList
+                        }
                         is PageLoadingState.Loading -> emptyList()
                         else -> prevList
                     }

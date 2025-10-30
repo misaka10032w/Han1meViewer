@@ -27,6 +27,12 @@
             app:summary="@string/resume_playback_summary"
             app:title="@string/resume_playback_title" />
         <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
+            app:defaultValue="true"
+            app:icon="@drawable/ic_baseline_history_24"
+            app:key="show_played_indicator"
+            app:summary="@string/show_played_indicator_summary"
+            app:title="@string/show_played_indicator" />
+        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
             app:defaultValue="false"
             app:icon="@drawable/baseline_prohibit_24"
             app:key="search_artist_ignore_video_type"

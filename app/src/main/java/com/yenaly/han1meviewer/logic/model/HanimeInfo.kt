@@ -26,6 +26,7 @@ data class HanimeInfo(
     override var itemType: Int,
     override val reviews: String? = "",
     override val currentArtist: String? = "",
+    val watched: Boolean ?= false,
 ): VideoItemType , HanimeInfoType {
     companion object {
         const val NORMAL = 0

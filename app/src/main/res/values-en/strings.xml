@@ -481,4 +481,6 @@ Recommendations are as follows:\n
     <string name="complete_cloudflare_verification_with_warning">Please complete Cloudflare verification and wait for the page to close automatically.\n Outdated WebView component may cause verification failure or loop verification! If verification fails, please upgrade WebView or go to Settings->Network Settings->Domain to switch to alternative domains (other domains may have lower risk control restrictions).</string>
     <string name="search_artist_ignore_video_type">Search Artist Ignore Video Type</string>
     <string name="search_artist_ignore_video_type_summary">When enabled, clicking avatar on details page to search artist will not include video type.</string>
+    <string name="show_played_indicator">Show Played Status Indicator</string>
+    <string name="show_played_indicator_summary">When enabled, shows played indicator at top-right corner of video covers on search results page</string>
 </resources>
