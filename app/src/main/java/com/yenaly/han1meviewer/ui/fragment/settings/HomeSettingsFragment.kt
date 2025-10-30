@@ -81,7 +81,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
     companion object {
         const val VIDEO_LANGUAGE = "video_language"
         const val DEFAULT_VIDEO_QUALITY = "default_video_quality"
-
+        const val SHOW_PLAYED_INDICATOR = "show_played_indicator"
         const val ALLOW_PIP_MDOE = "allow_pip_mode"
         const val PLAYER_SETTINGS = "player_settings"
         const val H_KEYFRAME_SETTINGS = "h_keyframe_settings"

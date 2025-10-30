@@ -55,6 +55,17 @@
                         android:gravity="center"
                         android:text="@string/now_playing"
                         android:textColor="?attr/colorSurface" />
+                    <ImageView
+                        android:id="@+id/watched_icon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="top|end"
+                        android:layout_margin="6dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_baseline_check_circle_24"
+                        android:background="@drawable/icon_circle_bg"
+                        android:visibility="gone"
+                        tools:visibility="visible"/>
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"

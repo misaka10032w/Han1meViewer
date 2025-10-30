@@ -132,6 +132,9 @@ object Preferences {
     val videoQuality: String
         get() = preferenceSp.getString(HomeSettingsFragment.DEFAULT_VIDEO_QUALITY, "1080P") ?: "1080P"
 
+    val showPlayedIndicator: Boolean
+        get() = preferenceSp.getBoolean(HomeSettingsFragment.SHOW_PLAYED_INDICATOR,true)
+
     val fakeLauncherIcon: String
         get() = preferenceSp.getString(
             HomeSettingsFragment.FAKE_LAUNCHER_ICON,
