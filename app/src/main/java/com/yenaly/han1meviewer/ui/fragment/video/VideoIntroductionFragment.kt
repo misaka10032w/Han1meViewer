@@ -145,12 +145,7 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
                 val key = viewModel.videoCode
                 val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
                 val pos = viewModel.horizontalScrollPositions[key] ?: 0
-                post { lm.scrollToPositionWithOffset(pos, 0) }
-                addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                    override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                        viewModel.horizontalScrollPositions[key] = lm.findFirstVisibleItemPosition()
-                    }
-                })
+                post { lm.scrollToPositionWithOffset(pos, 300) }
             }
         }
 
@@ -266,7 +261,14 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
                                 multi.addAdapter(playlistTitleAdapter)
                                 multi.addAdapter(playlistWrapper)
                                 if (cached?.playlist?.video != video.playlist.video) {
-                                    playlistAdapter.submitList(video.playlist.video)
+                                    val playingPos = video.playlist.video.indexOfFirst { it.isPlaying }
+                                    viewModel.horizontalScrollPositions[viewModel.videoCode] = playingPos
+                                    playlistAdapter.submitList(video.playlist.video){
+                                        val rv = playlistWrapper.wrapper?.layoutManager as? LinearLayoutManager ?: return@submitList
+                                        if (playingPos >= 0) {
+                                            rv.scrollToPositionWithOffset(playingPos, 300)
+                                        }
+                                    }
                                 }
                                 viewModel.setVideoList(video.playlist.video)
 
