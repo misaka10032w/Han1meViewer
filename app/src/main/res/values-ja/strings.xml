@@ -505,4 +505,6 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="create_new_group">新規グループ作成</string>
     <string name="create_group_success">作成成功！%s</string>
     <string name="coming_soon">近日公開</string>
+    <string name="disable_mobile_data_warning">モバイルデータ警告を無効化</string>
+    <string name="disable_mobile_data_warning_summary">有効にすると、モバイルデータで再生時の警告が表示されません</string>
 </resources>

@@ -500,4 +500,6 @@ Recommendations are as follows:\n
     <string name="create_new_group">Create New Group</string>
     <string name="create_group_success">Created successfully! %s</string>
     <string name="coming_soon">Coming Soon</string>
+    <string name="disable_mobile_data_warning">Disable Mobile Data Warning</string>
+    <string name="disable_mobile_data_warning_summary">When enabled, no warning will be shown when playing with mobile data</string>
 </resources>

@@ -505,4 +505,6 @@
     <string name="create_new_group">创建新分组</string>
     <string name="create_group_success">创建成功！%s</string>
     <string name="coming_soon">敬请期待</string>
+    <string name="disable_mobile_data_warning">关闭流量提醒</string>
+    <string name="disable_mobile_data_warning_summary">开启后使用移动流量播放时将不再提醒</string>
 </resources>

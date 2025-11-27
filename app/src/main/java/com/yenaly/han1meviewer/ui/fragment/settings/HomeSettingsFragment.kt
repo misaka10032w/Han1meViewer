@@ -103,6 +103,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
         const val USE_DYNAMIC_COLOR = "use_dynamic_color"
         const val ALLOW_RESUME_PLAYBACK = "allow_resume_playback"
         const val SEARCH_ARTIST_IGNORE_VIDEO_TYPE = "search_artist_ignore_video_type"
+        const val DISABLE_MOBILE_DATA_WARNING = "disable_mobile_data_warning"
     }
 
     private val videoLanguage
@@ -147,6 +148,8 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
             by safePreference<MaterialSwitchPreference>(USE_DYNAMIC_COLOR)
     private val allowResumePlayback
             by safePreference<MaterialSwitchPreference>(ALLOW_RESUME_PLAYBACK)
+    private val disableMobileDataWarning
+            by safePreference<MaterialSwitchPreference>(DISABLE_MOBILE_DATA_WARNING)
 
     private var checkUpdateTimes = 0
 

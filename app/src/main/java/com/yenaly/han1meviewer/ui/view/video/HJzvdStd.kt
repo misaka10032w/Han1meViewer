@@ -402,6 +402,9 @@ class HJzvdStd @JvmOverloads constructor(
         super.setUp(jzDataSource, screen, clazz)
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         val preferredQuality = prefs.getString("default_video_quality", null)
+        if (Preferences.disableMobileDataWarning){
+            WIFI_TIP_DIALOG_SHOWED = true
+        }
         if (!preferredQuality.isNullOrBlank()) {
             val index = jzDataSource?.urlsMap?.keys?.indexOf(preferredQuality)
             if (index != -1) {
