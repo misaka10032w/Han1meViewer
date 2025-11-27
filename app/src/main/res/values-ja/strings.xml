@@ -488,4 +488,23 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="search_artist_ignore_video_type_summary">有効にすると、詳細ページのアバターをクリックしてアーティストを検索する際、動画タイプが含まれなくなります。</string>
     <string name="show_played_indicator">再生状態マークを表示</string>
     <string name="show_played_indicator_summary">有効にすると、検索結果ページの動画カバー右上に再生済みマークが表示されます</string>
+    <string name="video_group_error">動画グループ取得エラー：</string>
+    <string name="video_group_empty">動画グループが空です</string>
+    <string name="default_group_rename_not_allowed">デフォルトグループ（%s）は名前変更できません！</string>
+    <string name="new_group_name">新しいグループ名</string>
+    <string name="rename_group">グループ名を変更</string>
+    <string name="current_group_name">現在のグループ名：%s</string>
+    <string name="group_name_empty">グループ名を入力してください</string>
+    <string name="group_name_unchanged">名前は変更されていません</string>
+    <string name="group_renamed">グループ名を%sに変更しました</string>
+    <string name="modify_video_group">この動画のグループを変更：%s</string>
+    <string name="group_modify_success">変更成功！%s，ID:%s</string>
+    <string name="unknown_group_id">エラー：不明なグループID！</string>
+    <string name="unknown_error">不明なエラー</string>
+    <string name="ungrouped">未グループ化</string>
+    <string name="create_new_group">新規グループ作成</string>
+    <string name="create_group_success">作成成功！%s</string>
+    <string name="coming_soon">近日公開</string>
+    <string name="disable_mobile_data_warning">モバイルデータ警告を無効化</string>
+    <string name="disable_mobile_data_warning_summary">有効にすると、モバイルデータで再生時の警告が表示されません</string>
 </resources>

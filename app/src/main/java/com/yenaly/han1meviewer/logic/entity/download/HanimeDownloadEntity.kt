@@ -2,6 +2,8 @@ package com.yenaly.han1meviewer.logic.entity.download
 
 import androidx.annotation.IntRange
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
@@ -13,9 +15,25 @@ import com.yenaly.han1meviewer.logic.state.DownloadState
  * @author Yenaly Liew
  * @time 2023/08/18 018 21:50
  */
-@Entity
+@Entity(
+    foreignKeys = [
+        ForeignKey(
+            entity = DownloadGroupEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["groupId"],
+            onDelete = ForeignKey.SET_DEFAULT
+        )
+    ],
+    indices = [
+        Index(value = ["groupId"])
+    ]
+)
 @TypeConverters(HanimeDownloadEntity.StateTypeConverter::class)
 data class HanimeDownloadEntity(
+    /**
+     * 已下载视频的分组ID
+     */
+    val groupId: Int = DownloadGroupEntity.DEFAULT_GROUP_ID,
     /**
      * 封面地址
      */

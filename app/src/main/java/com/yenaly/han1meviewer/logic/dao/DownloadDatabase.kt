@@ -8,6 +8,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.yenaly.han1meviewer.logic.dao.download.DownloadCategoryDao
 import com.yenaly.han1meviewer.logic.dao.download.HanimeDownloadDao
 import com.yenaly.han1meviewer.logic.entity.download.DownloadCategoryEntity
+import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.entity.download.HanimeCategoryCrossRef
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.state.DownloadState
@@ -19,13 +20,14 @@ import com.yenaly.yenaly_libs.utils.applicationContext
  * @time 2022/08/07 007 18:26
  */
 @Database(
-    entities = [HanimeDownloadEntity::class, DownloadCategoryEntity::class, HanimeCategoryCrossRef::class],
-    version = 4, exportSchema = false
+    entities = [HanimeDownloadEntity::class, DownloadCategoryEntity::class, HanimeCategoryCrossRef::class, DownloadGroupEntity::class],
+    version = 5, exportSchema = false
 )
 abstract class DownloadDatabase : RoomDatabase() {
 
     abstract val hanimeDownloadDao: HanimeDownloadDao
     abstract val downloadCategoryDao: DownloadCategoryDao
+    abstract val downloadGroupDao: DownloadGroupDao
 
     companion object {
         val instance by lazy {
@@ -33,7 +35,7 @@ abstract class DownloadDatabase : RoomDatabase() {
                 applicationContext,
                 DownloadDatabase::class.java,
                 "download.db"
-            ).addMigrations(Migration1To2, Migration2To3, Migration3To4).build()
+            ).addMigrations(Migration1To2, Migration2To3, Migration3To4, Migration4To5).build()
         }
     }
 
@@ -125,6 +127,69 @@ abstract class DownloadDatabase : RoomDatabase() {
             FROM `HanimeDownloadEntity`
             """.trimIndent()
             )
+            db.execSQL("DROP TABLE `HanimeDownloadEntity`")
+            db.execSQL("ALTER TABLE `HanimeDownloadEntity_new` RENAME TO `HanimeDownloadEntity`")
+        }
+    }
+    object Migration4To5 : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `download_groups` (
+                    `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+                    `name` TEXT NOT NULL,
+                    `orderIndex` INTEGER NOT NULL DEFAULT 0
+                )
+                """.trimIndent()
+            )
+
+            db.execSQL(
+                """
+                INSERT INTO `download_groups` (`id`, `name`, `orderIndex`) 
+                VALUES (${DownloadGroupEntity.DEFAULT_GROUP_ID}, '${DownloadGroupEntity.DEFAULT_GROUP_NAME}', 0)
+                """.trimIndent()
+            )
+
+            db.execSQL(
+                """
+                CREATE TABLE `HanimeDownloadEntity_new` (
+                    `coverUrl` TEXT NOT NULL,
+                    `coverUri` TEXT,
+                    `title` TEXT NOT NULL,
+                    `addDate` INTEGER NOT NULL,
+                    `videoCode` TEXT NOT NULL,
+                    `videoUri` TEXT NOT NULL,
+                    `quality` TEXT NOT NULL,
+                    `videoUrl` TEXT NOT NULL DEFAULT '',
+                    `length` INTEGER NOT NULL DEFAULT 1,
+                    `downloadedLength` INTEGER NOT NULL DEFAULT 0,
+                    `state` INTEGER NOT NULL DEFAULT ${DownloadState.Mask.UNKNOWN},
+                    `groupId` INTEGER NOT NULL DEFAULT ${DownloadGroupEntity.DEFAULT_GROUP_ID},
+                    `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    FOREIGN KEY(`groupId`) REFERENCES `download_groups`(`id`) ON UPDATE NO ACTION ON DELETE SET DEFAULT
+                )
+                """.trimIndent()
+            )
+
+            db.execSQL("""CREATE INDEX IF NOT EXISTS `index_HanimeDownloadEntity_groupId` ON `HanimeDownloadEntity_new` (`groupId`)""")
+
+            db.execSQL(
+                """
+                INSERT INTO `HanimeDownloadEntity_new` (
+                    coverUrl, coverUri, title, addDate,
+                    videoCode, videoUri, quality, videoUrl,
+                    length, downloadedLength, state, id,
+                    groupId
+                )
+                SELECT 
+                    coverUrl, coverUri, title, addDate,
+                    videoCode, videoUri, quality,
+                    videoUrl, length, downloadedLength, state, id,
+                    ${DownloadGroupEntity.DEFAULT_GROUP_ID} AS groupId
+                FROM `HanimeDownloadEntity`
+                """.trimIndent()
+            )
+
             db.execSQL("DROP TABLE `HanimeDownloadEntity`")
             db.execSQL("ALTER TABLE `HanimeDownloadEntity_new` RENAME TO `HanimeDownloadEntity`")
         }

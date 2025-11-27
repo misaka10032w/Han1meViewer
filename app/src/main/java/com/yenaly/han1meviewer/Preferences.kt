@@ -221,6 +221,9 @@ object Preferences {
     val searchArtistIgnoreVideoType: Boolean
         get() = preferenceSp.getBoolean(HomeSettingsFragment.SEARCH_ARTIST_IGNORE_VIDEO_TYPE,false)
 
+    val disableMobileDataWarning: Boolean
+        get() = preferenceSp.getBoolean(HomeSettingsFragment.DISABLE_MOBILE_DATA_WARNING,false)
+
     /**
      * MPV播放器设置
      */

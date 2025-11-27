@@ -40,6 +40,13 @@ class MainViewModel(application: Application) : YenalyViewModel(application) {
     private val _announcements = MutableLiveData<List<Announcement>>()
     val announcements: LiveData<List<Announcement>> = _announcements
     private val database = FirebaseDatabase.getInstance(FIREBASE_REALTIME_DATABASE)
+
+    init {
+        viewModelScope.launch {
+            // 初始化默认已下载分组，防止[FOREIGN KEY constraint failed]
+            DatabaseRepo.HanimeDownload.insertDefaultGroup()
+        }
+    }
     fun getHomePage() {
         viewModelScope.launch {
             NetworkRepo.getHomePage().collect { homePage ->

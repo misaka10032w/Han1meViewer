@@ -38,6 +38,12 @@
             app:key="search_artist_ignore_video_type"
             app:summary="@string/search_artist_ignore_video_type_summary"
             app:title="@string/search_artist_ignore_video_type" />
+        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
+            app:defaultValue="false"
+            app:icon="@drawable/baseline_mobile_data_24"
+            app:key="disable_mobile_data_warning"
+            app:summary="@string/disable_mobile_data_warning_summary"
+            app:title="@string/disable_mobile_data_warning" />
 
         <Preference
             app:icon="@drawable/ic_baseline_play_circle_outline_24"

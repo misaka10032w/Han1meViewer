@@ -11,6 +11,7 @@ import com.yenaly.han1meviewer.logic.entity.HKeyframeType
 import com.yenaly.han1meviewer.logic.entity.HanimeAdvancedSearchHistoryEntity
 import com.yenaly.han1meviewer.logic.entity.SearchHistoryEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
+import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.yenaly_libs.utils.applicationContext
@@ -73,7 +74,7 @@ object DatabaseRepo {
                 return flow t@{
                     val find = hKeyframeDao.findBy(videoCode)
                     if (find == null || Preferences.sharedHKeyframesUseFirst) {
-                        kotlin.runCatching {
+                        runCatching {
                             applicationContext.assets
                                 .open("h_keyframes/$videoCode.json")
                                 .use { inputStream ->
@@ -209,7 +210,7 @@ object DatabaseRepo {
 
     object HanimeDownload {
         private val hanimeDownloadDao = DownloadDatabase.instance.hanimeDownloadDao
-
+        private val downloadGroupDao = DownloadDatabase.instance.downloadGroupDao
         fun loadAllDownloadingHanime() =
             hanimeDownloadDao.loadAllDownloadingHanime()
 
@@ -250,8 +251,29 @@ object DatabaseRepo {
         suspend fun find(videoCode: String) =
             hanimeDownloadDao.find(videoCode)
 
-//        @Deprecated("查屁")
-        suspend fun countBy(videoCode: String) =
-            hanimeDownloadDao.countBy(videoCode)
+        suspend fun insertDefaultGroup() =
+            downloadGroupDao.insertDefaultGroup()
+
+        fun getAllGroups()=
+            downloadGroupDao.getAllGroups()
+
+        suspend fun getGroupById(id: Int)=
+            downloadGroupDao.getGroupById(id)
+
+        suspend fun updateVideoGroup(videoCode: String, newGroupId: Int)=
+            hanimeDownloadDao.updateVideoGroup(videoCode, newGroupId)
+
+        suspend fun createNewGroup(name: String): Long{
+            val maxIndex = downloadGroupDao.getMaxOrderIndex() ?: 0
+            val newIndex = maxIndex + 1
+            val newGroup = DownloadGroupEntity(
+                name = name,
+                orderIndex = newIndex
+            )
+            return downloadGroupDao.insert(newGroup)
+        }
+
+        suspend fun updateGroup(group: DownloadGroupEntity)=
+            downloadGroupDao.update(group)
     }
 }

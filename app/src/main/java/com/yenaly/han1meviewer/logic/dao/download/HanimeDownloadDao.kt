@@ -84,4 +84,8 @@ abstract class HanimeDownloadDao {
     @Query("SELECT COUNT(*) FROM HanimeDownloadEntity WHERE (`videoCode` = :videoCode)")
 //    @Deprecated("查屁")
     abstract suspend fun countBy(videoCode: String): Int
+    // 更新已下载的某视频的分组
+    @Query("UPDATE HanimeDownloadEntity SET groupId = :newGroupId WHERE videoCode = :videoCode")
+    abstract suspend fun updateVideoGroup(videoCode: String, newGroupId: Int)
+
 }

@@ -3,36 +3,14 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/tb_sort"
-        android:icon="@drawable/baseline_sort_24"
-        android:title="@string/sort_option"
-        app:showAsAction="ifRoom">
-
-        <menu>
-
-            <group android:checkableBehavior="single">
-
-                <item
-                    android:id="@+id/sm_sort_by_date_ascending"
-                    android:title="@string/sort_by_date_ascending" />
-
-                <item
-                    android:id="@+id/sm_sort_by_date_descending"
-                    android:checked="true"
-                    android:title="@string/sort_by_date_descending" />
-
-                <item
-                    android:id="@+id/sm_sort_by_alphabet_ascending"
-                    android:title="@string/sort_by_alphabet_ascending" />
-
-                <item
-                    android:id="@+id/sm_sort_by_alphabet_descending"
-                    android:title="@string/sort_by_alphabet_descending" />
-
-            </group>
-
-        </menu>
-
-    </item>
+        android:id="@+id/tb_search"
+        android:icon="@drawable/ic_baseline_search_24"
+        android:title="@string/search"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/tb_add_group"
+        android:icon="@drawable/baseline_add_24"
+        android:title="@string/create_new_playlist"
+        app:showAsAction="ifRoom"/>
 
 </menu>
