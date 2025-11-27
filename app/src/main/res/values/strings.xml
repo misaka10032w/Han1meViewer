@@ -518,4 +518,22 @@
     <string name="search_artist_ignore_video_type_summary">開啟後，點選詳細頁頭像搜尋藝術家時，不再附帶影片類型。</string>
     <string name="show_played_indicator">顯示播放狀態標記</string>
     <string name="show_played_indicator_summary">開啟後將在搜尋結果頁影片封面右上角顯示已播放標記</string>
+    <string name="video_group_error">取得影片群組錯誤：</string>
+    <string name="video_group_empty">影片群組為空</string>
+    <string name="default_group_rename_not_allowed">預設群組（%s）不允許重新命名！</string>
+    <string name="new_group_name">新群組名稱</string>
+    <string name="rename_group">重新命名群組</string>
+    <string name="current_group_name">目前群組名稱：%s</string>
+    <string name="group_name_empty">群組名稱不能為空</string>
+    <string name="group_name_unchanged">名稱未做更改</string>
+    <string name="group_renamed">群組已重新命名為 %s</string>
+    <string name="modify_video_group">修改該影片的群組：%s</string>
+    <string name="group_modify_success">修改成功！%s，ID:%s</string>
+    <string name="unknown_group_id">發生錯誤：未知群組id！</string>
+    <string name="unknown_error">未知錯誤</string>
+    <string name="ungrouped">未分組</string>
+    <string name="group_title_format" translatable="false">%1$s (%2$d)</string>
+    <string name="create_new_group">建立新群組</string>
+    <string name="create_group_success">建立成功！%s</string>
+    <string name="coming_soon">敬請期待</string>
 </resources>

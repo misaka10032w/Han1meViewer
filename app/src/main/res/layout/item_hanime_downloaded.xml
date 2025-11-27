@@ -62,6 +62,22 @@
                 app:layout_constraintStart_toEndOf="@id/iv_cover"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="这里是下载项的标题" />
+            <TextView
+                android:id="@+id/tv_added_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="4dp"
+                android:drawablePadding="2dp"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:visibility="visible"
+                app:drawableStartCompat="@drawable/scaled_added_time"
+                app:layout_constraintBottom_toTopOf="@id/tv_video_code"
+                app:layout_constraintStart_toEndOf="@id/iv_cover"
+                app:layout_constraintTop_toBottomOf="@id/tv_title"
+                tools:text="2021/02/03 15:12" />
 
             <TextView
                 android:id="@+id/tv_video_code"
@@ -74,7 +90,7 @@
                 android:textSize="14sp"
                 app:layout_constraintBottom_toBottomOf="@id/_barrier"
                 app:layout_constraintStart_toEndOf="@id/iv_cover"
-                app:layout_constraintTop_toBottomOf="@id/tv_title"
+                app:layout_constraintTop_toBottomOf="@id/tv_added_time"
                 tools:text="09527" />
 
             <View
@@ -86,7 +102,7 @@
                 app:layout_constraintBottom_toBottomOf="@id/_barrier"
                 app:layout_constraintEnd_toStartOf="@id/tv_size"
                 app:layout_constraintStart_toEndOf="@id/tv_video_code"
-                app:layout_constraintTop_toBottomOf="@id/tv_title"
+                app:layout_constraintTop_toBottomOf="@id/tv_added_time"
                 tools:ignore="SmallSp" />
 
             <TextView
@@ -99,7 +115,7 @@
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="@id/_barrier"
                 app:layout_constraintStart_toEndOf="@id/_divider"
-                app:layout_constraintTop_toBottomOf="@id/tv_title"
+                app:layout_constraintTop_toBottomOf="@id/tv_added_time"
                 tools:text="476.7 MiB" />
 
             <TextView
@@ -115,23 +131,6 @@
                 tools:text="720P" />
 
             <TextView
-                android:id="@+id/tv_added_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="4dp"
-                android:drawablePadding="2dp"
-                android:gravity="center"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:visibility="gone"
-                app:drawableStartCompat="@drawable/scaled_added_time"
-                app:layout_constraintBottom_toBottomOf="@id/_barrier"
-                app:layout_constraintStart_toEndOf="@id/iv_cover"
-                app:layout_constraintTop_toBottomOf="@id/tv_quality"
-                tools:text="2021/02/03 15:12" />
-
-            <TextView
                 android:id="@+id/tv_release_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -140,7 +139,7 @@
                 android:maxLines="1"
                 android:visibility="gone"
                 app:layout_constrainedWidth="true"
-                app:layout_constraintBaseline_toBaselineOf="@id/tv_added_time"
+                app:layout_constraintBaseline_toBaselineOf="@id/tv_size"
                 app:layout_constraintBottom_toBottomOf="@id/_barrier"
                 app:layout_constraintEnd_toEndOf="parent"
                 tools:text="2021-02-02" />

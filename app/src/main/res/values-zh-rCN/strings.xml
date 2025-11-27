@@ -488,4 +488,21 @@
     <string name="search_artist_ignore_video_type_summary">开启后，点击详情页头像搜索艺术家时，不再附带影片类型。</string>
     <string name="show_played_indicator">显示播放状态标记</string>
     <string name="show_played_indicator_summary">开启后将在搜索结果页视频封面右上角显示已播放标记</string>
+    <string name="video_group_error">获取视频分组错误：</string>
+    <string name="video_group_empty">视频分组为空</string>
+    <string name="default_group_rename_not_allowed">默认分组（%s）不允许重命名！</string>
+    <string name="new_group_name">新分组名称</string>
+    <string name="rename_group">重命名分组</string>
+    <string name="current_group_name">当前分组名称：%s</string>
+    <string name="group_name_empty">分组名称不能为空</string>
+    <string name="group_name_unchanged">名称未做更改</string>
+    <string name="group_renamed">分组已重命名为 %s</string>
+    <string name="modify_video_group">修改该视频的分组：%s</string>
+    <string name="group_modify_success">修改成功！%s，ID:%s</string>
+    <string name="unknown_group_id">发生错误：未知组id！</string>
+    <string name="unknown_error">未知错误</string>
+    <string name="ungrouped">未分组</string>
+    <string name="create_new_group">创建新分组</string>
+    <string name="create_group_success">创建成功！%s</string>
+    <string name="coming_soon">敬请期待</string>
 </resources>
