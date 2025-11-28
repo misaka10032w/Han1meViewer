@@ -538,4 +538,6 @@
     <string name="coming_soon">敬請期待</string>
     <string name="disable_mobile_data_warning">關閉流量提醒</string>
     <string name="disable_mobile_data_warning_summary">開啟後使用行動流量播放時將不再提醒</string>
+    <string name="mpv_socks5_warning">注意：MPV播放核心不支援Socks代理，可能會播放失敗</string>
+    <string name="warning">警告</string>
 </resources>

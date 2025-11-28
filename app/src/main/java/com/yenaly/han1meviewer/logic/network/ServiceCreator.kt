@@ -85,7 +85,7 @@ object ServiceCreator {
             .addInterceptor(CloudflareInterceptor(applicationContext))
             .cache(cache)
             .cookieJar(HCookieJar())
-            .proxySelector(HProxySelector())
+ //           .proxySelector(HProxySelector())
             .dns(HDns())
             .build()
     }

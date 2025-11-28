@@ -261,6 +261,9 @@ class NetworkSettingsFragment : YenalySettingsFragment(R.xml.settings_network) {
                     val isValid = checkValid(ip, port)
                     if (isValid) {
                         val proxyType = proxyType
+                        if (proxyType == HProxySelector.TYPE_SOCKS){
+                            showSocksWarning()
+                        }
                         Preferences.preferenceSp.edit(commit = true) {
                             putInt(PROXY_TYPE, proxyType)
                             putString(PROXY_IP, ip)
@@ -350,5 +353,13 @@ class NetworkSettingsFragment : YenalySettingsFragment(R.xml.settings_network) {
             initView()
             dialog.showWithBlurEffect()
         }
+    }
+    private fun showSocksWarning() {
+        val context = requireContext()
+        context.createAlertDialog {
+            setTitle(context.getString(R.string.warning))
+            setMessage(context.getString(R.string.mpv_socks5_warning))
+            setPositiveButton(R.string.confirm) { _, _ -> }
+        }.show()
     }
 }
