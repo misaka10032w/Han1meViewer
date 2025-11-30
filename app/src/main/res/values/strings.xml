@@ -540,4 +540,6 @@
     <string name="disable_mobile_data_warning_summary">開啟後使用行動流量播放時將不再提醒</string>
     <string name="mpv_socks5_warning">注意：MPV播放核心不支援Socks代理，可能會播放失敗</string>
     <string name="warning">警告</string>
+    <string name="collapse_downloaded_groups">預設折疊已下載群組</string>
+    <string name="collapse_downloaded_groups_summary">開啟後，進入已下載頁面時，將預設折疊群組</string>
 </resources>

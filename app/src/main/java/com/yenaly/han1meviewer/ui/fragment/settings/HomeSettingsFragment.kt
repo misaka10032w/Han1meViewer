@@ -104,6 +104,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
         const val ALLOW_RESUME_PLAYBACK = "allow_resume_playback"
         const val SEARCH_ARTIST_IGNORE_VIDEO_TYPE = "search_artist_ignore_video_type"
         const val DISABLE_MOBILE_DATA_WARNING = "disable_mobile_data_warning"
+        const val COLLAPSE_DOWNLOADED_GROUP = "collapse_downloaded_group"
     }
 
     private val videoLanguage

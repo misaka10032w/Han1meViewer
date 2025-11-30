@@ -509,4 +509,6 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="disable_mobile_data_warning_summary">有効にすると、モバイルデータで再生時の警告が表示されません</string>
     <string name="mpv_socks5_warning">注意：MPV再生エンジンはSOCKSプロキシに対応しておらず、再生が失敗する可能性があります</string>
     <string name="warning">警告</string>
+    <string name="collapse_downloaded_groups">ダウンロード済みグループをデフォルトで折りたたむ</string>
+    <string name="collapse_downloaded_groups_summary">有効にすると、ダウンロード済みページに入るときにグループがデフォルトで折りたたまれます</string>
 </resources>

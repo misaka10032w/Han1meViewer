@@ -71,6 +71,12 @@
             app:key="download_settings"
             app:title="@string/download_settings" />
 
+        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
+            app:icon="@drawable/ic_baseline_fold_24"
+            app:key="collapse_downloaded_group"
+            app:summary="@string/collapse_downloaded_groups_summary"
+            app:title="@string/collapse_downloaded_groups" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/network">

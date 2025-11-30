@@ -206,6 +206,9 @@ object Preferences {
             // HanimeDownloadManager.MAX_CONCURRENT_DOWNLOAD_DEF
             HanimeDownloadManagerV2.MAX_CONCURRENT_DOWNLOAD_DEF
         )
+
+    val collapseDownloadedGroup: Boolean
+        get() = preferenceSp.getBoolean(HomeSettingsFragment.COLLAPSE_DOWNLOADED_GROUP,false)
     val isUsePrivateStorage: Boolean
         get() = preferenceSp.getBoolean(DownloadSettingsFragment.USE_PRIVATE_STORAGE,true)
     val safDownloadPath: String?

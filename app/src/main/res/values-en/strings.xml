@@ -504,4 +504,6 @@ Recommendations are as follows:\n
     <string name="disable_mobile_data_warning_summary">When enabled, no warning will be shown when playing with mobile data</string>
     <string name="mpv_socks5_warning">Note: MPV playback engine does not support SOCKS proxy, playback may fail</string>
     <string name="warning">Warning</string>
+    <string name="collapse_downloaded_groups">Collapse Downloaded Groups by Default</string>
+    <string name="collapse_downloaded_groups_summary">When enabled, groups will be collapsed by default when entering downloaded page</string>
 </resources>

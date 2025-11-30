@@ -16,6 +16,7 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.FragmentListOnlyBinding
 import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
@@ -226,7 +227,7 @@ class DownloadedFragment : YenalyFragment<FragmentListOnlyBinding>(), StateLayou
 
                         headerNodes = newHeaderNodes.map { newHeader ->
                             val oldHeader = headerNodes.find { it.groupKey == newHeader.groupKey }
-                            newHeader.copy(isExpanded = oldHeader?.isExpanded ?: true)
+                            newHeader.copy(isExpanded = oldHeader?.isExpanded ?: !Preferences.collapseDownloadedGroup)
                         }
                     }
 
@@ -255,7 +256,7 @@ class DownloadedFragment : YenalyFragment<FragmentListOnlyBinding>(), StateLayou
                 groupKey = groupName,
                 originalVideos = videos,
                 // 初始展开状态可以在这里设置
-                isExpanded = true
+                isExpanded = !Preferences.collapseDownloadedGroup
             )
             resultNodes.add(headerNode)
         }
