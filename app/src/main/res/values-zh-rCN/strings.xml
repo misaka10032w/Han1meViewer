@@ -507,4 +507,8 @@
     <string name="coming_soon">敬请期待</string>
     <string name="disable_mobile_data_warning">关闭流量提醒</string>
     <string name="disable_mobile_data_warning_summary">开启后使用移动流量播放时将不再提醒</string>
+    <string name="mpv_socks5_warning">注意：MPV播放内核不支持Socks代理，可能会播放失败</string>
+    <string name="warning">警告</string>
+    <string name="collapse_downloaded_groups">默认折叠已下载分组</string>
+    <string name="collapse_downloaded_groups_summary">开启后，进入已下载页面时，将默认折叠分组</string>
 </resources>

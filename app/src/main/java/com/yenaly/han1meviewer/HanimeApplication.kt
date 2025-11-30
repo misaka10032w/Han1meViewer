@@ -23,6 +23,7 @@ import com.yenaly.han1meviewer.util.ThemeUtils
 import com.yenaly.yenaly_libs.base.YenalyApplication
 import com.yenaly.yenaly_libs.utils.LanguageHelper
 import `is`.xyz.mpv.MPVLib
+import java.net.ProxySelector
 
 /**
  * @project Hanime1
@@ -55,6 +56,7 @@ class HanimeApplication : YenalyApplication() {
         if (Preferences.useDynamicColor){
             DynamicColors.applyToActivitiesIfAvailable(this)
         }
+        ProxySelector.setDefault(HProxySelector())
         HProxySelector.rebuildNetwork()
         initFirebase()
         initNotificationChannel()
