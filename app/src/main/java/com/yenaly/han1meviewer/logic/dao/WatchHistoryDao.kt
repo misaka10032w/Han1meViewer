@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 abstract class WatchHistoryDao {
 
-    @Query("SELECT * FROM WatchHistoryEntity ORDER BY id DESC")
+    @Query("SELECT * FROM WatchHistoryEntity ORDER BY watchDate DESC")
     abstract fun loadAll(): Flow<MutableList<WatchHistoryEntity>>
 
     @Delete
