@@ -22,6 +22,7 @@
     <application
         android:name=".HanimeApplication"
         android:allowBackup="true"
+        android:hasFragileUserData="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="true"
         android:fullBackupContent="@xml/backup_rules"
