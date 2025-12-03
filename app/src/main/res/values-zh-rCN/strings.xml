@@ -25,6 +25,7 @@
     <string name="relationship">人物关系</string>
     <string name="characteristics">角色设定</string>
     <string name="appearance_and_figure">外貌身材</string>
+    <string name="story_location">情景场所</string>
     <string name="story_plot">故事剧情</string>
     <string name="sex_position">性交体位</string>
     <string name="copy_to_clipboard">已复制到剪贴板</string>
@@ -511,4 +512,5 @@
     <string name="warning">警告</string>
     <string name="collapse_downloaded_groups">默认折叠已下载分组</string>
     <string name="collapse_downloaded_groups_summary">开启后，进入已下载页面时，将默认折叠分组</string>
+    <string name="animation_2d">2D动画</string>
 </resources>

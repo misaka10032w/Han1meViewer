@@ -25,6 +25,7 @@
     <string name="relationship">人物関係</string>
     <string name="characteristics">キャラ設定</string>
     <string name="appearance_and_figure">外見・体型</string>
+    <string name="story_location">シナリオと環境</string>
     <string name="story_plot">ストーリー・設定</string>
     <string name="sex_position">体位</string>
     <string name="copy_to_clipboard">クリップボードにコピーしました</string>
@@ -511,4 +512,5 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="warning">警告</string>
     <string name="collapse_downloaded_groups">ダウンロード済みグループをデフォルトで折りたたむ</string>
     <string name="collapse_downloaded_groups_summary">有効にすると、ダウンロード済みページに入るときにグループがデフォルトで折りたたまれます</string>
+    <string name="animation_2d">2Dアニメーション</string>
 </resources>

@@ -25,6 +25,7 @@
     <string name="relationship">Character Relationships</string>
     <string name="characteristics">Characteristics</string>
     <string name="appearance_and_figure">Appearance and Figure</string>
+    <string name="story_location">Scenario and Environment</string>
     <string name="story_plot">Story Plot</string>
     <string name="sex_position">Sex Positions</string>
     <string name="copy_to_clipboard">Copied to Clipboard</string>
@@ -506,4 +507,5 @@ Recommendations are as follows:\n
     <string name="warning">Warning</string>
     <string name="collapse_downloaded_groups">Collapse Downloaded Groups by Default</string>
     <string name="collapse_downloaded_groups_summary">When enabled, groups will be collapsed by default when entering downloaded page</string>
+    <string name="animation_2d">2D Animation</string>
 </resources>

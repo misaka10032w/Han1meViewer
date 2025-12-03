@@ -339,7 +339,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                 onMoreHanimeListener = {
                     showSearchFragment(
                         advancedSearchMapOf(
-                            HAdvancedSearch.GENRE to "3D動畫",
+                            HAdvancedSearch.GENRE to "3DCG",
                             HAdvancedSearch.SORT to "最新上傳"
                         )
                     )
@@ -361,11 +361,11 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                         })
                     }
                 },
-            VideoColumnTitleAdapter(requireContext(),R.string.category_doujin).apply {
+            VideoColumnTitleAdapter(requireContext(),R.string.animation_2d).apply {
                 onMoreHanimeListener = {
                     showSearchFragment(
                         advancedSearchMapOf(
-                            HAdvancedSearch.GENRE to "同人作品",
+                            HAdvancedSearch.GENRE to "2D動畫",
                             HAdvancedSearch.SORT to "最新上傳"
                         )
                     )
@@ -375,7 +375,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                 .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
                 .apply {
                     doOnWrap {
-                        val key = "douJinWork"
+                        val key = "animation2d"
                         val lm = layoutManager as? LinearLayoutManager ?: return@doOnWrap
                         val pos = viewModel.horizontalScrollPositions[key] ?: 0
                         post { lm.scrollToPositionWithOffset(pos, 0) }

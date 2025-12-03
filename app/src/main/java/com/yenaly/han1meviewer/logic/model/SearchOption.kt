@@ -37,6 +37,7 @@ data class SearchOption(
                 R.string.characteristics -> this["characteristics"].orEmpty()
                 R.string.appearance_and_figure -> this["appearance_and_figure"].orEmpty()
                 R.string.story_plot -> this["story_plot"].orEmpty()
+                R.string.story_location -> this["story_location"].orEmpty()
                 R.string.sex_position -> this["sex_positions"].orEmpty()
                 else -> error("Unknown scope name res: $scopeNameRes")
             }
@@ -48,6 +49,7 @@ data class SearchOption(
             "characteristics" -> R.string.characteristics
             "appearance_and_figure" -> R.string.appearance_and_figure
             "story_plot" -> R.string.story_plot
+            "story_location" -> R.string.story_location
             "sex_positions" -> R.string.sex_position
             else -> error("Unknown scope name: $raw")
         }
