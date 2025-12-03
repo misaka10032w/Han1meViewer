@@ -25,6 +25,7 @@
     <string name="relationship">人物关系</string>
     <string name="characteristics">角色设定</string>
     <string name="appearance_and_figure">外貌身材</string>
+    <string name="story_location">情景场所</string>
     <string name="story_plot">故事剧情</string>
     <string name="sex_position">性交体位</string>
     <string name="copy_to_clipboard">已复制到剪贴板</string>

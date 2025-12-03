@@ -253,6 +253,10 @@ class SearchOptionsPopupFragment :
                         viewModel.tags[R.string.story_plot]
                     )
                     addTagScope(
+                        R.string.story_location,
+                        viewModel.tags[R.string.story_location]
+                    )
+                    addTagScope(
                         R.string.sex_position,
                         viewModel.tags[R.string.sex_position]
                     )

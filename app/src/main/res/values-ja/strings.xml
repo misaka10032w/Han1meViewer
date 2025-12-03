@@ -25,6 +25,7 @@
     <string name="relationship">人物関係</string>
     <string name="characteristics">キャラ設定</string>
     <string name="appearance_and_figure">外見・体型</string>
+    <string name="story_location">シナリオと環境</string>
     <string name="story_plot">ストーリー・設定</string>
     <string name="sex_position">体位</string>
     <string name="copy_to_clipboard">クリップボードにコピーしました</string>
