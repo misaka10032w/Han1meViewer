@@ -508,4 +508,5 @@ Recommendations are as follows:\n
     <string name="collapse_downloaded_groups">Collapse Downloaded Groups by Default</string>
     <string name="collapse_downloaded_groups_summary">When enabled, groups will be collapsed by default when entering downloaded page</string>
     <string name="animation_2d">2D Animation</string>
+    <string name="start_from_beginning">Start from Beginning</string>
 </resources>
