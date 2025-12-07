@@ -324,7 +324,7 @@ fun EmptyView(hint: String) {
         ) {
             Image(
                 modifier = Modifier.padding(16.dp).width(150.dp),
-                painter = painterResource(R.drawable.neuro_sad),
+                painter = painterResource(R.drawable.h_chan_speechless),
                 contentDescription = stringResource(R.string.here_is_empty),
             )
             Text(

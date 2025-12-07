@@ -439,7 +439,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                         if (state is WebsiteState.Success) {
                             if (isAlreadyLogin) {
                                 if (state.info.username == null) {
-                                    headerAvatar.load(R.mipmap.ic_launcher) {
+                                    headerAvatar.load(R.drawable.bg_default_header) {
                                         crossfade(true)
                                         transformations(CircleCropTransformation())
                                     }
@@ -455,7 +455,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                                 initHeaderView()
                             }
                         } else {
-                            headerAvatar.load(R.mipmap.ic_launcher) {
+                            headerAvatar.load(R.drawable.bg_default_header) {
                                 crossfade(true)
                                 transformations(CircleCropTransformation())
                             }

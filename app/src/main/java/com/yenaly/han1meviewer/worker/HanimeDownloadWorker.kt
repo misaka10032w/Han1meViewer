@@ -390,7 +390,7 @@ class HanimeDownloadWorker(
 
     private fun createDownloadNotification(progress: Int = 0): Notification {
         return NotificationCompat.Builder(context, DOWNLOAD_NOTIFICATION_CHANNEL)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.mipmap.ic_launcher_new)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setContentTitle(context.getString(R.string.downloading_s, hanimeName))

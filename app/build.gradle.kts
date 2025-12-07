@@ -37,7 +37,7 @@ android {
         applicationId = "com.yenaly.han1meviewer"
         minSdk = property("min.sdk")?.toString()?.toIntOrNull()
         targetSdk = property("target.sdk")?.toString()?.toIntOrNull()
-        val (code, name) = createVersion(major = 0, minor = 21, patch = 0)
+        val (code, name) = createVersion(major = 0, minor = 21, patch = 3)
         versionCode = code
         versionName = name
 
@@ -77,7 +77,7 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
-            manifestPlaceholders.put("appIcon", "@mipmap/ic_launcher")
+            manifestPlaceholders.put("appIcon", "@mipmap/ic_launcher_new")
 
             applicationVariants.all variant@{
                 this@variant.outputs.all output@{

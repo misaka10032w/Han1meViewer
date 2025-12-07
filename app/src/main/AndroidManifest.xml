@@ -28,7 +28,7 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="${appIcon}"
         android:label="@string/hanime_app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_launcher_new_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Hanime"
         tools:targetApi="34">
@@ -105,7 +105,7 @@
             android:name=".LauncherAliasDefault"
             android:enabled="true"
             android:exported="true"
-            android:icon="@mipmap/ic_launcher"
+            android:icon="@mipmap/ic_launcher_new"
             android:label="@string/hanime_app_name"
             android:targetActivity=".ui.activity.MainActivity">
             <intent-filter>

@@ -130,7 +130,7 @@ class HUpdateWorker(
 
     private fun createNotification(progress: Int = 0, fileSizeMB: String = "0", downloadedSizeMB: String = "0", isPending: Boolean = true): Notification {
         return NotificationCompat.Builder(context, UPDATE_NOTIFICATION_CHANNEL)
-            .setSmallIcon(R.drawable.baseline_h_24)
+            .setSmallIcon(R.mipmap.ic_launcher_new)
             .setOngoing(true)
             .setContentTitle(
                 context.getString(
@@ -193,12 +193,12 @@ class HUpdateWorker(
         val notification = NotificationCompat.Builder(context, UPDATE_NOTIFICATION_CHANNEL)
             .setContentTitle(context.getString(R.string.download_complete))
             .setContentText(context.getString(R.string.click_to_install_update))
-            .setSmallIcon(R.drawable.baseline_h_24)
+            .setSmallIcon(R.mipmap.ic_launcher_new)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .addAction(
                 NotificationCompat.Action.Builder(
-                    R.drawable.baseline_h_24,
+                    R.mipmap.ic_launcher_new,
                     context.getString(R.string.install),
                     pendingIntent
                 ).build()
