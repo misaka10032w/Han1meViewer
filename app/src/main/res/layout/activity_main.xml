@@ -52,7 +52,11 @@
             android:fitsSystemWindows="true"
             app:headerLayout="@layout/nav_header_ability"
             app:menu="@menu/menu_main_nv"
-/>
+            app:itemTextColor="@color/nav_item_text_color"
+            app:background="?attr/colorSurfaceContainerLow"
+            app:itemIconTint="?attr/colorPrimary"
+            app:itemRippleColor="?attr/colorSurfaceContainerHigh"
+            app:itemShapeFillColor="@color/nav_item_state_list_background" />
 
         <View
             android:fitsSystemWindows="true"
