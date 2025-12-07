@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Checked (选中项) 使用 secondary -->
-    <item android:color="?attr/colorSecondary" android:state_checked="true"/>
+    <item android:color="?attr/colorOnSurface" android:state_checked="true"/>
     <!-- 默认文字颜色使用 onSurface -->
     <item android:color="?attr/colorOnSurface"/>
 </selector>

@@ -333,7 +333,7 @@
         android:background="@drawable/frosted_glass"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="从头开始"
+        android:text="@string/start_from_beginning"
         android:textColor="@android:color/white"
         android:textSize="14sp"
         android:textStyle="bold"

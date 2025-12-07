@@ -513,4 +513,5 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="collapse_downloaded_groups">ダウンロード済みグループをデフォルトで折りたたむ</string>
     <string name="collapse_downloaded_groups_summary">有効にすると、ダウンロード済みページに入るときにグループがデフォルトで折りたたまれます</string>
     <string name="animation_2d">2Dアニメーション</string>
+    <string name="start_from_beginning">最初から開始</string>
 </resources>

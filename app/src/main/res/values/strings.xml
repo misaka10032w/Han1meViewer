@@ -544,4 +544,5 @@
     <string name="collapse_downloaded_groups">預設折疊已下載群組</string>
     <string name="collapse_downloaded_groups_summary">開啟後，進入已下載頁面時，將預設折疊群組</string>
     <string name="animation_2d">2D動畫</string>
+    <string name="start_from_beginning">從頭開始</string>
 </resources>

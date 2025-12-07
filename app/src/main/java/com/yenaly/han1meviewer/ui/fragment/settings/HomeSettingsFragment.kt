@@ -175,7 +175,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
         val lockSwitch = findPreference<SwitchPreferenceCompat>("use_lock_screen")
         val items = listOf(
             LauncherItem(getString(R.string.hanime_app_name),
-                R.drawable.ic_launcher,
+                R.drawable.ic_launcher_new,
                 "com.yenaly.han1meviewer.LauncherAliasDefault"),
             LauncherItem(getString(R.string.app_name_fake_calc),
                 R.drawable.ic_launcher_calc,

@@ -101,7 +101,7 @@
         <item name="windowSplashScreenBackground">@color/per90_dark_red</item>
 
         <!-- 启动图标，可以是 mipmap/logo.xml 或图片 -->
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_new</item>
 
         <!-- 图标缩放动画持续时间 -->
         <item name="windowSplashScreenAnimationDuration">500</item>
