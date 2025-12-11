@@ -529,7 +529,7 @@
     <string name="group_name_unchanged">名稱未做更改</string>
     <string name="group_renamed">群組已重新命名為 %s</string>
     <string name="modify_video_group">修改該影片的群組：%s</string>
-    <string name="group_modify_success">修改成功！%s，ID:%s</string>
+    <string name="group_modify_success">修改成功！%1$s，ID:%2$s</string>
     <string name="unknown_group_id">發生錯誤：未知群組id！</string>
     <string name="unknown_error">未知錯誤</string>
     <string name="ungrouped">未分組</string>

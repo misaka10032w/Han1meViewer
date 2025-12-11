@@ -494,7 +494,7 @@ Recommendations are as follows:\n
     <string name="group_name_unchanged">Name unchanged</string>
     <string name="group_renamed">Group renamed to %s</string>
     <string name="modify_video_group">Modify this video\'s group: %s</string>
-    <string name="group_modify_success">Modified successfully! %s, ID:%s</string>
+    <string name="group_modify_success">Modified successfully! %1$s, ID:%2$s</string>
     <string name="unknown_group_id">Error: Unknown group ID!</string>
     <string name="unknown_error">Unknown error</string>
     <string name="ungrouped">Ungrouped</string>
