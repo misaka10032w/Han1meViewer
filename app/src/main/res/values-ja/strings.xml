@@ -499,7 +499,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="group_name_unchanged">名前は変更されていません</string>
     <string name="group_renamed">グループ名を%sに変更しました</string>
     <string name="modify_video_group">この動画のグループを変更：%s</string>
-    <string name="group_modify_success">変更成功！%s，ID:%s</string>
+    <string name="group_modify_success">変更成功！%1$s，ID:%2$s</string>
     <string name="unknown_group_id">エラー：不明なグループID！</string>
     <string name="unknown_error">不明なエラー</string>
     <string name="ungrouped">未グループ化</string>

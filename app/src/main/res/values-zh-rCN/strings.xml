@@ -499,7 +499,7 @@
     <string name="group_name_unchanged">名称未做更改</string>
     <string name="group_renamed">分组已重命名为 %s</string>
     <string name="modify_video_group">修改该视频的分组：%s</string>
-    <string name="group_modify_success">修改成功！%s，ID:%s</string>
+    <string name="group_modify_success">修改成功！%1$s，ID:%2$s</string>
     <string name="unknown_group_id">发生错误：未知组id！</string>
     <string name="unknown_error">未知错误</string>
     <string name="ungrouped">未分组</string>

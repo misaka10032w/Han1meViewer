@@ -137,6 +137,15 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
                 }
             }
         })
+
+        // #217 修复加入折叠播放器功能后导致的pager高度测量问题引起子fragment下端溢出250dp（播放器高度）导致的回复
+        // 评论按钮和至少一条底端评论不可见的问题
+        binding.appbar.addOnOffsetChangedListener { appBar, verticalOffset ->
+            val totalScrollRange = appBar.totalScrollRange
+            val offset = totalScrollRange + verticalOffset
+            binding.videoVp.setPadding(0, 0, 0, offset)
+        }
+
         val behavior = (binding.appbar.layoutParams as CoordinatorLayout.LayoutParams)
             .behavior as VideoPlayerAppBarBehavior
         binding.videoPlayer.onVideoStateChanged = { state ->
