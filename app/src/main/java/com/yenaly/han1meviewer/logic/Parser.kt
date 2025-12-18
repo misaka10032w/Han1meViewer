@@ -3,8 +3,10 @@ package com.yenaly.han1meviewer.logic
 import android.annotation.SuppressLint
 import android.util.Log
 import com.yenaly.han1meviewer.EMPTY_STRING
+import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.HanimeResolution
 import com.yenaly.han1meviewer.LOCAL_DATE_FORMAT
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
 import com.yenaly.han1meviewer.logic.exception.ParseException
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
@@ -105,25 +107,32 @@ object Parser {
         val thereDWorkClass = homePageParse.getOrNull(8)
         val douJinWorkClass = homePageParse.getOrNull(9)
         val cosplayClass = homePageParse.getOrNull(10)
-        val newAnimeTrailerClass = homePageParse.getOrNull(12)
+        val newAnimeTrailerClass = homePageParse.getOrNull(if (Preferences.baseUrl == HANIME_URL[3]) 13 else 12)
         // for latest hanime
         val latestHanimeList = mutableListOf<HanimeInfo>()
-        val latestHanimeItems = latestHanimeClass?.select("div[class=home-rows-videos-div]")
-        latestHanimeItems?.forEach { latestHanimeItem ->
-            val coverUrl = latestHanimeItem.selectFirst("img")?.absUrl("src")
-                .throwIfParseNull(Parser::homePageVer2.name, "coverUrl")
-            val title = latestHanimeItem.selectFirst("div[class$=title]")?.text()
-                .throwIfParseNull(Parser::homePageVer2.name, "title")
-            val videoCode = latestHanimeItem.parent()?.absUrl("href")?.toVideoCode()
-                .throwIfParseNull(Parser::homePageVer2.name, "videoCode")
-            latestHanimeList.add(
-                HanimeInfo(
-                    coverUrl = coverUrl,
-                    title = title,
-                    videoCode = videoCode,
-                    itemType = HanimeInfo.SIMPLIFIED
+        if (Preferences.baseUrl == HANIME_URL[3]){
+            val latestHanimeItems = latestHanimeClass?.select("div[class^=card-mobile-panel]")
+            latestHanimeItems?.forEachStep2 { latestHanimeItems ->
+                hanimeNormalItemVer2(latestHanimeItems)?.let(latestHanimeList::add)
+            }
+        } else {
+            val latestHanimeItems = latestHanimeClass?.select("div[class=home-rows-videos-div]")
+            latestHanimeItems?.forEach { latestHanimeItem ->
+                val coverUrl = latestHanimeItem.selectFirst("img")?.absUrl("src")
+                    .throwIfParseNull(Parser::homePageVer2.name, "coverUrl")
+                val title = latestHanimeItem.selectFirst("div[class$=title]")?.text()
+                    .throwIfParseNull(Parser::homePageVer2.name, "title")
+                val videoCode = latestHanimeItem.parent()?.absUrl("href")?.toVideoCode()
+                    .throwIfParseNull(Parser::homePageVer2.name, "videoCode")
+                latestHanimeList.add(
+                    HanimeInfo(
+                        coverUrl = coverUrl,
+                        title = title,
+                        videoCode = videoCode,
+                        itemType = HanimeInfo.SIMPLIFIED
+                    )
                 )
-            )
+            }
         }
 
         // for latest release
@@ -172,22 +181,29 @@ object Parser {
         }
 
         val animeShortList = mutableListOf<HanimeInfo>()
-        val animeShortItems = animeShortClass?.select("div[class=home-rows-videos-div]")
-        animeShortItems?.forEach { animeShortItem ->
-            val coverUrl = animeShortItem.selectFirst("img")?.absUrl("src")
-                .throwIfParseNull(Parser::homePageVer2.name, "coverUrl")
-            val title = animeShortItem.selectFirst("div[class$=title]")?.text()
-                .throwIfParseNull(Parser::homePageVer2.name, "title")
-            val videoCode = animeShortItem.parent()?.absUrl("href")?.toVideoCode()
-                .throwIfParseNull(Parser::homePageVer2.name, "videoCode")
-            animeShortList.add(
-                HanimeInfo(
-                    coverUrl = coverUrl,
-                    title = title,
-                    videoCode = videoCode,
-                    itemType = HanimeInfo.SIMPLIFIED
+        if (Preferences.baseUrl == HANIME_URL[3]){
+            val animeShortItems = animeShortClass?.select("div[class^=card-mobile-panel]")
+            animeShortItems?.forEachStep2 { animeShortItems ->
+                hanimeNormalItemVer2(animeShortItems)?.let(animeShortList::add)
+            }
+        } else {
+            val animeShortItems = animeShortClass?.select("div[class=home-rows-videos-div]")
+            animeShortItems?.forEach { animeShortItem ->
+                val coverUrl = animeShortItem.selectFirst("img")?.absUrl("src")
+                    .throwIfParseNull(Parser::homePageVer2.name, "coverUrl")
+                val title = animeShortItem.selectFirst("div[class$=title]")?.text()
+                    .throwIfParseNull(Parser::homePageVer2.name, "title")
+                val videoCode = animeShortItem.parent()?.absUrl("href")?.toVideoCode()
+                    .throwIfParseNull(Parser::homePageVer2.name, "videoCode")
+                animeShortList.add(
+                    HanimeInfo(
+                        coverUrl = coverUrl,
+                        title = title,
+                        videoCode = videoCode,
+                        itemType = HanimeInfo.SIMPLIFIED
+                    )
                 )
-            )
+            }
         }
 
         val motionAnimeList = mutableListOf<HanimeInfo>()
@@ -218,27 +234,34 @@ object Parser {
             hanimeNormalItemVer2(cosplayItem)?.let(cosplayList::add)
         }
         val newAnimeTrailerList = mutableListOf<HanimeInfo>()
-        val newAnimeTrailerItems =
-            newAnimeTrailerClass?.select("a")
-        newAnimeTrailerItems?.forEach { newAnimeTrailerItem ->
-            val videoCode = newAnimeTrailerItem.attr("href").toVideoCode()
+        if (Preferences.baseUrl == HANIME_URL[3]){
+            val newAnimeTrailerItems = newAnimeTrailerClass?.select("div[class^=card-mobile-panel]")
+            newAnimeTrailerItems?.forEachStep2 { newAnimeTrailerItems ->
+                hanimeNormalItemVer2(newAnimeTrailerItems)?.let(newAnimeTrailerList::add)
+            }
+        } else {
+            val newAnimeTrailerItems =
+                newAnimeTrailerClass?.select("a")
+            newAnimeTrailerItems?.forEach { newAnimeTrailerItem ->
+                val videoCode = newAnimeTrailerItem.attr("href").toVideoCode()
 
-            val coverUrl = newAnimeTrailerItem.selectFirst("img")?.attr("src")
-            val title = newAnimeTrailerItem.selectFirst("div.home-rows-videos-title")?.text()
-            if (title == null || coverUrl == null || videoCode == null) return@forEach
-            newAnimeTrailerList.add(
-                HanimeInfo(
-                    title = title,
-                    coverUrl = coverUrl,
-                    videoCode = videoCode,
-                    duration = "",
-                    artist = null,
-                    views = null,
-                    uploadTime = null,
-                    genre = null,
-                    itemType = HanimeInfo.SIMPLIFIED
+                val coverUrl = newAnimeTrailerItem.selectFirst("img")?.attr("src")
+                val title = newAnimeTrailerItem.selectFirst("div.home-rows-videos-title")?.text()
+                if (title == null || coverUrl == null || videoCode == null) return@forEach
+                newAnimeTrailerList.add(
+                    HanimeInfo(
+                        title = title,
+                        coverUrl = coverUrl,
+                        videoCode = videoCode,
+                        duration = "",
+                        artist = null,
+                        views = null,
+                        uploadTime = null,
+                        genre = null,
+                        itemType = HanimeInfo.SIMPLIFIED
+                    )
                 )
-            )
+            }
         }
 
         // emit!

@@ -514,4 +514,11 @@
     <string name="collapse_downloaded_groups_summary">开启后，进入已下载页面时，将默认折叠分组</string>
     <string name="animation_2d">2D动画</string>
     <string name="start_from_beginning">从头开始</string>
+    <string name="latest_av">最新AV</string>
+    <string name="amateur_nomask">素人业余</string>
+    <string name="hd_uncensored">高清无码</string>
+    <string name="ai_decensored">AI解码</string>
+    <string name="china_av">国产AV</string>
+    <string name="chinese_amateur">国产素人</string>
+    <string name="view_count">观看次数</string>
 </resources>

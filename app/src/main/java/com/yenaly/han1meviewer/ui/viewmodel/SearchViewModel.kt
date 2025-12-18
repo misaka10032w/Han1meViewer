@@ -6,6 +6,8 @@ import android.util.Log
 import android.util.SparseArray
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.DatabaseRepo.HanimeAdvancedSearchRepo.toSearchOptionSet
 import com.yenaly.han1meviewer.logic.NetworkRepo
@@ -73,7 +75,7 @@ class SearchViewModel(
     // START: Use in [SearchOptionsPopupFragment.kt]
 
     val genres by unsafeLazy {
-        loadAssetAs<List<SearchOption>>("search_options/genre.json").orEmpty()
+        loadAssetAs<List<SearchOption>>(if (Preferences.baseUrl == HANIME_URL[3]) "search_options/genre_av.json" else "search_options/genre.json").orEmpty()
     }
 
     val tags by unsafeLazy {

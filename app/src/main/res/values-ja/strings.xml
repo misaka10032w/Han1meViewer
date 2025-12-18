@@ -514,4 +514,11 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="collapse_downloaded_groups_summary">有効にすると、ダウンロード済みページに入るときにグループがデフォルトで折りたたまれます</string>
     <string name="animation_2d">2Dアニメーション</string>
     <string name="start_from_beginning">最初から開始</string>
+    <string name="latest_av">最新AV</string>
+    <string name="amateur_nomask">素人アマチュア</string>
+    <string name="hd_uncensored">高規画質無修正</string>
+    <string name="ai_decensored">AI無修正</string>
+    <string name="china_av">中国AV</string>
+    <string name="chinese_amateur">中国の素人</string>
+    <string name="view_count">視聴回数</string>
 </resources>
