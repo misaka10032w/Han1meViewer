@@ -3,7 +3,6 @@ package com.yenaly.han1meviewer.logic
 import android.annotation.SuppressLint
 import android.util.Log
 import com.yenaly.han1meviewer.EMPTY_STRING
-import com.yenaly.han1meviewer.HANIME_BASE_URL
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.HanimeResolution
 import com.yenaly.han1meviewer.LOCAL_DATE_FORMAT

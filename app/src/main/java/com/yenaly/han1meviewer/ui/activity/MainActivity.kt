@@ -56,6 +56,7 @@ import coil.load
 import coil.transform.CircleCropTransformation
 import com.google.android.material.snackbar.Snackbar
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
+import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
 import com.yenaly.han1meviewer.R
@@ -570,7 +571,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
      * 必须最后调用！先设置好toolbar！
      */
     fun Toolbar.setupWithMainNavController() {
-        supportActionBar!!.title = createAppbarTitle(context)
+        supportActionBar!!.title = if (Preferences.baseUrl == HANIME_URL[3]) createAppbarTitleAV(context) else createAppbarTitle(context)
         val appBarConfiguration = AppBarConfiguration(setOf(R.id.nv_home_page), binding.dlMain)
         this.setupWithNavController(navController, appBarConfiguration)
 
@@ -613,6 +614,42 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         }
 
         spannable.setSpan(normalThemeSpan, 6, fullText.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        return spannable
+    }
+
+    fun createAppbarTitleAV(context: Context): SpannableString {
+        val fullText = "HAViewer"
+        val spannable = SpannableString(fullText)
+
+        val redSpan = object : CharacterStyle() {
+            private val color = Color.RED
+            override fun updateDrawState(tp: TextPaint) {
+                tp.color = color
+                tp.isFakeBoldText = true
+            }
+        }
+        spannable.setSpan(redSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        val typedValue = TypedValue()
+        context.theme.resolveAttribute(com.google.android.material.R.attr.colorOnBackground, typedValue, true)
+        val themeColor = typedValue.data
+
+        val boldThemeSpan = object : CharacterStyle() {
+            override fun updateDrawState(tp: TextPaint) {
+                tp.color = themeColor
+                tp.isFakeBoldText = true
+            }
+        }
+
+        spannable.setSpan(boldThemeSpan, 1, 2, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        val normalThemeSpan = object : CharacterStyle() {
+            override fun updateDrawState(tp: TextPaint) {
+                tp.color = themeColor
+                tp.isFakeBoldText = false
+            }
+        }
+
+        spannable.setSpan(normalThemeSpan, 2, fullText.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         return spannable
     }
 
