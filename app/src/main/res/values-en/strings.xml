@@ -509,4 +509,11 @@ Recommendations are as follows:\n
     <string name="collapse_downloaded_groups_summary">When enabled, groups will be collapsed by default when entering downloaded page</string>
     <string name="animation_2d">2D Animation</string>
     <string name="start_from_beginning">Start from Beginning</string>
+    <string name="latest_av">Latest AV</string>
+    <string name="amateur_nomask">Amateur No-Mask</string>
+    <string name="hd_uncensored">HD Uncensored</string>
+    <string name="ai_decensored">AI Uncensored</string>
+    <string name="china_av">Chinese AV</string>
+    <string name="chinese_amateur">Chinese Amateur</string>
+    <string name="view_count">View Count</string>
 </resources>

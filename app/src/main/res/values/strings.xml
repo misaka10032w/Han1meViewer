@@ -545,4 +545,11 @@
     <string name="collapse_downloaded_groups_summary">開啟後，進入已下載頁面時，將預設折疊群組</string>
     <string name="animation_2d">2D動畫</string>
     <string name="start_from_beginning">從頭開始</string>
+    <string name="latest_av">最新AV</string>
+    <string name="amateur_nomask">素人業餘</string>
+    <string name="hd_uncensored">高清無碼</string>
+    <string name="ai_decensored">AI解碼</string>
+    <string name="china_av">國產AV</string>
+    <string name="chinese_amateur">國產素人</string>
+    <string name="view_count">觀看次數</string>
 </resources>

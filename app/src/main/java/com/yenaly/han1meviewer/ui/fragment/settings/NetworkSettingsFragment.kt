@@ -94,7 +94,8 @@ class NetworkSettingsFragment : YenalySettingsFragment(R.xml.settings_network) {
             entries = arrayOf(
                 "${HANIME_HOSTNAME[0]} (${getString(R.string.default_)})",
                 "${HANIME_HOSTNAME[1]} (${getString(R.string.alternative)})",
-                "${HANIME_HOSTNAME[2]} (${getString(R.string.alternative)})"
+                "${HANIME_HOSTNAME[2]} (${getString(R.string.alternative)})",
+                "${HANIME_HOSTNAME[3]} (av)"
 
             )
             entryValues = HANIME_URL

@@ -42,6 +42,7 @@ import com.lxj.xpopup.XPopup
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
 import com.yenaly.han1meviewer.HAdvancedSearch
 import com.yenaly.han1meviewer.HCacheManager
+import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.HanimeResolution
 import com.yenaly.han1meviewer.LOCAL_DATE_FORMAT
 import com.yenaly.han1meviewer.Preferences
@@ -128,7 +129,7 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
 
     val viewModel: VideoViewModel by viewModels({ requireParentFragment() })
     val genres by unsafeLazy {
-        loadAssetAs<List<SearchOption>>("search_options/genre.json").orEmpty()
+        loadAssetAs<List<SearchOption>>(if (Preferences.baseUrl == HANIME_URL[3]) "search_options/genre_av.json" else "search_options/genre.json").orEmpty()
     }
 
     private var checkedQuality: String? = null
