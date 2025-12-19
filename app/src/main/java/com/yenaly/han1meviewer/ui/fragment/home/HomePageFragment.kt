@@ -122,13 +122,14 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
     }
     private var announcementCardAdapter: AnnouncementCardAdapter? = null
     private lateinit var onBackPressedCallback: OnBackPressedCallback
+    private val isAVSite = Preferences.baseUrl == HANIME_URL[3]
     private val concatAdapter by lazy {
         ConcatAdapter(
             VideoColumnTitleAdapter(requireContext(),
-                if (Preferences.baseUrl == HANIME_URL[3]) R.string.latest_av else R.string.latest_hanime).apply {
+                if (isAVSite) R.string.latest_av else R.string.latest_hanime).apply {
                 onMoreHanimeListener = {
                     showSearchFragment(
-                        advancedSearchMapOf(HAdvancedSearch.GENRE to if (Preferences.baseUrl == HANIME_URL[3]) "日本AV" else "裏番"))
+                        advancedSearchMapOf(HAdvancedSearch.GENRE to if (isAVSite) "日本AV" else "裏番"))
                 }
             },
             latestHanimeAdapter
@@ -227,10 +228,10 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                     }
                 },
             VideoColumnTitleAdapter(requireContext(),
-                if (Preferences.baseUrl == HANIME_URL[3]) R.string.ranking_this_month else R.string.ranking_today).apply {
+                if (isAVSite) R.string.ranking_this_month else R.string.ranking_today).apply {
                 onMoreHanimeListener = {
                     showSearchFragment(
-                        advancedSearchMapOf(HAdvancedSearch.SORT to if (Preferences.baseUrl == HANIME_URL[3]) "本月排行" else "本日排行"))
+                        advancedSearchMapOf(HAdvancedSearch.SORT to if (isAVSite) "本月排行" else "本日排行"))
                 }
             },
             hanimeCurrentAdapter
@@ -249,9 +250,9 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                     }
                 },
             VideoColumnTitleAdapter(requireContext(),
-                if (Preferences.baseUrl == HANIME_URL[3]) R.string.view_count else R.string.ranking_this_month).apply {
+                if (isAVSite) R.string.view_count else R.string.ranking_this_month).apply {
                 onMoreHanimeListener = {
-                    showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to if (Preferences.baseUrl == HANIME_URL[3]) "觀看次數" else "本月排行"))
+                    showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to if (isAVSite) "觀看次數" else "本月排行"))
                 }
             },
             hotHanimeMonthlyAdapter
@@ -270,9 +271,9 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                     }
                 },
             VideoColumnTitleAdapter(requireContext(),
-                if (Preferences.baseUrl == HANIME_URL[3]) R.string.ranking_today else R.string.new_anime_trailers).apply {
+                if (isAVSite) R.string.ranking_today else R.string.new_anime_trailers).apply {
                 onMoreHanimeListener = {
-                    if (Preferences.baseUrl == HANIME_URL[3]){
+                    if (isAVSite){
                         showSearchFragment(advancedSearchMapOf(HAdvancedSearch.SORT to "本日排行"))
                     } else {
                         findNavController().navigate(R.id.action_nv_home_page_to_nv_preview)
@@ -296,11 +297,11 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                     }
                 },
             VideoColumnTitleAdapter(requireContext(),
-                if (Preferences.baseUrl == HANIME_URL[3]) R.string.amateur_nomask else R.string.category_instant_noodle).apply {
+                if (isAVSite) R.string.amateur_nomask else R.string.category_instant_noodle).apply {
                 onMoreHanimeListener = {
                     showSearchFragment(
                         advancedSearchMapOf(
-                            HAdvancedSearch.GENRE to if (Preferences.baseUrl == HANIME_URL[3]) "素人業餘" else "泡麵番",
+                            HAdvancedSearch.GENRE to if (isAVSite) "素人業餘" else "泡麵番",
                             HAdvancedSearch.SORT to "最新上傳"
                         )
                     )
@@ -323,11 +324,11 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                     }
                 },
             VideoColumnTitleAdapter(requireContext(),
-                if (Preferences.baseUrl == HANIME_URL[3]) R.string.hd_uncensored else R.string.category_motion_anime).apply {
+                if (isAVSite) R.string.hd_uncensored else R.string.category_motion_anime).apply {
                 onMoreHanimeListener = {
                     showSearchFragment(
                         advancedSearchMapOf(
-                            HAdvancedSearch.GENRE to if (Preferences.baseUrl == HANIME_URL[3]) "高清無碼" else "Motion Anime",
+                            HAdvancedSearch.GENRE to if (isAVSite) "高清無碼" else "Motion Anime",
                             HAdvancedSearch.SORT to "最新上傳"
                         )
                     )
@@ -350,11 +351,11 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                     }
                 },
             VideoColumnTitleAdapter(requireContext(),
-                if (Preferences.baseUrl == HANIME_URL[3]) R.string.ai_decensored else R.string.category_3d_animation).apply {
+                if (isAVSite) R.string.ai_decensored else R.string.category_3d_animation).apply {
                 onMoreHanimeListener = {
                     showSearchFragment(
                         advancedSearchMapOf(
-                            HAdvancedSearch.GENRE to if (Preferences.baseUrl == HANIME_URL[3]) "AI解碼" else "3DCG",
+                            HAdvancedSearch.GENRE to if (isAVSite) "AI解碼" else "3DCG",
                             HAdvancedSearch.SORT to "最新上傳"
                         )
                     )
@@ -377,11 +378,11 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                     }
                 },
             VideoColumnTitleAdapter(requireContext(),
-                if (Preferences.baseUrl == HANIME_URL[3]) R.string.china_av else R.string.animation_2d).apply {
+                if (isAVSite) R.string.china_av else R.string.animation_2d).apply {
                 onMoreHanimeListener = {
                     showSearchFragment(
                         advancedSearchMapOf(
-                            HAdvancedSearch.GENRE to if (Preferences.baseUrl == HANIME_URL[3]) "國產AV" else "2D動畫",
+                            HAdvancedSearch.GENRE to if (isAVSite) "國產AV" else "2D動畫",
                             HAdvancedSearch.SORT to "最新上傳"
                         )
                     )
@@ -404,11 +405,11 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                     }
                 },
             VideoColumnTitleAdapter(requireContext(),
-                if (Preferences.baseUrl == HANIME_URL[3]) R.string.chinese_amateur else R.string.category_cosplay).apply {
+                if (isAVSite) R.string.chinese_amateur else R.string.category_cosplay).apply {
                 onMoreHanimeListener = {
                     showSearchFragment(
                         advancedSearchMapOf(
-                            HAdvancedSearch.GENRE to if (Preferences.baseUrl == HANIME_URL[3]) "國產素人" else "Cosplay",
+                            HAdvancedSearch.GENRE to if (isAVSite) "國產素人" else "Cosplay",
                             HAdvancedSearch.SORT to "最新上傳"
                         )
                     )

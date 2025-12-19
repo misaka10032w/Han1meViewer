@@ -226,7 +226,7 @@ class NetworkSettingsFragment : YenalySettingsFragment(R.xml.settings_network) {
             return try {
                 val start = System.currentTimeMillis()
                 val address = InetAddress.getByName(ip)
-                val reachable = address.isReachable(1000)
+                val reachable = address.isReachable(2000)
                 if (reachable) (System.currentTimeMillis() - start).toInt() else -1
             } catch (e: Exception) {
                 -1

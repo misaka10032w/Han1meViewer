@@ -52,6 +52,7 @@ object Parser {
     }
 
     fun homePageVer2(body: String): WebsiteState<HomePage> {
+        val isAVSite = Preferences.baseUrl == HANIME_URL[3]
         val parseBody = Jsoup.parse(body).body()
         val csrfToken = parseBody.selectFirst("input[name=_token]")?.attr("value") // csrf token
 
@@ -107,10 +108,10 @@ object Parser {
         val thereDWorkClass = homePageParse.getOrNull(8)
         val douJinWorkClass = homePageParse.getOrNull(9)
         val cosplayClass = homePageParse.getOrNull(10)
-        val newAnimeTrailerClass = homePageParse.getOrNull(if (Preferences.baseUrl == HANIME_URL[3]) 13 else 12)
+        val newAnimeTrailerClass = homePageParse.getOrNull(if (isAVSite) 13 else 12)
         // for latest hanime
         val latestHanimeList = mutableListOf<HanimeInfo>()
-        if (Preferences.baseUrl == HANIME_URL[3]){
+        if (isAVSite){
             val latestHanimeItems = latestHanimeClass?.select("div[class^=card-mobile-panel]")
             latestHanimeItems?.forEachStep2 { latestHanimeItems ->
                 hanimeNormalItemVer2(latestHanimeItems)?.let(latestHanimeList::add)
@@ -181,7 +182,7 @@ object Parser {
         }
 
         val animeShortList = mutableListOf<HanimeInfo>()
-        if (Preferences.baseUrl == HANIME_URL[3]){
+        if (isAVSite){
             val animeShortItems = animeShortClass?.select("div[class^=card-mobile-panel]")
             animeShortItems?.forEachStep2 { animeShortItems ->
                 hanimeNormalItemVer2(animeShortItems)?.let(animeShortList::add)
@@ -234,7 +235,7 @@ object Parser {
             hanimeNormalItemVer2(cosplayItem)?.let(cosplayList::add)
         }
         val newAnimeTrailerList = mutableListOf<HanimeInfo>()
-        if (Preferences.baseUrl == HANIME_URL[3]){
+        if (isAVSite){
             val newAnimeTrailerItems = newAnimeTrailerClass?.select("div[class^=card-mobile-panel]")
             newAnimeTrailerItems?.forEachStep2 { newAnimeTrailerItems ->
                 hanimeNormalItemVer2(newAnimeTrailerItems)?.let(newAnimeTrailerList::add)
