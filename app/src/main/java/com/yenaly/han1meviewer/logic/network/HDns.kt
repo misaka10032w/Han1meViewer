@@ -18,14 +18,13 @@ class HDns : Dns {
 
     init {
         if (useBuiltInHosts) {
-            dnsMap[HANIME_HOSTNAME[0]] = listOf(
-                "104.25.254.167", "172.67.75.184", "172.64.229.154",
-                "2606:4700:8dd1::2a46:47f8"
+            val cloudFlareIps = listOf(
+                "172.64.229.154", "104.25.254.167", "172.67.75.184", "104.21.7.20", "172.67.187.141",
+                "2606:4700:8dd1::2a46:47f8", "2606:4700:3031::ac43:bb8d", "2606:4700:3030::6815:746"
             )
-            dnsMap[HANIME_HOSTNAME[1]] = listOf(
-                "104.25.254.167", "172.67.75.184", "172.64.229.154",
-                "2606:4700:8dd1::2a46:47f8"
-            )
+            HANIME_HOSTNAME.forEach { host ->
+                dnsMap[host] = cloudFlareIps
+            }
         }
     }
 
