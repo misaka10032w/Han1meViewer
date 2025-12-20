@@ -107,10 +107,10 @@ class HUpdateWorker(
     private val downloadId = Random.nextInt()
 
     override suspend fun doWork(): Result {
+        setForeground(createForegroundInfo())
         with(HUpdater) {
             val file = context.updateFile.apply { delete() }
             val inject = runSuspendCatching {
-                setForeground(createForegroundInfo())
                 file.injectUpdate(downloadLink) { progress, fileSize, downloadedSize ->
                     updateNotification(progress, fileSize, downloadedSize)
                 }
