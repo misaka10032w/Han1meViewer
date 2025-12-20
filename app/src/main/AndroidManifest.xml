@@ -41,7 +41,8 @@
         <activity
             android:name=".ui.activity.CloudflareActivity"
             android:theme="@style/Theme.Hanime"
-            android:exported="false" />
+            android:exported="false"
+            android:launchMode="singleTask"/>
 
         <service
             android:name="androidx.work.impl.foreground.SystemForegroundService"

@@ -28,7 +28,7 @@ data class VideoComments(
         //更多回复数量
         val replyCount: Int? = 0,
         // 評論id，登入前不能憑藉post獲取
-        val id: String? = null,
+        val id: String? = "-1",
         // post 相關
         val post: POST,
         //举报相关

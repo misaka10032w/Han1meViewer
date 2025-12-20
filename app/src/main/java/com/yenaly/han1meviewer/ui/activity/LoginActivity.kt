@@ -131,6 +131,8 @@ class LoginActivity : FrameActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     private fun initWebView() {
         binding.wvLogin.apply {
+            CookieManager.getInstance().removeAllCookies(null)
+            CookieManager.getInstance().flush()
             // #issue-17: 谷歌登录需要开启JavaScript，但是谷歌拒絕這種登錄方式，遂放棄
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
