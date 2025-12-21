@@ -275,8 +275,10 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
 
                                 playlistTitleAdapter.apply {
                                     onMoreHanimeListener = {
-                                        bottomSheet.show(parentFragmentManager,
-                                            PlaylistBottomSheetFragment.TAG)
+                                        if (!bottomSheet.isAdded && !bottomSheet.isRemoving){
+                                            bottomSheet.show(parentFragmentManager,
+                                                PlaylistBottomSheetFragment.TAG)
+                                        }
                                     }
                                 }
                             }
