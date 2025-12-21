@@ -689,12 +689,18 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
         this@HomePageFragment.addMenu(R.menu.menu_main_toolbar, viewLifecycleOwner) { item ->
             when (item.itemId) {
                 R.id.tb_search -> {
-                    findNavController().navigate(R.id.action_home_to_search)
+                    val currentDestination = findNavController().currentDestination?.id
+                    if (currentDestination == R.id.nv_home_page){
+                        findNavController().navigate(R.id.action_home_to_search)
+                    }
                     return@addMenu true
                 }
 
                 R.id.tb_previews -> {
-                    findNavController().navigate(R.id.nv_preview)
+                    val currentDestination = findNavController().currentDestination?.id
+                    if (currentDestination == R.id.nv_home_page){
+                        findNavController().navigate(R.id.action_nv_home_page_to_nv_preview)
+                    }
                     return@addMenu true
                 }
             }
