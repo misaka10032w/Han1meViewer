@@ -239,6 +239,7 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
                         is VideoLoadingState.Loading -> Unit
 
                         is VideoLoadingState.Success -> {
+                            if (!isAdded || isDetached || context == null) return@collect
                             val video = state.info
                             val code = viewModel.videoCode
 
