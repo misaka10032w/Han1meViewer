@@ -312,7 +312,11 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
 
         binding.searchBar.apply hsb@{
             historyAdapter = this@SearchFragment.historyAdapter
-            onTagClickListener = { optionsPopupFragment.showIn(this@SearchFragment) }
+            onTagClickListener = {
+                if(!optionsPopupFragment.isAdded && !optionsPopupFragment.isRemoving){
+                    optionsPopupFragment.showIn(this@SearchFragment)
+                }
+            }
             onBackClickListener = { findNavController().popBackStack() }
             onSearchClickListener = { _, text ->
                 viewModel.query = text

@@ -88,14 +88,19 @@ class SomeFunny(
         }
     }
     private fun vibrateOnce() {
-        val vibrationDuration = 20L // 震动20毫秒
-        vibrator?.let {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                it.vibrate(VibrationEffect.createOneShot(vibrationDuration, VibrationEffect.DEFAULT_AMPLITUDE))
-            } else {
-                @Suppress("DEPRECATION")
-                it.vibrate(vibrationDuration)
+        val vibrationDuration = 20L
+        try {
+            vibrator?.let {
+                if (!it.hasVibrator()) return
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    it.vibrate(VibrationEffect.createOneShot(vibrationDuration, VibrationEffect.DEFAULT_AMPLITUDE))
+                } else {
+                    @Suppress("DEPRECATION")
+                    it.vibrate(vibrationDuration)
+                }
             }
+        } catch (e: Exception) {
+            Log.e("Vibration", "Vibration error", e)
         }
     }
 }
