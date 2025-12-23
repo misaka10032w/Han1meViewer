@@ -1,0 +1,89 @@
+name: 🐞 问题反馈
+description: 反馈在 Han1meViewer 中出现的问题
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 请确认
+        - [ ] 我已经搜索过现有 Issue，没有找到相同问题
+        - [ ] 我使用的是最新版本的 Han1meViewer
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: 实际行为
+      description: 请简短解释实际发生的情况
+      placeholder: |
+        例如：
+          "我打开 Han1meViewer 时发生了崩溃..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: 预期行为
+      description: 请简短解释应该发生的情况
+      placeholder: |
+        例如：
+          "它应该正常打开应用..."
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Han1meViewer 版本
+      description: 你的 Han1meViewer 版本号
+      placeholder: "例如：v0.14.0"
+    validations:
+      required: true
+
+  - type: input
+    id: android-version
+    attributes:
+      label: Android 版本
+      description: 你的 Android 系统版本
+      placeholder: "例如：Android 13"
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: 设备型号
+      description: 你的设备型号
+      placeholder: "例如：Google Pixel 5、小米13、Samsung Galaxy S23"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 重现步骤
+      description: 请提供可以重现此问题的步骤
+      placeholder: |
+        例如：
+          1. 打开 Han1meViewer
+          2. 点击某个功能
+          3. 看到错误
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 截图/录屏
+      description: 如果可能，请提供截图或录屏
+      placeholder: "可以拖放图片文件到这里"
+
+  - type: textarea
+    id: other-details
+    attributes:
+      label: 其他信息
+      placeholder: |
+        其他你认为重要的信息，例如：
+        - 网络环境（Wi-Fi/移动数据）
+        - 是否使用了代理
+        - 之前是否正常使用
