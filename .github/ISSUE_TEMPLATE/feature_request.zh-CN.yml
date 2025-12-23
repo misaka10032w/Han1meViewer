@@ -1,0 +1,18 @@
+name: ⭐ 功能请求
+description: 建议一个新功能来改善 Han1meViewer
+labels: ["enhancement", "good idea"]
+body:
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: 描述您建议的功能
+      description: 您希望如何改进 Han1meViewer？
+      placeholder: "例如：我想要实现..."
+    validations:
+      required: true
+  - type: textarea
+    id: other-details
+    attributes:
+      label: 其他补充
+      description: 比如哪些软件有类似的功能，方便参考
+      placeholder: 其他补充信息、截图或参考链接...

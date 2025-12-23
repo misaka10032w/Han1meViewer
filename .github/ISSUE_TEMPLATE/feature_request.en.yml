@@ -1,0 +1,18 @@
+name: ⭐ Feature Request
+description: Suggest an idea to improve Han1meViewer
+labels: ["enhancement", "good idea"]
+body:
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: Describe your suggestion
+      description: How can we improve Han1meViewer?
+      placeholder: "Example: I would like to see..."
+    validations:
+      required: true
+  - type: textarea
+    id: other-details
+    attributes:
+      label: Other Details
+      description: Any other software with similar features we can refer to?
+      placeholder: Additional information, screenshots, or reference links...

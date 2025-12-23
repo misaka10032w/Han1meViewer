@@ -1,0 +1,26 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: 🌐 English Issues
+    url: https://github.com/misaka10032w/Han1meViewer/issues/new?template=bug_report.en.md
+    about: Please report issues in English
+
+  - name: 中文问题反馈
+    url: https://github.com/misaka10032w/Han1meViewer/issues/new?template=bug_report.zh-CN.md
+    about: 请使用中文反馈问题
+
+  - name: 繁體中文問題回饋
+    url: https://github.com/misaka10032w/Han1meViewer/issues/new?template=bug_report.zh-TW.md
+    about: 請使用繁體中文回饋問題
+
+  - name: Feature Request
+    url: https://github.com/misaka10032w/Han1meViewer/issues/new?template=feature_request.en.md
+    about: Suggest an idea to improve Han1meViewer
+
+  - name: 功能请求
+    url: https://github.com/misaka10032w/Han1meViewer/issues/new?template=feature_request.zh-CN.md
+    about: 建议一个新功能来改善 Han1meViewer
+
+  - name: 功能請求
+    url: https://github.com/misaka10032w/Han1meViewer/issues/new?template=feature_request.zh-TW.md
+    about: 建議一個功能來改善 Han1meViewer

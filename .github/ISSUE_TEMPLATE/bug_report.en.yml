@@ -1,0 +1,62 @@
+name: 🐞 Bug Report
+description: Report issues encountered in Han1meViewer
+labels: [bug]
+body:
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: Briefly explain what actually happened
+      placeholder: |
+        Example:
+          When I opened Han1meViewer...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: Briefly explain what should have happened
+      placeholder: |
+        Example:
+          It should have...
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Han1meViewer Version
+      description: Your **Han1meViewer** version
+      placeholder: |
+        Example: v0.14.0
+    validations:
+      required: true
+
+  - type: input
+    id: android-version
+    attributes:
+      label: Android Version
+      description: Your **Android** version
+      placeholder: |
+        Example: Android 13
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device Model
+      description: Your device model
+      placeholder: |
+        Example: Google Pixel 5
+    validations:
+      required: true
+
+  - type: textarea
+    id: other-details
+    attributes:
+      label: Additional Details
+      placeholder: |
+        Any other details, logs, or screenshots...
