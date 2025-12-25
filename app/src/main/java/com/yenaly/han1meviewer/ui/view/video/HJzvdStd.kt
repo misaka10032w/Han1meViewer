@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.ui.view.video
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
 import android.graphics.Typeface
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -30,9 +31,11 @@ import android.widget.TextView
 import androidx.annotation.IntRange
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.getSystemService
+import androidx.core.graphics.toColorInt
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.core.view.size
 import androidx.core.view.updatePadding
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavOptions
@@ -45,6 +48,7 @@ import cn.jzvd.JZMediaInterface
 import cn.jzvd.JZUtils
 import cn.jzvd.JzvdStd
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.color.MaterialColors
 import com.itxca.spannablex.spannable
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
@@ -581,6 +585,55 @@ class HJzvdStd @JvmOverloads constructor(
                 findNavController().navigateUp()
             }
         }
+    }
+
+    override fun clickClarity() {
+        this.onCLickUiToggleToClear()
+        val colorPrimary = MaterialColors.getColor(
+            context,
+            androidx.appcompat.R.attr.colorPrimary,
+            Color.RED)
+        val inflater = this.jzvdContext.getSystemService("layout_inflater") as LayoutInflater
+        val layout = inflater.inflate(R.layout.layout_jzvd_clarity, null as ViewGroup?) as LinearLayout
+        val mQualityListener = OnClickListener { v1: View? ->
+            val index = v1!!.tag as Int
+            this.jzDataSource.currentUrlIndex = index
+            this.changeUrl(this.jzDataSource, this.currentPositionWhenPlaying)
+            this.clarity.text = this.jzDataSource.currentKey.toString()
+
+            for (j in 0..<layout.size) {
+                if (j == this.jzDataSource.currentUrlIndex) {
+                    (layout.getChildAt(j) as TextView).setTextColor(colorPrimary)
+                } else {
+                    (layout.getChildAt(j) as TextView).setTextColor("#ffffff".toColorInt())
+                }
+            }
+            if (this.clarityPopWindow != null) {
+                this.clarityPopWindow.dismiss()
+            }
+        }
+
+        for (j in 0..<this.jzDataSource.urlsMap.size) {
+            val key = this.jzDataSource.getKeyFromDataSource(j)
+            val clarityItem = inflate(
+                this.jzvdContext,
+                R.layout.layout_jzvd_clarity_item,
+                null as ViewGroup?
+            ) as TextView
+            clarityItem.text = key
+            clarityItem.tag = j
+            layout.addView(clarityItem, j)
+            clarityItem.setOnClickListener(mQualityListener)
+            if (j == this.jzDataSource.currentUrlIndex) {
+                clarityItem.setTextColor(colorPrimary)
+            }
+        }
+
+        this.clarityPopWindow =
+            PopupWindow(layout, JZUtils.dip2px(this.jzvdContext, 240.0f), -1, true)
+        this.clarityPopWindow.animationStyle = cn.jzvd.R.style.pop_animation
+        this.clarityPopWindow.contentView = layout
+        this.clarityPopWindow.showAtLocation(this.textureViewContainer, 8388613, 0, 0)
     }
 
     override fun onClick(v: View) {
