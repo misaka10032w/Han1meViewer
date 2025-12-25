@@ -2,7 +2,7 @@
 # 本应用没有任何官方网站，仅Github Release、CI持续构建产物为唯一下载及更新渠道
 # Han1meViewer
 🔞R18警告,未满18岁禁止下载使用！\
-Han1meViewer 是一个基于 Kotlin 开发的 Android 应用，用于播放和浏览 hanime 视频资源，支持双栏与单栏布局切换、ExoPlayer 自定义播放内核、系列视频导航、播放列表和推荐内容展示等功能。
+Han1meViewer 是一个基于 Kotlin 开发的 Android 应用，用于播放和浏览 hanime 视频资源、ExoPlayer、MpvPlayer 自定义播放内核、系列视频导航、播放列表和内容展示等功能。
 
 ## 📜 项目来源与许可声明
 
@@ -50,7 +50,7 @@ Han1meViewer 是一个基于 Kotlin 开发的 Android 应用，用于播放和�
 
 ---
 
-🔄 最后更新日期：`2025-6-22`  
+🔄 最后更新日期：`2025-12-24`  
 ℹ️ 温馨提示：建议通过官方渠道支持原站内容，并点击广告以支持网站运营者。
 
 ---

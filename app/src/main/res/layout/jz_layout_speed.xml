@@ -3,7 +3,7 @@
     android:id="@+id/video_speed_wrapper_area"
     android:layout_width="240dp"
     android:layout_height="match_parent"
-    android:background="#88000000"
+    android:background="@drawable/frosted_glass"
     android:gravity="center"
     android:orientation="vertical"
     android:paddingHorizontal="4dp"

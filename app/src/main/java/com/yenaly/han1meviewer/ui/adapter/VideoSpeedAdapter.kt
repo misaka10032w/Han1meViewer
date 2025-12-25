@@ -7,7 +7,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import com.chad.library.adapter4.BaseQuickAdapter
 import com.chad.library.adapter4.viewholder.QuickViewHolder
+import com.google.android.material.color.MaterialColors
 import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
+import androidx.core.graphics.toColorInt
 
 /**
  * @project Han1meViewer
@@ -17,6 +19,12 @@ import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
 class VideoSpeedAdapter(private var currentIndex: Int) : BaseQuickAdapter<String, QuickViewHolder>(
     HJzvdStd.speedStringArray.toMutableList()
 ) {
+    private val colorPrimary: Int
+        get() = MaterialColors.getColor(
+            context,
+            androidx.appcompat.R.attr.colorPrimary,
+            Color.BLACK
+        )
 
     init {
         isStateViewEnable = true
@@ -26,8 +34,8 @@ class VideoSpeedAdapter(private var currentIndex: Int) : BaseQuickAdapter<String
         holder.setText(android.R.id.text1, item)
         holder.setTextColor(
             android.R.id.text1,
-            if (currentIndex == holder.bindingAdapterPosition) Color.parseColor("#fff85959")
-            else Color.parseColor("#ffffff")
+            if (currentIndex == holder.bindingAdapterPosition) colorPrimary
+            else "#ffffff".toColorInt()
         )
     }
 
