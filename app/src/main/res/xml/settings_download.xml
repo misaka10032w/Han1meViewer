@@ -18,7 +18,7 @@
             app:icon="@drawable/baseline_export_24"/>
     </PreferenceCategory>
 
-        <SeekBarPreference
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialSliderPreference
             android:max="10"
             app:defaultValue="2"
             app:key="download_count_limit"
@@ -27,10 +27,11 @@
             app:icon="@drawable/baseline_count_24"
             app:updatesContinuously="true" />
 
-        <SeekBarPreference
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialSliderPreference
             app:key="download_speed_limit"
             app:title="@string/download_speed_limit"
             app:icon="@drawable/baseline_speed2_24"
-            app:updatesContinuously="true" />
+            app:updatesContinuously="true"
+            app:labelBehavior="gone"/>
 
 </androidx.preference.PreferenceScreen>

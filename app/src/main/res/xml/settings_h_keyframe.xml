@@ -57,7 +57,7 @@
             app:title="@string/show_prompt_when_countdown"
             app:icon="@drawable/baseline_count_down_24"/>
 
-        <SeekBarPreference
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialSliderPreference
             android:max="30"
             app:defaultValue="10"
             app:key="when_countdown_remind"

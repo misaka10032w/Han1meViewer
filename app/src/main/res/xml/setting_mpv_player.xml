@@ -49,7 +49,7 @@
     <PreferenceCategory
         app:title="@string/player_settings_network_cache">
 
-        <SeekBarPreference
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialSliderPreference
             android:max="120"
             app:min="10"
             app:defaultValue="60"
@@ -65,7 +65,7 @@
             app:summary="@string/mpv_tls_verify_summary"
             app:icon="@drawable/baseline_cert_24"
             app:defaultValue="true" />
-        <SeekBarPreference
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialSliderPreference
             android:max="30"
             app:min="5"
             app:defaultValue="10"
