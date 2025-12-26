@@ -43,14 +43,12 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.SettingsRouter
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
-import com.yenaly.han1meviewer.ui.view.pref.HPrivacyPreference
 import com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.util.ThemeUtils
 import com.yenaly.han1meviewer.util.setSummaryConverter
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.han1meviewer.util.showUpdateDialog
-import com.yenaly.han1meviewer.util.showWithBlurEffect
 import com.yenaly.yenaly_libs.ActivityManager
 import com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
 import com.yenaly.yenaly_libs.base.settings.YenalySettingsFragment
@@ -138,7 +136,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
     private val applyDeepLinks
             by safePreference<Preference>(APPLY_DEEP_LINKS)
     private val useAnalytics
-            by safePreference<HPrivacyPreference>(USE_ANALYTICS)
+            by safePreference<MaterialSwitchPreference>(USE_ANALYTICS)
     private val ossLicense
             by safePreference<Preference>("oss_license")
     private val fakeLauncherIcon
@@ -420,12 +418,22 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
         }
         useAnalytics.apply {
             setOnPreferenceChangeListener { _, newValue ->
-                Firebase.analytics.setAnalyticsCollectionEnabled(newValue as Boolean)
+                val isEnabling = newValue as Boolean
+                if (!isEnabling){
+                    context.showAlertDialog {
+                        setTitle(R.string.about_analytics)
+                        setMessage(context.getString(R.string.about_analytics_summary).parseAsHtml())
+                        setCancelable(false)
+                        setPositiveButton(R.string.ok, null)
+                        setNeutralButton(R.string.deny){ _, _ ->
+                            useAnalytics.isChecked = false
+                            Firebase.analytics.setAnalyticsCollectionEnabled(false)
+                        }
+                    }
+                    return@setOnPreferenceChangeListener false
+                }
+                Firebase.analytics.setAnalyticsCollectionEnabled(true)
                 return@setOnPreferenceChangeListener true
-            }
-            setOnPreferenceLongClickListener {
-                privacyDialog.showWithBlurEffect()
-                return@setOnPreferenceLongClickListener true
             }
         }
         @Suppress ("DEPRECATION")

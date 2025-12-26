@@ -32,4 +32,6 @@
     <dimen name="indicator_margin">4dp</dimen>
     <dimen name="bottom_sheet_min_height">450dp</dimen>
     <dimen name="player_control_bar_margin">15dp</dimen>
+    <!-- 覆写Material slider左右padding -->
+    <dimen name="mtrl_slider_track_side_padding">0dp</dimen>
 </resources>

@@ -32,7 +32,7 @@
         app:icon="@drawable/baseline_touch_24"
         app:useSimpleSummaryProvider="true" />
 
-    <SeekBarPreference
+    <com.yenaly.han1meviewer.ui.view.pref.MaterialSliderPreference
         android:max="9"
         app:defaultValue="5"
         app:key="slide_sensitivity"

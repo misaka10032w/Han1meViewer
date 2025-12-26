@@ -133,7 +133,7 @@
             app:summary="@string/use_ci_update_channel_summary"
             app:title="@string/use_ci_update_channel" />
 
-        <SeekBarPreference
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialSliderPreference
             android:max="30"
             app:icon="@drawable/ic_clock"
             app:key="update_popup_interval_days"
@@ -146,7 +146,7 @@
 
     <PreferenceCategory app:title="@string/privacy">
 
-        <com.yenaly.han1meviewer.ui.view.pref.HPrivacyPreference
+        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
             app:defaultValue="true"
             app:icon="@drawable/baseline_data_usage_24"
             app:key="use_analytics"

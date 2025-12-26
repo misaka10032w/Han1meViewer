@@ -49,9 +49,10 @@
     <PreferenceCategory
         app:title="@string/player_settings_network_cache">
 
-        <SeekBarPreference
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialSliderPreference
             android:max="120"
             app:min="10"
+            android:stepSize="5"
             app:defaultValue="60"
             app:key="mpv_cache_secs"
             app:title="@string/mpv_cache_secs"
@@ -65,9 +66,10 @@
             app:summary="@string/mpv_tls_verify_summary"
             app:icon="@drawable/baseline_cert_24"
             app:defaultValue="true" />
-        <SeekBarPreference
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialSliderPreference
             android:max="30"
             app:min="5"
+            android:stepSize="5"
             app:defaultValue="10"
             app:key="mpv_network_timeout"
             app:title="@string/mpv_network_timeout"
@@ -78,13 +80,13 @@
     <PreferenceCategory
         app:title="@string/advanced"
         app:summary="@string/advanced_summary">
-        <EditTextPreference
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialEditTextPreference
             app:title="@string/custom_parameters"
             app:summary="@string/custom_parameters_summary"
+            android:hint = "@string/mpv_adv_setting_hint"
             app:icon="@drawable/baseline_custom_24"
             app:key="mpv_custom_parameters"
-            app:dialogTitle="@string/custom_parameters_title"
-            app:dialogMessage="@string/custom_parameters_example"/>
+            app:dialogTitle="@string/custom_parameters_title" />
     </PreferenceCategory>
     <Preference
         app:title=""
