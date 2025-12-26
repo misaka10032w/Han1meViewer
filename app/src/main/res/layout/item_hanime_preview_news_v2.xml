@@ -2,9 +2,7 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <data>
-
-    </data>
+    <data />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -45,30 +43,28 @@
                     android:background="?attr/colorPrimary" />
 
                 <TextView
-                    android:id="@+id/tv_title"
-                    style="@style/TextAppearance.Material3.TitleLarge"
+                    android:id="@+id/tv_video_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="8dp"
                     android:ellipsize="end"
-                    android:textSize="24sp"
+                    android:maxLines="2"
+                    android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
                     android:textStyle="bold"
-                    tools:text="1234 -v 125" />
+                    tools:text="中文标题 第N话[新番预告]" />
 
             </LinearLayout>
 
             <TextView
-                android:id="@+id/tv_video_title"
+                android:id="@+id/tv_title"
+                style="@style/TextAppearance.Material3.TitleMedium"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="4dp"
-                android:layout_marginEnd="8dp"
                 android:ellipsize="end"
-                android:maxLines="2"
-                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
-                android:textStyle="bold"
-                tools:text="12122131313211312313213131231233" />
+                tools:text="日文标题 第N话[新番预告]" />
 
             <TextView
                 android:id="@+id/tv_brand"
@@ -79,7 +75,7 @@
                 android:layout_marginEnd="8dp"
                 android:ellipsize="end"
                 android:maxLines="2"
-                tools:text="1212213133131231233" />
+                tools:text="发行商" />
 
             <TextView
                 android:id="@+id/tv_release_date"
@@ -90,7 +86,7 @@
                 android:layout_marginEnd="8dp"
                 android:ellipsize="end"
                 android:maxLines="2"
-                tools:text="1212213133131231233" />
+                tools:text="发行日期（xxxx年xx月xx日）" />
 
             <TextView
                 android:id="@+id/tv_introduction"
@@ -108,7 +104,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="4dp"
                 android:layout_marginEnd="8dp"
-                android:alpha="0.8"/>
+                android:alpha="0.8" />
 
             <com.yenaly.yenaly_libs.base.view.RecyclerViewAtViewPager2
                 android:id="@+id/rv_preview"

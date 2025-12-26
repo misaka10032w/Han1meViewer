@@ -66,6 +66,7 @@ import com.yenaly.han1meviewer.logic.model.SubscriptionItem
 import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.fragment.ArtistItem
+import com.yenaly.han1meviewer.ui.fragment.EmptyView
 import com.yenaly.han1meviewer.ui.fragment.VideoCardItem
 import com.yenaly.han1meviewer.ui.viewmodel.MySubscriptionsViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -180,9 +181,9 @@ fun SubscriptionApp(
 
                 is WebsiteState.Error -> {
                     if (cachedArtists.value.isEmpty()) {
-                        Text(
-                            "加载失败: ${result.throwable.message}",
-                            modifier = Modifier.align(Alignment.Center)
+                        EmptyView(
+                            "${stringResource(R.string.load_failed_retry)}: ${result.throwable.message}",
+                            R.drawable.h_chan_sad
                         )
                     } else {
                         // 显示旧缓存内容（保持体验）
