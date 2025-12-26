@@ -52,6 +52,7 @@
         <com.yenaly.han1meviewer.ui.view.pref.MaterialSliderPreference
             android:max="120"
             app:min="10"
+            android:stepSize="5"
             app:defaultValue="60"
             app:key="mpv_cache_secs"
             app:title="@string/mpv_cache_secs"
@@ -68,6 +69,7 @@
         <com.yenaly.han1meviewer.ui.view.pref.MaterialSliderPreference
             android:max="30"
             app:min="5"
+            android:stepSize="5"
             app:defaultValue="10"
             app:key="mpv_network_timeout"
             app:title="@string/mpv_network_timeout"
