@@ -552,4 +552,5 @@
     <string name="china_av">國產AV</string>
     <string name="chinese_amateur">國產素人</string>
     <string name="view_count">觀看次數</string>
+    <string name="mpv_adv_setting_hint" translatable="false">key1,value1;key2,value2;......</string>
 </resources>

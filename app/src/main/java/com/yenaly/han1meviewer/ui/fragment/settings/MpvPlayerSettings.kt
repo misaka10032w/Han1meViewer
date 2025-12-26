@@ -8,6 +8,7 @@ import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
+import com.yenaly.han1meviewer.ui.view.pref.MaterialEditTextPreference
 import com.yenaly.yenaly_libs.base.settings.YenalySettingsFragment
 
 class MpvPlayerSettings: YenalySettingsFragment(R.xml.setting_mpv_player) {
@@ -31,7 +32,7 @@ class MpvPlayerSettings: YenalySettingsFragment(R.xml.setting_mpv_player) {
     private val mpvCacheSecs by safePreference<SeekBarPreference>(MPV_CACHE_SECS)
     private val mpvTlsVerify by safePreference<SwitchPreferenceCompat>(MPV_TLS_VERIFY)
     private val mpvNetworkTimeout by safePreference<SeekBarPreference>(MPV_NETWORK_TIMEOUT)
-    private val customMpvParams by safePreference<EditTextPreference>(CUSTOM_PARAMS)
+    private val customMpvParams by safePreference<MaterialEditTextPreference>(CUSTOM_PARAMS)
 
     override fun onStart() {
         super.onStart()

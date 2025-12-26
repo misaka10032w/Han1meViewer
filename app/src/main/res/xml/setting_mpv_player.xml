@@ -80,13 +80,13 @@
     <PreferenceCategory
         app:title="@string/advanced"
         app:summary="@string/advanced_summary">
-        <EditTextPreference
+        <com.yenaly.han1meviewer.ui.view.pref.MaterialEditTextPreference
             app:title="@string/custom_parameters"
             app:summary="@string/custom_parameters_summary"
+            android:hint = "@string/mpv_adv_setting_hint"
             app:icon="@drawable/baseline_custom_24"
             app:key="mpv_custom_parameters"
-            app:dialogTitle="@string/custom_parameters_title"
-            app:dialogMessage="@string/custom_parameters_example"/>
+            app:dialogTitle="@string/custom_parameters_title" />
     </PreferenceCategory>
     <Preference
         app:title=""
