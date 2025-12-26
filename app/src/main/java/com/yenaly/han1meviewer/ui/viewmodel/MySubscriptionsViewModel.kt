@@ -81,6 +81,8 @@ class MySubscriptionsViewModel : ViewModel() {
                                 maxPage = info.maxPage
                                 )
                         )
+                    } else if (state is WebsiteState.Error){
+                        _subscriptionsState.value = WebsiteState.Error(state.throwable)
                     }
                     isLoadingMore = false
                 }

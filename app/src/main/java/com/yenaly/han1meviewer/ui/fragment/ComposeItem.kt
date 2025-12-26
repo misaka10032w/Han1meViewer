@@ -311,7 +311,7 @@ fun BottomSheetHandler(){
 }
 
 @Composable
-fun EmptyView(hint: String) {
+fun EmptyView(hint: String, picRes: Int = R.drawable.h_chan_speechless) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -324,7 +324,7 @@ fun EmptyView(hint: String) {
         ) {
             Image(
                 modifier = Modifier.padding(16.dp).width(150.dp),
-                painter = painterResource(R.drawable.h_chan_speechless),
+                painter = painterResource(picRes),
                 contentDescription = stringResource(R.string.here_is_empty),
             )
             Text(
