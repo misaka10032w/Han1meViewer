@@ -76,11 +76,7 @@
             android:id="@+id/slider"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:labelBehavior="floating"
-            tools:valueFrom="0"
-            tools:valueTo="10"
-            tools:stepSize="1"
-            tools:value="5"/>
+            app:labelBehavior="floating" />
 
         <TextView
             android:id="@+id/seekbar_value"
