@@ -553,4 +553,6 @@
     <string name="chinese_amateur">國產素人</string>
     <string name="view_count">觀看次數</string>
     <string name="mpv_adv_setting_hint" translatable="false">key1,value1;key2,value2;......</string>
+    <string name="delete_group">刪除群組</string>
+    <string name="delete_group_confirm">確定要刪除群組 「%1$s」 嗎？該群組下的影片將移動到預設群組。</string>
 </resources>

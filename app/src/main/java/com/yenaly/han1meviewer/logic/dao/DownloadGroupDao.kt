@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import kotlinx.coroutines.flow.Flow
@@ -74,4 +75,13 @@ interface DownloadGroupDao {
      */
     @Query("UPDATE HanimeDownloadEntity SET groupId = ${DownloadGroupEntity.DEFAULT_GROUP_ID} WHERE groupId = :oldGroupId")
     suspend fun resetVideosGroupToDefault(oldGroupId: Int)
+
+    /**
+     * 重置到默认分组并删除分组
+     */
+    @Transaction
+    suspend fun deleteGroup(group: DownloadGroupEntity) {
+        resetVideosGroupToDefault(group.id)
+        delete(group)
+    }
 }

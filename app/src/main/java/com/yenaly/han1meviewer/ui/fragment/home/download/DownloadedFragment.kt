@@ -15,23 +15,28 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.FragmentListOnlyBinding
 import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
+import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
+import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.logic.model.DownloadHeaderNode
 import com.yenaly.han1meviewer.logic.model.DownloadItemNode
 import com.yenaly.han1meviewer.logic.model.DownloadedNode
-import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
-import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.ui.StateLayoutMixin
+import com.yenaly.han1meviewer.ui.adapter.DownloadedGroupListAdapter
 import com.yenaly.han1meviewer.ui.adapter.HanimeDownloadedRvAdapter
 import com.yenaly.han1meviewer.ui.viewmodel.DownloadViewModel
 import com.yenaly.yenaly_libs.base.YenalyFragment
 import com.yenaly.yenaly_libs.utils.activity
 import com.yenaly.yenaly_libs.utils.dp
 import com.yenaly.yenaly_libs.utils.showLongToast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -294,19 +299,33 @@ class DownloadedFragment : YenalyFragment<FragmentListOnlyBinding>(), StateLayou
     }
 
     private fun showCreateGroupDialog(context: Context) {
-        val input = EditText(context).apply {
-            hint = context.getString(R.string.new_group_name)
+        val view = LayoutInflater.from(context)
+            .inflate(R.layout.dialog_download_group, null)
+
+        val groupList = view.findViewById<RecyclerView>(R.id.groupList)
+        val input = view.findViewById<TextInputEditText>(R.id.input)
+
+        val adapter = DownloadedGroupListAdapter { group ->
+            showDeleteGroupConfirmDialog(context, group) {
+                viewModel.deleteGroup(group)
+                showLongToast(
+                    "${context.getString(R.string.delete_success)}:${group.name}"
+                )
+            }
         }
-        val padding = 24.dp
-        val container = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(padding, 0, padding, 0)
-            addView(input)
+
+        groupList.layoutManager = LinearLayoutManager(context)
+        groupList.adapter = adapter
+
+        val job = CoroutineScope(Dispatchers.Main).launch {
+            viewModel.downloadedGroups.collect { groups ->
+                adapter.submitList(groups.sortedBy { it.orderIndex })
+            }
         }
 
         MaterialAlertDialogBuilder(context)
             .setTitle(context.getString(R.string.create_new_group))
-            .setView(container)
+            .setView(view)
             .setPositiveButton(R.string.confirm) { dialog, _ ->
                 val groupName = input.text.toString().trim()
 
@@ -317,6 +336,29 @@ class DownloadedFragment : YenalyFragment<FragmentListOnlyBinding>(), StateLayou
                     showLongToast(context.getString(R.string.create_group_success,groupName))
                     dialog.dismiss()
                 }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .setOnDismissListener {
+                job.cancel()
+            }
+            .show()
+    }
+
+    private fun showDeleteGroupConfirmDialog(
+        context: Context,
+        group: DownloadGroupEntity,
+        onConfirm: () -> Unit
+    ) {
+        MaterialAlertDialogBuilder(context)
+            .setTitle(context.getString(R.string.sure_to_delete))
+            .setMessage(
+                context.getString(
+                    R.string.delete_group_confirm,
+                    group.name
+                )
+            )
+            .setPositiveButton(R.string.delete) { _, _ ->
+                onConfirm()
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
