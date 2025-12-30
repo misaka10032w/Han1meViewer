@@ -521,4 +521,6 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="china_av">中国AV</string>
     <string name="chinese_amateur">中国の素人</string>
     <string name="view_count">視聴回数</string>
+    <string name="delete_group">グループ削除</string>
+    <string name="delete_group_confirm">グループ「%1$s」を削除してもよろしいですか？このグループの動画はデフォルトグループに移動されます。</string>
 </resources>

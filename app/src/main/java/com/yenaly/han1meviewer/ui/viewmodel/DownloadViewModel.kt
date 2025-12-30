@@ -120,6 +120,11 @@ class DownloadViewModel(application: Application) : YenalyViewModel(application)
             }
         }
     }
+    fun deleteGroup(group: DownloadGroupEntity){
+        viewModelScope.launch {
+            DatabaseRepo.HanimeDownload.deleteGroup(group)
+        }
+    }
 
     fun updateDownloadHanime(entity: HanimeDownloadEntity) {
         viewModelScope.launch {

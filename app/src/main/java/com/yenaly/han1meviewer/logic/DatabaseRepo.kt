@@ -272,6 +272,9 @@ object DatabaseRepo {
             )
             return downloadGroupDao.insert(newGroup)
         }
+        suspend fun deleteGroup(group: DownloadGroupEntity) {
+            downloadGroupDao.deleteGroup(group)
+        }
 
         suspend fun updateGroup(group: DownloadGroupEntity)=
             downloadGroupDao.update(group)
