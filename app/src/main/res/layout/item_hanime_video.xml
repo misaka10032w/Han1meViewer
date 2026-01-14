@@ -24,7 +24,7 @@
             app:cardCornerRadius="12dp"
             app:cardElevation="1dp"
             app:strokeWidth="0dp"
-            app:contentPaddingBottom="8dp">
+            app:contentPaddingBottom="4dp">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -73,53 +73,7 @@
                         android:layout_gravity="bottom"
                         android:background="@drawable/linear_gradient_90_notrans"
                         android:paddingStart="4dp"
-                        android:paddingEnd="4dp"
-                        android:paddingBottom="4dp">
-
-                        <ImageView
-                            android:id="@+id/icon_views"
-                            android:layout_width="@dimen/view_view_and_time_icon_size"
-                            android:layout_height="@dimen/view_view_and_time_icon_size"
-                            android:contentDescription="@null"
-                            android:src="@drawable/ic_baseline_play_circle_outline_24"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:tint="?attr/colorOnSurfaceVariant" />
-
-                        <TextView
-                            android:id="@+id/views"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textSize="@dimen/video_view_and_time_and_duration"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintStart_toEndOf="@id/icon_views"
-                            app:layout_constraintTop_toTopOf="parent"
-                            tools:text="1234" />
-
-                        <ImageView
-                            android:id="@+id/icon_time"
-                            android:layout_width="@dimen/view_view_and_time_icon_size"
-                            android:layout_height="@dimen/view_view_and_time_icon_size"
-                            android:layout_marginStart="8dp"
-                            android:contentDescription="@null"
-                            android:src="@drawable/ic_baseline_access_time_24"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintStart_toEndOf="@id/views"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:tint="?attr/colorOnSurfaceVariant" />
-
-                        <TextView
-                            android:id="@+id/time"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textColor="?attr/colorOnSurface"
-                            android:textSize="@dimen/video_view_and_time_and_duration"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintStart_toEndOf="@id/icon_time"
-                            app:layout_constraintTop_toTopOf="parent"
-                            tools:text="1天前" />
+                        android:paddingEnd="10dp">
 
                         <TextView
                             android:id="@+id/duration"
@@ -141,26 +95,91 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="4dp"
                     android:ellipsize="end"
-                    android:paddingStart="6dp"
-                    android:paddingEnd="4dp"
-                    android:singleLine="true"
+                    android:maxLines="1"
+                    android:includeFontPadding="false"
                     android:textColor="?attr/colorOnSurface"
                     android:textAppearance="?attr/textAppearanceBodyMedium"
-                    tools:text="This is a title.This is a title.This is a title." />
+                    tools:text="This is a title.This is a title." />
 
                 <TextView
                     android:id="@+id/artist"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="4dp"
                     android:ellipsize="end"
-                    android:paddingStart="6dp"
-                    android:paddingEnd="4dp"
-                    android:singleLine="true"
+                    android:maxLines="1"
+                    android:includeFontPadding="false"
+                    android:letterSpacing="0"
                     android:textAppearance="?attr/textAppearanceBodySmall"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     tools:text="里番 字幕组" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="25dp"
+                    android:layout_gravity="bottom"
+                    android:paddingStart="6dp"
+                    android:paddingEnd="8dp">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        app:layout_constraintEnd_toEndOf="parent">
+
+                    <ImageView
+                        android:id="@+id/icon_views"
+                        android:layout_width="@dimen/view_view_and_time_icon_size"
+                        android:layout_height="@dimen/view_view_and_time_icon_size"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_baseline_play_circle_outline_24"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+
+                    <TextView
+                        android:id="@+id/views"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="@dimen/video_view_and_time_and_duration"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/icon_views"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:text="1234" />
+
+                    <ImageView
+                        android:id="@+id/icon_time"
+                        android:layout_width="@dimen/view_view_and_time_icon_size"
+                        android:layout_height="@dimen/view_view_and_time_icon_size"
+                        android:layout_marginStart="8dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_baseline_access_time_24"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/views"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:tint="?attr/colorOnSurfaceVariant" />
+
+                    <TextView
+                        android:id="@+id/time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="@dimen/video_view_and_time_and_duration"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/icon_time"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:text="1天前" />
+                    </LinearLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
             </LinearLayout>
 

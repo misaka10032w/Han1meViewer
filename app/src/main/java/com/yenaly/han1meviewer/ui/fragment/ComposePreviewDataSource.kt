@@ -24,7 +24,8 @@ val fakeVideos = listOf(
         videoCode = "101573",
         duration = "04:34",
         views = "44.9万次",
-        reviews = "100%"
+        reviews = "100%",
+        upLoadTime = "2010-12-10"
     ),
     SubscriptionVideosItem(
         title = "姐姐的秘密训练",
@@ -32,7 +33,8 @@ val fakeVideos = listOf(
         videoCode = "101574",
         duration = "23:15",
         views = "22.1万次",
-        reviews = "95%"
+        reviews = "95%",
+        upLoadTime = "2010-12-10"
     ),
     SubscriptionVideosItem(
         title = "放学后的约定",
@@ -40,7 +42,8 @@ val fakeVideos = listOf(
         videoCode = "101575",
         duration = "18:02",
         views = "58.3万次",
-        reviews = "97%"
+        reviews = "97%",
+        upLoadTime = "2010-12-10"
     ),
     SubscriptionVideosItem(
         title = "班长的福利日",
@@ -48,7 +51,8 @@ val fakeVideos = listOf(
         videoCode = "101576",
         duration = "12:47",
         views = "30.0万次",
-        reviews = "92%"
+        reviews = "92%",
+        upLoadTime = "2010-12-10"
     ),
     SubscriptionVideosItem(
         title = "图书馆的秘密角落",
@@ -56,7 +60,8 @@ val fakeVideos = listOf(
         videoCode = "101577",
         duration = "15:20",
         views = "61.7万次",
-        reviews = "99%"
+        reviews = "99%",
+        upLoadTime = "2010-12-10"
     )
 )
 val fakeVideosItem =
@@ -66,7 +71,8 @@ val fakeVideosItem =
         videoCode = "101573",
         duration = "04:34",
         views = "44.9万次",
-        reviews = "100%"
+        reviews = "100%",
+        upLoadTime = "2020-12-12"
     )
 
 fun generateFakeCheckInRecords(

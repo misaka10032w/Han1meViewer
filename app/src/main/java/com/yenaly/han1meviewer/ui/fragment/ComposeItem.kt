@@ -36,6 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -229,6 +230,16 @@ fun VideoCardItem(
                         overflow = TextOverflow.Ellipsis,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+                if (!videoItem.upLoadTime.isNullOrEmpty()) {
+                    Text(
+                        text = videoItem.upLoadTime!!,
+                        fontSize = 11.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
             }
         }
@@ -333,5 +344,40 @@ fun EmptyView(hint: String, picRes: Int = R.drawable.h_chan_speechless) {
                 textAlign = TextAlign.Center
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun VideoCardPreview(){
+    MaterialTheme {
+        VideoCardItem(fakeVideosItem, onClickVideosItem = { }, onLongClickVideosItem =  {_,_->})
+    }
+}
+
+@Preview
+@Composable
+fun PlaylistItemPreview(){
+    MaterialTheme {
+        PlaylistItem(
+            playlist = fakePlaylists.first(),
+            modifier = Modifier.padding(8.dp).height(140.dp)
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ArtistPreview(){
+    MaterialTheme {
+        ArtistItem(fakeArtists.first(), onClickArtist = {}, onLongClickArtist = {}, modifier = Modifier)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun EmptyViewPreview(){
+    MaterialTheme {
+        EmptyView("发生了一些事情")
     }
 }
