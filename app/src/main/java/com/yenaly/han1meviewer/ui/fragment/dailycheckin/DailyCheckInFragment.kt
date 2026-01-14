@@ -61,6 +61,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,6 +71,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.transition.MaterialSharedAxis
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.fragment.generateFakeCheckInRecords
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.CheckInCalendarViewModel
 import kotlinx.coroutines.launch
@@ -408,4 +410,25 @@ fun CalendarGrid(
             }
         }
     }
+}
+
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 640)
+@Composable
+fun CalendarGridPreview() {
+    val yearMonth = YearMonth.now()
+    val fakeRecords = generateFakeCheckInRecords(yearMonth)
+    CalendarGrid(
+        yearMonth = yearMonth,
+        records = fakeRecords,
+        onDateClick = { date ->
+            println("点击了: $date")
+        },
+        onDateLongClick = { date ->
+            println("长按了: $date")
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    )
 }

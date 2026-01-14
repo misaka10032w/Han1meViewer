@@ -24,5 +24,6 @@ data class SubscriptionVideosItem(
     override val duration: String? = null,
     override val views: String? = null,
     override val reviews: String? = null,
-    override val currentArtist: String? = null
+    override val currentArtist: String? = null,
+    override val upLoadTime: String?= null,
 ) : Parcelable, VideoItemType

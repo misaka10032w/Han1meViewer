@@ -12,16 +12,16 @@ data class HomePage(
     val banner: Banner?,
     val latestHanime: MutableList<HanimeInfo>,
     val latestRelease: MutableList<HanimeInfo>,
-    val latestUpload: MutableList<HanimeInfo>,
-    val chineseSubtitle: MutableList<HanimeInfo>,
-    val hanimeTheyWatched: MutableList<HanimeInfo>,
-    val hanimeCurrent: MutableList<HanimeInfo>,
-    val hotHanimeMonthly: MutableList<HanimeInfo>,
-    val animeShort: MutableList<HanimeInfo>,
+    val ecchiAnime: MutableList<HanimeInfo>,
+    val shortEpisodeAnime: MutableList<HanimeInfo>,
+    val twoPointFiveDAnime: MutableList<HanimeInfo>,
+    val threeDCG: MutableList<HanimeInfo>,
     val motionAnime: MutableList<HanimeInfo>,
-    val thereDWork: MutableList<HanimeInfo>, //3D作品
-    val douJinWork: MutableList<HanimeInfo>,  //同人
+    val twoDAnime: MutableList<HanimeInfo>,
+    val aiGenerated: MutableList<HanimeInfo>,
+    val mmd: MutableList<HanimeInfo>,
     val cosplay: MutableList<HanimeInfo>,
+    val watchingNow: MutableList<HanimeInfo>,
     val newAnimeTrailer: MutableList<HanimeInfo>,
     val timestamp: Long = System.currentTimeMillis()
 ) {
