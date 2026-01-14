@@ -439,10 +439,13 @@ object Parser {
                     }
                 }
             } else {
-                children?.forEachStep2 { each ->
-                    val item = each.select("div[class^=card-mobile-panel]")[0]
-                    hanimeNormalItemVer2(item)?.let(relatedAnimeList::add)
-                }
+                relatedAnimeList.addAll(relatedTabContent.extractHanimeInfo())
+//                children?.forEachStep2 { each ->
+//                    Log.i("children",each.toString())
+//                    relatedAnimeList.addAll(each.extractHanimeInfo())
+////                    val item = each.select("div[class^=video-item-container]")[0]
+////                    hanimeNormalItemVer2(item)?.let(relatedAnimeList::add)
+//                }
             }
         }
         Log.d("related_anime_list", relatedAnimeList.toString())

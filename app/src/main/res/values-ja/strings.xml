@@ -338,9 +338,9 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="disable_comments_title">コメント欄非表示</string>
     <string name="default_video_quilty">デフォルト解像度</string>
     <string name="my_subscribe">マイフォロー</string>
-    <string name="title_activity_qrcode_scanner">QRコードでCookies読み込み</string>
-    <string name="scan_for_cookies">QRコードでCookies読み込み</string>
-    <string name="import_cookies_intro">このインポート方法はcloudflareによるログイン遮断も緩和可能\n1. ウェブ版ログイン後、Cookiesを取得（方法は問わず、携帯/PC可）。\n2. フォーマットは大体図の通り。注意！前後にダブルクォーテーションを含まず、フォーマット後のCookiesシーケンスではないこと。\n3. QRコード作成ツール（草料二维码等）を使用し、このQRコードをスキャン。\nQRコードが大きすぎるとスキャンしづらい、またはPCがない場合は、「手動インポート」ボタンを使用。\nインポート後ページ再読み込みで未ログイン状態の場合は、Cookiesを確認。</string>
+    <string name="title_activity_qrcode_scanner">手動クッキー入力</string>
+    <string name="scan_for_cookies">手動クッキー入力</string>
+    <string name="import_cookies_intro">このインポート方法はcloudflareによるログイン遮断も緩和可能\n1. ウェブ版ログイン後、Cookiesを取得（方法は問わず、携帯/PC可）。\n2. フォーマットは大体図の通り。注意！前後にダブルクォーテーションを含まず、フォーマット後のCookiesシーケンスではないこと。\n「手動インポート」ボタンを使用。\nインポート後ページ再読み込みで未ログイン状態の場合は、Cookiesを確認。</string>
     <string name="cookies_import_desc">ガイド図</string>
     <string name="cookies_import_title">インポート方法</string>
     <string name="cookies_import_dismiss">了解</string>

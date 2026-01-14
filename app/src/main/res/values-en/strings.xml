@@ -333,13 +333,13 @@ Recommendations are as follows:\n
     <string name="disable_comments_sum">When enabled, the comment section will be hidden on the video details page</string>
     <string name="default_video_quilty">Default video resolution</string>
     <string name="my_subscribe">My Subscriptions</string>
-    <string name="title_activity_qrcode_scanner">Scan the QR code</string>
-    <string name="scan_for_cookies">Scan the QR code to enter Cookies</string>
+    <string name="title_activity_qrcode_scanner">Manual Cookies Input</string>
+    <string name="scan_for_cookies">Manual Cookies Input</string>
     <string name="cookies_import_desc">Guide</string>
     <string name="cookies_import_title">How to import</string>
     <string name="cookies_import_dismiss">I see</string>
     <string name="manual_import_cookies">Manual import</string>
-    <string name="import_cookies_intro">This import method can also alleviate login interception caused by cloudflare\n1. After logging in on the web version, find a way to obtain the Cookies - either mobile or computer will work.\n 2. The format should be approximately as shown in the image. Note! It should not contain double quotes at the beginning or end, and should not be a formatted Cookies sequence.\n 3. Use a QR code creation tool (such as CaoLiao QR code, etc.) and scan this QR code.\n If the QR code is too large and difficult to scan, or if you don\\\'t have a computer, then use the \\\"Manual Import\\\" button to import.\n If after importing and refreshing the page it still shows as not logged in, then check your Cookies.</string>
+    <string name="import_cookies_intro">This import method can also alleviate login interception caused by cloudflare\n1. After logging in on the web version, find a way to obtain the Cookies - either mobile or computer will work.\n 2. The format should be approximately as shown in the image. Note! It should not contain double quotes at the beginning or end, and should not be a formatted Cookies sequence.\n Then use the \\\"Manual Import\\\" button to import.\n If after importing and refreshing the page it still shows as not logged in, then check your Cookies.</string>
     <string name="request_camera">Please grant camera permission to scan the code</string>
     <string name="allow_pip_disc">Allow entering picture-in-picture mode when returning to the desktop \n(Picture-in-picture permission needs to be enabled)</string>
     <string name="allow_pip_title">Allow picture-in-picture mode</string>
