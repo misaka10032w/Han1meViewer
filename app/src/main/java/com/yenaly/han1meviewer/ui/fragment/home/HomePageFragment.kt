@@ -201,8 +201,8 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
                 onMoreHanimeListener = {
                     showSearchFragment(
                         advancedSearchMapOf(
-                            HAdvancedSearch.GENRE to if (isAVSite) "國產素人" else "Cosplay",
-                            HAdvancedSearch.SORT to "最新上傳"
+                            HAdvancedSearch.GENRE to if (isAVSite) "國產素人" else "",
+                            HAdvancedSearch.SORT to "他們在看"
                         )
                     )
                 }
