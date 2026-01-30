@@ -504,6 +504,7 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
     private var currentPfd: ParcelFileDescriptor? = null
     private var detachFd: Int? = null
     private var pfdFilePath = false
+    val defaultSpeed = Preferences.playerSpeed
     private val mpvOptions: Map<String, String>
         get() = buildMap {
             // 视频输出驱动：GPU 渲染（支持 GLSL 滤镜/Anime4K/插帧）
@@ -818,6 +819,7 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
                     MPVLib.mpvEventId.MPV_EVENT_FILE_LOADED -> {
                         // 文件加载成功
                         jzvd.onPrepared()
+                        MPVLib.setPropertyDouble("speed", defaultSpeed.toDouble())
                     }
                     MPVLib.mpvEventId.MPV_EVENT_PLAYBACK_RESTART -> {
                         // 播放重新开始
