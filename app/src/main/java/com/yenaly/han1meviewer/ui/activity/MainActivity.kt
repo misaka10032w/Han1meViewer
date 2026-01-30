@@ -226,7 +226,28 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         setIntent(intent)
         handleDeeplinkIfNeeded(intent)
     }
+    override fun attachBaseContext(newBase: Context) {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(newBase)
+        val isPadMode = prefs.getBoolean("pad_mode", false)
 
+        val res = newBase.resources
+        val config = Configuration(res.configuration)
+
+        if (isPadMode) {
+            // 开启：强制伪装成大平板 (sw600dp)
+            config.smallestScreenWidthDp = 600
+        } else {
+            // 关闭：强制伪装成普通手机 (sw360dp)
+            // 即使你物理设备是 800dp，系统看到这里是 360，也会乖乖去 layout 文件夹找布局
+            config.smallestScreenWidthDp = 360
+        }
+
+        // 同时也影响常规宽度判断
+        config.screenWidthDp = config.smallestScreenWidthDp
+
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+    }
     private fun handleDeeplinkIfNeeded(intent: Intent) {
         Log.i("deeplink", "intent=$intent")
 

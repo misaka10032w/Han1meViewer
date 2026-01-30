@@ -170,6 +170,41 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onPreferencesCreated(savedInstanceState: Bundle?) {
+
+
+        // 1. 获取平板模式开关的 Preference (确保 key 与你的 XML 一致)
+        val padModePref = findPreference<MaterialSwitchPreference>("pad_mode")
+
+        padModePref?.setOnPreferenceChangeListener { _, newValue ->
+            val isChecked = newValue as Boolean
+
+            // 2. 弹出确认对话框
+            requireContext().showAlertDialog {
+                setCancelable(false) // 强制用户必须选择，防止状态不一致
+                setTitle(R.string.attention)
+                setMessage("切换模式需要重启应用以重新加载布局，是否立即重启？")
+
+                setPositiveButton(R.string.confirm) { _, _ ->
+                    // --- 核心重启逻辑 ---
+                    // 1. 先保存最新的偏好设置值 (防止进程杀掉时还没来得及自动保存)
+                    preferenceManager.sharedPreferences?.edit {
+                        putBoolean("pad_mode", isChecked)
+                    }
+
+                    // 2. 使用封装好的 ActivityManager 重启并杀掉进程
+                    // 这会确保 MainActivity 的 attachBaseContext 重新注入 360/600 的配置
+                    ActivityManager.restart(killProcess = true)
+                }
+
+                setNegativeButton(R.string.cancel) { _, _ ->
+                    // 3. 用户取消了，手动把开关拨回到原始状态
+                    padModePref.isChecked = !isChecked
+                }
+            }
+
+            // 返回 true 让系统先记录状态，我们的弹窗会在确定后接管重启
+            true
+        }
         val lockSwitch = findPreference<SwitchPreferenceCompat>("use_lock_screen")
         val items = listOf(
             LauncherItem(getString(R.string.hanime_app_name),
@@ -487,6 +522,8 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initFlow()
+
+
     }
 
     private fun initFlow() {

@@ -84,10 +84,11 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
     private val videoUri by lazy { requireArguments().getString("LOCAL_URI") }
     private var videoTitle: String? = null
     private lateinit var orientationManager: OrientationManager
- //   private var saveJob: Job? = null
+
     private val tabNameArray by lazy {
-        checkBadGuy(requireContext(),R.raw.akarin)
+        checkBadGuy(requireContext(), R.raw.akarin)
     }
+
     companion object {
         fun newInstance(videoCode: String): VideoFragment {
             return VideoFragment().apply {
@@ -96,20 +97,25 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         }
     }
 
+    /**
+     * 这里是核心修改点：根据 pad_mode 开关动态选择布局加载
+     * 前提条件：系统会根据 MainActivity 中 attachBaseContext 的配置自动选择 layout 或 layout-sw600dp
+     */
     override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentVideoBinding {
         return FragmentVideoBinding.inflate(inflater, container, false)
     }
 
     override fun initData(savedInstanceState: Bundle?) {
-        if (videoCode == "-1"){
+        if (videoCode == "-1") {
             viewModel.fromDownload = true
-        }else{
+        } else {
             viewModel.fromDownload = fromDownload
         }
         viewModel.videoCode = videoCode
         commentViewModel.code = videoCode
         binding.videoPlayer.videoCode = videoCode
-        checkBadGuy(requireContext(),R.raw.akarin)
+        checkBadGuy(requireContext(), R.raw.akarin)
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.videoPlayer) { v, insets ->
             val navBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
             v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
@@ -117,48 +123,70 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
             }
             WindowInsetsCompat.CONSUMED
         }
+
         orientationManager = OrientationManager(requireActivity(), this)
         lifecycle.addObserver(orientationManager)
         binding.videoPlayer.orientationManager = orientationManager
+
+        // 初始化 ViewPager (包含手机/平板分流逻辑)
         initViewPager()
+
         initHKeyframe()
         viewModel.getHanimeVideo(videoCode, videoUri)
-        Log.i("video_ui", "initData: $videoCode")
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
             object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (Jzvd.backPress()) {
-                    // 由backPress()处理，无内部逻辑
-                } else {
-                    // 没处理，交由系统默认行为
-                    isEnabled = false
-                    requireActivity().onBackPressedDispatcher.onBackPressed()
-                }
-            }
-        })
-
-        // #217 修复加入折叠播放器功能后导致的pager高度测量问题引起子fragment下端溢出250dp（播放器高度）导致的回复
-        // 评论按钮和至少一条底端评论不可见的问题
-        binding.appbar.addOnOffsetChangedListener { appBar, verticalOffset ->
-            val totalScrollRange = appBar.totalScrollRange
-            val offset = totalScrollRange + verticalOffset
-            binding.videoVp.setPadding(0, 0, 0, offset)
-        }
-
-        val behavior = (binding.appbar.layoutParams as CoordinatorLayout.LayoutParams)
-            .behavior as VideoPlayerAppBarBehavior
-        binding.videoPlayer.onVideoStateChanged = { state ->
-            when (state) {
-                Jzvd.STATE_PLAYING, Jzvd.STATE_PREPARING -> {
-                    behavior.disableScroll = true
-                    binding.appbar.post {
-                        binding.appbar.setExpanded(true, true)
+                override fun handleOnBackPressed() {
+                    if (Jzvd.backPress()) {
+                        // 由backPress()处理，无内部逻辑
+                    } else {
+                        isEnabled = false
+                        requireActivity().onBackPressedDispatcher.onBackPressed()
                     }
                 }
-                Jzvd.STATE_PAUSE, Jzvd.STATE_AUTO_COMPLETE ->{
-                    behavior.disableScroll = false
+            })
+
+        // -----------------------------------------------------------------------
+        // 修复部分：针对平板/手机布局差异进行类型判断
+        // -----------------------------------------------------------------------
+
+        // 1. 处理 AppBarLayout 的滑动监听
+        val appBar = binding.appbar
+        if (appBar is com.google.android.material.appbar.AppBarLayout) {
+            appBar.addOnOffsetChangedListener { abl, verticalOffset ->
+                val totalScrollRange = abl.totalScrollRange
+                val offset = totalScrollRange + verticalOffset
+                binding.videoVp.setPadding(0, 0, 0, offset)
+            }
+        }
+
+        // 2. 处理 CoordinatorLayout Behavior 和 setExpanded
+        val params = binding.appbar.layoutParams
+        if (params is CoordinatorLayout.LayoutParams) {
+            val behavior = params.behavior
+            if (behavior is VideoPlayerAppBarBehavior) {
+                // 手机模式 (CoordinatorLayout)
+                binding.videoPlayer.onVideoStateChanged = { state ->
+                    when (state) {
+                        Jzvd.STATE_PLAYING, Jzvd.STATE_PREPARING -> {
+                            behavior.disableScroll = true
+                            binding.appbar.post {
+                                // 安全转型并调用 setExpanded
+                                (binding.appbar as? com.google.android.material.appbar.AppBarLayout)
+                                    ?.setExpanded(true, true)
+                            }
+                        }
+                        Jzvd.STATE_PAUSE, Jzvd.STATE_AUTO_COMPLETE -> {
+                            behavior.disableScroll = false
+                        }
+                    }
                 }
+            }
+        } else {
+            // 平板模式 (LinearLayout/ConstraintLayout)
+            // 不需要处理 AppBar 折叠，简单的状态回调即可
+            binding.videoPlayer.onVideoStateChanged = { state ->
+                // 平板模式下如果需要特殊逻辑可以在这里写
             }
         }
     }
@@ -175,13 +203,9 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
                                 requireContext().browse(getHanimeVideoLink(videoCode))
                             }
                         }
-
                         is VideoLoadingState.Loading -> {}
-
                         is VideoLoadingState.Success -> {
-                            Log.i("video_ui", "video loaded: ${state.info.title}")
                             videoTitle = state.info.title
-
                             if (state.info.videoUrls.isEmpty()) {
                                 binding.videoPlayer.startButton.setOnClickListener {
                                     showShortToast(R.string.fail_to_get_video_link)
@@ -210,15 +234,9 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
                             val progress = history?.progress ?: 0L
                             binding.videoPlayer.savedProgress = progress
                         }
-
                         is VideoLoadingState.NoContent -> {
                             showShortToast(R.string.video_might_not_exist)
                         }
-
-//                        is VideoLoadingState.Error -> TODO()
-//                        VideoLoadingState.Loading -> TODO()
-//                        VideoLoadingState.NoContent -> TODO()
-//                        is VideoLoadingState.Success<*> -> TODO()
                     }
                 }
             }
@@ -228,7 +246,6 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
             viewModel.observeKeyframe(videoCode)
                 .flowWithLifecycle(viewLifecycleOwner.lifecycle)
                 .collect {
-                    Log.i("HKeyframe", "KeyframeFlow:collected entity: $it")
                     binding.videoPlayer.hKeyframe = it
                     viewModel.hKeyframes = it
                 }
@@ -249,23 +266,11 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
     override fun onPause() {
         super.onPause()
         val progress = binding.videoPlayer.currentPositionWhenPlaying
-        val videoCode = videoCode
+        val code = videoCode
         lifecycleScope.launch {
-            DatabaseRepo.WatchHistory.updateProgress(videoCode, progress)
+            DatabaseRepo.WatchHistory.updateProgress(code, progress)
         }
     }
-
-//    override fun onResume() {
-//        super.onResume()
-//        saveJob = lifecycleScope.launch {
-//            while (isActive) {
-//                delay(5000)
-//                val progress = binding.videoPlayer.currentPositionWhenPlaying
-//                val videoCode = videoCode
-//                DatabaseRepo.WatchHistory.updateProgress(videoCode, progress)
-//            }
-//        }
-//    }
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -303,20 +308,55 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         }
     }
 
+    // --------------------------------------------------------------------------------------
+    // 核心修改：initViewPager
+    // --------------------------------------------------------------------------------------
     private fun initViewPager() {
         binding.videoVp.offscreenPageLimit = 1
         val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
         val disableComments = prefs.getBoolean("disable_comments", false)
 
-        binding.videoVp.setUpFragmentStateAdapter(this) {
-            addFragment { VideoIntroductionFragment() }
-            if (!fromDownload && !disableComments) {
-                addFragment { CommentFragment().makeBundle(COMMENT_TYPE to VIDEO_COMMENT_PREFIX) }
-            }
-        }
+        // --- 核心修复：根据我们伪装的配置进行判断 ---
+        // 只要我们在 MainActivity 里把 360 注入进去，这里就会判定为 false
+        val isTabletLayout = resources.configuration.smallestScreenWidthDp >= 600
+        // ------------------------------------------
 
-        binding.videoTl.attach(binding.videoVp) { tab, position ->
-            tab.setText(tabNameArray[position])
+        if (isTabletLayout) {
+            // === 平板模式逻辑 ===
+            Log.i("VideoFragment", "Pad Mode ON: Loading Tablet UI")
+
+            childFragmentManager.beginTransaction()
+                .replace(R.id.video_intro_container, VideoIntroductionFragment())
+                .commit()
+
+            binding.videoVp.setUpFragmentStateAdapter(this) {
+                if (!fromDownload && !disableComments) {
+                    addFragment { CommentFragment().makeBundle(COMMENT_TYPE to VIDEO_COMMENT_PREFIX) }
+                } else {
+                    addFragment { androidx.fragment.app.Fragment() }
+                }
+            }
+
+            binding.videoTl.attach(binding.videoVp) { tab, position ->
+                if (!fromDownload && !disableComments) {
+                    tab.setText(R.string.comment)
+                }
+            }
+
+        } else {
+            // === 手机模式逻辑 ===
+            Log.i("VideoFragment", "Pad Mode OFF: Loading Phone UI")
+
+            binding.videoVp.setUpFragmentStateAdapter(this) {
+                addFragment { VideoIntroductionFragment() }
+                if (!fromDownload && !disableComments) {
+                    addFragment { CommentFragment().makeBundle(COMMENT_TYPE to VIDEO_COMMENT_PREFIX) }
+                }
+            }
+
+            binding.videoTl.attach(binding.videoVp) { tab, position ->
+                tab.setText(tabNameArray[position])
+            }
         }
     }
 
@@ -362,15 +402,26 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         }
     }
 
-   fun showRedDotCount(count: Int) {
-        binding.videoTl.getOrCreateBadgeOnTextViewAt(
-            tabNameArray.indexOf(R.string.comment),
-            null, Gravity.END, 4.dp
-        ) {
-            isVisible = count > 0
-            number = count
+    fun showRedDotCount(count: Int) {
+        val tabIndex = if (binding.root.findViewById<ViewGroup>(R.id.video_intro_container) != null) {
+            // 平板模式下只有 1 个 Tab (或者 0 个)，直接取第 0 个
+            0
+        } else {
+            // 手机模式下查找 "comment" 的索引
+            tabNameArray.indexOf(R.string.comment)
+        }
+
+        if (tabIndex != -1) {
+            binding.videoTl.getOrCreateBadgeOnTextViewAt(
+                tabIndex,
+                null, Gravity.END, 4.dp
+            ) {
+                isVisible = count > 0
+                number = count
+            }
         }
     }
+
     fun enterPipMode() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val aspectRatio = Rational(16, 9)
@@ -397,6 +448,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
             requireActivity().enterPictureInPictureMode(params)
         }
     }
+
     fun updatePipAction() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && requireActivity().isInPictureInPictureMode) {
             val isPlaying = (Jzvd.CURRENT_JZVD?.mediaInterface as? ExoMediaKernel)?.isPlaying == true
@@ -429,29 +481,43 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         }
     }
 
-
     fun shouldEnterPip(): Boolean {
-        val isPlaying = (binding.videoPlayer.state == Jzvd.STATE_PLAYING ||
-                binding.videoPlayer.state == Jzvd.STATE_PAUSE)
-        return  isPlaying
+        return binding.videoPlayer.state == Jzvd.STATE_PLAYING ||
+                binding.videoPlayer.state == Jzvd.STATE_PAUSE
     }
+
     fun onPipModeChanged(isInPip: Boolean) {
         val lp = binding.videoPlayer.layoutParams
-        lp.height = if (isInPip) MATCH_PARENT else 250.dp
-        binding.videoPlayer.layoutParams = lp
+        // 平板模式下视频本身是 wrap_content (由 ConstraintLayout 控制比例)，
+        // 但进入 PiP 时需要全屏。
+        // 这里需要判断当前是不是平板布局。
+        val isTablet = resources.configuration.smallestScreenWidthDp >= 600
+        if (isTablet) {
+            // 平板模式下不做高度调整，因为 ConstraintLayout 已经控制了
+            // 但需要隐藏非视频控件
+            binding.videoPlayer.setControlsVisible(!isInPip)
+            val introContainer = binding.root.findViewById<ViewGroup>(R.id.video_intro_container)
+            introContainer?.isVisible = !isInPip
+        } else {
+            // 手机模式原有逻辑
+            lp.height = if (isInPip) MATCH_PARENT else 250.dp
+            binding.videoPlayer.layoutParams = lp
+        }
+
         binding.videoTl.isVisible = !isInPip
         binding.videoVp.isUserInputEnabled = !isInPip
         binding.videoVp.isVisible = !isInPip
         binding.videoPlayer.setControlsVisible(!isInPip)
         if (isInPip) updatePipAction()
     }
+
     fun togglePlayPause() {
         val player = binding.videoPlayer
-        if (player.mediaInterface.isPlaying) {
-            player.mediaInterface.pause()
- //           player.onStatePause()
+        val mi = player.mediaInterface ?: return
+        if (mi.isPlaying) {
+            mi.pause()
         } else {
-            player.mediaInterface.start()
+            mi.start()
         }
         updatePipAction()
     }

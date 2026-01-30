@@ -519,4 +519,5 @@ Recommendations are as follows:\n
     <string name="delete_group">Delete Group</string>
     <string name="delete_group_confirm">Are you sure you want to delete the group \"%1$s\"? Videos in this group will be moved to default group.</string>
     <string name="ai_generated">AI Generated</string>
+    <string name="tablet_mode">Tablet Mode(beta)</string>
 </resources>
