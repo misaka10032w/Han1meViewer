@@ -77,20 +77,27 @@ object NetworkRepo {
 
     //<editor-fold desc="My List">
 
-    fun getMyListItems(page: Int, typeOrCode: Any) = pageIOFlow(
+    fun getMyListItems(userId: String, listType: Any, page: Int) = pageIOFlow(
         request = {
-            when (typeOrCode) {
+            when (listType) {
                 is String ->
-                    HanimeNetwork.myListService.getMyListItems(page, typeOrCode)
+                    HanimeNetwork.myListService.getMyListItems(userId, listType)
 
                 is MyListType ->
-                    HanimeNetwork.myListService.getMyListItems(page, typeOrCode.value)
+                    HanimeNetwork.myListService.getMyListItems(userId, listType.value)
 
                 else ->
                     throw IllegalArgumentException("typeOrId must be String or MyListType")
             }
         },
         action = Parser::myListItems
+    )
+
+    fun getMyPlayListItems(page: Int = 1, listCode: String = "0") = pageIOFlow(
+        request = {
+            HanimeNetwork.myListService.getMyPlayListItems(listCode, page)
+        },
+        action = Parser::myPlayListItems
     )
 
     fun deleteMyListItems(
@@ -127,8 +134,8 @@ object NetworkRepo {
         return@websiteIOFlow WebsiteState.Error(IllegalStateException("cannot delete it ?!"))
     }
 
-    fun getPlaylists(page: Int) = websiteIOFlow(
-        request = { HanimeNetwork.myListService.getPlaylists(page) },
+    fun getPlaylists(page: Int, userId: String ) = websiteIOFlow(
+        request = { HanimeNetwork.myListService.getPlaylists(userId, page) },
         action = Parser::playlists
     )
 

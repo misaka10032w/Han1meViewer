@@ -21,10 +21,16 @@ import retrofit2.http.Query
  * @time 2023/08/26 026 16:30
  */
 interface HanimeMyListService {
-    @GET("playlist")
+    @GET("user/{userid}/{type}")
     suspend fun getMyListItems(
-        @Query("page") @IntRange(from = 1) page: Int,
-        @Query("list") typeOrCode: String, // WL, LL, SL, 12534..
+        @Path("userid") userId: String,
+        @Path("type") listType: String,
+    ): Response<ResponseBody>
+
+    @GET("playlist")
+    suspend fun getMyPlayListItems(
+        @Query("list") listCode: String,
+        @Query("page") page: Int
     ): Response<ResponseBody>
 
     @FormUrlEncoded
@@ -47,9 +53,10 @@ interface HanimeMyListService {
         @Header("X-CSRF-TOKEN") csrfToken_1: String? = csrfToken,
     ): Response<ResponseBody>
 
-    @GET("playlist?list=PL")
+    @GET("user/{userid}/playlists")
     suspend fun getPlaylists(
-        @Query("page") @IntRange(from = 1) page: Int,
+        @Path("userid") userId: String,
+        @Query("page") @IntRange(from = 1) page: Int
     ): Response<ResponseBody>
 
     @FormUrlEncoded

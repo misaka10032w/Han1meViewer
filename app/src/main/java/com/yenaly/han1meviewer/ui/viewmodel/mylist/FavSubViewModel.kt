@@ -29,9 +29,9 @@ class FavSubViewModel(application: Application) : YenalyViewModel(application) {
     private val _favVideoFlow = MutableStateFlow(emptyList<HanimeInfo>())
     val favVideoFlow = _favVideoFlow.asStateFlow()
 
-    fun getMyFavVideoItems(page: Int) {
+    fun getMyFavVideoItems(userId: String, page: Int) {
         viewModelScope.launch {
-            NetworkRepo.getMyListItems(page, MyListType.FAV_VIDEO).collect { state ->
+            NetworkRepo.getMyListItems(userId, MyListType.FAV_VIDEO, page).collect { state ->
                 val prev = _favVideoStateFlow.getAndUpdate { state }
                 if (prev is PageLoadingState.Loading) _favVideoFlow.value = emptyList()
                 _favVideoFlow.update { prevList ->

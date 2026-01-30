@@ -106,7 +106,7 @@ class HanimeVideoRvAdapter(
                     }
                 }
                 holder.getView<TextView>(R.id.artist).apply {
-                    if (item.genre == null && item.artist == null) {
+                    if (item.genre == null && item.currentArtist == null) {
                         isGone = true
                         return@apply
                     }
@@ -121,7 +121,7 @@ class HanimeVideoRvAdapter(
                                 else -> color(Color.RED)
                             }
                         }
-                        item.artist.text()
+                        item.currentArtist.text()
                     }
                 }
                 if (Preferences.showPlayedIndicator)

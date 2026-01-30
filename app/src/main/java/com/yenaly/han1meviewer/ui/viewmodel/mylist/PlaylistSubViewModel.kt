@@ -3,6 +3,7 @@ package com.yenaly.han1meviewer.ui.viewmodel.mylist
 import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.EMPTY_STRING
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.ModifiedPlaylistArgs
@@ -30,10 +31,11 @@ class PlaylistSubViewModel(application: Application) : YenalyViewModel(applicati
     private val _playlistsFlow =
         MutableStateFlow<WebsiteState<Playlists>>(WebsiteState.Loading)
     val playlistsFlow = _playlistsFlow.asStateFlow()
+    val userId = Preferences.savedUserId
 
     fun getPlaylists(page: Int = 1) {
         viewModelScope.launch {
-            NetworkRepo.getPlaylists(page).collect {
+            NetworkRepo.getPlaylists(page, userId).collect {
                 _playlistsFlow.value = it
             }
         }
@@ -47,8 +49,9 @@ class PlaylistSubViewModel(application: Application) : YenalyViewModel(applicati
     val playlistFlow = _playlistFlow.asStateFlow()
 
     fun getPlaylistItems(page: Int, listCode: String) {
+        val userId = Preferences.savedUserId
         viewModelScope.launch {
-            NetworkRepo.getMyListItems(page, listCode).collect { state ->
+            NetworkRepo.getMyListItems(userId, listCode, page).collect { state ->
                 val prev = _playlistStateFlow.getAndUpdate { state }
                 if (prev is PageLoadingState.Loading) _playlistFlow.value = emptyList()
                 _playlistFlow.update { prevList ->

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.EMPTY_STRING
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.ModifiedPlaylistArgs
@@ -58,8 +59,9 @@ class MyPlayListViewModelV2 : ViewModel() {
 
     // 加载所有playlist
     fun loadMyPlayList(page: Int = 1, forceReload: Boolean = false) {
+        val userId = Preferences.savedUserId
         viewModelScope.launch {
-            NetworkRepo.getPlaylists(page).collect { state ->
+            NetworkRepo.getPlaylists(page, userId).collect { state ->
                 _myPlaylistsFlow.value = state
                 if (state is WebsiteState.Success) {
                     _cachedMyPlayList.value = state.info.playlists
@@ -74,7 +76,6 @@ class MyPlayListViewModelV2 : ViewModel() {
         Log.i("getPlaylistItems","isLoadingMore:$isLoadingMore,listCode:$listCode,")
         if (isLoadingMore) return
         isLoadingMore = true
-
         viewModelScope.launch {
             if (listCode.isBlank()) return@launch
             Log.i("getPlaylistItems","page:$page,refresh:$refresh")
@@ -86,7 +87,7 @@ class MyPlayListViewModelV2 : ViewModel() {
             } else {
                 _playlistStateFlow.value = PageLoadingState.Loading
             }
-            NetworkRepo.getMyListItems(page, listCode).collect { state ->
+            NetworkRepo.getMyPlayListItems(page, listCode).collect { state ->
                 Log.i("getPlaylistItems","state:$state")
                 when (state) {
                     is PageLoadingState.Success -> {

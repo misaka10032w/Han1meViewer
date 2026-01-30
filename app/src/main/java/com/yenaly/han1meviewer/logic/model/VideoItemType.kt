@@ -8,5 +8,5 @@ interface VideoItemType {
     val views: String?
     val reviews: String?
     val currentArtist: String?
-    val upLoadTime: String?
+    val uploadTime: String?
 }

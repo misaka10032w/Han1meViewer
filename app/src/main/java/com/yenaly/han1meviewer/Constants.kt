@@ -112,6 +112,7 @@ const val FIREBASE_REALTIME_DATABASE = "https://han1meviewer-86e5f-default-rtdb.
 // for Shared Preference
 
 const val LOGIN_COOKIE = "cookie"
+const val SAVED_USER_ID = "saved_user_id"
 
 const val CLOUDFLARE_COOKIE = "cf_cookie"
 

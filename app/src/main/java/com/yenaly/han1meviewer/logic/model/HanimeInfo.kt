@@ -16,9 +16,8 @@ data class HanimeInfo(
     override val coverUrl: String,
     override val videoCode: String,
     override val duration: String? = null,
-    val artist: String? = null,
     override val views: String? = null,
-    val uploadTime: String? = null,
+    override val uploadTime: String? = null,
     val genre: String? = null,
 
     val isPlaying: Boolean = false, // for video playlist only.
@@ -27,7 +26,6 @@ data class HanimeInfo(
     override val reviews: String? = "",
     override val currentArtist: String? = "",
     val watched: Boolean ?= false,
-    override val upLoadTime: String? = null
 ): VideoItemType , HanimeInfoType {
     companion object {
         const val NORMAL = 0

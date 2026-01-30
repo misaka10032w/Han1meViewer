@@ -46,6 +46,9 @@ object Preferences {
 
     val loginStateFlow = MutableStateFlow(isAlreadyLogin)
 
+    val savedUserId: String
+        get() = preferenceSp.getString(SAVED_USER_ID,"") ?: ""
+
     /**
      * 保存的string格式的登入cookie
      */
