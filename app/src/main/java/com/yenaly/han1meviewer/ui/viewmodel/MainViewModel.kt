@@ -2,12 +2,15 @@ package com.yenaly.han1meviewer.ui.viewmodel
 
 import android.app.Application
 import android.util.Log
+import androidx.core.content.edit
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.database.FirebaseDatabase
 import com.yenaly.han1meviewer.FIREBASE_REALTIME_DATABASE
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.SAVED_USER_ID
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
@@ -52,6 +55,11 @@ class MainViewModel(application: Application) : YenalyViewModel(application) {
             NetworkRepo.getHomePage().collect { homePage ->
                 if (homePage is WebsiteState.Success) {
                     csrfToken = homePage.info.csrfToken
+                    homePage.info.userId.takeIf { it.isNotEmpty() }?.let { userId ->
+                        Preferences.preferenceSp.edit {
+                            putString(SAVED_USER_ID, userId)
+                        }
+                    }
                 }
                 _homePageFlow.value = homePage
             }

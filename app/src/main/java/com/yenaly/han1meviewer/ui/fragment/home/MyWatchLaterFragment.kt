@@ -73,7 +73,7 @@ class MyWatchLaterFragment : YenalyFragment<FragmentPageListBinding>(),
         }
 
         binding.rvPageList.apply {
-            layoutManager = GridLayoutManager(context, VideoCoverSize.Simplified.videoInOneLine)
+            layoutManager = GridLayoutManager(context, VideoCoverSize.Normal.videoInOneLine)
             adapter = this@MyWatchLaterFragment.adapter
         }
 

@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.color.MaterialColors
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VideoCoverSize
 import com.yenaly.han1meviewer.databinding.FragmentPageListBinding
@@ -74,7 +75,7 @@ class MyFavVideoFragment : YenalyFragment<FragmentPageListBinding>(),
         }
 
         binding.rvPageList.apply {
-            layoutManager = GridLayoutManager(context, VideoCoverSize.Simplified.videoInOneLine)
+            layoutManager = GridLayoutManager(context, VideoCoverSize.Normal.videoInOneLine)
             adapter = this@MyFavVideoFragment.adapter
         }
 
@@ -166,7 +167,8 @@ class MyFavVideoFragment : YenalyFragment<FragmentPageListBinding>(),
     }
 
     private fun getMyFavVideo() {
-        viewModel.fav.getMyFavVideoItems(page)
+        val userId = Preferences.savedUserId
+        viewModel.fav.getMyFavVideoItems(userId, page)
     }
 
     private fun getNewMyFavVideo() {

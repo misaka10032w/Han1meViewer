@@ -232,9 +232,9 @@ fun VideoCardItem(
                     )
                     Spacer(modifier = Modifier.weight(1f))
                 }
-                if (!videoItem.upLoadTime.isNullOrEmpty()) {
+                if (!videoItem.uploadTime.isNullOrEmpty()) {
                     Text(
-                        text = videoItem.upLoadTime!!,
+                        text = videoItem.uploadTime!!,
                         fontSize = 11.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

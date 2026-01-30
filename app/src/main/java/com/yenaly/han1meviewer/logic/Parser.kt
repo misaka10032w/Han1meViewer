@@ -61,6 +61,11 @@ object Parser {
         val userInfo = parseBody.selectFirst("div[id=user-modal-dp-wrapper]")
         val avatarUrl: String? = userInfo?.selectFirst("img")?.absUrl("src")
         val username: String? = userInfo?.getElementById("user-modal-name")?.text()
+        val userHomePageLink = parseBody.getElementById("user-modal-trigger")!!.attr("href")
+
+        val userIdRegex = Regex("""/user/(\d+)""")
+        val userId: String = userIdRegex.find(userHomePageLink)?.groupValues?.get(1) ?: ""
+        Log.i("userInfo","name:$username;id:$userId")
 
         // 头图及其描述
         val bannerCSS = parseBody.selectFirst("div[id=home-banner-wrapper]")
@@ -155,7 +160,7 @@ object Parser {
                         coverUrl = coverUrl,
                         videoCode = videoCode,
                         duration = "",
-                        artist = null,
+                        currentArtist = null,
                         views = null,
                         uploadTime = null,
                         genre = null,
@@ -183,6 +188,7 @@ object Parser {
                 cosplay = cosplayList,
                 watchingNow = watchingNowList,
                 newAnimeTrailer = newAnimeTrailerList,
+                userId = userId
             )
         )
     }
@@ -214,7 +220,7 @@ object Parser {
 
     private fun hanimeNormalItemVer2(hanimeSearchItem: Element): HanimeInfo? {
         val title =
-            hanimeSearchItem.selectFirst("div[class=title]")?.text()
+            hanimeSearchItem.selectFirst("div.title, h4.video-title")?.text()?.trim()
                 .logIfParseNull(Parser::hanimeNormalItemVer2.name, "title")
         val coverUrl =
             hanimeSearchItem.select("img").getOrNull(0)?.absUrl("src")
@@ -226,7 +232,7 @@ object Parser {
         val durationAndViews = hanimeSearchItem.select("div[class^=thumb-container]")
         val duration = durationAndViews.select("div[class^=duration]").text()
         val views = durationAndViews.select("div[class^=stat-item]").getOrNull(1)?.text()
-        val artistAndUploadTime = hanimeSearchItem.select("div.subtitle a").text().trim()
+        val artistAndUploadTime = hanimeSearchItem.selectFirst("div.subtitle a, div.video-meta-data a")!!.text().trim()
         var artist = ""
         var uploadTime = ""
         if (artistAndUploadTime.contains("•")) {
@@ -234,16 +240,20 @@ object Parser {
             artist = parts[0].trim()
             uploadTime = parts[1].trim()
         }
+        val infoBoxes = hanimeSearchItem.selectFirst(".stats-container .stat-item")
+        val fullText = infoBoxes?.text() ?: ""
+        val reviews = fullText.replace("thumb_up", "").trim()
         return HanimeInfo(
             title = title,
             coverUrl = coverUrl,
             videoCode = videoCode,
             duration = duration.logIfParseNull(Parser::hanimeNormalItemVer2.name, "duration"),
-            artist = artist,
+            currentArtist = artist,
             views = views.logIfParseNull(Parser::hanimeNormalItemVer2.name, "views"),
             uploadTime = uploadTime,
             genre = null,
-            itemType = HanimeInfo.NORMAL
+            itemType = HanimeInfo.NORMAL,
+            reviews = reviews
         )
     }
 
@@ -634,35 +644,8 @@ object Parser {
         val parseBody = Jsoup.parse(body).body()
         val csrfToken = parseBody.selectFirst("input[name=_token]")?.attr("value")
         val desc = parseBody.getElementById("playlist-show-description")?.ownText()
-
-        val myListHanimeList = mutableListOf<HanimeInfo>()
-        val allHanimeClass = parseBody.getElementsByClass("home-rows-videos-wrapper").firstOrNull()
-        allHanimeClass?.let {
-            if (allHanimeClass.childrenSize() == 0) {
-                return PageLoadingState.NoMoreData
-            }
-            allHanimeClass.children().forEach { videoElement ->
-                val title =
-                    videoElement.getElementsByClass("home-rows-videos-title")
-                        .firstOrNull()?.text()
-                        .throwIfParseNull(Parser::myListItems.name, "title")
-                val coverUrl =
-                    videoElement.select("img").let {
-                        it.getOrNull(1) ?: it.firstOrNull()
-                    }?.absUrl("src")
-                        .throwIfParseNull(Parser::myListItems.name, "coverUrl")
-                val videoCode =
-                    videoElement.getElementsByClass("playlist-show-links")
-                        .firstOrNull()?.absUrl("href")?.toVideoCode()
-                        .throwIfParseNull(Parser::myListItems.name, "videoCode")
-                myListHanimeList.add(
-                    HanimeInfo(
-                        title = title, coverUrl = coverUrl,
-                        videoCode = videoCode, itemType = HanimeInfo.SIMPLIFIED
-                    )
-                )
-            }
-        }.logIfParseNull(Parser::myListItems.name, "allHanimeClass_CSS")
+        val allHanimeClass = parseBody.getElementsByClass("horizontal-row").firstOrNull()
+        val myListHanimeList = allHanimeClass.extractHanimeInfo("div[class^=user-tab-item-wrapper]")
 
         return PageLoadingState.Success(
             MyListItems(
@@ -673,19 +656,36 @@ object Parser {
         )
     }
 
+    fun myPlayListItems(body: String): PageLoadingState<MyListItems<HanimeInfo>> {
+        val parseBody = Jsoup.parse(body).body()
+        val csrfToken = parseBody.selectFirst("input[name=_token]")?.attr("value")
+        val desc = parseBody.select("p.playlist-description").first()?.text()
+        val allHanimeClass = parseBody.getElementsByClass("playlist-video-list").firstOrNull()
+        val myListHanimeList = allHanimeClass.extractHanimeInfo("div[class^=user-tab-item-wrapper]")
+
+        return PageLoadingState.Success(
+            MyListItems(
+                myListHanimeList,
+                desc = desc,
+                csrfToken = csrfToken
+            )
+        )
+    }
+
+
     fun playlists(body: String): WebsiteState<Playlists> {
         val parseBody = Jsoup.parse(body).body()
         val csrfToken = parseBody.selectFirst("input[name=_token]")?.attr("value")
-        val lists = parseBody.select("div[class~=col-xs-12][class~=search-doujin-videos]")
+        val lists = parseBody.getElementsByClass("user-tab-item-wrapper")
         val playlists = mutableListOf<Playlists.Playlist>()
         lists.forEach {
-            val listCode = it.childOrNull(0)?.absUrl("href")?.substringAfter('=')
+            val listCode = it.selectFirst("a[class=video-link]")?.absUrl("href")?.substringAfter('=')
                 .throwIfParseNull(Parser::playlists.name, "listCode")
-            val listTitle = it.selectFirst("div[class=card-mobile-title]")?.ownText()
+            val listTitle = it.selectFirst("div[class=title]")?.ownText()
                 .throwIfParseNull(Parser::playlists.name, "listTitle")
-            val listTotal = it.selectFirst("div[class=card-mobile-duration]")?.text()
+            val listTotal = it.selectFirst("div[class=stat-item]")?.text()
             val formatedTotal = listTotal?.filter { char -> char.isDigit() }?.toIntOrNull() ?: -1
-            val coverUrl = it.select("div > div > img[style*='position: absolute']").first()?.attr("src")
+            val coverUrl = it.select("img[class=main-thumb]").first()?.attr("src")
             playlists += Playlists.Playlist(
                 listCode = listCode, title = listTitle, total = formatedTotal, coverUrl = coverUrl
             )
@@ -934,7 +934,7 @@ object Parser {
                         views = views,
                         reviews = reviews,
                         currentArtist = artist,
-                        upLoadTime = uploadTime
+                        uploadTime = uploadTime
                     )
                 } catch (_: Exception) {
                     null

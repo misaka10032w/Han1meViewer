@@ -338,7 +338,7 @@ fun PlaylistDetailContent(
         // 视频列表
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             val sheetWidth = maxWidth
-            val cardWidth = dimensionResource(id = R.dimen.video_cover_simplified_width)
+            val cardWidth = dimensionResource(id = R.dimen.video_cover_width)
             val columns = maxOf(2, (sheetWidth / cardWidth).toInt())
 
             LazyVerticalGrid(
@@ -351,7 +351,7 @@ fun PlaylistDetailContent(
                 itemsIndexed(playlist) { index, item ->
                     VideoCardItem(
                         item,
-                        isHorizontalCard = false,
+                        isHorizontalCard = true,
                         onClickItem,
                     ) { videoCode, _ ->
                         context.showAlertDialog {

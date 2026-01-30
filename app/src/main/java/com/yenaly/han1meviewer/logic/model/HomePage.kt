@@ -23,7 +23,8 @@ data class HomePage(
     val cosplay: MutableList<HanimeInfo>,
     val watchingNow: MutableList<HanimeInfo>,
     val newAnimeTrailer: MutableList<HanimeInfo>,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val userId: String
 ) {
     data class Banner(
         val title: String,

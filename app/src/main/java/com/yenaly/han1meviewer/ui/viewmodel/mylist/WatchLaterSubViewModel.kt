@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.ui.viewmodel.mylist
 
 import android.app.Application
 import androidx.lifecycle.viewModelScope
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.MyListItems
@@ -30,8 +31,9 @@ class WatchLaterSubViewModel(application: Application) : YenalyViewModel(applica
     val watchLaterFlow = _watchLaterFlow.asStateFlow()
 
     fun getMyWatchLaterItems(page: Int) {
+        val userId = Preferences.savedUserId
         viewModelScope.launch {
-            NetworkRepo.getMyListItems(page, MyListType.WATCH_LATER).collect { state ->
+            NetworkRepo.getMyListItems(userId, MyListType.WATCH_LATER, page).collect { state ->
                 val prev = _watchLaterStateFlow.getAndUpdate { state }
                 if (prev is PageLoadingState.Loading) _watchLaterFlow.value = emptyList()
                 _watchLaterFlow.update { prevList ->
