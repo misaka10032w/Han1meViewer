@@ -5,17 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,12 +20,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -47,22 +43,19 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
@@ -74,11 +67,12 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.fragment.generateFakeCheckInRecords
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.CheckInCalendarViewModel
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import kotlin.math.roundToInt
+import java.time.temporal.ChronoUnit
 
 class DailyCheckInFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -119,15 +113,16 @@ class DailyCheckInFragment : Fragment() {
                                         color = MaterialTheme.colorScheme.onBackground
                                     )
                                 },
-                                navigationIcon = { IconButton(
-                                    onClick = {
-                                        lifecycleScope.launch { findNavController().navigateUp() }
-                                    }) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = "Localized description"
-                                    )
-                                }
+                                navigationIcon = {
+                                    IconButton(
+                                        onClick = {
+                                            lifecycleScope.launch { findNavController().navigateUp() }
+                                        }) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                            contentDescription = "Localized description"
+                                        )
+                                    }
                                 },
                                 scrollBehavior = scrollBehavior,
                             )
@@ -151,7 +146,6 @@ fun CalendarCheckInScreen(
     val currentMonth by viewModel.currentMonth
     val records = viewModel.records
     val checkedDays by viewModel.checkedDays
-    var handledSwipe by remember { mutableStateOf(false) }
     val monthlyTotal by viewModel.monthlyTotal
     val animatedCheckedDays by animateIntAsState(
         targetValue = checkedDays,
@@ -161,6 +155,39 @@ fun CalendarCheckInScreen(
         targetValue = monthlyTotal,
         label = "CheckedDaysAnimation"
     )
+
+    // 锚点月份：用于计算 Pager 的相对偏移量
+    val anchorMonth = remember { YearMonth.now() }
+    val initialPage = Int.MAX_VALUE / 2
+    val pagerState = rememberPagerState(initialPage = initialPage) { Int.MAX_VALUE }
+
+    // 1. 监听 ViewModel 的月份变化（比如点击了左右箭头），驱动 Pager 滚动
+    LaunchedEffect(currentMonth) {
+        val monthsDiff = ChronoUnit.MONTHS.between(anchorMonth, currentMonth).toInt()
+        val targetPage = initialPage + monthsDiff
+        if (pagerState.currentPage != targetPage) {
+            pagerState.animateScrollToPage(targetPage)
+        }
+    }
+
+    // 2. 监听 Pager 的滚动，更新 ViewModel
+    // 使用 snapshotFlow + distinctUntilChanged 减少不必要的触发，优化性能
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }
+            .distinctUntilChanged()
+            .collect { page ->
+                val pageMonth = anchorMonth.plusMonths((page - initialPage).toLong())
+                // 只有当计算出的月份与 ViewModel 当前月份不一致时才调用更新
+                // 这里使用简单的比较，避免频繁调用 next/prev
+                if (pageMonth != currentMonth) {
+                    if (pageMonth.isAfter(currentMonth)) {
+                        viewModel.nextMonth()
+                    } else if (pageMonth.isBefore(currentMonth)) {
+                        viewModel.previousMonth()
+                    }
+                }
+            }
+    }
 
     Column(
         modifier = Modifier
@@ -241,63 +268,32 @@ fun CalendarCheckInScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        //日历主体
-        val offsetX = remember { Animatable(0f) }
-        val coroutineScope = rememberCoroutineScope()
-        Box(
+        // 日历主体
+        HorizontalPager(
+            state = pagerState,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragEnd = {
-                            // 动画回弹到中间
-                            coroutineScope.launch {
-                                offsetX.animateTo(
-                                    targetValue = 0f,
-                                    animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy)
-                                )
-                            }
-                            handledSwipe = false
-                        }
-                    ) { change, dragAmount ->
-                        val (x, _) = dragAmount
-                        val newOffset = offsetX.value + x
-                        coroutineScope.launch { offsetX.snapTo(newOffset) }
+                .weight(1f),
+            verticalAlignment = Alignment.Top,
+            // 【关键优化】：预加载前后各 1 页。这解决了“不跟手”和“延迟”的问题。
+            // 当你开始滑动时，下一页的日历已经被渲染好了，所以非常流畅。
+            beyondViewportPageCount = 1,
+            // 【关键优化】：为每一页指定唯一的 Key。这有助于 Compose 智能复用缓存。
+            key = { page -> page }
+        ) { page ->
+            val monthForPage = anchorMonth.plusMonths((page - initialPage).toLong())
 
-                        if (!handledSwipe) {
-                            when {
-                                x > 50 -> {
-                                    viewModel.previousMonth()
-                                    handledSwipe = true
-                                    coroutineScope.launch {
-                                        offsetX.animateTo(0f)
-                                    }
-                                }
-
-                                x < -50 -> {
-                                    viewModel.nextMonth()
-                                    handledSwipe = true
-                                    coroutineScope.launch {
-                                        offsetX.animateTo(0f)
-                                    }
-                                }
-                            }
-                        }
-                        change.consume()
-                    }
-                }
-        ) {
-            Crossfade(targetState = currentMonth, label = "MonthFade") { month ->
-                CalendarGrid(
-                    yearMonth = month,
-                    records = records,
-                    onDateClick = { date -> viewModel.incrementCheckIn(date) },
-                    onDateLongClick = { date -> viewModel.clearCheckIn(date) },
-                    modifier = Modifier.offset { IntOffset(offsetX.value.roundToInt(), 0) }
-                )
-            }
+            // 注意：这里我们传入 records，但实际上如果 records 只是当前月的数据，
+            // 预加载的页面可能拿不到数据（取决于 ViewModel 实现）。
+            // 但 UI 结构本身会被预加载，保证滑动流畅。
+            CalendarGrid(
+                yearMonth = monthForPage,
+                records = records,
+                onDateClick = { date -> viewModel.incrementCheckIn(date) },
+                onDateLongClick = { date -> viewModel.clearCheckIn(date) }
+            )
         }
+
         AnimatedVisibility(
             visible = checkedDays > 15,
             modifier = Modifier
@@ -343,6 +339,9 @@ fun CalendarGrid(
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(7),
+        // 【关键优化】：禁止内部 Grid 的滚动事件。
+        // 因为日历通常一页能显示完，禁用后可以将触摸事件完全无冲突地交给 Pager。
+        userScrollEnabled = false,
         modifier = modifier.fillMaxWidth()
     ) {
         // 星期标题
