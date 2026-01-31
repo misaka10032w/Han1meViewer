@@ -507,7 +507,24 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             }
         }
     }
+    override fun attachBaseContext(newBase: Context) {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(newBase)
+        val isPadMode = prefs.getBoolean("pad_mode", false)
 
+        val res = newBase.resources
+        val config = Configuration(res.configuration)
+        val isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE
+        if (isPadMode) {
+            config.smallestScreenWidthDp = 600
+            config.screenWidthDp = 600
+        } else {
+            config.smallestScreenWidthDp = 360
+            config.screenWidthDp = 360
+        }
+
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+    }
     @SuppressLint("SetTextI18n")
     private fun initHeaderView() {
         binding.nvMain.getHeaderView(0)?.let { view ->
