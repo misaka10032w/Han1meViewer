@@ -226,28 +226,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         setIntent(intent)
         handleDeeplinkIfNeeded(intent)
     }
-    override fun attachBaseContext(newBase: Context) {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(newBase)
-        val isPadMode = prefs.getBoolean("pad_mode", false)
 
-        val res = newBase.resources
-        val config = Configuration(res.configuration)
-
-        if (isPadMode) {
-            // 开启：强制伪装成大平板 (sw600dp)
-            config.smallestScreenWidthDp = 600
-        } else {
-            // 关闭：强制伪装成普通手机 (sw360dp)
-            // 即使你物理设备是 800dp，系统看到这里是 360，也会乖乖去 layout 文件夹找布局
-            config.smallestScreenWidthDp = 360
-        }
-
-        // 同时也影响常规宽度判断
-        config.screenWidthDp = config.smallestScreenWidthDp
-
-        val context = newBase.createConfigurationContext(config)
-        super.attachBaseContext(context)
-    }
     private fun handleDeeplinkIfNeeded(intent: Intent) {
         Log.i("deeplink", "intent=$intent")
 
@@ -528,7 +507,29 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             }
         }
     }
+    override fun attachBaseContext(newBase: Context) {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(newBase)
+        val isPadMode = prefs.getBoolean("pad_mode", false)
 
+        val res = newBase.resources
+        val config = Configuration(res.configuration)
+
+        // 判断当前物理方向是否为横屏
+        val isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+        // 逻辑组合：只有【开启了平板模式】且【处于横屏】时，才应用平板布局 (sw600dp)
+        // 其他情况（关闭开关、或者平板处于竖屏时），强制使用手机布局 (sw360dp)
+        if (isPadMode) {
+            config.smallestScreenWidthDp = 600
+            config.screenWidthDp = 600
+        } else {
+            config.smallestScreenWidthDp = 360
+            config.screenWidthDp = 360
+        }
+
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+    }
     @SuppressLint("SetTextI18n")
     private fun initHeaderView() {
         binding.nvMain.getHeaderView(0)?.let { view ->
