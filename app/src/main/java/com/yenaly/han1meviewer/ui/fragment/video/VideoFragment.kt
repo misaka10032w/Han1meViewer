@@ -130,26 +130,16 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
                     if (Jzvd.backPress()) {
-                        // 由backPress()处理，无内部逻辑
                     } else {
-                        // 没处理，交由系统默认行为
                         isEnabled = false
                         requireActivity().onBackPressedDispatcher.onBackPressed()
                     }
                 }
             })
-
-        // =========================================================================================
-        // [修改] 适配折叠逻辑
-        // =========================================================================================
-
-        // 1. 监听 AppBar 偏移量，调整 ViewPager 的 Padding
         val appBar = binding.appbar
         if (appBar is com.google.android.material.appbar.AppBarLayout) {
             appBar.addOnOffsetChangedListener { abl, verticalOffset ->
-                // [关键修改]：只在手机模式下 (< 600dp) 调整 Padding。
-                // 平板模式下，videoVp 在右侧独立区域，不需要跟随左侧 AppBar 的折叠而移动。
-                if (resources.configuration.smallestScreenWidthDp < 600) {
+             if (resources.configuration.smallestScreenWidthDp < 600) {
                     val totalScrollRange = abl.totalScrollRange
                     val offset = totalScrollRange + verticalOffset
                     binding.videoVp.setPadding(0, 0, 0, offset)
@@ -157,8 +147,6 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
             }
         }
 
-        // 2. 视频播放状态改变时，控制 AppBar 的展开/锁定
-        // 因为平板布局现在左侧也是 CoordinatorLayout，所以这段逻辑对 手机/平板 通用！
         val params = binding.appbar.layoutParams
         if (params is CoordinatorLayout.LayoutParams) {
             val behavior = params.behavior as? VideoPlayerAppBarBehavior
@@ -166,14 +154,12 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
                 binding.videoPlayer.onVideoStateChanged = { state ->
                     when (state) {
                         Jzvd.STATE_PLAYING, Jzvd.STATE_PREPARING -> {
-                            // 播放时：禁止滑动折叠，并强制展开 AppBar
                             behavior.disableScroll = true
                             binding.appbar.post {
                                 (binding.appbar as? com.google.android.material.appbar.AppBarLayout)?.setExpanded(true, true)
                             }
                         }
                         Jzvd.STATE_PAUSE, Jzvd.STATE_AUTO_COMPLETE -> {
-                            // 暂停/结束时：允许用户手动滑动折叠简介
                             behavior.disableScroll = false
                         }
                     }
@@ -321,26 +307,16 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         }
     }
 
-    // =========================================================================================
-    // [修改] initViewPager - 适配平板分栏模式
-    // =========================================================================================
     private fun initViewPager() {
         binding.videoVp.offscreenPageLimit = 1
         val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
         val disableComments = prefs.getBoolean("disable_comments", false)
-
-        // 判断是否为平板模式 (根据 MainActivity 注入的 Configuration 判断)
         val isTabletLayout = resources.configuration.smallestScreenWidthDp >= 600
 
         if (isTabletLayout) {
-            // --- 平板模式逻辑 ---
-            // 1. 将简介 Fragment 放入左侧容器
-            // (注意：R.id.video_intro_container 必须在 ids.xml 或布局中存在)
             childFragmentManager.beginTransaction()
                 .replace(R.id.video_intro_container, VideoIntroductionFragment())
                 .commit()
-
-            // 2. ViewPager 只放评论
             binding.videoVp.setUpFragmentStateAdapter(this) {
                 if (!fromDownload && !disableComments) {
                     addFragment { CommentFragment().makeBundle(COMMENT_TYPE to VIDEO_COMMENT_PREFIX) }
@@ -348,15 +324,13 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
                     addFragment { androidx.fragment.app.Fragment() }
                 }
             }
-
-            // 3. Tab 只显示 "评论"
             binding.videoTl.attach(binding.videoVp) { tab, position ->
                 if (!fromDownload && !disableComments) {
                     tab.setText(R.string.comment)
                 }
             }
         } else {
-            // --- 手机模式逻辑 (原逻辑) ---
+            //  手机模式逻辑
             binding.videoVp.setUpFragmentStateAdapter(this) {
                 addFragment { VideoIntroductionFragment() }
                 if (!fromDownload && !disableComments) {
@@ -414,7 +388,6 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
 
     fun showRedDotCount(count: Int) {
         val isTabletLayout = resources.configuration.smallestScreenWidthDp >= 600
-        // 平板模式下 "评论" 是第 0 个 Tab，手机模式下需要查找索引
         val tabIndex = if (isTabletLayout) 0 else tabNameArray.indexOf(R.string.comment)
 
         if (tabIndex != -1) {
@@ -494,25 +467,15 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
 
     fun onPipModeChanged(isInPip: Boolean) {
         val lp = binding.videoPlayer.layoutParams
-
-        // =========================================================================================
-        // [修改] 适配平板模式的 PiP 高度逻辑
-        // 平板模式下视频高度由 ConstraintLayout 控制 (wrap_content)，不用手动改高
-        // =========================================================================================
-        val isTabletLayout = resources.configuration.smallestScreenWidthDp >= 600
-
+        // 适配平板模式的 PiP 高度逻辑
+       val isTabletLayout = resources.configuration.smallestScreenWidthDp >= 600
         if (isTabletLayout) {
-            // 平板：只需处理可见性，不要动高度，也不要动 LayoutParams
-            // 平板左侧除了视频还有个简介容器，需要隐藏
             val introContainer = binding.root.findViewById<ViewGroup>(R.id.video_intro_container)
             introContainer?.isVisible = !isInPip
         } else {
-            // 手机：原逻辑，修改高度为 MATCH_PARENT 或 250dp
             lp.height = if (isInPip) MATCH_PARENT else 250.dp
             binding.videoPlayer.layoutParams = lp
         }
-
-        // 通用逻辑：隐藏其他控件
         binding.videoTl.isVisible = !isInPip
         binding.videoVp.isUserInputEnabled = !isInPip
         binding.videoVp.isVisible = !isInPip

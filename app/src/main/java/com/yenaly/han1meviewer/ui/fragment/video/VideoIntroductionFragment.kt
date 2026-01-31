@@ -485,29 +485,23 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
                     startX = e.x.toInt()
                     val childView = rv.findChildViewUnder(e.x, e.y)
                     val position = childView?.let(rv::getChildAdapterPosition) ?: return false
-
-                    // 增加越界判断，防止 getWrappedAdapterAndPosition 崩溃
                     if (position < 0 || position >= multi.itemCount) return false
 
                     val adapter = multi.getWrappedAdapterAndPosition(position).first
                     isNotHorizontalWrapper = adapter !== playlistWrapper
 
-                    // --- 修复开始：安全获取 ViewPager2 ---
-                    // 在平板模式下，rv.findParent<ViewPager2>() 会失败，
-                    // 这里我们捕获异常或检查 null
                     val parentViewPager = try {
                         vp2 ?: rv.findParent<ViewPager2>()?.also { vp2 = it }
                     } catch (e: Exception) {
                         null
                     }
 
-                    // 如果找不到 ViewPager2（平板模式），直接返回 false，不拦截
                     if (parentViewPager == null) return false
 
                     if (parentViewPager.isUserInputEnabled != isNotHorizontalWrapper) {
                         parentViewPager.isUserInputEnabled = isNotHorizontalWrapper
                     }
-                    // --- 修复结束 ---
+                    // --- 修复平板模式适配
                 }
 
                 MotionEvent.ACTION_MOVE -> {
@@ -519,7 +513,6 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
                             if (!csh) false else direction > 0
                         } ?: true
 
-                    // --- 修复开始：安全获取 ViewPager2 ---
                     val parentViewPager = try {
                         vp2 ?: rv.findParent<ViewPager2>()?.also { vp2 = it }
                     } catch (e: Exception) {
@@ -531,7 +524,6 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
                     if (parentViewPager.isUserInputEnabled != canScrollHorizontally) {
                         parentViewPager.isUserInputEnabled = canScrollHorizontally
                     }
-                    // --- 修复结束 ---
                 }
             }
             return false

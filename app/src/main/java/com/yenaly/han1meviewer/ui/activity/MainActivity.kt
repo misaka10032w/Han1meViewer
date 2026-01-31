@@ -513,12 +513,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
 
         val res = newBase.resources
         val config = Configuration(res.configuration)
-
-        // 判断当前物理方向是否为横屏
         val isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE
-
-        // 逻辑组合：只有【开启了平板模式】且【处于横屏】时，才应用平板布局 (sw600dp)
-        // 其他情况（关闭开关、或者平板处于竖屏时），强制使用手机布局 (sw360dp)
         if (isPadMode) {
             config.smallestScreenWidthDp = 600
             config.screenWidthDp = 600
