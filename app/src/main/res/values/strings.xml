@@ -558,4 +558,6 @@
     <string name="animation_2_5d" translatable="false">2.5D</string>
     <string name="ai_generated">AI生成</string>
     <string name="mmd" translatable="false">MMD</string>
+    <string name="tablet_mode">平板模式（beta版）</string>
+    <string name="padmode_tips">開啟後，部分佈局將會改變為更適合平板的樣式</string>
 </resources>
