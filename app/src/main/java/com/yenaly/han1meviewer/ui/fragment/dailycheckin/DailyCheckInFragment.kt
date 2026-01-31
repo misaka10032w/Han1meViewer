@@ -156,12 +156,10 @@ fun CalendarCheckInScreen(
         label = "CheckedDaysAnimation"
     )
 
-    // 锚点月份：用于计算 Pager 的相对偏移量
     val anchorMonth = remember { YearMonth.now() }
     val initialPage = Int.MAX_VALUE / 2
     val pagerState = rememberPagerState(initialPage = initialPage) { Int.MAX_VALUE }
 
-    // 1. 监听 ViewModel 的月份变化（比如点击了左右箭头），驱动 Pager 滚动
     LaunchedEffect(currentMonth) {
         val monthsDiff = ChronoUnit.MONTHS.between(anchorMonth, currentMonth).toInt()
         val targetPage = initialPage + monthsDiff
@@ -170,15 +168,11 @@ fun CalendarCheckInScreen(
         }
     }
 
-    // 2. 监听 Pager 的滚动，更新 ViewModel
-    // 使用 snapshotFlow + distinctUntilChanged 减少不必要的触发，优化性能
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }
             .distinctUntilChanged()
             .collect { page ->
                 val pageMonth = anchorMonth.plusMonths((page - initialPage).toLong())
-                // 只有当计算出的月份与 ViewModel 当前月份不一致时才调用更新
-                // 这里使用简单的比较，避免频繁调用 next/prev
                 if (pageMonth != currentMonth) {
                     if (pageMonth.isAfter(currentMonth)) {
                         viewModel.nextMonth()
@@ -275,17 +269,10 @@ fun CalendarCheckInScreen(
                 .fillMaxWidth()
                 .weight(1f),
             verticalAlignment = Alignment.Top,
-            // 【关键优化】：预加载前后各 1 页。这解决了“不跟手”和“延迟”的问题。
-            // 当你开始滑动时，下一页的日历已经被渲染好了，所以非常流畅。
             beyondViewportPageCount = 1,
-            // 【关键优化】：为每一页指定唯一的 Key。这有助于 Compose 智能复用缓存。
             key = { page -> page }
         ) { page ->
             val monthForPage = anchorMonth.plusMonths((page - initialPage).toLong())
-
-            // 注意：这里我们传入 records，但实际上如果 records 只是当前月的数据，
-            // 预加载的页面可能拿不到数据（取决于 ViewModel 实现）。
-            // 但 UI 结构本身会被预加载，保证滑动流畅。
             CalendarGrid(
                 yearMonth = monthForPage,
                 records = records,
@@ -339,8 +326,6 @@ fun CalendarGrid(
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(7),
-        // 【关键优化】：禁止内部 Grid 的滚动事件。
-        // 因为日历通常一页能显示完，禁用后可以将触摸事件完全无冲突地交给 Pager。
         userScrollEnabled = false,
         modifier = modifier.fillMaxWidth()
     ) {
