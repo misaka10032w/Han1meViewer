@@ -76,6 +76,7 @@ import com.yenaly.han1meviewer.util.showUpdateDialog
 import com.yenaly.han1meviewer.videoUrlRegex
 import com.yenaly.yenaly_libs.base.YenalyActivity
 import com.yenaly.yenaly_libs.utils.dp
+import com.yenaly.yenaly_libs.utils.getSpValue
 import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.showSnackBar
 import com.yenaly.yenaly_libs.utils.textFromClipboard
@@ -508,12 +509,9 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         }
     }
     override fun attachBaseContext(newBase: Context) {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(newBase)
-        val isPadMode = prefs.getBoolean("pad_mode", false)
-
+        val isPadMode = getSpValue("pad_mode", false)
         val res = newBase.resources
         val config = Configuration(res.configuration)
-        val isLandscape = config.orientation == Configuration.ORIENTATION_LANDSCAPE
         if (isPadMode) {
             config.smallestScreenWidthDp = 600
             config.screenWidthDp = 600
@@ -521,7 +519,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             config.smallestScreenWidthDp = 360
             config.screenWidthDp = 360
         }
-
         val context = newBase.createConfigurationContext(config)
         super.attachBaseContext(context)
     }

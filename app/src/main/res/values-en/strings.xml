@@ -521,4 +521,5 @@ Recommendations are as follows:\n
     <string name="ai_generated">AI Generated</string>
     <string name="tablet_mode">Tablet Mode(beta)</string>
     <string name="padmode_tips">Once enabled, some layout elements will be changed to a style more suitable for tablets.</string>
+    <string name="change_warning">Switching modes requires restarting the application to reload the layout. Do you want to restart now?</string>
 </resources>

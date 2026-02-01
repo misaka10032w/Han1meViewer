@@ -103,7 +103,7 @@
             app:title="@string/dark_theme"
             app:useSimpleSummaryProvider="true" />
         <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
-            app:icon="@drawable/tablet"
+            app:icon="@drawable/ic_baseline_tablet_24"
             app:key="pad_mode"
             app:summary="@string/padmode_tips"
             app:title="@string/tablet_mode"
