@@ -5,17 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,12 +20,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -47,22 +43,19 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
@@ -74,11 +67,12 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.fragment.generateFakeCheckInRecords
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.CheckInCalendarViewModel
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import kotlin.math.roundToInt
+import java.time.temporal.ChronoUnit
 
 class DailyCheckInFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,7 +84,7 @@ class DailyCheckInFragment : Fragment() {
             duration = 500L
         }
     }
-
+//test1
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -119,15 +113,16 @@ class DailyCheckInFragment : Fragment() {
                                         color = MaterialTheme.colorScheme.onBackground
                                     )
                                 },
-                                navigationIcon = { IconButton(
-                                    onClick = {
-                                        lifecycleScope.launch { findNavController().navigateUp() }
-                                    }) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = "Localized description"
-                                    )
-                                }
+                                navigationIcon = {
+                                    IconButton(
+                                        onClick = {
+                                            lifecycleScope.launch { findNavController().navigateUp() }
+                                        }) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                            contentDescription = "Localized description"
+                                        )
+                                    }
                                 },
                                 scrollBehavior = scrollBehavior,
                             )
@@ -151,7 +146,6 @@ fun CalendarCheckInScreen(
     val currentMonth by viewModel.currentMonth
     val records = viewModel.records
     val checkedDays by viewModel.checkedDays
-    var handledSwipe by remember { mutableStateOf(false) }
     val monthlyTotal by viewModel.monthlyTotal
     val animatedCheckedDays by animateIntAsState(
         targetValue = checkedDays,
@@ -161,6 +155,33 @@ fun CalendarCheckInScreen(
         targetValue = monthlyTotal,
         label = "CheckedDaysAnimation"
     )
+
+    val anchorMonth = remember { YearMonth.now() }
+    val initialPage = Int.MAX_VALUE / 2
+    val pagerState = rememberPagerState(initialPage = initialPage) { Int.MAX_VALUE }
+
+    LaunchedEffect(currentMonth) {
+        val monthsDiff = ChronoUnit.MONTHS.between(anchorMonth, currentMonth).toInt()
+        val targetPage = initialPage + monthsDiff
+        if (pagerState.currentPage != targetPage) {
+            pagerState.animateScrollToPage(targetPage)
+        }
+    }
+
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }
+            .distinctUntilChanged()
+            .collect { page ->
+                val pageMonth = anchorMonth.plusMonths((page - initialPage).toLong())
+                if (pageMonth != currentMonth) {
+                    if (pageMonth.isAfter(currentMonth)) {
+                        viewModel.nextMonth()
+                    } else if (pageMonth.isBefore(currentMonth)) {
+                        viewModel.previousMonth()
+                    }
+                }
+            }
+    }
 
     Column(
         modifier = Modifier
@@ -241,63 +262,25 @@ fun CalendarCheckInScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        //日历主体
-        val offsetX = remember { Animatable(0f) }
-        val coroutineScope = rememberCoroutineScope()
-        Box(
+        // 日历主体
+        HorizontalPager(
+            state = pagerState,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragEnd = {
-                            // 动画回弹到中间
-                            coroutineScope.launch {
-                                offsetX.animateTo(
-                                    targetValue = 0f,
-                                    animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy)
-                                )
-                            }
-                            handledSwipe = false
-                        }
-                    ) { change, dragAmount ->
-                        val (x, _) = dragAmount
-                        val newOffset = offsetX.value + x
-                        coroutineScope.launch { offsetX.snapTo(newOffset) }
-
-                        if (!handledSwipe) {
-                            when {
-                                x > 50 -> {
-                                    viewModel.previousMonth()
-                                    handledSwipe = true
-                                    coroutineScope.launch {
-                                        offsetX.animateTo(0f)
-                                    }
-                                }
-
-                                x < -50 -> {
-                                    viewModel.nextMonth()
-                                    handledSwipe = true
-                                    coroutineScope.launch {
-                                        offsetX.animateTo(0f)
-                                    }
-                                }
-                            }
-                        }
-                        change.consume()
-                    }
-                }
-        ) {
-            Crossfade(targetState = currentMonth, label = "MonthFade") { month ->
-                CalendarGrid(
-                    yearMonth = month,
-                    records = records,
-                    onDateClick = { date -> viewModel.incrementCheckIn(date) },
-                    onDateLongClick = { date -> viewModel.clearCheckIn(date) },
-                    modifier = Modifier.offset { IntOffset(offsetX.value.roundToInt(), 0) }
-                )
-            }
+                .weight(1f),
+            verticalAlignment = Alignment.Top,
+            beyondViewportPageCount = 1,
+            key = { page -> page }
+        ) { page ->
+            val monthForPage = anchorMonth.plusMonths((page - initialPage).toLong())
+            CalendarGrid(
+                yearMonth = monthForPage,
+                records = records,
+                onDateClick = { date -> viewModel.incrementCheckIn(date) },
+                onDateLongClick = { date -> viewModel.clearCheckIn(date) }
+            )
         }
+
         AnimatedVisibility(
             visible = checkedDays > 15,
             modifier = Modifier
@@ -343,6 +326,7 @@ fun CalendarGrid(
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(7),
+        userScrollEnabled = false,
         modifier = modifier.fillMaxWidth()
     ) {
         // 星期标题
