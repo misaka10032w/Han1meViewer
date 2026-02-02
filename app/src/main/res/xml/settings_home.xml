@@ -9,6 +9,7 @@
             app:key="video_language"
             app:title="@string/video_language"
             app:useSimpleSummaryProvider="true" />
+
         <com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
             app:icon="@drawable/ic_video_quilty"
             app:key="default_video_quality"
@@ -101,7 +102,12 @@
             app:key="use_dark_mode"
             app:title="@string/dark_theme"
             app:useSimpleSummaryProvider="true" />
-
+        <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
+            app:icon="@drawable/ic_baseline_tablet_24"
+            app:key="pad_mode"
+            app:summary="@string/padmode_tips"
+            app:title="@string/tablet_mode"
+            app:useSimpleSummaryProvider="true" />
         <com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
             app:icon="@drawable/ic_baseline_theme_24"
             app:key="use_dynamic_color"

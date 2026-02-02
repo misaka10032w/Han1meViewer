@@ -56,6 +56,7 @@ import com.yenaly.yenaly_libs.utils.application
 import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.folderSize
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
+import com.yenaly.yenaly_libs.utils.putSpValue
 import com.yenaly.yenaly_libs.utils.showLongToast
 import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.CoroutineScope
@@ -170,6 +171,23 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onPreferencesCreated(savedInstanceState: Bundle?) {
+        val padModePref = findPreference<MaterialSwitchPreference>("pad_mode")
+        padModePref?.setOnPreferenceChangeListener { _, newValue ->
+            val isChecked = newValue as Boolean
+            requireContext().showAlertDialog {
+                setCancelable(false)
+                setTitle(R.string.attention)
+                setMessage(R.string.change_warning)
+                setPositiveButton(R.string.confirm) { _, _ ->
+                    putSpValue("pad_mode", isChecked)
+                    ActivityManager.restart(killProcess = true)
+                }
+                setNegativeButton(R.string.cancel) { _, _ ->
+                    padModePref.isChecked = !isChecked
+                }
+            }
+            true
+        }
         val lockSwitch = findPreference<SwitchPreferenceCompat>("use_lock_screen")
         val items = listOf(
             LauncherItem(getString(R.string.hanime_app_name),
@@ -487,6 +505,8 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initFlow()
+
+
     }
 
     private fun initFlow() {

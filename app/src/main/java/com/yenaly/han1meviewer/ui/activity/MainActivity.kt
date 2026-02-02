@@ -76,6 +76,7 @@ import com.yenaly.han1meviewer.util.showUpdateDialog
 import com.yenaly.han1meviewer.videoUrlRegex
 import com.yenaly.yenaly_libs.base.YenalyActivity
 import com.yenaly.yenaly_libs.utils.dp
+import com.yenaly.yenaly_libs.utils.getSpValue
 import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.showSnackBar
 import com.yenaly.yenaly_libs.utils.textFromClipboard
@@ -507,7 +508,20 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             }
         }
     }
-
+    override fun attachBaseContext(newBase: Context) {
+        val isPadMode = getSpValue("pad_mode", false)
+        val res = newBase.resources
+        val config = Configuration(res.configuration)
+        if (isPadMode) {
+            config.smallestScreenWidthDp = 600
+            config.screenWidthDp = 600
+        } else {
+            config.smallestScreenWidthDp = 360
+            config.screenWidthDp = 360
+        }
+        val context = newBase.createConfigurationContext(config)
+        super.attachBaseContext(context)
+    }
     @SuppressLint("SetTextI18n")
     private fun initHeaderView() {
         binding.nvMain.getHeaderView(0)?.let { view ->
