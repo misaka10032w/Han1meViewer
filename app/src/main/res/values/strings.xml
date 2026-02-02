@@ -560,5 +560,4 @@
     <string name="mmd" translatable="false">MMD</string>
     <string name="tablet_mode">平板模式（beta版）</string>
     <string name="padmode_tips">開啟後，部分佈局將會改變為更適合平板的樣式</string>
-    <string name="change_warning">切換模式需要重新啟動應用以重新載入佈局，是否立即重新啟動？</string>
 </resources>

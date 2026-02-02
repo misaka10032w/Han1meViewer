@@ -526,5 +526,4 @@
     <string name="ai_generated">AI生成</string>
     <string name="tablet_mode">平板模式（beta版）</string>
     <string name="padmode_tips">开启后，部分布局将会改变为更适合平板的样式</string>
-    <string name="change_warning">切换模式需要重启应用以重新加载布局，是否立即重启？</string>
 </resources>

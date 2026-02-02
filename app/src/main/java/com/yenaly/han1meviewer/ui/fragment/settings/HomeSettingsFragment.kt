@@ -56,7 +56,6 @@ import com.yenaly.yenaly_libs.utils.application
 import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.folderSize
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
-import com.yenaly.yenaly_libs.utils.putSpValue
 import com.yenaly.yenaly_libs.utils.showLongToast
 import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.CoroutineScope
@@ -177,11 +176,15 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
             requireContext().showAlertDialog {
                 setCancelable(false)
                 setTitle(R.string.attention)
-                setMessage(R.string.change_warning)
+                setMessage("切换模式需要重启应用以重新加载布局，是否立即重启？")
+
                 setPositiveButton(R.string.confirm) { _, _ ->
-                    putSpValue("pad_mode", isChecked)
+                    preferenceManager.sharedPreferences?.edit {
+                        putBoolean("pad_mode", isChecked)
+                    }
                     ActivityManager.restart(killProcess = true)
                 }
+
                 setNegativeButton(R.string.cancel) { _, _ ->
                     padModePref.isChecked = !isChecked
                 }
