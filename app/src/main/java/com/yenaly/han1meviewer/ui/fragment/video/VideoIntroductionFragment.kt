@@ -90,8 +90,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.format
 import java.io.Serializable
-import kotlin.collections.orEmpty
-import kotlin.getValue
 
 /**
  * @project Hanime1
@@ -487,12 +485,23 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
                     startX = e.x.toInt()
                     val childView = rv.findChildViewUnder(e.x, e.y)
                     val position = childView?.let(rv::getChildAdapterPosition) ?: return false
+                    if (position < 0 || position >= multi.itemCount) return false
+
                     val adapter = multi.getWrappedAdapterAndPosition(position).first
                     isNotHorizontalWrapper = adapter !== playlistWrapper
-                    val vp2 = vp2 ?: rv.findParent<ViewPager2>().also { vp2 = it }
-                    if (vp2.isUserInputEnabled != isNotHorizontalWrapper) {
-                        vp2.isUserInputEnabled = isNotHorizontalWrapper
+
+                    val parentViewPager = try {
+                        vp2 ?: rv.findParent<ViewPager2>()?.also { vp2 = it }
+                    } catch (e: Exception) {
+                        null
                     }
+
+                    if (parentViewPager == null) return false
+
+                    if (parentViewPager.isUserInputEnabled != isNotHorizontalWrapper) {
+                        parentViewPager.isUserInputEnabled = isNotHorizontalWrapper
+                    }
+                    // --- 修复平板模式适配
                 }
 
                 MotionEvent.ACTION_MOVE -> {
@@ -503,9 +512,17 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
                         playlistWrapper.wrapper?.canScrollHorizontally(1)?.not()?.let { csh ->
                             if (!csh) false else direction > 0
                         } ?: true
-                    val vp2 = vp2 ?: rv.findParent<ViewPager2>().also { vp2 = it }
-                    if (vp2.isUserInputEnabled != canScrollHorizontally) {
-                        vp2.isUserInputEnabled = canScrollHorizontally
+
+                    val parentViewPager = try {
+                        vp2 ?: rv.findParent<ViewPager2>()?.also { vp2 = it }
+                    } catch (e: Exception) {
+                        null
+                    }
+
+                    if (parentViewPager == null) return false
+
+                    if (parentViewPager.isUserInputEnabled != canScrollHorizontally) {
+                        parentViewPager.isUserInputEnabled = canScrollHorizontally
                     }
                 }
             }
