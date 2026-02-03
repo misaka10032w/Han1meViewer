@@ -25,6 +25,7 @@ interface HanimeMyListService {
     suspend fun getMyListItems(
         @Path("userid") userId: String,
         @Path("type") listType: String,
+        @Query("page") page: Int
     ): Response<ResponseBody>
 
     @GET("playlist")

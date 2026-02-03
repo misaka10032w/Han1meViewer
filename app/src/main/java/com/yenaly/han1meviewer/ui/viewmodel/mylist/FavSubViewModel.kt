@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.viewmodel.mylist
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
@@ -36,7 +37,13 @@ class FavSubViewModel(application: Application) : YenalyViewModel(application) {
                 if (prev is PageLoadingState.Loading) _favVideoFlow.value = emptyList()
                 _favVideoFlow.update { prevList ->
                     when (state) {
-                        is PageLoadingState.Success -> prevList + state.info.hanimeInfo
+                        is PageLoadingState.Success ->{
+                            if (state.info.hanimeInfo.isEmpty()){
+                                _favVideoStateFlow.update { PageLoadingState.NoMoreData }
+                            }
+                            prevList + state.info.hanimeInfo
+                        }
+
                         is PageLoadingState.Loading -> emptyList()
                         else -> prevList
                     }

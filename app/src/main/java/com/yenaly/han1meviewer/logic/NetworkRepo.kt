@@ -81,10 +81,10 @@ object NetworkRepo {
         request = {
             when (listType) {
                 is String ->
-                    HanimeNetwork.myListService.getMyListItems(userId, listType)
+                    HanimeNetwork.myListService.getMyListItems(userId, listType, page)
 
                 is MyListType ->
-                    HanimeNetwork.myListService.getMyListItems(userId, listType.value)
+                    HanimeNetwork.myListService.getMyListItems(userId, listType.value, page)
 
                 else ->
                     throw IllegalArgumentException("typeOrId must be String or MyListType")
