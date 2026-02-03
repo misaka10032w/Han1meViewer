@@ -5,7 +5,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -38,7 +38,7 @@ import kotlinx.coroutines.launch
 class MyFavVideoFragment : YenalyFragment<FragmentPageListBinding>(),
     IToolbarFragment<MainActivity>, LoginNeededFragmentMixin, StateLayoutMixin {
 
-    val viewModel by activityViewModels<MyListViewModel>()
+    val viewModel by viewModels<MyListViewModel>()
 
     private var page: Int
         set(value) {
