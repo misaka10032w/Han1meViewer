@@ -40,5 +40,10 @@
         android:id="@+id/mpvPlayerSettings"
         android:name="com.yenaly.han1meviewer.ui.fragment.settings.MpvPlayerSettings"
         android:label="MpvPlayerSettings" />
+    
+    <fragment
+        android:id="@+id/translationSettingsFragment"
+        android:name="com.yenaly.han1meviewer.ui.fragment.settings.TranslationSettingsFragment"
+        android:label="Translation Settings" />
 
 </navigation>

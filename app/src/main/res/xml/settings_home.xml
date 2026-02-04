@@ -91,6 +91,12 @@
             app:key="apply_deep_links"
             app:summary="@string/apply_deep_links_summary"
             app:title="@string/apply_deep_links" />
+            
+        <Preference
+            android:key="translation_settings"
+            android:title="@string/translation_settings"
+            android:summary="@string/translation_settings_summary"
+            android:icon="@drawable/ic_baseline_translate_24" />
 
     </PreferenceCategory>
 

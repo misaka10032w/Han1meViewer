@@ -559,4 +559,6 @@
     <string name="ai_generated">AI生成</string>
     <string name="mmd" translatable="false">MMD</string>
     <string name="translation_cache">Translation Cache</string>
+    <string name="translation_settings">Translation</string>
+    <string name="translation_settings_summary">Configure translation API, target language, and more</string>
 </resources>

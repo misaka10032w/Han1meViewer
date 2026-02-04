@@ -103,6 +103,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
         const val SEARCH_ARTIST_IGNORE_VIDEO_TYPE = "search_artist_ignore_video_type"
         const val DISABLE_MOBILE_DATA_WARNING = "disable_mobile_data_warning"
         const val COLLAPSE_DOWNLOADED_GROUP = "collapse_downloaded_group"
+        const val TRANSLATION_SETTINGS = "translation_settings"
     }
 
     private val videoLanguage
@@ -149,6 +150,8 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
             by safePreference<MaterialSwitchPreference>(ALLOW_RESUME_PLAYBACK)
     private val disableMobileDataWarning
             by safePreference<MaterialSwitchPreference>(DISABLE_MOBILE_DATA_WARNING)
+    private val translationSettings
+            by safePreference<Preference>(TRANSLATION_SETTINGS)
 
     private var checkUpdateTimes = 0
 
@@ -406,6 +409,10 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
             } else {
                 isVisible = false
             }
+        }
+        translationSettings?.setOnPreferenceClickListener {
+            SettingsRouter.with(this).navigateWithinSettings(R.id.translationSettingsFragment)
+            return@setOnPreferenceClickListener true
         }
         useCIUpdateChannel.apply {
             setOnPreferenceChangeListener { _, _ ->
