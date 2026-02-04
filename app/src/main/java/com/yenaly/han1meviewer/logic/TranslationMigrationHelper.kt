@@ -96,10 +96,8 @@ object TranslationMigrationHelper {
         Log.d("TranslationMigrationHelper", "Web translation settings migration attempted")
     }
     
-    /**
-     * Reset all translation settings to defaults
-     */
-    fun resetToDefaults(context: Context) {
+    // Change the resetToDefaults function to be suspend:
+    suspend fun resetToDefaults(context: Context) {
         Preferences.isTranslationEnabled = false
         Preferences.translationApiKeys = emptySet()
         Preferences.translationMonthlyLimit = 500000
@@ -109,8 +107,8 @@ object TranslationMigrationHelper {
         Preferences.translateDescriptions = true
         Preferences.translateComments = true
         Preferences.translateTags = true
-        
-        // Clear cache
+    
+        // Clear cache - now this is allowed in suspend function
         TranslationManager.getInstance(context).clearCache()
     }
     

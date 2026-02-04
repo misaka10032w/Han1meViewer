@@ -474,22 +474,27 @@ class TranslationManager private constructor(context: Context) {
             }
         )
     }
-    
+
+    // In TranslationManager class, add:
+    suspend fun getAllCacheItems(): List<TranslationCache> {
+        return cacheDao.getAll().first()
+    }
+
     // Clear cache
     suspend fun clearCache() {
         cacheDao.deleteAll()
     }
-    
+
     // Clear cache by type
     suspend fun clearCacheByType(contentType: TranslationCache.ContentType) {
         cacheDao.deleteByType(contentType)
     }
-    
+
     // Delete specific cache item
     suspend fun deleteCacheItem(id: Int) {
         cacheDao.delete(id)
     }
-    
+
     // Update settings
     fun updateSettings() {
         initialize()

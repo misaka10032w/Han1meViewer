@@ -14,11 +14,9 @@ import com.yenaly.han1meviewer.logic.TranslationMigrationHelper
 import com.yenaly.yenaly_libs.base.settings.YenalySettingsFragment
 import kotlinx.coroutines.launch
 
-class TranslationSettingsFragment : YenalySettingsFragment() {
+class TranslationSettingsFragment : YenalySettingsFragment(R.xml.preferences_translation) {
     
-    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        setPreferencesFromResource(R.xml.preferences_translation, rootKey)
-        
+    override fun onPreferencesCreated(savedInstanceState: Bundle?) {
         // API Keys preference
         val apiKeysPref = findPreference<EditTextPreference>("translation_api_keys")
         apiKeysPref?.setOnPreferenceChangeListener { _, newValue ->
@@ -141,8 +139,10 @@ class TranslationSettingsFragment : YenalySettingsFragment() {
             .setTitle("Reset All Settings")
             .setMessage("Are you sure you want to reset all translation settings to defaults? This cannot be undone.")
             .setPositiveButton("Reset") { _, _ ->
-                TranslationMigrationHelper.resetToDefaults(requireContext())
-                // showSnackbar("Settings reset to defaults")
+                lifecycleScope.launch {
+                    TranslationMigrationHelper.resetToDefaults(requireContext())
+                    // showSnackbar("Settings reset to defaults")
+                }
             }
             .setNegativeButton("Cancel", null)
             .show()
