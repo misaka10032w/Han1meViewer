@@ -111,7 +111,7 @@
         
     </PreferenceCategory>
     <!-- Add this after the Statistics category -->
-    <PreferenceCategory android:title="Migration & Backup">
+    <PreferenceCategory android:title="Migration &amp; Backup"">
     
         <Preference
             android:key="migrate_settings"
