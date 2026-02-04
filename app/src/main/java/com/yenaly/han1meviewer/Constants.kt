@@ -109,6 +109,7 @@ const val HA1_GITHUB_RELEASES_URL = "$HA1_GITHUB_URL/releases"
 
 const val HA1_GITHUB_API_URL = "https://api.github.com/repos/misaka10032w/Han1meViewer/"
 const val FIREBASE_REALTIME_DATABASE = "https://han1meviewer-86e5f-default-rtdb.asia-southeast1.firebasedatabase.app/"
+
 // for Shared Preference
 
 const val LOGIN_COOKIE = "cookie"
@@ -118,10 +119,20 @@ const val CLOUDFLARE_COOKIE = "cf_cookie"
 
 const val ALREADY_LOGIN = "already_login"
 
+// 翻譯 相關 (Translation Constants)
+const val IS_TRANSLATION_ENABLED = "is_translation_enabled"
+const val TRANSLATION_API_KEYS = "translation_api_keys"
+const val TRANSLATION_MONTHLY_LIMIT = "translation_monthly_limit"
+const val TRANSLATION_TARGET_LANG = "translation_target_lang"
+const val TRANSLATION_BATCH_SIZE = "translation_batch_size"
+const val TRANSLATE_TITLES = "translate_titles"
+const val TRANSLATE_DESCRIPTIONS = "translate_descriptions"
+const val TRANSLATE_COMMENTS = "translate_comments"
+const val TRANSLATE_TAGS = "translate_tags"
+
 // Notification
 
 const val DOWNLOAD_NOTIFICATION_CHANNEL = "download_channel"
-
 const val UPDATE_NOTIFICATION_CHANNEL = "update_channel"
 
 // File

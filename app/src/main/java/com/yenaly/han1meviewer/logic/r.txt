@@ -1,3 +1,1477 @@
+I'll help you implement a comprehensive DeepL API-based translation system with caching, batching, and multi-key fallback. Here's a step-by-step guide:
+
+Step 1: Create Translation Manager File
+
+Create a new file: app/src/main/java/com/yenaly/han1meviewer/logic/TranslationManager.kt
+
+```kotlin
+package com.yenaly.han1meviewer.logic
+
+import android.content.Context
+import androidx.room.*
+import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.logic.exception.TranslationException
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.File
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.min
+
+// ♧¥ separator for text blocks, { for tags
+const val TEXT_SEPARATOR = "♧¥"
+const val TAG_SEPARATOR = "{"
+
+// Entity for translation cache
+@Entity(tableName = "translation_cache")
+data class TranslationCache(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val originalText: String,
+    val translatedText: String,
+    val sourceLang: String = "auto",
+    val targetLang: String = "EN",
+    val contentType: ContentType, // TITLE, DESCRIPTION, COMMENT, TAG, etc.
+    val videoCode: String? = null,
+    val timestamp: Long = System.currentTimeMillis(),
+    val apiKeyUsed: String = "",
+    val charsConsumed: Int = 0
+) {
+    enum class ContentType {
+        TITLE, DESCRIPTION, COMMENT, TAG, ARTIST_NAME, OTHER
+    }
+}
+
+// Dao for translation cache
+@Dao
+interface TranslationCacheDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(cache: TranslationCache)
+    
+    @Query("SELECT * FROM translation_cache WHERE originalText = :original AND targetLang = :targetLang AND contentType = :contentType")
+    suspend fun get(original: String, targetLang: String, contentType: TranslationCache.ContentType): TranslationCache?
+    
+    @Query("SELECT * FROM translation_cache WHERE videoCode = :videoCode ORDER BY timestamp DESC")
+    suspend fun getByVideoCode(videoCode: String): List<TranslationCache>
+    
+    @Query("SELECT * FROM translation_cache ORDER BY timestamp DESC")
+    fun getAll(): Flow<List<TranslationCache>>
+    
+    @Query("DELETE FROM translation_cache WHERE id = :id")
+    suspend fun delete(id: Int)
+    
+    @Query("DELETE FROM translation_cache WHERE contentType = :contentType")
+    suspend fun deleteByType(contentType: TranslationCache.ContentType)
+    
+    @Query("DELETE FROM translation_cache")
+    suspend fun deleteAll()
+    
+    @Query("SELECT SUM(charsConsumed) FROM translation_cache WHERE apiKeyUsed = :apiKey AND timestamp >= :startTime AND timestamp <= :endTime")
+    suspend fun getCharsConsumed(apiKey: String, startTime: Long, endTime: Long): Long
+}
+
+// Database
+@Database(entities = [TranslationCache::class], version = 1)
+abstract class TranslationDatabase : RoomDatabase() {
+    abstract fun cacheDao(): TranslationCacheDao
+    
+    companion object {
+        @Volatile
+        private var INSTANCE: TranslationDatabase? = null
+        
+        fun getInstance(context: Context): TranslationDatabase {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: Room.databaseBuilder(
+                    context.applicationContext,
+                    TranslationDatabase::class.java,
+                    "translation.db"
+                ).build().also { INSTANCE = it }
+            }
+        }
+    }
+}
+
+// API Key with limits
+data class TranslationApiKey(
+    val key: String,
+    val monthlyLimit: Int = 500000, // Default DeepL Free limit
+    var charsUsedThisMonth: AtomicInteger = AtomicInteger(0),
+    val isActive: Boolean = true,
+    val lastReset: Long = System.currentTimeMillis()
+) {
+    fun resetIfNeeded(): Boolean {
+        val now = System.currentTimeMillis()
+        // Reset on 1st of every month
+        val calendar = java.util.Calendar.getInstance()
+        calendar.timeInMillis = lastReset
+        val lastMonth = calendar.get(java.util.Calendar.MONTH)
+        calendar.timeInMillis = now
+        val currentMonth = calendar.get(java.util.Calendar.MONTH)
+        
+        if (currentMonth != lastMonth) {
+            charsUsedThisMonth.set(0)
+            return true
+        }
+        return false
+    }
+    
+    fun hasQuota(chars: Int): Boolean {
+        return charsUsedThisMonth.get() + chars <= monthlyLimit
+    }
+    
+    fun consume(chars: Int) {
+        charsUsedThisMonth.addAndGet(chars)
+    }
+}
+
+// Main Translation Manager
+class TranslationManager private constructor(context: Context) {
+    private val cacheDao = TranslationDatabase.getInstance(context).cacheDao()
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .build()
+    
+    private var apiKeys = mutableListOf<TranslationApiKey>()
+    private var currentApiKeyIndex = 0
+    private var isEnabled = false
+    private var batchSize = 30000 // 30KB limit per request
+    private var targetLang = "EN"
+    private var translateTitles = true
+    private var translateDescriptions = true
+    private var translateComments = true
+    private var translateTags = true
+    
+    companion object {
+        @Volatile
+        private var INSTANCE: TranslationManager? = null
+        
+        fun getInstance(context: Context): TranslationManager {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: TranslationManager(context).also { INSTANCE = it }
+            }
+        }
+    }
+    
+    // Initialize from preferences
+    fun initialize() {
+        val apiKeyStrings = Preferences.translationApiKeys
+        apiKeys.clear()
+        apiKeyStrings.forEach { key ->
+            if (key.isNotBlank()) {
+                apiKeys.add(TranslationApiKey(key, Preferences.translationMonthlyLimit))
+            }
+        }
+        isEnabled = Preferences.isTranslationEnabled && apiKeys.isNotEmpty()
+        targetLang = Preferences.translationTargetLang
+        batchSize = Preferences.translationBatchSize
+        translateTitles = Preferences.translateTitles
+        translateDescriptions = Preferences.translateDescriptions
+        translateComments = Preferences.translateComments
+        translateTags = Preferences.translateTags
+    }
+    
+    // Get next available API key
+    private fun getNextApiKey(requestChars: Int): TranslationApiKey? {
+        if (apiKeys.isEmpty()) return null
+        
+        // Try current key first
+        for (i in 0 until apiKeys.size) {
+            val index = (currentApiKeyIndex + i) % apiKeys.size
+            val apiKey = apiKeys[index]
+            
+            if (apiKey.isActive && apiKey.hasQuota(requestChars)) {
+                currentApiKeyIndex = index
+                return apiKey
+            }
+        }
+        
+        // If no key has quota, try any active key (will exceed limit)
+        for (apiKey in apiKeys) {
+            if (apiKey.isActive) {
+                return apiKey
+            }
+        }
+        
+        return null
+    }
+    
+    // Make DeepL API call
+    private suspend fun callDeepLApi(
+        texts: List<String>,
+        targetLang: String,
+        sourceLang: String? = null
+    ): List<String> {
+        val apiKey = getNextApiKey(texts.sumOf { it.length }) ?: throw TranslationException("No available API key")
+        
+        val formBody = FormBody.Builder()
+            .add("auth_key", apiKey.key)
+            .add("target_lang", targetLang)
+        
+        sourceLang?.let { formBody.add("source_lang", it) }
+        
+        // Join texts with separator
+        val joinedText = texts.joinToString(TEXT_SEPARATOR)
+        formBody.add("text", joinedText)
+        
+        val request = Request.Builder()
+            .url("https://api-free.deepl.com/v2/translate")
+            .post(formBody.build())
+            .build()
+        
+        return withContext(Dispatchers.IO) {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    throw TranslationException("API call failed: ${response.code}")
+                }
+                
+                val body = response.body?.string() ?: throw TranslationException("Empty response")
+                val json = JSONObject(body)
+                val translations = json.getJSONArray("translations")
+                
+                val results = mutableListOf<String>()
+                for (i in 0 until translations.length()) {
+                    results.add(translations.getJSONObject(i).getString("text"))
+                }
+                
+                // Split back using separator
+                val allTranslated = if (results.isNotEmpty()) {
+                    results.flatMap { it.split(TEXT_SEPARATOR) }
+                } else {
+                    emptyList()
+                }
+                
+                // Record usage
+                apiKey.consume(joinedText.length)
+                
+                allTranslated
+            }
+        }
+    }
+    
+    // Smart batching
+    private fun createBatches(texts: List<String>, maxBatchSize: Int = batchSize): List<List<String>> {
+        val batches = mutableListOf<List<String>>()
+        var currentBatch = mutableListOf<String>()
+        var currentSize = 0
+        
+        for (text in texts) {
+            val textSize = text.length
+            
+            // If single text is larger than batch size, split it
+            if (textSize > maxBatchSize) {
+                // First, add current batch if not empty
+                if (currentBatch.isNotEmpty()) {
+                    batches.add(currentBatch.toList())
+                    currentBatch.clear()
+                    currentSize = 0
+                }
+                
+                // Split the large text
+                val chunks = text.chunked(maxBatchSize - TEXT_SEPARATOR.length)
+                for (chunk in chunks) {
+                    if (currentSize + chunk.length + TEXT_SEPARATOR.length > maxBatchSize) {
+                        batches.add(currentBatch.toList())
+                        currentBatch.clear()
+                        currentSize = 0
+                    }
+                    currentBatch.add(chunk)
+                    currentSize += chunk.length + TEXT_SEPARATOR.length
+                }
+            } else {
+                if (currentSize + textSize + TEXT_SEPARATOR.length > maxBatchSize) {
+                    batches.add(currentBatch.toList())
+                    currentBatch.clear()
+                    currentSize = 0
+                }
+                currentBatch.add(text)
+                currentSize += textSize + TEXT_SEPARATOR.length
+            }
+        }
+        
+        if (currentBatch.isNotEmpty()) {
+            batches.add(currentBatch)
+        }
+        
+        return batches
+    }
+    
+    // Translate with caching
+    suspend fun translate(
+        originalText: String,
+        contentType: TranslationCache.ContentType,
+        videoCode: String? = null,
+        forceFresh: Boolean = false
+    ): String {
+        if (!isEnabled || originalText.isBlank()) return originalText
+        
+        // Check cache first
+        if (!forceFresh) {
+            val cached = cacheDao.get(originalText, targetLang, contentType)
+            if (cached != null) {
+                return cached.translatedText
+            }
+        }
+        
+        // Skip if content type is disabled
+        when (contentType) {
+            TranslationCache.ContentType.TITLE -> if (!translateTitles) return originalText
+            TranslationCache.ContentType.DESCRIPTION -> if (!translateDescriptions) return originalText
+            TranslationCache.ContentType.COMMENT -> if (!translateComments) return originalText
+            TranslationCache.ContentType.TAG -> if (!translateTags) return originalText
+            else -> {}
+        }
+        
+        return try {
+            val translated = callDeepLApi(listOf(originalText), targetLang).firstOrNull() ?: originalText
+            
+            // Cache the result
+            cacheDao.insert(
+                TranslationCache(
+                    originalText = originalText,
+                    translatedText = translated,
+                    targetLang = targetLang,
+                    contentType = contentType,
+                    videoCode = videoCode,
+                    apiKeyUsed = apiKeys.getOrNull(currentApiKeyIndex)?.key ?: "",
+                    charsConsumed = originalText.length
+                )
+            )
+            
+            translated
+        } catch (e: Exception) {
+            // Fallback: return original text
+            e.printStackTrace()
+            originalText
+        }
+    }
+    
+    // Batch translate multiple texts
+    suspend fun translateBatch(
+        texts: List<String>,
+        contentType: TranslationCache.ContentType,
+        videoCode: String? = null
+    ): List<String> {
+        if (!isEnabled || texts.isEmpty()) return texts
+        
+        val results = mutableListOf<String>()
+        val toTranslate = mutableListOf<Pair<Int, String>>() // (index, text)
+        
+        // Check cache and collect texts that need translation
+        texts.forEachIndexed { index, text ->
+            if (text.isBlank()) {
+                results.add(index, text)
+            } else {
+                val cached = cacheDao.get(text, targetLang, contentType)
+                if (cached != null) {
+                    results.add(index, cached.translatedText)
+                } else {
+                    toTranslate.add(index to text)
+                }
+            }
+        }
+        
+        if (toTranslate.isEmpty()) return results
+        
+        // Prepare batches
+        val textsToTranslate = toTranslate.map { it.second }
+        val batches = createBatches(textsToTranslate)
+        
+        // Translate each batch
+        for (batch in batches) {
+            try {
+                val translatedBatch = callDeepLApi(batch, targetLang)
+                
+                // Process results
+                for ((batchIndex, translated) in translatedBatch.withIndex()) {
+                    val originalIndex = toTranslate[batchIndex].first
+                    results.add(originalIndex, translated)
+                    
+                    // Cache result
+                    cacheDao.insert(
+                        TranslationCache(
+                            originalText = batch[batchIndex],
+                            translatedText = translated,
+                            targetLang = targetLang,
+                            contentType = contentType,
+                            videoCode = videoCode,
+                            apiKeyUsed = apiKeys.getOrNull(currentApiKeyIndex)?.key ?: "",
+                            charsConsumed = batch[batchIndex].length
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                // If batch fails, add original texts
+                e.printStackTrace()
+                for ((index, text) in batch.withIndex()) {
+                    results.add(toTranslate[index].first, text)
+                }
+            }
+        }
+        
+        return results
+    }
+    
+    // Translate tags (special handling)
+    suspend fun translateTags(tags: List<String>, videoCode: String? = null): List<String> {
+        if (!isEnabled || !translateTags || tags.isEmpty()) return tags
+        
+        // Join tags with separator
+        val joinedTags = tags.joinToString(TAG_SEPARATOR)
+        
+        // Check cache for joined tags
+        val cached = cacheDao.get(joinedTags, targetLang, TranslationCache.ContentType.TAG)
+        if (cached != null) {
+            return cached.translatedText.split(TAG_SEPARATOR)
+        }
+        
+        return try {
+            val translated = callDeepLApi(listOf(joinedTags), targetLang).firstOrNull() ?: joinedTags
+            
+            // Cache result
+            cacheDao.insert(
+                TranslationCache(
+                    originalText = joinedTags,
+                    translatedText = translated,
+                    targetLang = targetLang,
+                    contentType = TranslationCache.ContentType.TAG,
+                    videoCode = videoCode,
+                    apiKeyUsed = apiKeys.getOrNull(currentApiKeyIndex)?.key ?: "",
+                    charsConsumed = joinedTags.length
+                )
+            )
+            
+            translated.split(TAG_SEPARATOR)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            tags
+        }
+    }
+    
+    // Get cache statistics
+    suspend fun getStats(): Map<String, Any> {
+        val allCache = cacheDao.getAll().first()
+        val totalChars = allCache.sumOf { it.charsConsumed }
+        val totalItems = allCache.size
+        
+        val byType = allCache.groupBy { it.contentType }
+            .mapValues { it.value.size }
+        
+        val byApiKey = allCache.groupBy { it.apiKeyUsed }
+            .mapValues { it.value.sumOf { cache -> cache.charsConsumed } }
+        
+        return mapOf(
+            "totalChars" to totalChars,
+            "totalItems" to totalItems,
+            "byType" to byType,
+            "byApiKey" to byApiKey,
+            "apiKeys" to apiKeys.map { key ->
+                mapOf(
+                    "key" to key.key.take(8) + "..." + key.key.takeLast(4),
+                    "monthlyLimit" to key.monthlyLimit,
+                    "charsUsed" to key.charsUsedThisMonth.get(),
+                    "remaining" to key.monthlyLimit - key.charsUsedThisMonth.get(),
+                    "isActive" to key.isActive
+                )
+            }
+        )
+    }
+    
+    // Clear cache
+    suspend fun clearCache() {
+        cacheDao.deleteAll()
+    }
+    
+    // Clear cache by type
+    suspend fun clearCacheByType(contentType: TranslationCache.ContentType) {
+        cacheDao.deleteByType(contentType)
+    }
+    
+    // Delete specific cache item
+    suspend fun deleteCacheItem(id: Int) {
+        cacheDao.delete(id)
+    }
+    
+    // Update settings
+    fun updateSettings() {
+        initialize()
+    }
+}
+```
+
+Step 2: Create Preferences Extension
+
+Add to app/src/main/java/com/yenaly/han1meviewer/Preferences.kt:
+
+```kotlin
+// Translation preferences
+var isTranslationEnabled by booleanPreference(false)
+var translationApiKeys by stringSetPreference(setOf()) // Set of API keys
+var translationMonthlyLimit by intPreference(500000)
+var translationTargetLang by stringPreference("EN")
+var translationBatchSize by intPreference(30000) // Max chars per request
+
+// What to translate
+var translateTitles by booleanPreference(true)
+var translateDescriptions by booleanPreference(true)
+var translateComments by booleanPreference(true)
+var translateTags by booleanPreference(true)
+```
+
+
+changes of Constants.kt
+
+package com.yenaly.han1meviewer
+
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.format.char
+
+/**
+ * 我觉得空字符串写出来太逆天了，所以搞了个常量
+ */
+const val EMPTY_STRING = ""
+
+const val APP_NAME = "Han1meViewer"
+
+// 标准时间格式
+
+/* yyyy-MM-dd */
+@JvmField
+val LOCAL_DATE_FORMAT = LocalDate.Formats.ISO
+
+/* yyyy-MM-dd HH:mm */
+@JvmField
+val LOCAL_DATE_TIME_FORMAT = LocalDateTime.Format {
+    date(LocalDate.Formats.ISO); char(' ')
+    hour(); char(':'); minute()
+}
+
+// 网络基本设置
+
+const val USER_AGENT =
+    "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36"
+
+// 設置發佈日期年份，在搜索的tag裏
+
+/**
+ * 發佈日期年份開始於
+ */
+const val SEARCH_YEAR_RANGE_START = 1990
+
+/**
+ * 發佈日期年份結束於
+ */
+const val SEARCH_YEAR_RANGE_END = BuildConfig.SEARCH_YEAR_RANGE_END
+
+// intent傳值用名稱
+
+const val FROM_DOWNLOAD = "FROM_DOWNLOAD"
+
+const val VIDEO_CODE = "VIDEO_CODE"
+
+//@Deprecated("Use [ADVANCED_SEARCH_MAP] instead")
+//const val FROM_VIDEO_TAG = "FROM_VIDEO_TAG"
+
+/**
+ * 接受类型 [AdvancedSearchMap] 或者 [String]
+ */
+const val ADVANCED_SEARCH_MAP = "ADVANCED_SEARCH_MAP"
+
+const val COMMENT_ID = "COMMENT_ID"
+
+const val COMMENT_TYPE = "COMMENT_TYPE"
+
+const val DATE_CODE = "DATE_CODE"
+
+//const val CSRF_TOKEN = "CSRF_TOKEN"
+
+// Result Code
+
+//const val LOGIN_TO_MAIN_ACTIVITY = 0
+
+// 给rv传值，判断布局需要wrap_content还是match_parent，不填则为默认
+// 设置布局为MATCH_PARENT可以使rv在GridLayoutManager下能居中，反之不能
+
+const val VIDEO_LAYOUT_WRAP_CONTENT = 1
+
+const val VIDEO_LAYOUT_MATCH_PARENT = 2
+
+// 給CommentFragment傳值，判斷是影片評論區還是預覽評論區 [COMMENT_TYPE]
+
+const val VIDEO_COMMENT_PREFIX = "video"
+
+const val PREVIEW_COMMENT_PREFIX = "preview"
+
+// base url
+
+@JvmField
+val HANIME_BASE_URL = Preferences.baseUrl
+
+/**
+ * 如果添加备选网址别忘了改[String.toVideoCode]的videoUrlRegex
+ * 没想弄动态匹配，觉得古法修改挺好的。
+ */
+object HanimeConstants {
+    val HANIME_HOSTNAME = arrayOf("hanime1.me","hanime1.com","hanimeone.me","javchu.com")
+    val HANIME_URL = arrayOf("https://hanime1.me/","https://hanime1.com/","https://hanimeone.me/","https://javchu.com/")
+}
+
+@JvmField
+val HANIME_LOGIN_URL = HANIME_BASE_URL + "login"
+
+// github url
+
+const val HA1_GITHUB_URL = "https://github.com/misaka10032w/Han1meViewer"
+
+const val HA1_GITHUB_ISSUE_URL = "$HA1_GITHUB_URL/issues"
+
+const val HA1_GITHUB_FORUM_URL = "$HA1_GITHUB_URL/discussions"
+
+const val HA1_GITHUB_RELEASES_URL = "$HA1_GITHUB_URL/releases"
+
+const val HA1_GITHUB_API_URL = "https://api.github.com/repos/misaka10032w/Han1meViewer/"
+const val FIREBASE_REALTIME_DATABASE = "https://han1meviewer-86e5f-default-rtdb.asia-southeast1.firebasedatabase.app/"
+
+// for Shared Preference
+
+const val LOGIN_COOKIE = "cookie"
+const val SAVED_USER_ID = "saved_user_id"
+
+const val CLOUDFLARE_COOKIE = "cf_cookie"
+
+const val ALREADY_LOGIN = "already_login"
+
+// 翻譯 相關 (Translation Constants)
+const val IS_TRANSLATION_ENABLED = "is_translation_enabled"
+const val TRANSLATION_API_KEYS = "translation_api_keys"
+const val TRANSLATION_MONTHLY_LIMIT = "translation_monthly_limit"
+const val TRANSLATION_TARGET_LANG = "translation_target_lang"
+const val TRANSLATION_BATCH_SIZE = "translation_batch_size"
+const val TRANSLATE_TITLES = "translate_titles"
+const val TRANSLATE_DESCRIPTIONS = "translate_descriptions"
+const val TRANSLATE_COMMENTS = "translate_comments"
+const val TRANSLATE_TAGS = "translate_tags"
+
+// Notification
+
+const val DOWNLOAD_NOTIFICATION_CHANNEL = "download_channel"
+const val UPDATE_NOTIFICATION_CHANNEL = "update_channel"
+
+// File
+
+const val FILE_PROVIDER_AUTHORITY = "${BuildConfig.APPLICATION_ID}.fileProvider"
+
+update Prefereces.kt
+// 翻譯 相關 (Translation Settings)
+
+/**
+ * Whether translation is enabled
+ */
+var isTranslationEnabled: Boolean
+    get() = getSpValue(IS_TRANSLATION_ENABLED, false)
+    set(value) = putSpValue(IS_TRANSLATION_ENABLED, value)
+
+/**
+ * DeepL API keys (set of strings)
+ */
+var translationApiKeys: Set<String>
+    get() = getSpValue(TRANSLATION_API_KEYS, setOf<String>())
+    set(value) = putSpValue(TRANSLATION_API_KEYS, value)
+
+/**
+ * Monthly character limit per API key
+ */
+var translationMonthlyLimit: Int
+    get() = getSpValue(TRANSLATION_MONTHLY_LIMIT, 500000)
+    set(value) = putSpValue(TRANSLATION_MONTHLY_LIMIT, value)
+
+/**
+ * Target language for translation (EN, DE, FR, etc.)
+ */
+var translationTargetLang: String
+    get() = getSpValue(TRANSLATION_TARGET_LANG, "EN")
+    set(value) = putSpValue(TRANSLATION_TARGET_LANG, value)
+
+/**
+ * Maximum characters per API request
+ */
+var translationBatchSize: Int
+    get() = getSpValue(TRANSLATION_BATCH_SIZE, 30000)
+    set(value) = putSpValue(TRANSLATION_BATCH_SIZE, value)
+
+/**
+ * Whether to translate titles
+ */
+var translateTitles: Boolean
+    get() = getSpValue(TRANSLATE_TITLES, true)
+    set(value) = putSpValue(TRANSLATE_TITLES, value)
+
+/**
+ * Whether to translate descriptions
+ */
+var translateDescriptions: Boolean
+    get() = getSpValue(TRANSLATE_DESCRIPTIONS, true)
+    set(value) = putSpValue(TRANSLATE_DESCRIPTIONS, value)
+
+/**
+ * Whether to translate comments
+ */
+var translateComments: Boolean
+    get() = getSpValue(TRANSLATE_COMMENTS, true)
+    set(value) = putSpValue(TRANSLATE_COMMENTS, value)
+
+/**
+ * Whether to translate tags
+ */
+var translateTags: Boolean
+    get() = getSpValue(TRANSLATE_TAGS, true)
+    set(value) = putSpValue(TRANSLATE_TAGS, value)
+    
+
+Step 3: Create Translation Settings Screen
+
+Create app/src/main/java/com/yenaly/han1meviewer/ui/fragment/settings/TranslationSettingsFragment.kt:
+
+```kotlin
+package com.yenaly.han1meviewer.ui.fragment.settings
+
+import android.os.Bundle
+import android.view.View
+import androidx.lifecycle.lifecycleScope
+import androidx.preference.*
+import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.R
+import com.yenaly.yenaly_libs.base.settings.YenalySettingsFragment
+import kotlinx.coroutines.launch
+
+class TranslationSettingsFragment : YenalySettingsFragment() {
+    
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        setPreferencesFromResource(R.xml.preferences_translation, rootKey)
+        
+        // API Keys preference
+        val apiKeysPref = findPreference<MultiSelectListPreference>("translation_api_keys")
+        apiKeysPref?.setOnPreferenceChangeListener { _, newValue ->
+            // Update API keys
+            val keys = (newValue as Set<String>).toSet()
+            Preferences.translationApiKeys = keys
+            true
+        }
+        
+        // Monthly limit
+        val monthlyLimitPref = findPreference<EditTextPreference>("translation_monthly_limit")
+        monthlyLimitPref?.setOnPreferenceChangeListener { _, newValue ->
+            val limit = (newValue as String).toIntOrNull() ?: 500000
+            Preferences.translationMonthlyLimit = limit
+            true
+        }
+        
+        // Batch size
+        val batchSizePref = findPreference<EditTextPreference>("translation_batch_size")
+        batchSizePref?.setOnPreferenceChangeListener { _, newValue ->
+            val size = (newValue as String).toIntOrNull() ?: 30000
+            Preferences.translationBatchSize = size
+            true
+        }
+        
+        // Target language
+        val targetLangPref = findPreference<ListPreference>("translation_target_lang")
+        targetLangPref?.setOnPreferenceChangeListener { _, newValue ->
+            Preferences.translationTargetLang = newValue as String
+            true
+        }
+        
+        // What to translate
+        val translateTitlesPref = findPreference<SwitchPreferenceCompat>("translate_titles")
+        translateTitlesPref?.setOnPreferenceChangeListener { _, newValue ->
+            Preferences.translateTitles = newValue as Boolean
+            true
+        }
+        
+        val translateDescriptionsPref = findPreference<SwitchPreferenceCompat>("translate_descriptions")
+        translateDescriptionsPref?.setOnPreferenceChangeListener { _, newValue ->
+            Preferences.translateDescriptions = newValue as Boolean
+            true
+        }
+        
+        val translateCommentsPref = findPreference<SwitchPreferenceCompat>("translate_comments")
+        translateCommentsPref?.setOnPreferenceChangeListener { _, newValue ->
+            Preferences.translateComments = newValue as Boolean
+            true
+        }
+        
+        val translateTagsPref = findPreference<SwitchPreferenceCompat>("translate_tags")
+        translateTagsPref?.setOnPreferenceChangeListener { _, newValue ->
+            Preferences.translateTags = newValue as Boolean
+            true
+        }
+        
+        // Clear cache button
+        val clearCachePref = findPreference<Preference>("clear_translation_cache")
+        clearCachePref?.setOnPreferenceClickListener {
+            lifecycleScope.launch {
+                // Get TranslationManager instance and clear cache
+                // This will be implemented after creating Cache Management Fragment
+                showSnackbar("Cache cleared")
+            }
+            true
+        }
+        
+        // View cache button
+        val viewCachePref = findPreference<Preference>("view_translation_cache")
+        viewCachePref?.setOnPreferenceClickListener {
+            // Navigate to Cache Management Fragment
+            // This will be implemented
+            true
+        }
+    }
+}
+```
+
+Step 4: Create Translation Cache Management Screen
+
+Create app/src/main/java/com/yenaly/han1meviewer/ui/fragment/TranslationCacheFragment.kt:
+
+```kotlin
+package com.yenaly.han1meviewer.ui.fragment
+
+import android.os.Bundle
+import android.view.*
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.databinding.FragmentTranslationCacheBinding
+import com.yenaly.han1meviewer.logic.TranslationCache
+import com.yenaly.han1meviewer.logic.TranslationManager
+import com.yenaly.han1meviewer.ui.adapter.TranslationCacheAdapter
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+
+class TranslationCacheFragment : Fragment() {
+    
+    private var _binding: FragmentTranslationCacheBinding? = null
+    private val binding get() = _binding!!
+    private lateinit var adapter: TranslationCacheAdapter
+    private lateinit var translationManager: TranslationManager
+    
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentTranslationCacheBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+    
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        
+        translationManager = TranslationManager.getInstance(requireContext())
+        
+        setupRecyclerView()
+        setupToolbar()
+        loadCache()
+        setupFilterButtons()
+    }
+    
+    private fun setupRecyclerView() {
+        adapter = TranslationCacheAdapter(
+            onEditClick = { cache ->
+                // Show edit dialog
+                showEditDialog(cache)
+            },
+            onDeleteClick = { cache ->
+                lifecycleScope.launch {
+                    translationManager.deleteCacheItem(cache.id)
+                    loadCache()
+                }
+            }
+        )
+        
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerView.adapter = adapter
+    }
+    
+    private fun setupToolbar() {
+        binding.toolbar.title = getString(R.string.translation_cache)
+        binding.toolbar.setNavigationOnClickListener {
+            requireActivity().onBackPressed()
+        }
+        
+        binding.toolbar.inflateMenu(R.menu.menu_translation_cache)
+        binding.toolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_stats -> {
+                    showStats()
+                    true
+                }
+                R.id.action_clear_all -> {
+                    lifecycleScope.launch {
+                        translationManager.clearCache()
+                        loadCache()
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+    
+    private fun loadCache() {
+        lifecycleScope.launch {
+            val translationManager = TranslationManager.getInstance(requireContext())
+            translationManager.cacheDao().getAll().collectLatest { cacheList ->
+                adapter.submitList(cacheList)
+                binding.emptyView.isVisible = cacheList.isEmpty()
+                binding.recyclerView.isVisible = cacheList.isNotEmpty()
+            }
+        }
+    }
+    
+    private fun setupFilterButtons() {
+        val filters = mapOf(
+            binding.btnAll to null,
+            binding.btnTitles to TranslationCache.ContentType.TITLE,
+            binding.btnDescriptions to TranslationCache.ContentType.DESCRIPTION,
+            binding.btnComments to TranslationCache.ContentType.COMMENT,
+            binding.btnTags to TranslationCache.ContentType.TAG
+        )
+        
+        filters.forEach { (button, contentType) ->
+            button?.setOnClickListener {
+                // Highlight selected filter
+                filters.keys.forEach { it?.isSelected = false }
+                button.isSelected = true
+                
+                // Filter data
+                lifecycleScope.launch {
+                    val allCache = translationManager.cacheDao().getAll().first()
+                    val filtered = if (contentType != null) {
+                        allCache.filter { it.contentType == contentType }
+                    } else {
+                        allCache
+                    }
+                    adapter.submitList(filtered)
+                    binding.emptyView.isVisible = filtered.isEmpty()
+                    binding.recyclerView.isVisible = filtered.isNotEmpty()
+                }
+            }
+        }
+    }
+    
+    private fun showEditDialog(cache: TranslationCache) {
+        // Create edit dialog
+        // This is a simplified version - implement full dialog
+    }
+    
+    private fun showStats() {
+        lifecycleScope.launch {
+            val stats = translationManager.getStats()
+            
+            val message = buildString {
+                append("Total characters translated: ${stats["totalChars"]}\n")
+                append("Total items cached: ${stats["totalItems"]}\n\n")
+                
+                append("By type:\n")
+                (stats["byType"] as? Map<*, *>)?.forEach { (type, count) ->
+                    append("  $type: $count\n")
+                }
+                
+                append("\nAPI Key usage:\n")
+                (stats["apiKeys"] as? List<*>)?.forEach { keyMap ->
+                    val map = keyMap as Map<*, *>
+                    append("  ${map["key"]}: ${map["charsUsed"]}/${map["monthlyLimit"]} (${map["remaining"]} remaining)\n")
+                }
+            }
+            
+            // Show dialog with stats
+            android.app.AlertDialog.Builder(requireContext())
+                .setTitle("Translation Statistics")
+                .setMessage(message)
+                .setPositiveButton("OK", null)
+                .show()
+        }
+    }
+    
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
+```
+
+Step 5: Create Translation Cache Adapter
+
+Create app/src/main/java/com/yenaly/han1meviewer/ui/adapter/TranslationCacheAdapter.kt:
+
+```kotlin
+package com.yenaly.han1meviewer.ui.adapter
+
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
+import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.databinding.ItemTranslationCacheBinding
+import com.yenaly.han1meviewer.logic.TranslationCache
+
+class TranslationCacheAdapter(
+    private val onEditClick: (TranslationCache) -> Unit,
+    private val onDeleteClick: (TranslationCache) -> Unit
+) : ListAdapter<TranslationCache, TranslationCacheAdapter.ViewHolder>(DiffCallback()) {
+    
+    class ViewHolder(
+        private val binding: ItemTranslationCacheBinding,
+        private val onEditClick: (TranslationCache) -> Unit,
+        private val onDeleteClick: (TranslationCache) -> Unit
+    ) : RecyclerView.ViewHolder(binding.root) {
+        
+        fun bind(cache: TranslationCache) {
+            binding.apply {
+                textOriginal.text = cache.originalText
+                textTranslated.text = cache.translatedText
+                textType.text = cache.contentType.name
+                textLanguage.text = "${cache.sourceLang} → ${cache.targetLang}"
+                textVideoCode.text = cache.videoCode ?: "N/A"
+                textTimestamp.text = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                    .format(java.util.Date(cache.timestamp))
+                
+                // Show/hide translation on click
+                itemView.setOnClickListener {
+                    textTranslated.isVisible = !textTranslated.isVisible
+                }
+                
+                // Edit button
+                btnEdit.setOnClickListener {
+                    onEditClick(cache)
+                }
+                
+                // Delete button
+                btnDelete.setOnClickListener {
+                    onDeleteClick(cache)
+                }
+            }
+        }
+    }
+    
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val binding = ItemTranslationCacheBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return ViewHolder(binding, onEditClick, onDeleteClick)
+    }
+    
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.bind(getItem(position))
+    }
+    
+    class DiffCallback : DiffUtil.ItemCallback<TranslationCache>() {
+        override fun areItemsTheSame(oldItem: TranslationCache, newItem: TranslationCache): Boolean {
+            return oldItem.id == newItem.id
+        }
+        
+        override fun areContentsTheSame(oldItem: TranslationCache, newItem: TranslationCache): Boolean {
+            return oldItem == newItem
+        }
+    }
+}
+```
+
+Step 6: Create XML Resources
+
+Create app/src/main/res/xml/preferences_translation.xml:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <PreferenceCategory android:title="Translation Settings">
+        
+        <SwitchPreferenceCompat
+            android:key="enable_translation"
+            android:title="Enable Translation"
+            android:summary="Enable automatic translation using DeepL API"
+            android:defaultValue="false" />
+        
+        <EditTextPreference
+            android:key="translation_api_keys"
+            android:title="API Keys"
+            android:summary="Enter DeepL API keys (one per line)"
+            android:dialogTitle="Enter API Keys"
+            android:dialogMessage="Enter DeepL API keys, one per line. First working key will be used."
+            android:inputType="textMultiLine" />
+        
+        <EditTextPreference
+            android:key="translation_monthly_limit"
+            android:title="Monthly Character Limit"
+            android:summary="Maximum characters per month per API key"
+            android:dialogTitle="Monthly Limit"
+            android:defaultValue="500000"
+            android:inputType="number" />
+        
+        <ListPreference
+            android:key="translation_target_lang"
+            android:title="Target Language"
+            android:summary="Language to translate to"
+            android:entries="@array/translation_languages"
+            android:entryValues="@array/translation_language_codes"
+            android:defaultValue="EN" />
+        
+        <EditTextPreference
+            android:key="translation_batch_size"
+            android:title="Batch Size"
+            android:summary="Maximum characters per API request"
+            android:dialogTitle="Batch Size"
+            android:defaultValue="30000"
+            android:inputType="number" />
+        
+    </PreferenceCategory>
+    
+    <PreferenceCategory android:title="Translate Content">
+        
+        <SwitchPreferenceCompat
+            android:key="translate_titles"
+            android:title="Translate Titles"
+            android:defaultValue="true" />
+        
+        <SwitchPreferenceCompat
+            android:key="translate_descriptions"
+            android:title="Translate Descriptions"
+            android:defaultValue="true" />
+        
+        <SwitchPreferenceCompat
+            android:key="translate_comments"
+            android:title="Translate Comments"
+            android:defaultValue="true" />
+        
+        <SwitchPreferenceCompat
+            android:key="translate_tags"
+            android:title="Translate Tags"
+            android:defaultValue="true" />
+        
+    </PreferenceCategory>
+    
+    <PreferenceCategory android:title="Cache Management">
+        
+        <Preference
+            android:key="view_translation_cache"
+            android:title="View Translation Cache"
+            android:summary="Browse and manage cached translations" />
+        
+        <Preference
+            android:key="clear_translation_cache"
+            android:title="Clear All Cache"
+            android:summary="Delete all cached translations" />
+        
+        <Preference
+            android:key="clear_titles_cache"
+            android:title="Clear Titles Cache"
+            android:summary="Delete cached title translations" />
+        
+        <Preference
+            android:key="clear_descriptions_cache"
+            android:title="Clear Descriptions Cache"
+            android:summary="Delete cached description translations" />
+        
+        <Preference
+            android:key="clear_comments_cache"
+            android:title="Clear Comments Cache"
+            android:summary="Delete cached comment translations" />
+        
+        <Preference
+            android:key="clear_tags_cache"
+            android:title="Clear Tags Cache"
+            android:summary="Delete cached tag translations" />
+        
+    </PreferenceCategory>
+    
+    <PreferenceCategory android:title="Statistics">
+        
+        <Preference
+            android:key="translation_stats"
+            android:title="View Statistics"
+            android:summary="View translation usage and API key statistics" />
+        
+    </PreferenceCategory>
+    
+</PreferenceScreen>
+```
+
+Create arrays in app/src/main/res/values/arrays.xml:
+
+```xml
+<resources>
+    <string-array name="translation_languages">
+        <item>English</item>
+        <item>German</item>
+        <item>French</item>
+        <item>Spanish</item>
+        <item>Portuguese</item>
+        <item>Italian</item>
+        <item>Dutch</item>
+        <item>Polish</item>
+        <item>Russian</item>
+        <item>Japanese</item>
+        <item>Chinese</item>
+    </string-array>
+    
+    <string-array name="translation_language_codes">
+        <item>EN</item>
+        <item>DE</item>
+        <item>FR</item>
+        <item>ES</item>
+        <item>PT</item>
+        <item>IT</item>
+        <item>NL</item>
+        <item>PL</item>
+        <item>RU</item>
+        <item>JA</item>
+        <item>ZH</item>
+    </string-array>
+</resources>
+```
+
+Step 7: Create Layout Files
+
+Create app/src/main/res/layout/fragment_translation_cache.xml:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="?attr/homeAsUpIndicator" />
+    
+    <LinearLayout
+        android:id="@+id/filterContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
+        
+        <Button
+            android:id="@+id/btnAll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="All"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:layout_marginEnd="4dp"
+            style="?attr/materialButtonOutlinedStyle" />
+        
+        <Button
+            android:id="@+id/btnTitles"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Titles"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:layout_marginEnd="4dp"
+            style="?attr/materialButtonOutlinedStyle" />
+        
+        <Button
+            android:id="@+id/btnDescriptions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Descriptions"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:layout_marginEnd="4dp"
+            style="?attr/materialButtonOutlinedStyle" />
+        
+        <Button
+            android:id="@+id/btnComments"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Comments"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:layout_marginEnd="4dp"
+            style="?attr/materialButtonOutlinedStyle" />
+        
+        <Button
+            android:id="@+id/btnTags"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tags"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            style="?attr/materialButtonOutlinedStyle" />
+        
+    </LinearLayout>
+    
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/filterContainer" />
+    
+    <TextView
+        android:id="@+id/emptyView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No cached translations"
+        android:textSize="18sp"
+        android:textStyle="italic"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+Create app/src/main/res/layout/item_translation_cache.xml:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="4dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp">
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+        
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+            
+            <TextView
+                android:id="@+id/textType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+            
+            <TextView
+                android:id="@+id/textLanguage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:background="?attr/selectableItemBackground"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+            
+            <TextView
+                android:id="@+id/textVideoCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:background="?attr/selectableItemBackground"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+            
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+            
+            <TextView
+                android:id="@+id/textTimestamp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="?android:attr/textColorSecondary" />
+            
+        </LinearLayout>
+        
+        <TextView
+            android:id="@+id/textOriginal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textStyle="italic"
+            android:textColor="?android:attr/textColorSecondary"
+            android:layout_marginBottom="8dp" />
+        
+        <TextView
+            android:id="@+id/textTranslated"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+        
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+            
+            <Button
+                android:id="@+id/btnEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edit"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:layout_marginEnd="8dp"
+                style="?attr/materialButtonOutlinedStyle" />
+            
+            <Button
+                android:id="@+id/btnDelete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delete"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                style="?attr/materialButtonOutlinedStyle" />
+            
+        </LinearLayout>
+        
+    </LinearLayout>
+    
+</androidx.cardview.widget.CardView>
+```
+
+Step 8: Modify Parser to Use Translation
+
+In Parser.kt, add translation calls:
 package com.yenaly.han1meviewer.logic
 
 import android.annotation.SuppressLint
@@ -1260,3 +2734,147 @@ object Parser {
         }
     }
 }
+
+Step 9: Add Translation to ViewModels
+
+Create a wrapper for views to handle translation:
+
+Create app/src/main/java/com/yenaly/han1meviewer/ui/view/TranslatedTextView.kt:
+
+```kotlin
+package com.yenaly.han1meviewer.ui.view
+
+import android.content.Context
+import android.util.AttributeSet
+import androidx.appcompat.widget.AppCompatTextView
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import com.yenaly.han1meviewer.logic.TranslationCache
+import com.yenaly.han1meviewer.logic.TranslationManager
+import kotlinx.coroutines.launch
+
+class TranslatedTextView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : AppCompatTextView(context, attrs, defStyleAttr) {
+    
+    private var originalText: String = ""
+    private var contentType: TranslationCache.ContentType = TranslationCache.ContentType.OTHER
+    private var videoCode: String? = null
+    
+    fun setTranslatedText(
+        text: String,
+        contentType: TranslationCache.ContentType,
+        videoCode: String? = null,
+        lifecycleOwner: LifecycleOwner? = null
+    ) {
+        this.originalText = text
+        this.contentType = contentType
+        this.videoCode = videoCode
+        
+        if (lifecycleOwner != null) {
+            lifecycleOwner.lifecycleScope.launch {
+                val translationManager = TranslationManager.getInstance(context)
+                val translated = translationManager.translate(text, contentType, videoCode)
+                setText(translated)
+            }
+        } else {
+            setText(text)
+        }
+    }
+    
+    fun getOriginalText(): String = originalText
+}
+```
+add
+
+// In HanimeApplication.kt or MainActivity.kt
+Parser.initialize(this)
+Step 10: Add Menu Resources
+
+Create app/src/main/res/menu/menu_translation_cache.xml:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <item
+        android:id="@+id/action_stats"
+        android:title="Statistics"
+        android:icon="@drawable/ic_baseline_data_usage_24"
+        app:showAsAction="ifRoom" />
+    
+    <item
+        android:id="@+id/action_clear_all"
+        android:title="Clear All"
+        android:icon="@drawable/ic_baseline_clear_all_24"
+        app:showAsAction="ifRoom" />
+    
+    <item
+        android:id="@+id/action_refresh"
+        android:title="Refresh"
+        android:icon="@drawable/baseline_refresh_24"
+        app:showAsAction="ifRoom" />
+    
+</menu>
+```
+
+Step 11: Update Settings Activity
+
+Add translation settings to your SettingsActivity or router:
+
+```kotlin
+// In SettingsRouter or SettingsActivity
+.addPreferenceFragment(
+    title = "Translation",
+    fragment = TranslationSettingsFragment::class.java,
+    icon = R.drawable.ic_baseline_translate_24 // Add this icon
+)
+```
+
+Step 12: Initialize Translation Manager
+
+In your HanimeApplication.kt or main activity:
+
+```kotlin
+override fun onCreate() {
+    super.onCreate()
+    
+    // Initialize translation manager
+    TranslationManager.getInstance(this).initialize()
+}
+```
+
+Step 13: Add Migration for Existing Users
+
+Create a migration script in your database or preferences:
+
+```kotlin
+fun migrateToTranslationSettings() {
+    // Check if old translation settings exist and migrate them
+}
+```
+
+Summary of Implementation:
+
+1. Core Translation Manager (TranslationManager.kt) - Handles API calls, batching, caching, and multi-key fallback
+2. Database Layer - Room entities for caching translations
+3. Settings UI - User preferences for API keys, limits, and what to translate
+4. Cache Management UI - View, edit, delete cached translations
+5. Integration with Parser - Automatic translation during parsing
+6. Custom Views - TranslatedTextView for easy integration
+7. Statistics - Track usage per API key and content type
+
+Key Features Implemented:
+
+· Multi-API Key Support: Rotate through multiple keys with fallback
+· Smart Batching: Automatically batch texts respecting character limits
+· Caching System: Store translations locally to save API quota
+· Content Type Control: Choose what to translate (titles, descriptions, etc.)
+· Monthly Limits: Automatic reset and quota tracking
+· Cache Management: View, edit, delete cached translations
+· Statistics: Track usage and remaining quota
+
+This implementation is modular and can be easily extended. The translation happens automatically in the background, and cached translations are reused, minimizing API calls.

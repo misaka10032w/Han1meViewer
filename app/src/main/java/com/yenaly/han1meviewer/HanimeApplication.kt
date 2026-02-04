@@ -52,28 +52,41 @@ class HanimeApplication : YenalyApplication() {
 
     override fun onCreate() {
         super.onCreate()
+
         ThemeUtils.applyDarkModeFromPreferences(this)
-        if (Preferences.useDynamicColor){
+        if (Preferences.useDynamicColor) {
             DynamicColors.applyToActivitiesIfAvailable(this)
         }
+
+        TranslationManager.getInstance(this).initialize()
+        Parser.initialize(this)
+
+        appScope.launch {
+            TranslationMigrationHelper.migrateIfNeeded(this@HanimeApplication)
+        }
+
         ProxySelector.setDefault(HProxySelector())
         HProxySelector.rebuildNetwork()
+
         initFirebase()
         initNotificationChannel()
+
         MPVLib.create(applicationContext)
-        MPVLib.init()
 
         if (AnimeShaders.copyShaderAssets(applicationContext) <= 0) {
-            Log.w(TAG, "Shader 复制失败")
+            Log.w(TAG, "Shader copy failed")
         }
-        val selected = Preferences.fakeLauncherIcon
-        switchLauncher(selected)
+
+        switchLauncher(Preferences.fakeLauncherIcon)
     }
 
     private fun initFirebase() {
-        // 用于处理 Firebase Analytics 初始化
-        Firebase.analytics.setAnalyticsCollectionEnabled(Preferences.isAnalyticsEnabled)
-        // 用于处理 Firebase Crashlytics 初始化
+        // Firebase Analytics
+        Firebase.analytics.setAnalyticsCollectionEnabled(
+            Preferences.isAnalyticsEnabled
+        )
+
+        // Firebase Crashlytics
         Firebase.crashlytics.apply {
             isCrashlyticsCollectionEnabled = !BuildConfig.DEBUG
             setCustomKeys {
@@ -87,17 +100,22 @@ class HanimeApplication : YenalyApplication() {
                 )
             }
         }
-        // 用于处理 Firebase Remote Config 初始化
+
+        // Firebase Remote Config
         Firebase.remoteConfig.apply {
-            setConfigSettingsAsync(remoteConfigSettings {
-                minimumFetchIntervalInSeconds = if (BuildConfig.DEBUG) 0 else 3 * 60 * 60
-                fetchTimeoutInSeconds = 10
-            })
+            setConfigSettingsAsync(
+                remoteConfigSettings {
+                    minimumFetchIntervalInSeconds =
+                        if (BuildConfig.DEBUG) 0 else 3 * 60 * 60
+                    fetchTimeoutInSeconds = 10
+                }
+            )
             setDefaultsAsync(FirebaseConstants.remoteConfigDefaults)
             fetchAndActivate().addOnCompleteListener {
                 AppViewModel.getLatestVersion(delayMillis = 200)
             }
         }
+
         Firebase.database.setPersistenceEnabled(true)
     }
 

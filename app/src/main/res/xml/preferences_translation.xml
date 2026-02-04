@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <PreferenceCategory android:title="Translation Settings">
+        
+        <SwitchPreferenceCompat
+            android:key="enable_translation"
+            android:title="Enable Translation"
+            android:summary="Enable automatic translation using DeepL API"
+            android:defaultValue="false" />
+        
+        <EditTextPreference
+            android:key="translation_api_keys"
+            android:title="API Keys"
+            android:summary="Enter DeepL API keys (one per line)"
+            android:dialogTitle="Enter API Keys"
+            android:dialogMessage="Enter DeepL API keys, one per line. First working key will be used."
+            android:inputType="textMultiLine" />
+        
+        <EditTextPreference
+            android:key="translation_monthly_limit"
+            android:title="Monthly Character Limit"
+            android:summary="Maximum characters per month per API key"
+            android:dialogTitle="Monthly Limit"
+            android:defaultValue="500000"
+            android:inputType="number" />
+        
+        <ListPreference
+            android:key="translation_target_lang"
+            android:title="Target Language"
+            android:summary="Language to translate to"
+            android:entries="@array/translation_languages"
+            android:entryValues="@array/translation_language_codes"
+            android:defaultValue="EN" />
+        
+        <EditTextPreference
+            android:key="translation_batch_size"
+            android:title="Batch Size"
+            android:summary="Maximum characters per API request"
+            android:dialogTitle="Batch Size"
+            android:defaultValue="30000"
+            android:inputType="number" />
+        
+    </PreferenceCategory>
+    
+    <PreferenceCategory android:title="Translate Content">
+        
+        <SwitchPreferenceCompat
+            android:key="translate_titles"
+            android:title="Translate Titles"
+            android:defaultValue="true" />
+        
+        <SwitchPreferenceCompat
+            android:key="translate_descriptions"
+            android:title="Translate Descriptions"
+            android:defaultValue="true" />
+        
+        <SwitchPreferenceCompat
+            android:key="translate_comments"
+            android:title="Translate Comments"
+            android:defaultValue="true" />
+        
+        <SwitchPreferenceCompat
+            android:key="translate_tags"
+            android:title="Translate Tags"
+            android:defaultValue="true" />
+        
+    </PreferenceCategory>
+    
+    <PreferenceCategory android:title="Cache Management">
+        
+        <Preference
+            android:key="view_translation_cache"
+            android:title="View Translation Cache"
+            android:summary="Browse and manage cached translations" />
+        
+        <Preference
+            android:key="clear_translation_cache"
+            android:title="Clear All Cache"
+            android:summary="Delete all cached translations" />
+        
+        <Preference
+            android:key="clear_titles_cache"
+            android:title="Clear Titles Cache"
+            android:summary="Delete cached title translations" />
+        
+        <Preference
+            android:key="clear_descriptions_cache"
+            android:title="Clear Descriptions Cache"
+            android:summary="Delete cached description translations" />
+        
+        <Preference
+            android:key="clear_comments_cache"
+            android:title="Clear Comments Cache"
+            android:summary="Delete cached comment translations" />
+        
+        <Preference
+            android:key="clear_tags_cache"
+            android:title="Clear Tags Cache"
+            android:summary="Delete cached tag translations" />
+        
+    </PreferenceCategory>
+    
+    <PreferenceCategory android:title="Statistics">
+        
+        <Preference
+            android:key="translation_stats"
+            android:title="View Statistics"
+            android:summary="View translation usage and API key statistics" />
+        
+    </PreferenceCategory>
+    <!-- Add this after the Statistics category -->
+    <PreferenceCategory android:title="Migration & Backup">
+    
+        <Preference
+            android:key="migrate_settings"
+            android:title="Migrate Old Settings"
+            android:summary="Check for and migrate settings from previous versions"
+            android:icon="@drawable/baseline_import_export_24" />
+    
+        <Preference
+            android:key="reset_translation_settings"
+            android:title="Reset All Settings"
+            android:summary="Reset all translation settings to defaults"
+            android:icon="@drawable/baseline_restore_24" />
+    
+        <Preference
+            android:key="export_settings"
+            android:title="Export Settings"
+            android:summary="Export translation settings to backup"
+            android:icon="@drawable/baseline_backup_24" />
+    
+        <Preference
+            android:key="import_settings"
+            android:title="Import Settings"
+            android:summary="Import translation settings from backup"
+            android:icon="@drawable/baseline_upload_24" />
+    
+    </PreferenceCategory>
+    
+</PreferenceScreen>

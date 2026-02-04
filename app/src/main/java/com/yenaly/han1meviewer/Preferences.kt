@@ -274,4 +274,69 @@ object Preferences {
             )
             return SpeedLimitInterceptor.SPEED_BYTES[index]
         }
+
+    // 翻譯 相關 (Translation Settings)
+
+    /**
+     * Whether translation is enabled
+     */
+    var isTranslationEnabled: Boolean
+        get() = getSpValue(IS_TRANSLATION_ENABLED, false)
+        set(value) = putSpValue(IS_TRANSLATION_ENABLED, value)
+
+    /**
+     * DeepL API keys (set of strings)
+     */
+    var translationApiKeys: Set<String>
+        get() = getSpValue(TRANSLATION_API_KEYS, setOf<String>())
+        set(value) = putSpValue(TRANSLATION_API_KEYS, value)
+
+    /**
+     * Monthly character limit per API key
+     */
+    var translationMonthlyLimit: Int
+        get() = getSpValue(TRANSLATION_MONTHLY_LIMIT, 500000)
+        set(value) = putSpValue(TRANSLATION_MONTHLY_LIMIT, value)
+
+    /**
+     * Target language for translation (EN, DE, FR, etc.)
+     */
+    var translationTargetLang: String
+        get() = getSpValue(TRANSLATION_TARGET_LANG, "EN")
+        set(value) = putSpValue(TRANSLATION_TARGET_LANG, value)
+
+    /**
+     * Maximum characters per API request
+     */
+    var translationBatchSize: Int
+        get() = getSpValue(TRANSLATION_BATCH_SIZE, 30000)
+        set(value) = putSpValue(TRANSLATION_BATCH_SIZE, value)
+
+    /**
+     * Whether to translate titles
+     */
+    var translateTitles: Boolean
+        get() = getSpValue(TRANSLATE_TITLES, true)
+        set(value) = putSpValue(TRANSLATE_TITLES, value)
+
+    /**
+     * Whether to translate descriptions
+     */
+    var translateDescriptions: Boolean
+        get() = getSpValue(TRANSLATE_DESCRIPTIONS, true)
+        set(value) = putSpValue(TRANSLATE_DESCRIPTIONS, value)
+
+    /**
+     * Whether to translate comments
+     */
+    var translateComments: Boolean
+        get() = getSpValue(TRANSLATE_COMMENTS, true)
+        set(value) = putSpValue(TRANSLATE_COMMENTS, value)
+
+    /**
+     * Whether to translate tags
+     */
+    var translateTags: Boolean
+        get() = getSpValue(TRANSLATE_TAGS, true)
+        set(value) = putSpValue(TRANSLATE_TAGS, value)
 }

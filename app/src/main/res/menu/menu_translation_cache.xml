@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <item
+        android:id="@+id/action_stats"
+        android:title="Statistics"
+        android:icon="@drawable/ic_baseline_data_usage_24"
+        app:showAsAction="ifRoom" />
+    
+    <item
+        android:id="@+id/action_clear_all"
+        android:title="Clear All"
+        android:icon="@drawable/ic_baseline_clear_all_24"
+        app:showAsAction="ifRoom" />
+    
+    <item
+        android:id="@+id/action_refresh"
+        android:title="Refresh"
+        android:icon="@drawable/baseline_refresh_24"
+        app:showAsAction="ifRoom" />
+    
+</menu>

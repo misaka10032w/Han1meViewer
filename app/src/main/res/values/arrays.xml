@@ -1,4 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string-array name="translation_languages">
+        <item>English</item>
+        <item>German</item>
+        <item>French</item>
+        <item>Spanish</item>
+        <item>Portuguese</item>
+        <item>Italian</item>
+        <item>Dutch</item>
+        <item>Polish</item>
+        <item>Russian</item>
+        <item>Japanese</item>
+        <item>Chinese</item>
+    </string-array>
     
+    <string-array name="translation_language_codes">
+        <item>EN</item>
+        <item>DE</item>
+        <item>FR</item>
+        <item>ES</item>
+        <item>PT</item>
+        <item>IT</item>
+        <item>NL</item>
+        <item>PL</item>
+        <item>RU</item>
+        <item>JA</item>
+        <item>ZH</item>
+    </string-array>
 </resources>
