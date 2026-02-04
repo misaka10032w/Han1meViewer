@@ -1,20 +1,18 @@
 package com.yenaly.han1meviewer.logic
 
 import android.content.Context
+import android.util.Log
 import androidx.room.*
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.exception.TranslationException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONArray
 import org.json.JSONObject
-import java.io.File
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.math.min
 
 // ♧¥ separator for text blocks, { for tags
 const val TEXT_SEPARATOR = "♧¥"
@@ -82,7 +80,7 @@ abstract class TranslationDatabase : RoomDatabase() {
                     context.applicationContext,
                     TranslationDatabase::class.java,
                     "translation.db"
-                ).build().also { INSTANCE = it }
+                ).fallbackToDestructiveMigration().build().also { INSTANCE = it }
             }
         }
     }
@@ -139,42 +137,19 @@ class TranslationManager private constructor(context: Context) {
     private var translateComments = true
     private var translateTags = true
     
-    // In TranslationManager.kt, update the TranslationDatabase companion object:
     companion object {
         @Volatile
-        private var INSTANCE: TranslationDatabase? = null
-    
-        fun getInstance(context: Context): TranslationDatabase {
+        private var INSTANCE: TranslationManager? = null
+        
+        fun getInstance(context: Context): TranslationManager {
             return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: Room.databaseBuilder(
-                    context.applicationContext,
-                    TranslationDatabase::class.java,
-                    "translation.db"
-                )
-                .addMigrations(MIGRATION_1_2) // Add this line for future migrations
-                .fallbackToDestructiveMigration() // If migration fails, recreate database
-                .build().also { INSTANCE = it }
-            }
-        }
-    
-        // Example migration for future database schema changes
-        private val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                // Add new columns or tables here when you need to update the schema
-                // For now, we don't have any migrations since we're at version 1
+                INSTANCE ?: TranslationManager(context).also { INSTANCE = it }
             }
         }
     }
-
-    fun initialize() {
-        // Run migration first
-        runCatching {
-            TranslationMigrationHelper.migrateIfNeeded(context)
-        }.onFailure {
-            Log.e("TranslationManager", "Migration failed: ${it.message}")
-        }
     
-        // Then initialize from preferences
+    // Initialize from preferences
+    fun initialize() {
         val apiKeyStrings = Preferences.translationApiKeys
         apiKeys.clear()
         apiKeyStrings.forEach { key ->
@@ -189,7 +164,7 @@ class TranslationManager private constructor(context: Context) {
         translateDescriptions = Preferences.translateDescriptions
         translateComments = Preferences.translateComments
         translateTags = Preferences.translateTags
-    
+        
         // Reset monthly quotas if needed
         apiKeys.forEach { it.resetIfNeeded() }
     }

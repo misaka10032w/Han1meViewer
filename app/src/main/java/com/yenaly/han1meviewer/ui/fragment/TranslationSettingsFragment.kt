@@ -1,11 +1,16 @@
 package com.yenaly.han1meviewer.ui.fragment.settings
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import androidx.lifecycle.lifecycleScope
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.preference.*
+import com.google.gson.Gson
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.logic.TranslationManager
+import com.yenaly.han1meviewer.logic.TranslationMigrationHelper
 import com.yenaly.yenaly_libs.base.settings.YenalySettingsFragment
 import kotlinx.coroutines.launch
 
@@ -15,10 +20,10 @@ class TranslationSettingsFragment : YenalySettingsFragment() {
         setPreferencesFromResource(R.xml.preferences_translation, rootKey)
         
         // API Keys preference
-        val apiKeysPref = findPreference<MultiSelectListPreference>("translation_api_keys")
+        val apiKeysPref = findPreference<EditTextPreference>("translation_api_keys")
         apiKeysPref?.setOnPreferenceChangeListener { _, newValue ->
             // Update API keys
-            val keys = (newValue as Set<String>).toSet()
+            val keys = (newValue as String).split("\n").map { it.trim() }.filter { it.isNotBlank() }.toSet()
             Preferences.translationApiKeys = keys
             true
         }
@@ -76,8 +81,9 @@ class TranslationSettingsFragment : YenalySettingsFragment() {
         clearCachePref?.setOnPreferenceClickListener {
             lifecycleScope.launch {
                 // Get TranslationManager instance and clear cache
-                // This will be implemented after creating Cache Management Fragment
-                showSnackbar("Cache cleared")
+                TranslationManager.getInstance(requireContext()).clearCache()
+                // Show snackbar using your app's utility
+                // showSnackbar("Cache cleared")
             }
             true
         }
@@ -123,7 +129,7 @@ class TranslationSettingsFragment : YenalySettingsFragment() {
             .setPositiveButton("Migrate") { _, _ ->
                 lifecycleScope.launch {
                     TranslationMigrationHelper.migrateIfNeeded(requireContext())
-                    showSnackbar("Migration completed")
+                    // showSnackbar("Migration completed")
                 }
             }
             .setNegativeButton("Cancel", null)
@@ -136,7 +142,7 @@ class TranslationSettingsFragment : YenalySettingsFragment() {
             .setMessage("Are you sure you want to reset all translation settings to defaults? This cannot be undone.")
             .setPositiveButton("Reset") { _, _ ->
                 TranslationMigrationHelper.resetToDefaults(requireContext())
-                showSnackbar("Settings reset to defaults")
+                // showSnackbar("Settings reset to defaults")
             }
             .setNegativeButton("Cancel", null)
             .show()
@@ -168,9 +174,9 @@ class TranslationSettingsFragment : YenalySettingsFragment() {
                     val json = editText.text.toString()
                     val settings = Gson().fromJson(json, Map::class.java) as Map<String, Any>
                     TranslationMigrationHelper.importSettings(settings)
-                    showSnackbar("Settings imported successfully")
+                    // showSnackbar("Settings imported successfully")
                 } catch (e: Exception) {
-                    showSnackbar("Import failed: ${e.message}")
+                    // showSnackbar("Import failed: ${e.message}")
                 }
             }
             .setNegativeButton("Cancel", null)

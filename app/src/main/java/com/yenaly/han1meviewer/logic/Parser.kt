@@ -23,6 +23,8 @@ import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.logic.TranslationCache
+import com.yenaly.han1meviewer.logic.TranslationManager
 import com.yenaly.han1meviewer.toVideoCode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking

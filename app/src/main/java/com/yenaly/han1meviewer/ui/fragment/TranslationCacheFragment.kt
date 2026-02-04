@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.ui.fragment
 
 import android.os.Bundle
 import android.view.*
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -86,8 +87,7 @@ class TranslationCacheFragment : Fragment() {
     
     private fun loadCache() {
         lifecycleScope.launch {
-            val translationManager = TranslationManager.getInstance(requireContext())
-            translationManager.cacheDao().getAll().collectLatest { cacheList ->
+            translationManager.cacheDao.getAll().collectLatest { cacheList ->
                 adapter.submitList(cacheList)
                 binding.emptyView.isVisible = cacheList.isEmpty()
                 binding.recyclerView.isVisible = cacheList.isNotEmpty()
@@ -112,7 +112,7 @@ class TranslationCacheFragment : Fragment() {
                 
                 // Filter data
                 lifecycleScope.launch {
-                    val allCache = translationManager.cacheDao().getAll().first()
+                    val allCache = translationManager.cacheDao.getAll().first()
                     val filtered = if (contentType != null) {
                         allCache.filter { it.contentType == contentType }
                     } else {
@@ -152,7 +152,7 @@ class TranslationCacheFragment : Fragment() {
             }
             
             // Show dialog with stats
-            android.app.AlertDialog.Builder(requireContext())
+            AlertDialog.Builder(requireContext())
                 .setTitle("Translation Statistics")
                 .setMessage(message)
                 .setPositiveButton("OK", null)

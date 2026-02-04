@@ -17,11 +17,18 @@ import com.scwang.smart.refresh.footer.ClassicsFooter
 import com.scwang.smart.refresh.header.MaterialHeader
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
 import com.yenaly.han1meviewer.logic.network.HProxySelector
+import com.yenaly.han1meviewer.logic.Parser
+import com.yenaly.han1meviewer.logic.TranslationManager
+import com.yenaly.han1meviewer.logic.TranslationMigrationHelper
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.util.AnimeShaders
 import com.yenaly.han1meviewer.util.ThemeUtils
 import com.yenaly.yenaly_libs.base.YenalyApplication
 import com.yenaly.yenaly_libs.utils.LanguageHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import `is`.xyz.mpv.MPVLib
 import java.net.ProxySelector
 
@@ -44,6 +51,10 @@ class HanimeApplication : YenalyApplication() {
             }
         }
     }
+    
+    private val appScope = CoroutineScope(
+        SupervisorJob() + Dispatchers.IO
+    )
 
     /**
      * 已经在 [HInitializer] 中处理了

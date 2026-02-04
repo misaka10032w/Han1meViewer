@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.logic
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import com.yenaly.han1meviewer.Preferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -32,9 +33,9 @@ object TranslationMigrationHelper {
             // Initialize translation manager after migration
             TranslationManager.getInstance(context).initialize()
             
-            LogUtil.d("TranslationMigrationHelper", "Migration completed successfully")
+            Log.d("TranslationMigrationHelper", "Migration completed successfully")
         } catch (e: Exception) {
-            LogUtil.e("TranslationMigrationHelper", "Migration failed: ${e.message}", e)
+            Log.e("TranslationMigrationHelper", "Migration failed: ${e.message}", e)
         }
     }
     
@@ -47,7 +48,7 @@ object TranslationMigrationHelper {
             return // No old settings to migrate
         }
         
-        LogUtil.d("TranslationMigrationHelper", "Found old translation settings, migrating...")
+        Log.d("TranslationMigrationHelper", "Found old translation settings, migrating...")
         
         // Migrate enable/disable setting
         val oldEnabled = sharedPrefs.getBoolean(OLD_ENABLE_TRANSLATION, false)
@@ -76,7 +77,7 @@ object TranslationMigrationHelper {
         
         // Clear old preferences after migration
         sharedPrefs.edit().clear().apply()
-        LogUtil.d("TranslationMigrationHelper", "Old preferences cleared after migration")
+        Log.d("TranslationMigrationHelper", "Old preferences cleared after migration")
     }
     
     /**
@@ -92,7 +93,7 @@ object TranslationMigrationHelper {
         // and migrate them to the new DeepL system
         // This is just an example - adjust based on your actual implementation
         
-        LogUtil.d("TranslationMigrationHelper", "Web translation settings migration attempted")
+        Log.d("TranslationMigrationHelper", "Web translation settings migration attempted")
     }
     
     /**
