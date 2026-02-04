@@ -68,30 +68,54 @@ class CloudflareActivity : AppCompatActivity() {
             setAcceptThirdPartyCookies(webView, true)
         }
 
-        webView.webViewClient = object : WebViewClient() {
-            override fun onPageFinished(view: WebView, url: String) {
-                view.evaluateJavascript("document.head.innerHTML") { html ->
-                    if (!html.contains("#challenge-form") &&
-                        !html.contains("#challenge-success-text") &&
-                        !html.contains("#challenge-error-text")
-                    ) {
-                        val cookies = cookieManager.getCookie(url) ?: ""
-                        if (cookies.contains("cf_clearance")) {
-                            cloudFlareCookie = CookieString(cookies)
-                            Log.i("CloudflareActivity",cookies)
-                            cookieManager.flush()
-                            onFinished?.invoke()
-                            onFinished = null
-                            finish()
-                        }
-                    }
-                }
-            }
-        }
+//        webView.webViewClient = object : WebViewClient() {
+//            override fun onPageFinished(view: WebView, url: String) {
+//                Log.d("WebViewDebug", "🏁 页面加载完成: $url")
+//                view.postDelayed({
+//                    view.evaluateJavascript("document.head.innerHTML") { html ->
+//                        if (!html.contains("#challenge-form") &&
+//                            !html.contains("#challenge-success-text") &&
+//                            !html.contains("#challenge-error-text")
+//                        ) {
+//                            val cookies = cookieManager.getCookie(url) ?: ""
+//                            if (cookies.contains("cf_clearance")) {
+//                                cloudFlareCookie = CookieString(cookies)
+//                                Log.i("CloudflareActivity",cookies)
+//                                cookieManager.flush()
+//                                onFinished?.invoke()
+//                                onFinished = null
+//                                finish()
+//                            }
+//                        }
+//                    }
+//                },1000)
+//            }
+//        }
         webView.webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                Log.d("CFWebViewDebug", "加载进度: $newProgress")
                 binding.progressBar.visibility = if (newProgress < 100) View.VISIBLE else View.GONE
                 binding.progressBar.progress = newProgress
+                if (newProgress >=90){
+                    view?.postDelayed({
+                        view.evaluateJavascript("document.head.innerHTML") { html ->
+                            if (!html.contains("#challenge-form") &&
+                                !html.contains("#challenge-success-text") &&
+                                !html.contains("#challenge-error-text")
+                            ) {
+                                val cookies = cookieManager.getCookie(url) ?: ""
+                                if (cookies.contains("cf_clearance")) {
+                                    cloudFlareCookie = CookieString(cookies)
+                                    Log.i("CloudflareActivity",cookies)
+                                    cookieManager.flush()
+                                    onFinished?.invoke()
+                                    onFinished = null
+                                    finish()
+                                }
+                            }
+                        }
+                    },1000)
+                }
             }
         }
         webView.loadUrl(url)
