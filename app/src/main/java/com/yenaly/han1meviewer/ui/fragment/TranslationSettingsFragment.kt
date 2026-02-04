@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.*
 import com.google.gson.Gson
 import com.yenaly.han1meviewer.Preferences
@@ -77,7 +78,8 @@ class TranslationSettingsFragment : YenalySettingsFragment(R.xml.preferences_tra
         // Clear cache button
         val clearCachePref = findPreference<Preference>("clear_translation_cache")
         clearCachePref?.setOnPreferenceClickListener {
-            lifecycleScope.launch {
+            // Use viewLifecycleOwner.lifecycleScope which is available in Fragment
+            viewLifecycleOwner.lifecycleScope.launch {
                 // Get TranslationManager instance and clear cache
                 TranslationManager.getInstance(requireContext()).clearCache()
                 // Show snackbar using your app's utility
@@ -125,7 +127,8 @@ class TranslationSettingsFragment : YenalySettingsFragment(R.xml.preferences_tra
             .setTitle("Migrate Settings")
             .setMessage("Check for and migrate any existing translation settings from previous versions?")
             .setPositiveButton("Migrate") { _, _ ->
-                lifecycleScope.launch {
+                // Use viewLifecycleOwner.lifecycleScope which is available in Fragment
+                viewLifecycleOwner.lifecycleScope.launch {
                     TranslationMigrationHelper.migrateIfNeeded(requireContext())
                     // showSnackbar("Migration completed")
                 }
@@ -139,7 +142,8 @@ class TranslationSettingsFragment : YenalySettingsFragment(R.xml.preferences_tra
             .setTitle("Reset All Settings")
             .setMessage("Are you sure you want to reset all translation settings to defaults? This cannot be undone.")
             .setPositiveButton("Reset") { _, _ ->
-                lifecycleScope.launch {
+                // Use viewLifecycleOwner.lifecycleScope which is available in Fragment
+                viewLifecycleOwner.lifecycleScope.launch {
                     TranslationMigrationHelper.resetToDefaults(requireContext())
                     // showSnackbar("Settings reset to defaults")
                 }
