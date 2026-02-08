@@ -4,6 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_main"
     app:startDestination="@id/nv_home_page">
+    <action
+        android:id="@+id/action_global_to_video"
+        app:destination="@id/videoFragment" />
 
     <!-- 栈底：主页 -->
     <fragment
@@ -17,9 +20,6 @@
             app:destination="@id/searchFragment" />
 
         <!-- 可跳转到视频页 -->
-        <action
-            android:id="@+id/action_home_to_video"
-            app:destination="@id/videoFragment" />
         <action
             android:id="@+id/action_nv_home_page_to_nv_preview"
             app:destination="@id/nv_preview" />
@@ -54,11 +54,6 @@
         android:id="@+id/searchFragment"
         android:name="com.yenaly.han1meviewer.ui.fragment.search.SearchFragment"
         tools:layout="@layout/fragment_search">
-
-        <!-- 跳转到视频页 -->
-        <action
-            android:id="@+id/action_search_to_video"
-            app:destination="@id/videoFragment" />
     </fragment>
 
     <!-- 视频页（详情+播放器合一） -->
@@ -66,11 +61,17 @@
         android:id="@+id/videoFragment"
         android:name="com.yenaly.han1meviewer.ui.fragment.video.VideoFragment"
         tools:layout="@layout/fragment_video">
+        <argument
+            android:name="video_code"
+            app:argType="string" />
 
         <!-- 需要时跳转回搜索页 -->
         <action
             android:id="@+id/action_video_to_search"
             app:destination="@id/searchFragment" />
+        <action
+            android:id="@+id/action_video_to_home"
+            app:destination="@id/nv_home_page" />
     </fragment>
 
     <!-- 其他页面（按需添加） -->

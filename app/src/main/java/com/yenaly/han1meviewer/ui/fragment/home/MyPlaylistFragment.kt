@@ -30,6 +30,7 @@ import com.yenaly.han1meviewer.ui.adapter.PlaylistRvAdapter
 import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
 import com.yenaly.han1meviewer.ui.fragment.LoginNeededFragmentMixin
 import com.yenaly.han1meviewer.ui.viewmodel.MyListViewModel
+import com.yenaly.han1meviewer.util.openVideo
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.base.YenalyFragment
 import com.yenaly.yenaly_libs.utils.showShortToast
@@ -75,7 +76,7 @@ class MyPlaylistFragment : YenalyFragment<FragmentPlaylistBinding>(),
         }
         get() = viewModel.playlist.playlistDesc
 
-    private val adapter by unsafeLazy { HanimeMyListVideoAdapter() }
+    private val adapter by unsafeLazy { HanimeMyListVideoAdapter(onItemClick = { item -> openVideo(item.videoCode) }) }
     private val playlistsAdapter by unsafeLazy { PlaylistRvAdapter(this) }
 
     /**
@@ -121,7 +122,7 @@ class MyPlaylistFragment : YenalyFragment<FragmentPlaylistBinding>(),
 
 
         adapter.setOnItemLongClickListener { _, _, position ->
-            val item = adapter.getItem(position) ?: return@setOnItemLongClickListener true
+            val item = adapter.getItem(position)
             requireContext().showAlertDialog {
                 setTitle(R.string.delete_playlist)
                 setMessage(getString(R.string.sure_to_delete_s, item.title))

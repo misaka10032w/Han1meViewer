@@ -17,6 +17,7 @@ plugins {
     alias(libs.plugins.com.google.firebase.crashlytics)
     alias(libs.plugins.com.google.firebase.firebase.pref)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.navigation.safeargs)
     id("com.mikepenz.aboutlibraries.plugin") version "12.2.4"
     id("com.github.ben-manes.versions") version "0.52.0"
 }

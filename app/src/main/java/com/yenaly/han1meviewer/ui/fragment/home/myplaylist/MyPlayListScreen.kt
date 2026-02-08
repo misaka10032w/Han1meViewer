@@ -261,7 +261,12 @@ fun MyPlayListScreen(
                         viewModel.clearCurrentList()
                                 },
                     playListTitle = listTitle.value,
-                    onClickItem = onClickItem ,
+                    onClickItem = { item ->
+                        onClickItem(item)
+                        viewModel.setShowSheet(false)
+                        viewModel.currentPage = 1
+                        viewModel.clearCurrentList()
+                                  } ,
                     onLongClickItem = onLongClickItem,
                     vm = viewModel,
                     context = context

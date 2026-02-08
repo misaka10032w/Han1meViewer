@@ -13,11 +13,11 @@ import android.util.Log
 import android.util.Rational
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.activity.OnBackPressedCallback
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -28,6 +28,7 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.preference.PreferenceManager
 import cn.jzvd.JZMediaInterface
 import cn.jzvd.Jzvd
@@ -52,6 +53,7 @@ import com.yenaly.han1meviewer.logic.exception.ParseException
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.view.video.ExoMediaKernel
+import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
 import com.yenaly.han1meviewer.ui.view.video.HMediaKernel
 import com.yenaly.han1meviewer.ui.view.video.HanimeDataSource
 import com.yenaly.han1meviewer.ui.view.video.VideoPlayerAppBarBehavior
@@ -80,7 +82,14 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
     private val kernel = HMediaKernel.Type.fromString(Preferences.switchPlayerKernel)
 
     private val fromDownload by lazy { requireArguments().getBoolean(FROM_DOWNLOAD, false) }
-    private val videoCode by lazy { requireArguments().getString(VIDEO_CODE) ?: error("Missing video code") }
+    private val navArgs: VideoFragmentArgs by navArgs()
+    private val videoCode by lazy {
+        try {
+            navArgs.videoCode.takeIf { it.isNotBlank() }
+        } catch (_: Exception) {
+            null
+        } ?: requireArguments().getString(VIDEO_CODE) ?: error("Missing video code")
+    }
     private val videoUri by lazy { requireArguments().getString("LOCAL_URI") }
     private var videoTitle: String? = null
     private lateinit var orientationManager: OrientationManager
@@ -88,10 +97,12 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
     private val tabNameArray by lazy {
         checkBadGuy(requireContext(),R.raw.akarin)
     }
-    companion object {
-        fun newInstance(videoCode: String): VideoFragment {
-            return VideoFragment().apply {
-                arguments = bundleOf(VIDEO_CODE to videoCode)
+    private val jzBackCallback = object : OnBackPressedCallback(false) {
+
+        override fun handleOnBackPressed() {
+            if (!Jzvd.backPress()) {
+                isEnabled = false
+                requireActivity().onBackPressedDispatcher.onBackPressed()
             }
         }
     }
@@ -125,18 +136,10 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         viewModel.getHanimeVideo(videoCode, videoUri)
         Log.i("video_ui", "initData: $videoCode")
 
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner,
-            object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (Jzvd.backPress()) {
-                    // 由backPress()处理，无内部逻辑
-                } else {
-                    // 没处理，交由系统默认行为
-                    isEnabled = false
-                    requireActivity().onBackPressedDispatcher.onBackPressed()
-                }
-            }
-        })
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            jzBackCallback
+        )
 
         // #217 修复加入折叠播放器功能后导致的pager高度测量问题引起子fragment下端溢出250dp（播放器高度）导致的回复
         // 评论按钮和至少一条底端评论不可见的问题
@@ -159,6 +162,16 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
                 Jzvd.STATE_PAUSE, Jzvd.STATE_AUTO_COMPLETE ->{
                     behavior.disableScroll = false
                 }
+            }
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.videoPlayer.fullscreenListener = object : HJzvdStd.FullscreenListener {
+            override fun onFullscreenChanged(isFullscreen: Boolean) {
+                jzBackCallback.isEnabled = isFullscreen
+                Log.i("JZVD screen state",isFullscreen.toString())
             }
         }
     }

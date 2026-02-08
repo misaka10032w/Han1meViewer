@@ -76,6 +76,7 @@ import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
 import com.yenaly.han1meviewer.util.addUpdateListener
 import com.yenaly.han1meviewer.util.checkBadGuy
 import com.yenaly.han1meviewer.util.colorTransition
+import com.yenaly.han1meviewer.util.openVideo
 import com.yenaly.yenaly_libs.base.YenalyFragment
 import com.yenaly.yenaly_libs.utils.application
 import com.yenaly.yenaly_libs.utils.getSpValue
@@ -104,19 +105,19 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
 
     val viewModel by activityViewModels<MainViewModel>()
     val checkInViewModel by activityViewModels<CheckInCalendarViewModel>()
-    private val latestHanimeAdapter = HanimeVideoRvAdapter()
-    private val latestReleaseAdapter = HanimeVideoRvAdapter()
-    private val ecchiAnimeAdapter = HanimeVideoRvAdapter()
-    private val shortEpisodeAnimeAdapter = HanimeVideoRvAdapter()
-    private val twoPointFiveDAdapter = HanimeVideoRvAdapter()
-    private val threeDCGAdapter = HanimeVideoRvAdapter()
-    private val motionAnimeAdapter = HanimeVideoRvAdapter()
-    private val twoDAnimeAdapter = HanimeVideoRvAdapter()
-    private val aiGeneratedAdapter = HanimeVideoRvAdapter()
-    private val mmdAdapter = HanimeVideoRvAdapter()
-    private val cosplayAdapter = HanimeVideoRvAdapter()
-    private val watchingNowAdapter = HanimeVideoRvAdapter()
-    private val newAnimeTrailerAdapter = HanimeVideoRvAdapter()
+    private val latestHanimeAdapter = HanimeVideoRvAdapter(onItemClick = { item -> openVideo(item.videoCode) })
+    private val latestReleaseAdapter = HanimeVideoRvAdapter(onItemClick = { item -> openVideo(item.videoCode) })
+    private val ecchiAnimeAdapter = HanimeVideoRvAdapter(onItemClick = { item -> openVideo(item.videoCode) })
+    private val shortEpisodeAnimeAdapter = HanimeVideoRvAdapter(onItemClick = { item -> openVideo(item.videoCode) })
+    private val twoPointFiveDAdapter = HanimeVideoRvAdapter(onItemClick = { item -> openVideo(item.videoCode) })
+    private val threeDCGAdapter = HanimeVideoRvAdapter(onItemClick = { item -> openVideo(item.videoCode) })
+    private val motionAnimeAdapter = HanimeVideoRvAdapter(onItemClick = { item -> openVideo(item.videoCode) })
+    private val twoDAnimeAdapter = HanimeVideoRvAdapter(onItemClick = { item -> openVideo(item.videoCode) })
+    private val aiGeneratedAdapter = HanimeVideoRvAdapter(onItemClick = { item -> openVideo(item.videoCode) })
+    private val mmdAdapter = HanimeVideoRvAdapter(onItemClick = { item -> openVideo(item.videoCode) })
+    private val cosplayAdapter = HanimeVideoRvAdapter(onItemClick = { item -> openVideo(item.videoCode) })
+    private val watchingNowAdapter = HanimeVideoRvAdapter(onItemClick = { item -> openVideo(item.videoCode) })
+    private val newAnimeTrailerAdapter = HanimeVideoRvAdapter(onItemClick = { item -> openVideo(item.videoCode) })
     private val someFunnyTouchListener = FunnyTouchListener(application) {
         showShortToast("WTF?")
     }
@@ -632,7 +633,7 @@ class HomePageFragment : YenalyFragment<FragmentHomePageBinding>(),
             binding.btnBanner.isEnabled = banner.videoCode != null
             binding.btnBanner.setOnClickListener {
                 banner.videoCode?.let { videoCode ->
-                    (requireActivity() as? MainActivity)?.showVideoDetailFragment(videoCode)
+                    openVideo(videoCode)
                 }
             }
         }

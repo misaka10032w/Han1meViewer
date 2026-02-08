@@ -1,6 +1,5 @@
 package com.yenaly.han1meviewer.ui.fragment.home.subscription
 
-import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween

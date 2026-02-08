@@ -2,10 +2,7 @@
 # Plugins
 aboutlibraries = "13.2.1"
 androidGradle = "8.11.2"
-barcodeScanning = "17.3.0"
 biometric = "1.1.0"
-cameraCore = "1.5.2"
-cameraCamera2 = "1.5.2"
 coilCompose = "3.3.0"
 coreSplashscreen = "1.2.0"
 kotlin = "2.2.20"
@@ -13,6 +10,7 @@ materialIconsCore = "1.7.8"
 serializationPlugin = "2.2.0"
 ksp = "2.2.20-2.0.3"
 drawerlayout = "1.2.0"
+safeargs = "2.9.4"
 # Dependencies
 about = "2.5.2"
 coreKtx = "1.17.0"
@@ -73,17 +71,12 @@ mpv = "v0.1.7"
 aboutlibraries = { module = "com.mikepenz:aboutlibraries", version.ref = "aboutlibraries" }
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutlibraries" }
 androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
-androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCamera2" }
-androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "cameraCore" }
-androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "cameraCore" }
-androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraCore" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "materialIconsCore" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation" }
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 androidx-window = { module = "androidx.window:window", version.ref = "window" }
 androidx-window-java = { module = "androidx.window:window-java", version.ref = "windowJava" }
-barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "barcodeScanning" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilCompose" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -200,3 +193,4 @@ com-google-gms-google-services = { id = "com.google.gms.google-services", versio
 com-google-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version = "3.0.6" }
 com-google-firebase-firebase-pref = { id = "com.google.firebase.firebase-perf", version = "2.0.2" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+navigation-safeargs = { id = "androidx.navigation.safeargs.kotlin", version.ref = "safeargs" }

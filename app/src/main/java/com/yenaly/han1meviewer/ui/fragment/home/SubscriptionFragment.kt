@@ -13,13 +13,13 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.transition.MaterialSharedAxis
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.getHanimeSearchShareText
 import com.yenaly.han1meviewer.getHanimeShareText
 import com.yenaly.han1meviewer.ui.fragment.LoginNeededFragmentMixin
 import com.yenaly.han1meviewer.ui.fragment.home.subscription.SubscriptionApp
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.MySubscriptionsViewModel
+import com.yenaly.han1meviewer.util.openVideo
 import com.yenaly.yenaly_libs.utils.copyTextToClipboard
 import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.launch
@@ -29,12 +29,10 @@ class SubscriptionFragment : Fragment(), LoginNeededFragmentMixin {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         checkLogin()
-        enterTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
-            duration = 500L
-        }
-        returnTransition = MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
-            duration = 500L
-        }
+        exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, /* forward= */ true)
+        reenterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, /* forward= */ false)
+        enterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, /* forward= */ true)
+        returnTransition = MaterialSharedAxis(MaterialSharedAxis.Z, /* forward= */ false)
     }
 
     override fun onCreateView(
@@ -58,7 +56,7 @@ class SubscriptionFragment : Fragment(), LoginNeededFragmentMixin {
                             showShortToast(R.string.copy_to_clipboard)
                         },
                         onClickVideosItem = { videoCode ->
-                            navigateToVideo(videoCode)
+                            openVideo(videoCode)
                         },
                         onLongClickVideosItem = { videoCode, title ->
                             copyTextToClipboard(getHanimeShareText(title, videoCode))
@@ -74,11 +72,6 @@ class SubscriptionFragment : Fragment(), LoginNeededFragmentMixin {
     private fun navigateToSearch(artistName: String) {
         val bundle = bundleOf(ADVANCED_SEARCH_MAP to artistName)
         findNavController().navigate(R.id.searchFragment, bundle)
-    }
-
-    private fun navigateToVideo(videoCode: String) {
-        val bundle = bundleOf(VIDEO_CODE to videoCode)
-        findNavController().navigate(R.id.videoFragment, bundle)
     }
 }
 

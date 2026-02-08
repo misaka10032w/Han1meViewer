@@ -16,16 +16,14 @@ import com.itxca.spannablex.spannable
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VideoCoverSize
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
-import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.yenaly_libs.utils.dp
-import com.yenaly.yenaly_libs.utils.requireActivity
 
 /**
  * @project Han1meViewer
  * @author Yenaly Liew
  * @time 2023/11/26 026 16:38
  */
-class HanimeMyListVideoAdapter : BaseQuickAdapter<HanimeInfo, QuickViewHolder>(COMPARATOR) {
+class HanimeMyListVideoAdapter(val onItemClick: (HanimeInfo) -> Unit) : BaseQuickAdapter<HanimeInfo, QuickViewHolder>(COMPARATOR) {
 
     init {
         isStateViewEnable = true
@@ -109,10 +107,8 @@ class HanimeMyListVideoAdapter : BaseQuickAdapter<HanimeInfo, QuickViewHolder>(C
             viewHolder.itemView.apply {
                 setOnClickListener {
                     val position = viewHolder.bindingAdapterPosition
-                    val item = getItem(position) ?: return@setOnClickListener
-                    val videoCode = item.videoCode
-                    //context.activity?.startActivity<VideoActivity>(VIDEO_CODE to videoCode)
-                    context.startVideoActivity(videoCode)
+                    val item = getItem(position)
+                    onItemClick(item)
                 }
                 // setOnLongClickListener 由各自的 Fragment 实现
             }
@@ -120,8 +116,5 @@ class HanimeMyListVideoAdapter : BaseQuickAdapter<HanimeInfo, QuickViewHolder>(C
                 viewHolder.getView<ViewGroup>(R.id.cover_wrapper).resizeForVideoCover()
             }
         }
-    }
-    private fun Context.startVideoActivity(videoCode: String) {
-        (requireActivity() as? MainActivity)?.showVideoDetailFragment(videoCode)
     }
 }

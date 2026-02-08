@@ -28,12 +28,10 @@ abstract class YenalySettingsFragment(@param:XmlRes private val xmlRes: Int,
         initPreferencesVariable()
         onPreferencesCreated(savedInstanceState)
         bindDataObservers()
-        enterTransition = MaterialSharedAxis(MaterialSharedAxis.X, true).apply {
-            duration = 500L
-        }
-        returnTransition = MaterialSharedAxis(MaterialSharedAxis.X, false).apply {
-            duration = 500L
-        }
+        exitTransition = MaterialSharedAxis(MaterialSharedAxis.Z, /* forward= */ true)
+        reenterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, /* forward= */ false)
+        enterTransition = MaterialSharedAxis(MaterialSharedAxis.Z, /* forward= */ true)
+        returnTransition = MaterialSharedAxis(MaterialSharedAxis.Z, /* forward= */ false)
     }
 
     override fun setDivider(divider: Drawable?) {

@@ -9,10 +9,8 @@ import com.chad.library.adapter4.viewholder.DataBindingHolder
 import com.yenaly.han1meviewer.LOCAL_DATE_TIME_FORMAT
 import com.yenaly.han1meviewer.databinding.ItemWatchHistoryBinding
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
-import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.util.HImageMeower
 import com.yenaly.han1meviewer.util.HImageMeower.loadUnhappily
-import com.yenaly.yenaly_libs.utils.requireActivity
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
 import kotlinx.datetime.toLocalDateTime
@@ -23,7 +21,7 @@ import kotlin.time.ExperimentalTime
  * @author Yenaly Liew
  * @time 2023/11/26 026 15:35
  */
-class WatchHistoryRvAdapter :
+class WatchHistoryRvAdapter(val onItemClick: (String) -> Unit) :
     BaseQuickAdapter<WatchHistoryEntity, DataBindingHolder<ItemWatchHistoryBinding>>(COMPARATOR) {
 
     init {
@@ -79,16 +77,12 @@ class WatchHistoryRvAdapter :
             viewHolder.itemView.apply {
                 setOnClickListener {
                     val position = viewHolder.bindingAdapterPosition
-                    val item = getItem(position) ?: return@setOnClickListener
+                    val item = getItem(position)
                     val videoCode = item.videoCode
-                   // context.activity?.startActivity<VideoActivity>(VIDEO_CODE to videoCode)
-                    context.startVideoActivity(videoCode)
+                    onItemClick(videoCode)
                 }
                 // setOnLongClickListener 由各自的 Fragment 实现
             }
         }
-    }
-    private fun Context.startVideoActivity(videoCode: String) {
-        (requireActivity() as? MainActivity)?.showVideoDetailFragment(videoCode)
     }
 }
