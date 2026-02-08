@@ -524,4 +524,8 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="delete_group">グループ削除</string>
     <string name="delete_group_confirm">グループ「%1$s」を削除してもよろしいですか？このグループの動画はデフォルトグループに移動されます。</string>
     <string name="ai_generated">AI生成</string>
+    <string name="current_webview_version">\n\n📊 現在のWebViewバージョン: %s</string>
+    <string name="webview_version_too_low">\n⚠️ WebViewバージョンが低すぎます。認証に失敗する可能性があります。推奨バージョンは120.x.x.x以上です</string>
+    <string name="webview_version_unknown">\n⚠️ WebViewバージョンを識別できません</string>
+    <string name="version_check_failed">\n⚠️ バージョンチェック失敗</string>
 </resources>

@@ -519,4 +519,8 @@ Recommendations are as follows:\n
     <string name="delete_group">Delete Group</string>
     <string name="delete_group_confirm">Are you sure you want to delete the group \"%1$s\"? Videos in this group will be moved to default group.</string>
     <string name="ai_generated">AI Generated</string>
+    <string name="current_webview_version">\n\n📊 Current WebView version: %s</string>
+    <string name="webview_version_too_low">\n⚠️ WebView version is too low, verification may fail, recommended version is 120.x.x.x or above</string>
+    <string name="webview_version_unknown">\n⚠️ Unable to identify WebView version</string>
+    <string name="version_check_failed">\n⚠️ Version check failed</string>
 </resources>
