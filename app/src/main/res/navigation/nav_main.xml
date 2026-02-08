@@ -118,6 +118,5 @@
         app:destination="@id/hKeyframeSettingsFragment" />
     <fragment
         android:id="@+id/myPlayListFragmentV2"
-        android:name="com.yenaly.han1meviewer.ui.fragment.home.MyPlayListFragmentV2"
-        android:label="MyPlayListFragmentV2" />
+        android:name="com.yenaly.han1meviewer.ui.fragment.home.MyPlayListFragmentV2" />
 </navigation>

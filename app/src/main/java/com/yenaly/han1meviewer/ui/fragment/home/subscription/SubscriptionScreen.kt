@@ -396,7 +396,7 @@ fun SubscriptionAppPreviewBody() {
             ),
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("我的订阅") },
+                title = { Text(stringResource(R.string.my_subscribe)) },
                 navigationIcon = {
                     IconButton(onClick = {}) {
                         Icon(
