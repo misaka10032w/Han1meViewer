@@ -17,6 +17,7 @@ plugins {
     alias(libs.plugins.com.google.firebase.crashlytics)
     alias(libs.plugins.com.google.firebase.firebase.pref)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.navigation.safeargs)
     id("com.mikepenz.aboutlibraries.plugin") version "12.2.4"
     id("com.github.ben-manes.versions") version "0.52.0"
 }
@@ -37,7 +38,7 @@ android {
         applicationId = "com.yenaly.han1meviewer"
         minSdk = property("min.sdk")?.toString()?.toIntOrNull()
         targetSdk = property("target.sdk")?.toString()?.toIntOrNull()
-        val (code, name) = createVersion(major = 0, minor = 23, patch = 2)
+        val (code, name) = createVersion(major = 0, minor = 23, patch = 5)
         versionCode = code
         versionName = name
 

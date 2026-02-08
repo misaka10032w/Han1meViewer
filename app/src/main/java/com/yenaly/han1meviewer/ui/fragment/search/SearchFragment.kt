@@ -37,6 +37,7 @@ import com.yenaly.han1meviewer.ui.adapter.HanimeVideoRvAdapter
 import com.yenaly.han1meviewer.ui.viewmodel.SearchViewModel
 import com.yenaly.han1meviewer.util.getSha
 import com.yenaly.han1meviewer.util.isLegalBuild
+import com.yenaly.han1meviewer.util.openVideo
 import com.yenaly.yenaly_libs.base.YenalyFragment
 import com.yenaly.yenaly_libs.utils.dp
 import com.yenaly.yenaly_libs.utils.unsafeLazy
@@ -59,7 +60,14 @@ class SearchFragment : YenalyFragment<FragmentSearchBinding>(), StateLayoutMixin
     val viewModel by viewModels<SearchViewModel>()
     private var hasAdapterLoaded = false
 
-    private val searchAdapter by unsafeLazy { HanimeVideoRvAdapter() }
+
+    private val searchAdapter by unsafeLazy {
+        HanimeVideoRvAdapter(
+            onItemClick = { item ->
+                openVideo(item.videoCode)
+            }
+        )
+    }
     private val historyAdapter by unsafeLazy { HanimeSearchHistoryRvAdapter() }
     private var hasInitAdvancedSearch = false
     private var observersBound = false

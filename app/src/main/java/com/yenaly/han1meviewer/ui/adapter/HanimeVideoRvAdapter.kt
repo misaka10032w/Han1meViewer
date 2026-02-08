@@ -28,7 +28,6 @@ import com.yenaly.han1meviewer.ui.fragment.search.SearchFragment
 import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.yenaly_libs.utils.copyTextToClipboard
 import com.yenaly.yenaly_libs.utils.dp
-import com.yenaly.yenaly_libs.utils.requireActivity
 import com.yenaly.yenaly_libs.utils.showShortToast
 
 /**
@@ -38,7 +37,8 @@ import com.yenaly.yenaly_libs.utils.showShortToast
  */
 class HanimeVideoRvAdapter(
     private val videoWidthType: Int = -1,
-    private val hostFragment: Fragment? = null
+    private val hostFragment: Fragment? = null,
+    val onItemClick: (HanimeInfo) -> Unit
 ) : // videoWidthType is VIDEO_LAYOUT_MATCH_PARENT or VIDEO_LAYOUT_WRAP_CONTENT or nothing
     BaseQuickAdapter<HanimeInfo, QuickViewHolder>(COMPARATOR) {
 
@@ -188,17 +188,16 @@ class HanimeVideoRvAdapter(
                 if (hostFragment  !is PreviewFragment) {
                     setOnClickListener {
                         val position = viewHolder.bindingAdapterPosition
-                        val item = getItem(position) ?: return@setOnClickListener
+                        val item = getItem(position)
                         if (item.isPlaying) {
                             showShortToast(R.string.watching_this_video_now)
                         } else {
-                            val videoCode = item.videoCode
-                            context.startVideoActivity(videoCode)
+                            onItemClick(item)
                         }
                     }
                     setOnLongClickListener {
                         val position = viewHolder.bindingAdapterPosition
-                        val item = getItem(position) ?: return@setOnLongClickListener true
+                        val item = getItem(position)
                         copyTextToClipboard(getHanimeShareText(item.title, item.videoCode))
                         showShortToast(R.string.copy_to_clipboard)
                         return@setOnLongClickListener true
@@ -227,9 +226,4 @@ class HanimeVideoRvAdapter(
             lp.height = ViewGroup.LayoutParams.WRAP_CONTENT
             layoutParams = lp
         }
-
-    private fun Context.startVideoActivity(videoCode: String) {
-        (requireActivity() as? MainActivity)?.showVideoDetailFragment(videoCode)
-    }
-
 }

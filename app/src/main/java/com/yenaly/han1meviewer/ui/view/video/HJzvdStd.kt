@@ -78,7 +78,10 @@ class HJzvdStd @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
 ) : JzvdStd(context, attrs), OnLongClickListener {
-
+    interface FullscreenListener {
+        fun onFullscreenChanged(isFullscreen: Boolean)
+    }
+    var fullscreenListener: FullscreenListener? = null
     companion object {
         // 相當於重寫了
         /**
@@ -276,7 +279,7 @@ class HJzvdStd @JvmOverloads constructor(
         }
         HKeyframeRvAdapter(videoCode).apply {
             setOnItemClickListener { _, _, position ->
-                val keyframe = getItem(position) ?: return@setOnItemClickListener
+                val keyframe = getItem(position)
                 mediaInterface?.seekTo(keyframe.position)
                 startProgressTimer()
             }
@@ -807,6 +810,7 @@ class HJzvdStd @JvmOverloads constructor(
 
     override fun gotoNormalScreen() {
         gobakFullscreenTime = System.currentTimeMillis() // 退出全屏时间
+        fullscreenListener?.onFullscreenChanged(false)
         Log.i(TAG,"${isAdjustBrightness}、${screenBrightnessBK}、${JZUtils.getWindow(context).attributes.screenBrightness}")
         if (isAdjustBrightness) {
             val window = JZUtils.getWindow(context)
@@ -852,6 +856,7 @@ class HJzvdStd @JvmOverloads constructor(
 
     override fun gotoFullscreen() {
         gotoFullscreenTime = System.currentTimeMillis()
+        fullscreenListener?.onFullscreenChanged(true)
         val vg = parent as? ViewGroup ?: return
         val activity = JZUtils.scanForActivity(jzvdContext)
         jzvdContext = vg.context

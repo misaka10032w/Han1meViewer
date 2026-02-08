@@ -52,9 +52,10 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.Playlists
 import com.yenaly.han1meviewer.logic.state.WebsiteState
@@ -130,14 +131,7 @@ fun MyPlayListScreen(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface
                 ),
-                title = {
-                    Text(
-                        stringResource(R.string.my_list),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                },
+                title = { Text(stringResource(R.string.my_list)) },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
                         Icon(
@@ -261,7 +255,12 @@ fun MyPlayListScreen(
                         viewModel.clearCurrentList()
                                 },
                     playListTitle = listTitle.value,
-                    onClickItem = onClickItem ,
+                    onClickItem = { item ->
+                        onClickItem(item)
+                        viewModel.setShowSheet(false)
+                        viewModel.currentPage = 1
+                        viewModel.clearCurrentList()
+                                  } ,
                     onLongClickItem = onLongClickItem,
                     vm = viewModel,
                     context = context
@@ -329,4 +328,16 @@ fun AnimatedPageContent(
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun MyPlaylistScreenPreview(){
+    MyPlayListScreen(
+        viewModel = viewModel(),
+        onClickItem = {},
+        onLongClickItem = {_,_->
+        },
+        navigateBack = {}
+    )
 }

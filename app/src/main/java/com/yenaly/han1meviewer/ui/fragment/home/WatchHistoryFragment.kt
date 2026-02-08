@@ -16,6 +16,7 @@ import com.yenaly.han1meviewer.ui.adapter.WatchHistoryRvAdapter
 import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
 import com.yenaly.han1meviewer.util.checkBadGuy
+import com.yenaly.han1meviewer.util.openVideo
 import com.yenaly.han1meviewer.util.setStateViewLayout
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.base.YenalyFragment
@@ -32,7 +33,7 @@ class WatchHistoryFragment : YenalyFragment<FragmentPageListBinding>(),
 
     val viewModel by activityViewModels<MainViewModel>()
 
-    private val historyAdapter by unsafeLazy { WatchHistoryRvAdapter() }
+    private val historyAdapter by unsafeLazy { WatchHistoryRvAdapter( onItemClick = { item -> openVideo(item) }) }
 
     override fun getViewBinding(
         inflater: LayoutInflater,
@@ -60,7 +61,7 @@ class WatchHistoryFragment : YenalyFragment<FragmentPageListBinding>(),
         }
         historyAdapter.setStateViewLayout(R.layout.layout_empty_view)
         historyAdapter.setOnItemLongClickListener { _, _, position ->
-            val data = historyAdapter.getItem(position) ?: return@setOnItemLongClickListener true
+            val data = historyAdapter.getItem(position)
             requireContext().showAlertDialog {
                 setTitle(R.string.delete_history)
                 setMessage(getString(R.string.sure_to_delete_s, data.title))

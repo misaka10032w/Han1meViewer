@@ -71,6 +71,7 @@ import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
 import com.yenaly.han1meviewer.ui.fragment.PlaylistBottomSheetFragment
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.loadAssetAs
+import com.yenaly.han1meviewer.util.openVideo
 import com.yenaly.han1meviewer.util.requestPostNotificationPermission
 import com.yenaly.han1meviewer.util.setDrawableTop
 import com.yenaly.han1meviewer.util.showAlertDialog
@@ -138,7 +139,7 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
     private val playlistTitleAdapter by lazy {
         VideoColumnTitleAdapter(requireContext(),title = R.string.series_video, notifyWhenSet = true)
     }
-    private val playlistAdapter = HanimeVideoRvAdapter(VIDEO_LAYOUT_WRAP_CONTENT)
+    private val playlistAdapter = HanimeVideoRvAdapter(VIDEO_LAYOUT_WRAP_CONTENT){item -> openVideo(item.videoCode)}
     private val playlistWrapper = playlistAdapter
         .wrappedWith { LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false) }
         .apply {
@@ -153,7 +154,7 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
     private val relatedTitleAdapter by lazy {
         VideoColumnTitleAdapter(requireContext(),title = R.string.related_video)
     }
-    private val relatedAdapter = HanimeVideoRvAdapter(VIDEO_LAYOUT_MATCH_PARENT)
+    private val relatedAdapter = HanimeVideoRvAdapter(VIDEO_LAYOUT_MATCH_PARENT){item -> openVideo(item.videoCode)}
 
     private var multi = ConcatAdapter()
 

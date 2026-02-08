@@ -15,6 +15,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.adapter.HanimeVideoRvAdapter
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.calculateSpanCount
+import com.yenaly.han1meviewer.util.openVideo
 
 class PlaylistBottomSheetFragment : BottomSheetDialogFragment() {
     companion object {
@@ -46,7 +47,10 @@ class PlaylistBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        adapter = HanimeVideoRvAdapter()
+        adapter = HanimeVideoRvAdapter(onItemClick = { item ->
+            openVideo(item.videoCode)
+            dismiss()
+        })
         val recyclerView = view.findViewById<RecyclerView>(R.id.rv_vertical_list)
         val countText = view.findViewById<TextView>(R.id.video_count)
         recyclerView.adapter = adapter

@@ -16,14 +16,13 @@ import com.yenaly.han1meviewer.logic.model.HanimePreview
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.popup.CoilImageLoader
 import com.yenaly.han1meviewer.ui.view.BlurTransformation
-import com.yenaly.yenaly_libs.utils.requireActivity
 
 /**
  * @project Han1meViewer
  * @author Yenaly Liew
  * @time 2023/11/26 026 16:48
  */
-class HanimePreviewNewsRvAdapter :
+class HanimePreviewNewsRvAdapter(val onItemClick: (String) -> Unit) :
     BaseQuickAdapter<HanimePreview.PreviewInfo, DataBindingHolder<ItemHanimePreviewNewsV2Binding>>() {
 
     init {
@@ -71,19 +70,15 @@ class HanimePreviewNewsRvAdapter :
             viewHolder.itemView.apply {
                 setOnClickListener {
                     val position = viewHolder.bindingAdapterPosition
-                    val item = getItem(position) ?: return@setOnClickListener
+                    val item = getItem(position)
                     if (context is MainActivity) {
-                        item.videoCode?.let { it1 ->
-                            context.startVideoFragment(it1)
+                        item.videoCode?.let { videoCode ->
+                            onItemClick(videoCode)
                         }
                     }
                 }
             }
         }
-    }
-
-    private fun Context.startVideoFragment(videoCode: String) {
-        (requireActivity() as? MainActivity)?.showVideoDetailFragment(videoCode)
     }
 
     private inner class PreviewPicRvAdapter(private val item: HanimePreview.PreviewInfo) :

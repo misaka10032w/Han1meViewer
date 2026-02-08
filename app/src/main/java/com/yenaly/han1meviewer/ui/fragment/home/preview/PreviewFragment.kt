@@ -52,6 +52,7 @@ import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
 import com.yenaly.han1meviewer.ui.viewmodel.PreviewViewModel
 import com.yenaly.han1meviewer.util.addUpdateListener
 import com.yenaly.han1meviewer.util.colorTransition
+import com.yenaly.han1meviewer.util.openVideo
 import com.yenaly.han1meviewer.util.toColorStateList
 import com.yenaly.yenaly_libs.base.YenalyFragment
 import com.yenaly.yenaly_libs.utils.appScreenWidth
@@ -103,7 +104,7 @@ class PreviewFragment : YenalyFragment<FragmentPreviewBinding>() {
             com.google.android.material.R.attr.colorOnPrimary,
             Color.WHITE
         )
-    private val newsAdapter = HanimePreviewNewsRvAdapter()
+    private val newsAdapter = HanimePreviewNewsRvAdapter(onItemClick = { item -> openVideo(item) })
 
     override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentPreviewBinding =
         FragmentPreviewBinding.inflate(inflater, container, false)
@@ -337,7 +338,7 @@ class PreviewFragment : YenalyFragment<FragmentPreviewBinding>() {
     }
 
     private fun handleToolbarColor(index: Int) {
-        val data = tourSimplifiedAdapter.getItem(index)?.coverUrl
+        val data = tourSimplifiedAdapter.getItem(index).coverUrl
         val request = ImageRequest.Builder(requireContext())
             .data(data)
             .allowHardware(false)
