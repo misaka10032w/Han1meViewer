@@ -162,7 +162,7 @@ class MyWatchLaterFragment : YenalyFragment<FragmentPageListBinding>(),
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         binding.rvPageList.layoutManager =
-            GridLayoutManager(context, VideoCoverSize.Simplified.videoInOneLine)
+            GridLayoutManager(context, VideoCoverSize.Normal.videoInOneLine)
     }
 
     private fun getMyWatchLater() {

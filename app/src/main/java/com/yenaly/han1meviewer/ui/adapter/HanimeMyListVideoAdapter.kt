@@ -112,7 +112,7 @@ class HanimeMyListVideoAdapter(val onItemClick: (HanimeInfo) -> Unit) : BaseQuic
                 }
                 // setOnLongClickListener 由各自的 Fragment 实现
             }
-            with(VideoCoverSize.Simplified) {
+            with(VideoCoverSize.Normal) {
                 viewHolder.getView<ViewGroup>(R.id.cover_wrapper).resizeForVideoCover()
             }
         }
