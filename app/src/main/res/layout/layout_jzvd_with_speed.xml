@@ -264,21 +264,30 @@
 
     </LinearLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/start_layout"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:layout_gravity="center_vertical">
+        android:layout_centerVertical="true">
 
         <ImageView
             android:id="@+id/start"
             android:layout_width="@dimen/jz_start_button_w_h_normal"
             android:layout_height="@dimen/jz_start_button_w_h_normal"
+            android:layout_centerInParent="true"
             android:src="@drawable/jz_click_play_selector" />
-    </LinearLayout>
 
+        <ImageView
+            android:id="@+id/lock"
+            android:tint="@color/per80_transparent_white"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="16dp"
+            android:visibility="invisible"
+            android:src="@drawable/ic_baseline_lock_24"/>
+    </RelativeLayout>
 
     <TextView
         android:id="@+id/replay_text"

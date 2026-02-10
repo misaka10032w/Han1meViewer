@@ -245,6 +245,8 @@ class HJzvdStd @JvmOverloads constructor(
     private lateinit var topBarContainer: LinearLayout
     private lateinit var layoutTop: View
     private lateinit var layoutBottom: View
+    private lateinit var gestureLock: ImageView
+    var gestureLocked = false
     var savedProgress: Long = 0L
     private lateinit var btnResumeProgress: MaterialButton
     private val handler = Handler(Looper.getMainLooper())
@@ -363,6 +365,7 @@ class HJzvdStd @JvmOverloads constructor(
         layoutBottom = findViewById(R.id.layout_bottom)
         btnResumeProgress = findViewById(R.id.btn_resume_progress)
         topBarContainer = findViewById(R.id.top_bar_container)
+        gestureLock = findViewById(R.id.lock)
         textureViewContainer.isHapticFeedbackEnabled = true
         tvSpeed.setOnClickListener(this)
         tvKeyframe.setOnClickListener(this)
@@ -386,6 +389,9 @@ class HJzvdStd @JvmOverloads constructor(
             } else {
                 gotoFullscreen()
             }
+        }
+        gestureLock.setOnClickListener {
+            gestureLocked = !gestureLocked
         }
 
     }
@@ -486,10 +492,23 @@ class HJzvdStd @JvmOverloads constructor(
             }
 
             STATE_PLAYING -> {
-                if (bottomContainer.isVisible) {
+                if (gestureLocked) {
+                    post {
+                        gestureLock.isVisible = !gestureLock.isVisible
+                    }
                     changeUiToPlayingClearSafe()
                 } else {
-                    changeUiToPlayingShowSafe()
+                    if (bottomContainer.isVisible) {
+                        post {
+                            gestureLock.isVisible = false
+                        }
+                        changeUiToPlayingClearSafe()
+                    } else {
+                        post {
+                            gestureLock.isVisible = true
+                        }
+                        changeUiToPlayingShowSafe()
+                    }
                 }
             }
 
@@ -545,6 +564,7 @@ class HJzvdStd @JvmOverloads constructor(
         btnGoHome.isVisible = true
         topBarContainer.isVisible = false
         superResolution.isVisible = false
+        gestureLock.isVisible = false
 
         layoutTop.updatePadding(left = 0, right = 0)
         layoutBottom.updatePadding(left = 0, right = 0)
@@ -562,6 +582,7 @@ class HJzvdStd @JvmOverloads constructor(
         topBarContainer.isVisible = true
         clarity.isVisible = true
         superResolution.isVisible = switchPlayerKernel == HMediaKernel.Type.MpvPlayer.name
+        gestureLock.isVisible = true
         val statusBarHeight = statusBarHeight
         val navBarHeight = navBarHeight
         layoutTop.updatePadding(left = statusBarHeight, right = navBarHeight)
@@ -701,6 +722,9 @@ class HJzvdStd @JvmOverloads constructor(
     }
 
     override fun touchActionMove(x: Float, y: Float) {
+        if (gestureLocked) {
+            return
+        }
         val deltaX = x - mDownX
         var deltaY = y - mDownY
         val absDeltaX = deltaX.absoluteValue
