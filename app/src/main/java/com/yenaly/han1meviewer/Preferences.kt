@@ -147,6 +147,10 @@ object Preferences {
         get() = preferenceSp.getString(NetworkSettingsFragment.DOMAIN_NAME, HANIME_URL[0])
             ?: HANIME_URL[0]
 
+    val selectedBaseUrl: String
+        get() = preferenceSp.getString(NetworkSettingsFragment.SELECTED_BASE_URL, HANIME_URL[0])
+            ?: HANIME_URL[0]
+
     val useBuiltInHosts: Boolean
         get() = preferenceSp.getBoolean(NetworkSettingsFragment.USE_BUILT_IN_HOSTS, false)
 

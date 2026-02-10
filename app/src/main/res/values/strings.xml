@@ -562,4 +562,7 @@
     <string name="webview_version_too_low">\n⚠️ WebView版本過低，可能會驗證失敗，推薦版本為120.x.x.x以上</string>
     <string name="webview_version_unknown">\n⚠️ 無法識別WebView版本</string>
     <string name="version_check_failed">\n⚠️ 版本檢查失敗</string>
+    <string name="switch_site">切換站點</string>
+    <string name="current_site">當前站點：</string>
+    <string name="confirm_switch_site">確定要切換站點嗎？</string>
 </resources>

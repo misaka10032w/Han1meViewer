@@ -54,6 +54,7 @@ class NetworkSettingsFragment : YenalySettingsFragment(R.xml.settings_network) {
         const val PROXY_IP = "proxy_ip"
         const val PROXY_PORT = "proxy_port"
         const val DOMAIN_NAME = "domain_name"
+        const val SELECTED_BASE_URL = "selectedBaseUrl"
         const val USE_BUILT_IN_HOSTS = "use_built_in_hosts"
         const val DELAY_TEST = "delay_test"
     }

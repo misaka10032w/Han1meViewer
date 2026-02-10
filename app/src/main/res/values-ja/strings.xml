@@ -528,4 +528,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="webview_version_too_low">\n⚠️ WebViewバージョンが低すぎます。認証に失敗する可能性があります。推奨バージョンは120.x.x.x以上です</string>
     <string name="webview_version_unknown">\n⚠️ WebViewバージョンを識別できません</string>
     <string name="version_check_failed">\n⚠️ バージョンチェック失敗</string>
+    <string name="switch_site">サイト切替</string>
+    <string name="current_site">現在のサイト：</string>
+    <string name="confirm_switch_site">サイトを切り替えますか？</string>
 </resources>
