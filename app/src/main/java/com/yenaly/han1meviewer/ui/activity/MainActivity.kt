@@ -14,6 +14,8 @@ import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.TextPaint
@@ -535,12 +537,16 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                                 putString(NetworkSettingsFragment.SELECTED_BASE_URL, currentSite)
                                 putString(NetworkSettingsFragment.DOMAIN_NAME, avSite)
                             }
-                            ActivityManager.restart(killProcess = true)
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                ActivityManager.restart(killProcess = true)
+                            }, 500)
                         } else {
                             Preferences.preferenceSp.edit(true) {
                                 putString(NetworkSettingsFragment.DOMAIN_NAME, selectedBaseUrl)
                             }
-                            ActivityManager.restart(killProcess = true)
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                ActivityManager.restart(killProcess = true)
+                            }, 500)
                         }
                     }
                     setNegativeButton(R.string.no, null)
