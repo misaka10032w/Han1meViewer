@@ -35,6 +35,7 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.core.os.bundleOf
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.GravityCompat
@@ -54,8 +55,10 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
 import coil.load
 import coil.transform.CircleCropTransformation
+import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.snackbar.Snackbar
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
+import com.yenaly.han1meviewer.HanimeConstants.ANIME_URL
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
@@ -67,6 +70,7 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
+import com.yenaly.han1meviewer.ui.fragment.settings.NetworkSettingsFragment
 import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
@@ -74,6 +78,7 @@ import com.yenaly.han1meviewer.util.logScreenViewEvent
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.han1meviewer.util.showUpdateDialog
 import com.yenaly.han1meviewer.videoUrlRegex
+import com.yenaly.yenaly_libs.ActivityManager
 import com.yenaly.yenaly_libs.base.YenalyActivity
 import com.yenaly.yenaly_libs.utils.dp
 import com.yenaly.yenaly_libs.utils.showShortToast
@@ -511,8 +516,36 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
     @SuppressLint("SetTextI18n")
     private fun initHeaderView() {
         binding.nvMain.getHeaderView(0)?.let { view ->
-            val headerAvatar = view.findViewById<ImageView>(R.id.header_avatar)
+            val headerAvatar = view.findViewById<ShapeableImageView>(R.id.header_avatar)
             val headerUsername = view.findViewById<TextView>(R.id.header_username)
+
+            val siteSwitchBtn = view.findViewById<ShapeableImageView>(R.id.btn_switch_site)
+            val currentSiteHint = view.findViewById<TextView>(R.id.text_current_site)
+            val currentSite = Preferences.baseUrl
+            currentSiteHint.text = "${getString(R.string.current_site)}\n $currentSite"
+
+            siteSwitchBtn.setOnClickListener {
+                showAlertDialog {
+                    setTitle(R.string.confirm_switch_site)
+                    setPositiveButton(R.string.sure) { _, _ ->
+                        val avSite = HANIME_URL[3]
+                        val selectedBaseUrl = Preferences.selectedBaseUrl
+                        if (currentSite in ANIME_URL) {
+                            Preferences.preferenceSp.edit(true) {
+                                putString(NetworkSettingsFragment.SELECTED_BASE_URL, currentSite)
+                                putString(NetworkSettingsFragment.DOMAIN_NAME, avSite)
+                            }
+                            ActivityManager.restart(killProcess = true)
+                        } else {
+                            Preferences.preferenceSp.edit(true) {
+                                putString(NetworkSettingsFragment.DOMAIN_NAME, selectedBaseUrl)
+                            }
+                            ActivityManager.restart(killProcess = true)
+                        }
+                    }
+                    setNegativeButton(R.string.no, null)
+                }
+            }
             if (isAlreadyLogin) {
                 headerAvatar.setOnClickListener {
                     showAlertDialog {

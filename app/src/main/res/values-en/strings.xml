@@ -523,4 +523,7 @@ Recommendations are as follows:\n
     <string name="webview_version_too_low">\n⚠️ WebView version is too low, verification may fail, recommended version is 120.x.x.x or above</string>
     <string name="webview_version_unknown">\n⚠️ Unable to identify WebView version</string>
     <string name="version_check_failed">\n⚠️ Version check failed</string>
+    <string name="switch_site">Switch Site</string>
+    <string name="current_site">Current Site：</string>
+    <string name="confirm_switch_site">Are you sure you want to switch site?</string>
 </resources>

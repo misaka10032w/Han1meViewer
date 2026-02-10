@@ -528,4 +528,7 @@
     <string name="webview_version_too_low">\n⚠️ WebView版本过低，可能会验证失败，推荐版本为120.x.x.x以上</string>
     <string name="webview_version_unknown">\n⚠️ 无法识别WebView版本</string>
     <string name="version_check_failed">\n⚠️ 版本检查失败</string>
+    <string name="switch_site">切换站点</string>
+    <string name="current_site">当前站点：</string>
+    <string name="confirm_switch_site">确定要切换站点吗？</string>
 </resources>

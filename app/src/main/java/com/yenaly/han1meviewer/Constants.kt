@@ -92,6 +92,7 @@ val HANIME_BASE_URL = Preferences.baseUrl
 object HanimeConstants {
     val HANIME_HOSTNAME = arrayOf("hanime1.me","hanime1.com","hanimeone.me","javchu.com")
     val HANIME_URL = arrayOf("https://hanime1.me/","https://hanime1.com/","https://hanimeone.me/","https://javchu.com/")
+    val ANIME_URL = arrayOf("https://hanime1.me/","https://hanime1.com/","https://hanimeone.me/")
 }
 
 @JvmField
