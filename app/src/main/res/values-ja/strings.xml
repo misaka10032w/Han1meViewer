@@ -531,4 +531,5 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="switch_site">サイト切替</string>
     <string name="current_site">現在のサイト：</string>
     <string name="confirm_switch_site">サイトを切り替えますか？</string>
+    <string name="webview_exception">システムWebViewコンポーネントが異常です。Cloudflare認証ページの読み込みに失敗しました！</string>
 </resources>

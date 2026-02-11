@@ -531,4 +531,5 @@
     <string name="switch_site">切换站点</string>
     <string name="current_site">当前站点：</string>
     <string name="confirm_switch_site">确定要切换站点吗？</string>
+    <string name="webview_exception">系统 WebView 组件异常，Cloudflare验证页面加载失败！</string>
 </resources>

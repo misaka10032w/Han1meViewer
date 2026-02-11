@@ -286,7 +286,7 @@
             android:layout_centerVertical="true"
             android:layout_marginRight="16dp"
             android:visibility="invisible"
-            android:src="@drawable/ic_baseline_lock_24"/>
+            android:src="@drawable/ic_lock_selector"/>
     </RelativeLayout>
 
     <TextView
