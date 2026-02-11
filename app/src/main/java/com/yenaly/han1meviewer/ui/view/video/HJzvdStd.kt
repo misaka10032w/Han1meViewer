@@ -366,6 +366,7 @@ class HJzvdStd @JvmOverloads constructor(
         btnResumeProgress = findViewById(R.id.btn_resume_progress)
         topBarContainer = findViewById(R.id.top_bar_container)
         gestureLock = findViewById(R.id.lock)
+        gestureLock.isSelected = false
         textureViewContainer.isHapticFeedbackEnabled = true
         tvSpeed.setOnClickListener(this)
         tvKeyframe.setOnClickListener(this)
@@ -392,6 +393,7 @@ class HJzvdStd @JvmOverloads constructor(
         }
         gestureLock.setOnClickListener {
             gestureLocked = !gestureLocked
+            gestureLock.isSelected = gestureLocked
         }
 
     }
