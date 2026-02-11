@@ -526,4 +526,5 @@ Recommendations are as follows:\n
     <string name="switch_site">Switch Site</string>
     <string name="current_site">Current Site：</string>
     <string name="confirm_switch_site">Are you sure you want to switch site?</string>
+    <string name="webview_exception">System WebView component is abnormal, Cloudflare verification page failed to load!</string>
 </resources>

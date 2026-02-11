@@ -565,4 +565,5 @@
     <string name="switch_site">切換站點</string>
     <string name="current_site">當前站點：</string>
     <string name="confirm_switch_site">確定要切換站點嗎？</string>
+    <string name="webview_exception">系統 WebView 元件異常，Cloudflare驗證頁面載入失敗！</string>
 </resources>
