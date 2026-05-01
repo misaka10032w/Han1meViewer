@@ -285,8 +285,13 @@
     <string name="download_task_failed_s_reason_s">下载失败：%1$s\n原因为：%2$s</string>
     <string name="custom">自定义</string>
     <string name="show_bottom_progress">显示底部进度条</string>
+    <string name="show_long_press_speed">显示长按倍速提示</string>
+    <string name="show_long_press_speed_summary">长按快进时在画面中显示实际播放倍速</string>
     <string name="default_playback_speed">默认播放速度</string>
     <string name="long_press_speed_multiplier">长按快进速度是当前速度的</string>
+    <string name="enable_title_long_press_copy">允许长按复制标题</string>
+    <string name="enable_title_long_press_copy_summary">控制视频标题与中文标题的长按复制功能</string>
+    <string name="long_press_speed_hint_format">%1$sx</string>
     <string name="slide_sensitivity">滑动调整进度的灵敏度</string>
     <string name="apply_deep_links">应用深层链接</string>
     <string name="apply_deep_links_summary">应用后，打开相关网页后能快速跳转至本 App</string>

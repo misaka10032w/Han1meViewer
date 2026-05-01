@@ -616,16 +616,23 @@ class VideoIntroductionFragment : YenalyFragment<FragmentVideoIntroductionBindin
         private fun ItemVideoIntroductionBinding.initTitle(info: HanimeVideo) {
             title.text = info.chineseTitle
             chineseTitle.text = info.title.also { initShareButton(it) }
-            // #issue-80: 长按复制功能请求
-            title.setOnLongClickListener {
-                title.text.copyToClipboard()
-                showShortToast(R.string.copy_to_clipboard)
-                return@setOnLongClickListener true
-            }
-            chineseTitle.setOnLongClickListener {
-                chineseTitle.text.copyToClipboard()
-                showShortToast(R.string.copy_to_clipboard)
-                return@setOnLongClickListener true
+            if (Preferences.enableTitleLongPressCopy) {
+                // #issue-80: 长按复制功能请求
+                title.setOnLongClickListener {
+                    title.text.copyToClipboard()
+                    showShortToast(R.string.copy_to_clipboard)
+                    return@setOnLongClickListener true
+                }
+                chineseTitle.setOnLongClickListener {
+                    chineseTitle.text.copyToClipboard()
+                    showShortToast(R.string.copy_to_clipboard)
+                    return@setOnLongClickListener true
+                }
+            } else {
+                title.setOnLongClickListener(null)
+                chineseTitle.setOnLongClickListener(null)
+                title.isLongClickable = false
+                chineseTitle.isLongClickable = false
             }
         }
 

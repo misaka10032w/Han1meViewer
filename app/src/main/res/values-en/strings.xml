@@ -280,8 +280,13 @@ Recommendations are as follows:\n
     <string name="download_task_failed_s_reason_s">Download task failed: %1$s\nReason: %2$s</string>
     <string name="custom">Custom</string>
     <string name="show_bottom_progress">Show Bottom Progress Bar</string>
+    <string name="show_long_press_speed">Show Long-Press Speed Hint</string>
+    <string name="show_long_press_speed_summary">Show the actual playback speed while long-press fast-forwarding</string>
     <string name="default_playback_speed">Default Playback Speed</string>
     <string name="long_press_speed_multiplier">Long Press Speed Multiplier</string>
+    <string name="enable_title_long_press_copy">Allow Long-Press Title Copy</string>
+    <string name="enable_title_long_press_copy_summary">Controls long-press copy for the video title and Chinese title</string>
+    <string name="long_press_speed_hint_format">%1$sx</string>
     <string name="slide_sensitivity">Slide Sensitivity for Progress Adjustment</string>
     <string name="apply_deep_links">Apply Deep Links</string>
     <string name="apply_deep_links_summary">After application, quickly jump to this app when opening relevant web pages</string>

@@ -111,6 +111,12 @@ object Preferences {
             true
         )
 
+    val showLongPressSpeed: Boolean
+        get() = preferenceSp.getBoolean(
+            PlayerSettingsFragment.SHOW_LONG_PRESS_SPEED,
+            true
+        )
+
     val playerSpeed: Float
         get() = preferenceSp.getString(
             PlayerSettingsFragment.PLAYER_SPEED,
@@ -128,6 +134,12 @@ object Preferences {
             PlayerSettingsFragment.LONG_PRESS_SPEED_TIMES,
             HJzvdStd.DEF_LONG_PRESS_SPEED_TIMES.toString()
         )?.toFloat() ?: HJzvdStd.DEF_LONG_PRESS_SPEED_TIMES
+
+    val enableTitleLongPressCopy: Boolean
+        get() = preferenceSp.getBoolean(
+            PlayerSettingsFragment.ENABLE_TITLE_LONG_PRESS_COPY,
+            true
+        )
 
     val videoLanguage: String
         get() = preferenceSp.getString(HomeSettingsFragment.VIDEO_LANGUAGE, "zhs") ?: "zht"

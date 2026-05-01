@@ -25,6 +25,23 @@
         android:background="#2F2F2F"
         android:scaleType="centerCrop"/>
 
+    <TextView
+        android:id="@+id/tv_long_press_speed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@drawable/frosted_glass"
+        android:minWidth="80dp"
+        android:gravity="center"
+        android:paddingHorizontal="18dp"
+        android:paddingVertical="8dp"
+        android:textColor="@android:color/white"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        tools:text="2.5x"
+        tools:visibility="visible" />
+
     <LinearLayout
         android:id="@+id/layout_bottom"
         android:layout_width="match_parent"

@@ -26,9 +26,11 @@ class PlayerSettingsFragment : YenalySettingsFragment(R.xml.settings_player) {
         const val SWITCH_PLAYER_KERNEL = "switch_player_kernel"
         const val MPV_PLAYER_SETTINGS = "mpv_advanced_settings"
         const val SHOW_BOTTOM_PROGRESS = "show_bottom_progress"
+        const val SHOW_LONG_PRESS_SPEED = "show_long_press_speed"
         const val PLAYER_SPEED = "player_speed"
         const val SLIDE_SENSITIVITY = "slide_sensitivity"
         const val LONG_PRESS_SPEED_TIMES = "long_press_speed_times"
+        const val ENABLE_TITLE_LONG_PRESS_COPY = "enable_title_long_press_copy"
     }
 
     private val switchPlayerKernel

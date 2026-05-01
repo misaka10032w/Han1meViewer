@@ -66,6 +66,7 @@ import com.yenaly.yenaly_libs.utils.navBarHeight
 import com.yenaly.yenaly_libs.utils.statusBarHeight
 import com.yenaly.yenaly_libs.utils.unsafeLazy
 import com.yenaly.yenaly_libs.utils.view.removeItself
+import java.util.Locale
 import java.util.Timer
 import kotlin.math.absoluteValue
 
@@ -156,6 +157,11 @@ class HJzvdStd @JvmOverloads constructor(
     private val showBottomProgress = Preferences.showBottomProgress
 
     /**
+     * 用戶定義的是否顯示長按快進倍速提示
+     */
+    private val showLongPressSpeed = Preferences.showLongPressSpeed
+
+    /**
      * 用戶定義的默認速度
      */
     private val userDefSpeed = Preferences.playerSpeed
@@ -239,6 +245,7 @@ class HJzvdStd @JvmOverloads constructor(
         }
 
     private lateinit var tvSpeed: TextView
+    private lateinit var tvLongPressSpeed: TextView
     private lateinit var tvKeyframe: TextView
     private lateinit var tvTimer: TextView
     private lateinit var btnGoHome: ImageView
@@ -342,7 +349,9 @@ class HJzvdStd @JvmOverloads constructor(
                     MotionEvent.ACTION_DOWN -> {
                         val mi: JZMediaInterface? = mediaInterface
                         if (mi != null && mi.isPlaying) {
-                            setSpeedInternal(videoSpeed * userDefLongPressSpeedTimes)
+                            val longPressSpeed = videoSpeed * userDefLongPressSpeedTimes
+                            setSpeedInternal(longPressSpeed)
+                            showLongPressSpeedHint(longPressSpeed)
                             textureViewContainer.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                             isSpeedGestureDetected = true
                         }
@@ -357,6 +366,7 @@ class HJzvdStd @JvmOverloads constructor(
         super.init(context)
         SAVE_PROGRESS = false
         tvSpeed = findViewById(R.id.tv_speed)
+        tvLongPressSpeed = findViewById(R.id.tv_long_press_speed)
         superResolution = findViewById(R.id.super_resolution)
         tvKeyframe = findViewById(R.id.tv_keyframe)
         tvTimer = findViewById(R.id.tv_timer)
@@ -464,9 +474,10 @@ class HJzvdStd @JvmOverloads constructor(
             R.id.surface_container -> {
                 speedGestureDetector.onTouchEvent(event)
                 when (event.action) {
-                    MotionEvent.ACTION_UP -> {
+                    MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                         if (isSpeedGestureDetected) {
                             setSpeedInternal(videoSpeed)
+                            hideLongPressSpeedHint()
                             isSpeedGestureDetected = false
                         }
                     }
@@ -474,6 +485,31 @@ class HJzvdStd @JvmOverloads constructor(
             }
         }
         return super.onTouch(v, event)
+    }
+
+    private fun showLongPressSpeedHint(speed: Float) {
+        if (!showLongPressSpeed || !::tvLongPressSpeed.isInitialized) return
+        tvLongPressSpeed.text = context.getString(
+            R.string.long_press_speed_hint_format,
+            speed.toPrettySpeedText()
+        )
+        tvLongPressSpeed.isVisible = true
+    }
+
+    private fun hideLongPressSpeedHint() {
+        if (::tvLongPressSpeed.isInitialized) {
+            tvLongPressSpeed.isGone = true
+        }
+    }
+
+    private fun Float.toPrettySpeedText(): String {
+        return if (this % 1f == 0f) {
+            toInt().toString()
+        } else {
+            String.format(Locale.US, "%.2f", this)
+                .trimEnd('0')
+                .trimEnd('.')
+        }
     }
 
     fun autoFullscreen(orientation: OrientationManager.ScreenOrientation) {
@@ -557,6 +593,7 @@ class HJzvdStd @JvmOverloads constructor(
 
     override fun setScreenNormal() {
         super.setScreenNormal()
+        hideLongPressSpeedHint()
         updateVideoPlayerSize(false)
         backButton.isVisible = true
         tvSpeed.isVisible = false
@@ -1138,15 +1175,18 @@ class HJzvdStd @JvmOverloads constructor(
     }
     override fun onStatePause() {
         super.onStatePause()
+        hideLongPressSpeedHint()
         onVideoStateChanged?.invoke(STATE_PAUSE)
     }
     override fun onStateAutoComplete() {
         super.onStateAutoComplete()
+        hideLongPressSpeedHint()
         onVideoStateChanged?.invoke(STATE_AUTO_COMPLETE)
     }
 
     override fun onStatePreparing() {
         super.onStatePreparing()
+        hideLongPressSpeedHint()
         onVideoStateChanged?.invoke(STATE_PREPARING)
     }
 
