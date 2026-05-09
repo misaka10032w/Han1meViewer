@@ -30,17 +30,38 @@ class WatchLaterSubViewModel(application: Application) : YenalyViewModel(applica
     private val _watchLaterFlow = MutableStateFlow(emptyList<HanimeInfo>())
     val watchLaterFlow = _watchLaterFlow.asStateFlow()
 
+    private val _loadedPageCount = MutableStateFlow(0)
+    val loadedPageCount = _loadedPageCount.asStateFlow()
+
+    private val _isLoadingMore = MutableStateFlow(false)
+    val isLoadingMore = _isLoadingMore.asStateFlow()
+
+    private var isRefreshing = true
+
     fun getMyWatchLaterItems(page: Int) {
         val userId = Preferences.savedUserId
+        _isLoadingMore.value = !isRefreshing && _watchLaterFlow.value.isNotEmpty()
         viewModelScope.launch {
             NetworkRepo.getMyListItems(userId, MyListType.WATCH_LATER, page).collect { state ->
-                val prev = _watchLaterStateFlow.getAndUpdate { state }
-                if (prev is PageLoadingState.Loading) _watchLaterFlow.value = emptyList()
+                _watchLaterStateFlow.value = state
                 _watchLaterFlow.update { prevList ->
                     when (state) {
-                        is PageLoadingState.Success -> prevList + state.info.hanimeInfo
-                        is PageLoadingState.Loading -> emptyList()
-                        else -> prevList
+                        is PageLoadingState.Success -> {
+                            _loadedPageCount.value = page
+                            if (state.info.hanimeInfo.isEmpty()) {
+                                _watchLaterStateFlow.update { PageLoadingState.NoMoreData }
+                            }
+                            val baseList = if (isRefreshing) emptyList() else prevList
+                            isRefreshing = false
+                            _isLoadingMore.value = false
+                            (baseList + state.info.hanimeInfo).distinctBy(HanimeInfo::videoCode)
+                        }
+
+                        is PageLoadingState.Loading -> prevList
+                        else -> {
+                            _isLoadingMore.value = false
+                            prevList
+                        }
                     }
                 }
             }
@@ -48,18 +69,27 @@ class WatchLaterSubViewModel(application: Application) : YenalyViewModel(applica
     }
 
     private val _deleteMyWatchLaterFlow =
-        MutableSharedFlow<WebsiteState<Int>>()
+        MutableSharedFlow<WebsiteState<Boolean>>()
     val deleteMyWatchLaterFlow = _deleteMyWatchLaterFlow.asSharedFlow()
 
     fun deleteMyWatchLater(videoCode: String, position: Int) {
         viewModelScope.launch {
-            NetworkRepo.deleteMyListItems(
-                MyListType.WATCH_LATER, videoCode,
-                position, csrfToken
-            ).collect {
-                _deleteMyWatchLaterFlow.emit(it)
+            NetworkRepo.addToMyList(
+                listCode = "save",
+                videoCode = videoCode,
+                isChecked = false,
+                position = position,
+                csrfToken = csrfToken,
+            ).collect { state ->
+                _deleteMyWatchLaterFlow.emit(
+                    when (state) {
+                        is WebsiteState.Error -> WebsiteState.Error(state.throwable)
+                        WebsiteState.Loading -> WebsiteState.Loading
+                        is WebsiteState.Success -> WebsiteState.Success(true)
+                    }
+                )
                 _watchLaterFlow.update { list ->
-                    if (it is WebsiteState.Success) {
+                    if (state is WebsiteState.Success) {
                         list.toMutableList().apply { removeAt(position) }
                     } else list
                 }
@@ -68,6 +98,10 @@ class WatchLaterSubViewModel(application: Application) : YenalyViewModel(applica
     }
 
     fun clearMyListItems() {
+        isRefreshing = true
+        _isLoadingMore.value = false
+        _loadedPageCount.value = 0
+        _watchLaterFlow.value = emptyList()
         _watchLaterStateFlow.value = PageLoadingState.Loading
     }
 }

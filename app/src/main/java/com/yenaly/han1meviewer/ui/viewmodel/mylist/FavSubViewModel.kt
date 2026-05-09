@@ -56,7 +56,7 @@ class FavSubViewModel(application: Application) : YenalyViewModel(application) {
                             val baseList = if (isRefreshing) emptyList() else prevList
                             isRefreshing = false
                             _isLoadingMore.value = false
-                            baseList + state.info.hanimeInfo
+                            (baseList + state.info.hanimeInfo).distinctBy(HanimeInfo::videoCode)
                         }
 
                         is PageLoadingState.Loading -> prevList
