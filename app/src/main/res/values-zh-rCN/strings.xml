@@ -605,6 +605,7 @@
     <string name="video_group_error">获取视频分组错误：</string>
     <string name="video_group_empty">视频分组为空</string>
     <string name="default_group_rename_not_allowed">默认分组（%s）不允许重命名！</string>
+    <string name="default_group_delete_not_allowed">默认分组（%s）不允许删除！</string>
     <string name="new_group_name">新分组名称</string>
     <string name="rename_group">重命名分组</string>
     <string name="current_group_name">当前分组名称：%s</string>

@@ -605,6 +605,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="video_group_error">動画グループ取得エラー：</string>
     <string name="video_group_empty">動画グループが空です</string>
     <string name="default_group_rename_not_allowed">デフォルトグループ（%s）は名前変更できません！</string>
+    <string name="default_group_delete_not_allowed">デフォルトグループ（%s）は削除できません！</string>
     <string name="new_group_name">新しいグループ名</string>
     <string name="rename_group">グループ名を変更</string>
     <string name="current_group_name">現在のグループ名：%s</string>

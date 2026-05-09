@@ -600,6 +600,7 @@ Recommendations are as follows:\n
     <string name="video_group_error">Get video group error:</string>
     <string name="video_group_empty">Video group is empty</string>
     <string name="default_group_rename_not_allowed">Default group (%s) cannot be renamed!</string>
+    <string name="default_group_delete_not_allowed">Default group (%s) cannot be deleted!</string>
     <string name="new_group_name">New group name</string>
     <string name="rename_group">Rename group</string>
     <string name="current_group_name">Current group name:%s</string>
