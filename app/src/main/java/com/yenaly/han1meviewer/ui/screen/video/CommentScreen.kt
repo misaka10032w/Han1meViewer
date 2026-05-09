@@ -1,10 +1,11 @@
 package com.yenaly.han1meviewer.ui.screen.video
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -20,6 +21,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -35,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -83,7 +86,9 @@ fun CommentScreen(
     var showSortSheet by rememberSaveable { mutableStateOf(false) }
     var replyingComment by remember { mutableStateOf<VideoComments.VideoComment?>(null) }
     var reportComment by remember { mutableStateOf<VideoComments.VideoComment?>(null) }
+    var showComposeDialog by rememberSaveable { mutableStateOf(false) }
     var replyText by remember { mutableStateOf(TextFieldValue("")) }
+    var composeText by remember { mutableStateOf(TextFieldValue("")) }
     var selectedReasonIndex by remember { mutableIntStateOf(-1) }
     var latestReportMessage by remember { mutableStateOf<String?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -109,7 +114,7 @@ fun CommentScreen(
             },
             title = { Text(stringResource(R.string.reply)) },
             text = {
-                androidx.compose.material3.OutlinedTextField(
+                OutlinedTextField(
                     value = replyText,
                     onValueChange = { replyText = it },
                     label = { Text(stringResource(R.string.comment)) },
@@ -129,6 +134,44 @@ fun CommentScreen(
                 TextButton(onClick = {
                     replyingComment = null
                     replyText = TextFieldValue("")
+                }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
+    }
+
+    if (showComposeDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showComposeDialog = false
+                composeText = TextFieldValue("")
+            },
+            title = { Text(stringResource(R.string.comment)) },
+            text = {
+                OutlinedTextField(
+                    value = composeText,
+                    onValueChange = { composeText = it },
+                    label = { Text(stringResource(R.string.comment)) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val text = composeText.text.trim()
+                    if (text.isNotBlank()) {
+                        onComposeComment(text)
+                        showComposeDialog = false
+                        composeText = TextFieldValue("")
+                    }
+                }) {
+                    Text(stringResource(R.string.submit))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showComposeDialog = false
+                    composeText = TextFieldValue("")
                 }) {
                     Text(stringResource(R.string.cancel))
                 }
@@ -252,12 +295,31 @@ fun CommentScreen(
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            if (isAlreadyLogin) {
+                ExtendedFloatingActionButton(
+                    text = { Text(stringResource(R.string.comment)) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_baseline_reply_24),
+                            contentDescription = null,
+                        )
+                    },
+                    onClick = { showComposeDialog = true },
+                )
+            }
+        }
     ) { paddingValues ->
+        val layoutDirection = LocalLayoutDirection.current
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(
+                    start = paddingValues.calculateStartPadding(layoutDirection),
+                    end = paddingValues.calculateEndPadding(layoutDirection),
+                    bottom = paddingValues.calculateBottomPadding(),
+                )
         ) {
         PullToRefreshBox(
             isRefreshing = state is WebsiteState.Loading && !isPreviewCommentPrefetched,
@@ -326,20 +388,6 @@ fun CommentScreen(
             }
         }
 
-        if (isAlreadyLogin) {
-            Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.BottomEnd) {
-                ExtendedFloatingActionButton(
-                    text = { Text(stringResource(R.string.comment)) },
-                    icon = {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_baseline_reply_24),
-                            contentDescription = null,
-                        )
-                    },
-                    onClick = { onComposeComment("") },
-                )
-            }
-        }
         }
     }
 }

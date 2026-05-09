@@ -20,6 +20,7 @@ import com.yenaly.han1meviewer.util.checkBadGuy
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.collectAsState
 
 class CommentFragment : Fragment() {
     private var commentType: String? = null
@@ -60,7 +61,7 @@ class CommentFragment : Fragment() {
                     currentSortType = viewModel.currentSortType,
                     reportReasons = viewModel.reportReason,
                     isPreviewCommentPrefetched = commentType == PREVIEW_COMMENT_PREFIX &&
-                        PreviewCommentPrefetcher.here(viewModel).commentFlow.value.isNotEmpty(),
+                        PreviewCommentPrefetcher.here(viewModel).commentFlow.collectAsState().value.isNotEmpty(),
                     isAlreadyLogin = isAlreadyLogin,
                     onRefresh = { viewModel.getComment(commentTypePrefix, viewModel.code) },
                     onReply = { comment, text ->
@@ -123,6 +124,8 @@ class CommentFragment : Fragment() {
                     onComposeComment = {
                         viewModel.currentUserId?.let { id ->
                             viewModel.postComment(id, viewModel.code, commentTypePrefix, it)
+                        } ?: lifecycleScope.launch {
+                            reportMessages.emit(CommentMessage(getString(R.string.there_is_a_small_issue)))
                         }
                     },
                 )
