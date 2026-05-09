@@ -10,6 +10,7 @@ import com.yenaly.han1meviewer.DATE_CODE
 import com.yenaly.han1meviewer.PREVIEW_COMMENT_PREFIX
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.FragmentPreviewCommentBinding
+import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.fragment.video.CommentFragment
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
@@ -33,6 +34,16 @@ class PreviewCommentFragment : YenalyFragment<FragmentPreviewCommentBinding>() {
     override fun onDestroyView() {
         super.onDestroyView()
         PreviewCommentPrefetcher.bye(PreviewCommentPrefetcher.Scope.PREVIEW_COMMENT_ACTIVITY)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        (activity as? ToolbarHost)?.hideToolbar()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        (activity as? ToolbarHost)?.showToolbar()
     }
 
     override fun initData(savedInstanceState: Bundle?) {

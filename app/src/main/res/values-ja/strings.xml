@@ -648,4 +648,5 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="webview_exception">システムWebViewコンポーネントが異常です。Cloudflare認証ページの読み込みに失敗しました！</string>
     <string name="disable_predictive_back_title">予測型バックアニメーションを無効化</string>
     <string name="disable_predictive_back_summary">有効にすると、バックジェスチャーは指を離した時のみ反応し、動画視聴中の誤操作による再生停止を防ぎます</string>
+    <string name="play_trailer">予告編を再生</string>
 </resources>

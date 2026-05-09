@@ -643,4 +643,5 @@ Recommendations are as follows:\n
     <string name="webview_exception">System WebView component is abnormal, Cloudflare verification page failed to load!</string>
     <string name="disable_predictive_back_title">Disable Predictive Back Animation</string>
     <string name="disable_predictive_back_summary">When enabled, the back gesture will only trigger after releasing, preventing accidental back navigation while watching videos</string>
+    <string name="play_trailer">Play Trailer</string>
 </resources>
