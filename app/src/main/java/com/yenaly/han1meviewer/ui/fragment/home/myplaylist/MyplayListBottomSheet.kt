@@ -56,10 +56,10 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.fragment.BottomSheetHandler
-import com.yenaly.han1meviewer.ui.fragment.EmptyView
+import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
+import com.yenaly.han1meviewer.ui.component.EmptyView
 import com.yenaly.han1meviewer.ui.fragment.RetryableImage
-import com.yenaly.han1meviewer.ui.fragment.VideoCardItem
+import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.showShortToast

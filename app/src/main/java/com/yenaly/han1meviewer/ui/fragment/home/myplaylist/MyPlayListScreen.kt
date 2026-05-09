@@ -63,8 +63,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.Playlists
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.fragment.EmptyView
-import com.yenaly.han1meviewer.ui.fragment.PlaylistItem
+import com.yenaly.han1meviewer.ui.component.EmptyView
+import com.yenaly.han1meviewer.ui.component.PlaylistItem
 import com.yenaly.han1meviewer.ui.fragment.getColumnCount
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
 import com.yenaly.han1meviewer.util.showAlertDialog

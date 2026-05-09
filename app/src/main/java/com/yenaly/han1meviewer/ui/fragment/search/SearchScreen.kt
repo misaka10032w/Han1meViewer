@@ -73,9 +73,9 @@ import com.yenaly.han1meviewer.logic.entity.SearchHistoryEntity
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
-import com.yenaly.han1meviewer.ui.fragment.EmptyView
-import com.yenaly.han1meviewer.ui.fragment.VideoCardItem
-import com.yenaly.han1meviewer.ui.fragment.fakeHomePageVideos
+import com.yenaly.han1meviewer.ui.component.EmptyView
+import com.yenaly.han1meviewer.ui.component.VideoCardItem
+import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.han1meviewer.ui.viewmodel.SearchViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay

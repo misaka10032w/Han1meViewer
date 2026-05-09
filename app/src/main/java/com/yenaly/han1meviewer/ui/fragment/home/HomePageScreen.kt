@@ -92,11 +92,11 @@ import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HomePage
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.fragment.RetryableImage
-import com.yenaly.han1meviewer.ui.fragment.VideoCardItem
-import com.yenaly.han1meviewer.ui.fragment.fakeAnnouncements
-import com.yenaly.han1meviewer.ui.fragment.fakeBanner
-import com.yenaly.han1meviewer.ui.fragment.fakeCategories
-import com.yenaly.han1meviewer.ui.fragment.fakeHomePageVideos
+import com.yenaly.han1meviewer.ui.component.VideoCardItem
+import com.yenaly.han1meviewer.ui.preview.fakeAnnouncements
+import com.yenaly.han1meviewer.ui.preview.fakeBanner
+import com.yenaly.han1meviewer.ui.preview.fakeCategories
+import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
 
 // ─────────────────────────────────────────────
