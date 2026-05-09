@@ -551,6 +551,8 @@
     <string name="advanced_search_combination">高级搜索组合</string>
     <string name="app_tampered">本应用已被恶意篡改！请注意信息安全！</string>
     <string name="download_complete">下载完成</string>
+    <string name="download_progress_percent" translatable="false">%1$d%%</string>
+    <string name="download_progress_size">%1$s / %2$s</string>
     <string name="click_to_install_update">点击安装更新</string>
     <string name="install">安装</string>
     <string name="empty_content">这里什么都没有哦</string>

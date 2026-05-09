@@ -546,6 +546,8 @@ Recommendations are as follows:\n
     <string name="advanced_search_combination">Advanced Search Combination</string>
     <string name="app_tampered">This app has been maliciously tampered with! Please pay attention to information security!</string>
     <string name="download_complete">Download Complete</string>
+    <string name="download_progress_percent" translatable="false">%1$d%%</string>
+    <string name="download_progress_size">%1$s / %2$s</string>
     <string name="click_to_install_update">Click to Install Update</string>
     <string name="install">Install</string>
     <string name="empty_content">Nothing here</string>
