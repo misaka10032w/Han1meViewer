@@ -217,6 +217,16 @@
     <string name="delete_history">Delete History</string>
     <string name="sure_to_delete_all_histories">Are you sure you want to delete all video watch histories?</string>
     <string name="long_press_to_delete_all_histories">Long press to delete history, the delete button in the upper right corner is responsible for deleting all history!</string>
+    <string name="watch_history_total_count">%1$d records in total</string>
+    <string name="watch_history_delete_all_title">Clear watch history</string>
+    <string name="watch_history_clear_all">Clear all</string>
+    <string name="watch_history_empty_title">No watch history yet</string>
+    <string name="watch_history_empty_description">Your records will appear here after you start watching videos.</string>
+    <string name="watch_history_resume_watch">Resume watching</string>
+    <string name="watch_history_minutes_short" translatable="false">%1$dm</string>
+    <string name="watch_history_watched_at">Watched at %1$s</string>
+    <string name="watch_history_released_at">Released at %1$s</string>
+    <string name="watch_history_progress_minutes">Watched for about %1$d minute(s)</string>
     <string name="speed">Speed</string>
     <string name="cancel_thumb_up_success">Thumb Up Cancelled Successfully!</string>
     <string name="thumb_up_success">Thumb Up Successful!</string>

@@ -222,6 +222,16 @@
     <string name="delete_history">刪除歷史記錄</string>
     <string name="sure_to_delete_all_histories">是否將影片觀看歷史記錄全部刪除🤔</string>
     <string name="long_press_to_delete_all_histories">長按可以刪除歷史記錄哦，右上角的刪除按鈕是負責刪除全部歷史記錄的！</string>
+    <string name="watch_history_total_count">共 %1$d 條記錄</string>
+    <string name="watch_history_delete_all_title">清空歷史記錄</string>
+    <string name="watch_history_clear_all">清空</string>
+    <string name="watch_history_empty_title">暫無觀看歷史</string>
+    <string name="watch_history_empty_description">開始播放影片後，記錄會出現在這裡。</string>
+    <string name="watch_history_resume_watch">繼續觀看</string>
+    <string name="watch_history_minutes_short" translatable="false">%1$dm</string>
+    <string name="watch_history_watched_at">觀看於 %1$s</string>
+    <string name="watch_history_released_at">發佈於 %1$s</string>
+    <string name="watch_history_progress_minutes">已觀看約 %1$d 分鐘</string>
     <string name="speed">倍速</string>
     <string name="cancel_thumb_up_success">取消點讚成功！</string>
     <string name="thumb_up_success">點讚成功！</string>

@@ -217,6 +217,16 @@
     <string name="delete_history">履歴削除</string>
     <string name="sure_to_delete_all_histories">すべての視聴履歴を削除しますか🤔</string>
     <string name="long_press_to_delete_all_histories">長押しで履歴削除、右上の削除ボタンは全履歴削除用！</string>
+    <string name="watch_history_total_count">全 %1$d 件</string>
+    <string name="watch_history_delete_all_title">視聴履歴をすべて削除</string>
+    <string name="watch_history_clear_all">すべて削除</string>
+    <string name="watch_history_empty_title">視聴履歴はまだありません</string>
+    <string name="watch_history_empty_description">動画を再生すると、ここに履歴が表示されます。</string>
+    <string name="watch_history_resume_watch">続けて視聴</string>
+    <string name="watch_history_minutes_short" translatable="false">%1$dm</string>
+    <string name="watch_history_watched_at">視聴日時 %1$s</string>
+    <string name="watch_history_released_at">公開日時 %1$s</string>
+    <string name="watch_history_progress_minutes">約 %1$d 分視聴しました</string>
     <string name="speed">再生速度</string>
     <string name="cancel_thumb_up_success">高評価解除成功！</string>
     <string name="thumb_up_success">高評価成功！</string>

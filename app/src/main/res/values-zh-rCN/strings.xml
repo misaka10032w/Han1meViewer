@@ -217,6 +217,16 @@
     <string name="delete_history">删除历史记录</string>
     <string name="sure_to_delete_all_histories">是否将影片观看历史记录全部删除🤔</string>
     <string name="long_press_to_delete_all_histories">长按可以删除历史记录哦，右上角的删除按钮是负责删除全部历史记录的！</string>
+    <string name="watch_history_total_count">共 %1$d 条记录</string>
+    <string name="watch_history_delete_all_title">清空历史记录</string>
+    <string name="watch_history_clear_all">清空</string>
+    <string name="watch_history_empty_title">暂无观看历史</string>
+    <string name="watch_history_empty_description">开始播放影片后，记录会出现在这里。</string>
+    <string name="watch_history_resume_watch">继续观看</string>
+    <string name="watch_history_minutes_short" translatable="false">%1$dm</string>
+    <string name="watch_history_watched_at">观看于 %1$s</string>
+    <string name="watch_history_released_at">发布于 %1$s</string>
+    <string name="watch_history_progress_minutes">已观看约 %1$d 分钟</string>
     <string name="speed">倍速</string>
     <string name="cancel_thumb_up_success">取消点赞成功！</string>
     <string name="thumb_up_success">点赞成功！</string>
