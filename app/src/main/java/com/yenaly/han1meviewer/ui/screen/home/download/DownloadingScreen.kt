@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -52,8 +51,6 @@ import com.yenaly.han1meviewer.ui.component.EmptyContent
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
-
 @Composable
 fun DownloadingScreen(
     downloadingFlow: Flow<List<HanimeDownloadEntity>>,
