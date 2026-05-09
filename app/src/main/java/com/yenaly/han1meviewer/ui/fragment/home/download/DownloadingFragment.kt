@@ -39,16 +39,9 @@ class DownloadingFragment : Fragment() {
                 HanimeTheme {
                     DownloadingScreen(
                         downloadingFlow = viewModel.loadAllDownloadingHanime(),
-                        onPauseAll = ::pauseAll,
-                        onResumeAll = ::resumeAll,
                         onPauseItem = HanimeDownloadManagerV2::stopTask,
                         onResumeItem = HanimeDownloadManagerV2::resumeTask,
                         onDeleteItem = HanimeDownloadManagerV2::deleteTask,
-                        onCreateTestTask = {
-                            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
-                                createTestTask()
-                            }
-                        },
                     )
                 }
             }
@@ -81,7 +74,7 @@ class DownloadingFragment : Fragment() {
         HanimeDownloadManagerV2.addTask(args, redownload = false)
     }
 
-    private fun resumeAll(items: List<com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity>) {
+    private fun resumeAll(items: List<HanimeDownloadEntity>) {
         items.forEach { entity ->
             if (!entity.isDownloading) {
                 HanimeDownloadManagerV2.resumeTask(entity)
@@ -89,7 +82,7 @@ class DownloadingFragment : Fragment() {
         }
     }
 
-    private fun pauseAll(items: List<com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity>) {
+    private fun pauseAll(items: List<HanimeDownloadEntity>) {
         items.forEach { entity ->
             if (entity.isDownloading) {
                 HanimeDownloadManagerV2.stopTask(entity)

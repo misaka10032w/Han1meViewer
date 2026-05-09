@@ -10,26 +10,23 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,7 +49,6 @@ import com.yenaly.han1meviewer.logic.state.DownloadState
 import com.yenaly.han1meviewer.ui.component.ComponentPreview
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.EmptyContent
-import com.yenaly.han1meviewer.ui.component.ErrorContent
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
 import kotlinx.coroutines.flow.Flow
@@ -61,35 +57,25 @@ import kotlinx.coroutines.flow.flowOf
 @Composable
 fun DownloadingScreen(
     downloadingFlow: Flow<List<HanimeDownloadEntity>>,
-    onPauseAll: (List<HanimeDownloadEntity>) -> Unit,
-    onResumeAll: (List<HanimeDownloadEntity>) -> Unit,
     onPauseItem: (HanimeDownloadEntity) -> Unit,
     onResumeItem: (HanimeDownloadEntity) -> Unit,
     onDeleteItem: (HanimeDownloadEntity) -> Unit,
-    onCreateTestTask: () -> Unit,
 ) {
     val items by downloadingFlow.collectAsStateWithLifecycle(initialValue = emptyList())
     DownloadingScreen(
         items = items,
-        onPauseAll = onPauseAll,
-        onResumeAll = onResumeAll,
         onPauseItem = onPauseItem,
         onResumeItem = onResumeItem,
         onDeleteItem = onDeleteItem,
-        onCreateTestTask = onCreateTestTask,
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DownloadingScreen(
+internal fun DownloadingScreen(
     items: List<HanimeDownloadEntity>,
-    onPauseAll: (List<HanimeDownloadEntity>) -> Unit,
-    onResumeAll: (List<HanimeDownloadEntity>) -> Unit,
     onPauseItem: (HanimeDownloadEntity) -> Unit,
     onResumeItem: (HanimeDownloadEntity) -> Unit,
     onDeleteItem: (HanimeDownloadEntity) -> Unit,
-    onCreateTestTask: () -> Unit,
 ) {
     var pendingDelete by remember { mutableStateOf<HanimeDownloadEntity?>(null) }
 
@@ -106,70 +92,29 @@ private fun DownloadingScreen(
         onDismiss = { pendingDelete = null },
     )
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(stringResource(R.string.downloading))
-                        Text(
-                            text = stringResource(R.string.video_count, items.size),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                },
-                actions = {
-                    FilledIconButton(onClick = { onResumeAll(items) }, enabled = items.isNotEmpty()) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_baseline_play_arrow_24),
-                            contentDescription = stringResource(R.string.start_all),
-                        )
-                    }
-                    FilledIconButton(onClick = { onPauseAll(items) }, enabled = items.isNotEmpty()) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_baseline_pause_24),
-                            contentDescription = stringResource(R.string.pause_all),
-                        )
-                    }
-                    FilledIconButton(onClick = onCreateTestTask) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_baseline_download_24),
-                            contentDescription = stringResource(R.string.download_test),
-                        )
-                    }
-                },
+    if (items.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            EmptyContent(
+                title = stringResource(R.string.empty_content),
+                description = stringResource(R.string.downloading),
             )
-        },
-    ) { paddingValues ->
-        if (items.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center,
-            ) {
-                EmptyContent(
-                    title = stringResource(R.string.empty_content),
-                    description = stringResource(R.string.downloading),
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            items(items, key = { it.id }) { item ->
+                DownloadingItemCard(
+                    item = item,
+                    onPause = { onPauseItem(item) },
+                    onResume = { onResumeItem(item) },
+                    onDelete = { pendingDelete = item },
                 )
-            }
-        } else {
-            androidx.compose.foundation.lazy.LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(items, key = { it.id }) { item ->
-                    DownloadingItemCard(
-                        item = item,
-                        onPause = { onPauseItem(item) },
-                        onResume = { onResumeItem(item) },
-                        onDelete = { pendingDelete = item },
-                    )
-                }
             }
         }
     }
@@ -199,8 +144,7 @@ private fun DownloadingItemCard(
                 AsyncImage(
                     model = item.coverUri ?: item.coverUrl,
                     contentDescription = item.title,
-                    modifier = Modifier
-                        .size(width = 146.dp, height = 104.dp),
+                    modifier = Modifier.size(width = 146.dp, height = 104.dp),
                     contentScale = ContentScale.Crop,
                 )
 
@@ -253,8 +197,7 @@ private fun DownloadingItemCard(
                     )
                 }
             }
-            val animatedProgress by
-            animateFloatAsState(
+            val animatedProgress by animateFloatAsState(
                 targetValue = item.progress / 100f,
                 animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
             )
@@ -343,12 +286,9 @@ private fun DownloadingScreenPreview() {
     ComponentPreview {
         DownloadingScreen(
             items = items,
-            onPauseAll = {},
-            onResumeAll = {},
             onPauseItem = {},
             onResumeItem = {},
             onDeleteItem = {},
-            onCreateTestTask = {},
         )
     }
 }
