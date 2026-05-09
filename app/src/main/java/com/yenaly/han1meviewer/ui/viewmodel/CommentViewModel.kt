@@ -71,10 +71,10 @@ class CommentViewModel(application: Application) : YenalyViewModel(application) 
         loadAssetAs<List<ReportReason>>("report_reason.json").orEmpty()
     }
 
-    var currentSortType = CommentFragment.SortType.LATEST
-        private set
+    private val _currentSortType = MutableStateFlow(CommentFragment.SortType.LATEST)
+    val currentSortType = _currentSortType.asStateFlow()
     fun setSortType(type: CommentFragment.SortType) {
-        currentSortType = type
+        _currentSortType.value = type
     }
     fun clearCommentData(){
         _videoCommentFlow.value = emptyList()
