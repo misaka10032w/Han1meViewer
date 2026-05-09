@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.ui.viewmodel.mylist
 
 import android.app.Application
 import android.util.Log
+import com.yenaly.han1meviewer.Preferences
 import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
@@ -22,6 +23,7 @@ import kotlinx.coroutines.launch
 class FavSubViewModel(application: Application) : YenalyViewModel(application) {
 
     var favVideoPage = 1
+    private var csrfToken: String? = null
 
     private val _favVideoStateFlow: MutableStateFlow<PageLoadingState<MyListItems<HanimeInfo>>> =
         MutableStateFlow(PageLoadingState.Loading)
@@ -30,22 +32,38 @@ class FavSubViewModel(application: Application) : YenalyViewModel(application) {
     private val _favVideoFlow = MutableStateFlow(emptyList<HanimeInfo>())
     val favVideoFlow = _favVideoFlow.asStateFlow()
 
+    private val _loadedPageCount = MutableStateFlow(0)
+    val loadedPageCount = _loadedPageCount.asStateFlow()
+
+    private val _isLoadingMore = MutableStateFlow(false)
+    val isLoadingMore = _isLoadingMore.asStateFlow()
+
+    private var isRefreshing = true
+
     fun getMyFavVideoItems(userId: String, page: Int) {
+        _isLoadingMore.value = !isRefreshing && _favVideoFlow.value.isNotEmpty()
         viewModelScope.launch {
             NetworkRepo.getMyListItems(userId, MyListType.FAV_VIDEO, page).collect { state ->
-                val prev = _favVideoStateFlow.getAndUpdate { state }
-                if (prev is PageLoadingState.Loading) _favVideoFlow.value = emptyList()
+                _favVideoStateFlow.value = state
                 _favVideoFlow.update { prevList ->
                     when (state) {
-                        is PageLoadingState.Success ->{
+                        is PageLoadingState.Success -> {
+                            csrfToken = state.info.csrfToken
+                            _loadedPageCount.value = page
                             if (state.info.hanimeInfo.isEmpty()){
                                 _favVideoStateFlow.update { PageLoadingState.NoMoreData }
                             }
-                            prevList + state.info.hanimeInfo
+                            val baseList = if (isRefreshing) emptyList() else prevList
+                            isRefreshing = false
+                            _isLoadingMore.value = false
+                            baseList + state.info.hanimeInfo
                         }
 
-                        is PageLoadingState.Loading -> emptyList()
-                        else -> prevList
+                        is PageLoadingState.Loading -> prevList
+                        else -> {
+                            _isLoadingMore.value = false
+                            prevList
+                        }
                     }
                 }
             }
@@ -53,14 +71,16 @@ class FavSubViewModel(application: Application) : YenalyViewModel(application) {
     }
 
     private val _deleteMyFavVideoFlow =
-        MutableSharedFlow<WebsiteState<Int>>()
+        MutableSharedFlow<WebsiteState<Boolean>>()
     val deleteMyFavVideoFlow = _deleteMyFavVideoFlow.asSharedFlow()
 
     fun deleteMyFavVideo(videoCode: String, position: Int) {
         viewModelScope.launch {
-            NetworkRepo.deleteMyListItems(
-                MyListType.FAV_VIDEO, videoCode,
-                position, csrfToken
+            NetworkRepo.addToMyFavVideo(
+                videoCode = videoCode,
+                likeStatus = true,
+                currentUserId = Preferences.savedUserId,
+                token = csrfToken,
             ).collect {
                 _deleteMyFavVideoFlow.emit(it)
                 _favVideoFlow.update { list ->
@@ -73,6 +93,10 @@ class FavSubViewModel(application: Application) : YenalyViewModel(application) {
     }
 
     fun clearMyListItems() {
+        isRefreshing = true
+        _isLoadingMore.value = false
+        _loadedPageCount.value = 0
+        _favVideoFlow.value = emptyList()
         _favVideoStateFlow.value = PageLoadingState.Loading
     }
 }
