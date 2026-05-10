@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -29,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -75,6 +77,8 @@ fun ChildCommentScreen(
 ) {
     val comments by commentsFlow.collectAsStateWithLifecycle()
     val state by commentStateFlow.collectAsStateWithLifecycle()
+    val containerSize = LocalWindowInfo.current.containerSize
+    val maxScreenWidth = containerSize.width.dp
 
     var replyingComment by remember { mutableStateOf<VideoComments.VideoComment?>(null) }
     var replyText by remember { mutableStateOf(TextFieldValue("")) }
@@ -130,6 +134,7 @@ fun ChildCommentScreen(
     val nestedScrollInterop = rememberNestedScrollInteropConnection()
 
     Scaffold(
+        modifier = Modifier.widthIn(max = maxScreenWidth),
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         Column(

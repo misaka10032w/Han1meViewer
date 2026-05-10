@@ -358,6 +358,17 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
 
     private fun syncTabletUi(force: Boolean = false) {
         if (!isTabletMode) return
+        val container = binding.videoRootContainer
+        if (!container.isLaidOut || container.width <= 0 || container.height <= 0) {
+            if (force) {
+                container.post {
+                    if (isAdded && view != null) {
+                        syncTabletUi(force = true)
+                    }
+                }
+            }
+            return
+        }
         val isLandscape = isCurrentlyLandscape
         val layoutChanged = lastAppliedTabletLandscape != isLandscape
         if (!force && !layoutChanged) return

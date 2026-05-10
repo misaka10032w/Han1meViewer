@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.fragment.video
 
 import android.os.Bundle
+import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -52,6 +53,10 @@ class CommentFragment : Fragment() {
         container: android.view.ViewGroup?,
         savedInstanceState: Bundle?,
     ) = ComposeView(requireContext()).apply {
+        layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+        )
         setContent {
             HanimeTheme {
                 CommentScreen(

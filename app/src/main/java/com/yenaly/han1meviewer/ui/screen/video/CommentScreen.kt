@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -44,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -90,6 +92,8 @@ fun CommentScreen(
     val comments by commentsFlow.collectAsStateWithLifecycle()
     val state by commentStateFlow.collectAsStateWithLifecycle()
     val sortType by currentSortType.collectAsStateWithLifecycle()
+    val containerSize = LocalWindowInfo.current.containerSize
+    val maxScreenWidth = containerSize.width.dp
 
     var showSortSheet by rememberSaveable { mutableStateOf(false) }
     var replyingComment by remember { mutableStateOf<VideoComments.VideoComment?>(null) }
@@ -209,6 +213,7 @@ fun CommentScreen(
     }
 
     Scaffold(
+        modifier = Modifier.widthIn(max = maxScreenWidth),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             if (isAlreadyLogin) {
