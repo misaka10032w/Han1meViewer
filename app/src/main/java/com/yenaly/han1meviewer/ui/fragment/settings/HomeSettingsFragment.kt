@@ -19,16 +19,16 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.core.text.parseAsHtml
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.preference.ListPreference
-import androidx.preference.Preference
-import androidx.preference.SeekBarPreference
-import androidx.preference.SwitchPreferenceCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.analytics
@@ -43,16 +43,14 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.SettingsRouter
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
-import com.yenaly.han1meviewer.ui.view.pref.MaterialDialogPreference
+import com.yenaly.han1meviewer.ui.screen.settings.HomeSettingsScreen
+import com.yenaly.han1meviewer.ui.screen.settings.HomeSettingsUiState
+import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.util.ThemeUtils
-import com.yenaly.han1meviewer.util.setSummaryConverter
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.han1meviewer.util.showUpdateDialog
 import com.yenaly.yenaly_libs.ActivityManager
-import com.yenaly.yenaly_libs.base.preference.MaterialSwitchPreference
-import com.yenaly.yenaly_libs.base.settings.YenalySettingsFragment
-import com.yenaly.yenaly_libs.utils.application
 import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.folderSize
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
@@ -69,12 +67,7 @@ import kotlinx.datetime.format
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.ExperimentalTime
 
-/**
- * @project Han1meViewer
- * @author Yenaly Liew
- * @time 2022/07/01 001 14:25
- */
-class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
+class HomeSettingsFragment : androidx.fragment.app.Fragment() {
 
     companion object {
         const val VIDEO_LANGUAGE = "video_language"
@@ -107,376 +100,83 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
         const val TABLET_MODE = "tablet_mode"
     }
 
-    private val videoLanguage
-            by safePreference<MaterialDialogPreference>(VIDEO_LANGUAGE)
-    private val videoQuality
-            by safePreference<MaterialDialogPreference>(DEFAULT_VIDEO_QUALITY)
-    private val playerSettings
-            by safePreference<Preference>(PLAYER_SETTINGS)
-    private val allowPipMode
-            by safePreference<Preference>(ALLOW_PIP_MODE)
-    private val hKeyframeSettings
-            by safePreference<Preference>(H_KEYFRAME_SETTINGS)
-    private val downloadSettings
-            by safePreference<Preference>(DOWNLOAD_SETTINGS)
-    private val update
-            by safePreference<Preference>(UPDATE)
-    private val useCIUpdateChannel
-            by safePreference<SwitchPreferenceCompat>(USE_CI_UPDATE_CHANNEL)
-    private val updatePopupIntervalDays
-            by safePreference<SeekBarPreference>(UPDATE_POPUP_INTERVAL_DAYS)
-    private val about
-            by safePreference<Preference>(ABOUT)
-    private val clearCache
-            by safePreference<Preference>(CLEAR_CACHE)
-    private val submitBug
-            by safePreference<Preference>(SUBMIT_BUG)
-    private val forum
-            by safePreference<Preference>(FORUM)
-    private val networkSettings
-            by safePreference<Preference>(NETWORK_SETTINGS)
-    private val applyDeepLinks
-            by safePreference<Preference>(APPLY_DEEP_LINKS)
-    private val useAnalytics
-            by safePreference<MaterialSwitchPreference>(USE_ANALYTICS)
-    private val ossLicense
-            by safePreference<Preference>("oss_license")
-    private val fakeLauncherIcon
-            by safePreference<Preference>(FAKE_LAUNCHER_ICON)
-    private val useDarkMode
-            by safePreference<MaterialDialogPreference>(USE_DARK_MODE)
-    private val useDynamicColor
-            by safePreference<MaterialSwitchPreference>(USE_DYNAMIC_COLOR)
-    private val disablePredictiveBack
-            by safePreference<MaterialSwitchPreference>(DISABLE_PREDICTIVE_BACK)
-
-    private var checkUpdateTimes = 0
-
     data class LauncherItem(
         val name: String,
         @param:DrawableRes val iconRes: Int,
-        val alias: String
+        val alias: String,
     )
+
+    private var checkUpdateTimes = 0
+    private var updateSummary: String = ""
+    private var cacheSummary: String = ""
+    private var uiState by mutableStateOf<HomeSettingsUiState?>(null)
+
+    private val launcherItems by lazy {
+        listOf(
+            LauncherItem(getString(R.string.hanime_app_name), R.drawable.ic_launcher_new, "com.yenaly.han1meviewer.LauncherAliasDefault"),
+            LauncherItem(getString(R.string.app_name_fake_calc), R.drawable.ic_launcher_calc, "com.yenaly.han1meviewer.LauncherFakeCalc"),
+            LauncherItem(getString(R.string.app_name_fake_cornhub), R.drawable.ic_launcher_cornhub, "com.yenaly.han1meviewer.LauncherFakeCornhub"),
+            LauncherItem(getString(R.string.app_name_fake_xxt), R.drawable.ic_launcher_xxt, "com.yenaly.han1meviewer.LauncherFakeXxt"),
+        )
+    }
 
     override fun onStart() {
         super.onStart()
         (activity as? ToolbarHost)?.showToolbar()
         (activity as? ToolbarHost)?.setupToolbar(
             getString(R.string.settings),
-            canNavigateBack = true
+            canNavigateBack = true,
         )
     }
 
-    @RequiresApi(Build.VERSION_CODES.Q)
-    override fun onPreferencesCreated(savedInstanceState: Bundle?) {
-        val lockSwitch = findPreference<SwitchPreferenceCompat>("use_lock_screen")
-        val items = listOf(
-            LauncherItem(getString(R.string.hanime_app_name),
-                R.drawable.ic_launcher_new,
-                "com.yenaly.han1meviewer.LauncherAliasDefault"),
-            LauncherItem(getString(R.string.app_name_fake_calc),
-                R.drawable.ic_launcher_calc,
-                "com.yenaly.han1meviewer.LauncherFakeCalc"),
-            LauncherItem(getString(R.string.app_name_fake_cornhub),
-                R.drawable.ic_launcher_cornhub,
-                "com.yenaly.han1meviewer.LauncherFakeCornhub"),
-            LauncherItem(getString(R.string.app_name_fake_xxt),
-                R.drawable.ic_launcher_xxt,
-                "com.yenaly.han1meviewer.LauncherFakeXxt")
-        )
-        lockSwitch?.setOnPreferenceChangeListener { _, newValue ->
-            if (newValue == true) {
-                if (!isDeviceSecureCompat(requireContext())) {
-                    Toast.makeText(requireContext(),
-                        getString(R.string.not_set_sys_lock), Toast.LENGTH_LONG).show()
-                    return@setOnPreferenceChangeListener false
-                }
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
+        updateSummary = getString(R.string.checking_update)
+        cacheSummary = generateClearCacheSummary(requireContext().cacheDir?.folderSize ?: 0L).toString()
+        uiState = buildUiState()
 
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
-                    Toast.makeText(requireContext(),
-                        getString(R.string.not_compact_lock_screen), Toast.LENGTH_LONG).show()
-                    return@setOnPreferenceChangeListener false
-                }
-            }
-            true
-        }
-        val langPref = findPreference<ListPreference>("app_language")
-        langPref?.setOnPreferenceChangeListener { _, _ ->
-            Handler(Looper.getMainLooper()).post {
-                activity?.recreate()
-            }
-            true
-        }
-
-        videoLanguage.apply {
-            // 從 xml 轉移至此
-            entries = arrayOf(
-                getString(R.string.traditional_chinese),
-                getString(R.string.simplified_chinese)
-            )
-            entryValues = arrayOf("zht", "zhs")
-            // 不能直接用 defaultValue 设置，没效果
-            if (value == null) setValueIndex(0)
-
-            setOnPreferenceChangeListener { _, newValue ->
-                if (newValue != Preferences.videoLanguage) {
-                    requireContext().showAlertDialog {
-                        setCancelable(false)
-                        setTitle(R.string.attention)
-                        setMessage(
-                            getString(
-                                R.string.restart_or_not_working,
-                                getString(R.string.video_language)
-                            )
+        return ComposeView(requireContext()).apply {
+            setContent {
+                HanimeTheme {
+                    uiState?.let { state ->
+                        HomeSettingsScreen(
+                            state = state,
+                            onVideoLanguageChange = ::onVideoLanguageChanged,
+                            onVideoQualityChange = ::onVideoQualityChanged,
+                            onDarkModeChange = ::onDarkModeChanged,
+                            onAllowPipModeChange = ::onAllowPipModeChanged,
+                            onAllowResumePlaybackChange = { saveBoolean(ALLOW_RESUME_PLAYBACK, it) },
+                            onShowPlayedIndicatorChange = { saveBoolean(SHOW_PLAYED_INDICATOR, it) },
+                            onSearchArtistIgnoreVideoTypeChange = { saveBoolean(SEARCH_ARTIST_IGNORE_VIDEO_TYPE, it) },
+                            onDisableMobileDataWarningChange = { saveBoolean(DISABLE_MOBILE_DATA_WARNING, it) },
+                            onDisablePredictiveBackChange = ::onDisablePredictiveBackChanged,
+                            onTabletModeChange = { saveBoolean(TABLET_MODE, it) },
+                            onDisableCommentsChange = { saveBoolean("disable_comments", it) },
+                            onCollapseDownloadedGroupChange = { saveBoolean(COLLAPSE_DOWNLOADED_GROUP, it) },
+                            onUseDynamicColorChange = ::onDynamicColorChanged,
+                            onUseCIUpdateChannelChange = ::onUseCiUpdateChannelChanged,
+                            onUseAnalyticsChange = ::onUseAnalyticsChanged,
+                            onUseLockScreenChange = ::onUseLockScreenChanged,
+                            onOpenPlayerSettings = { SettingsRouter.with(this@HomeSettingsFragment).navigateWithinSettings(R.id.playerSettingsFragment) },
+                            onOpenHKeyframeSettings = { SettingsRouter.with(this@HomeSettingsFragment).navigateWithinSettings(R.id.hKeyframeSettingsFragment) },
+                            onOpenDownloadSettings = { SettingsRouter.with(this@HomeSettingsFragment).navigateWithinSettings(R.id.downloadSettingsFragment) },
+                            onOpenNetworkSettings = { SettingsRouter.with(this@HomeSettingsFragment).navigateWithinSettings(R.id.networkSettingsFragment) },
+                            onOpenAppLanguageSettings = ::onAppLanguageChanged,
+                            onCheckUpdate = ::onCheckUpdateClick,
+                            onUpdatePopupIntervalDaysChange = ::onUpdatePopupIntervalDaysChanged,
+                            onOpenApplyDeepLinks = { showApplyDeepLinksDialog(requireContext()) },
+                            onOpenFakeLauncherIcon = ::showFakeLauncherDialog,
+                            onOpenOpenSourceLicense = ::openOpenSourceLicense,
+                            onOpenAbout = {},
+                            onClearCache = ::clearCache,
+                            onSubmitBug = { browse(HA1_GITHUB_ISSUE_URL) },
+                            onOpenForum = { browse(HA1_GITHUB_FORUM_URL) },
                         )
-                        setPositiveButton(R.string.confirm) { _, _ ->
-                            ActivityManager.restart(killProcess = true)
-                        }
-                        setNegativeButton(R.string.cancel, null)
                     }
                 }
-                return@setOnPreferenceChangeListener true
-            }
-        }
-        useDarkMode.apply {
-            entries = arrayOf(
-                getString(R.string.follow_system),
-                getString(R.string.always_off),
-                getString(R.string.always_on),
-            )
-            entryValues = arrayOf("follow_system", "always_off", "always_on")
-            // 不能直接用 defaultValue 设置，没效果
-            if (value == null) setValueIndex(0)
-
-            setOnPreferenceChangeListener { _, newValue ->
-                if (newValue != Preferences.useDarkMode) {
-                    Preferences.preferenceSp.edit {
-                        putString(USE_DARK_MODE,newValue.toString())
-                    }
-                    ThemeUtils.applyDarkModeFromPreferences(requireContext())
-                    requireActivity().recreate()
-                }
-                return@setOnPreferenceChangeListener true
-            }
-        }
-        useDynamicColor.apply {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-                isEnabled = false
-                return@apply
-            }
-            setOnPreferenceChangeListener { _, newValue ->
-                if (newValue != Preferences.useDynamicColor) {
-                    requireContext().showAlertDialog {
-                        setCancelable(false)
-                        setTitle(R.string.attention)
-                        setMessage(
-                            getString(
-                                R.string.restart_or_not_working,
-                                getString(R.string.dynamic_color_title)
-                            )
-                        )
-                        setPositiveButton(R.string.confirm) { _, _ ->
-                            ActivityManager.restart(killProcess = true)
-                        }
-                        setNegativeButton(R.string.cancel, null)
-                    }
-                }
-                return@setOnPreferenceChangeListener true
-            }
-        }
-        videoQuality.apply {
-            entries = arrayOf(
-                "480P",
-                "720P",
-                "1080P"
-            )
-            entryValues = arrayOf("480P", "720P","1080P")
-            if (value == null) setValueIndex(2)
-
-            setOnPreferenceChangeListener { _, newValue ->
-                if (newValue != Preferences.videoQuality) {
-                    Toast.makeText(application, "Success：$newValue", Toast.LENGTH_SHORT).show()
-                }
-                return@setOnPreferenceChangeListener true
-            }
-        }
-        allowPipMode.apply {
-            setOnPreferenceChangeListener{ preference: Preference, newValue ->
-                val enabled = newValue as Boolean
-                if (enabled && !isPipPermissionGranted(requireContext())) {
-                    Toast.makeText(requireContext(),
-                        getString(R.string.request_pip_alert), Toast.LENGTH_SHORT).show()
-                    openPipPermissionSettings(requireContext())
-                    Handler(Looper.getMainLooper()).post {
-                        (preference as SwitchPreferenceCompat).isChecked = false
-                    }
-                    false
-                } else {
-                    true
-                }
-            }
-        }
-        disablePredictiveBack.apply {
-            setOnPreferenceChangeListener { _, _ ->
-                activity?.recreate()
-                return@setOnPreferenceChangeListener true
-            }
-        }
-        playerSettings.setOnPreferenceClickListener {
-            SettingsRouter.with(this).navigateWithinSettings(R.id.playerSettingsFragment)
-            return@setOnPreferenceClickListener true
-        }
-        hKeyframeSettings.setOnPreferenceClickListener {
-            SettingsRouter.with(this).navigateWithinSettings(R.id.hKeyframeSettingsFragment)
-            return@setOnPreferenceClickListener true
-        }
-        downloadSettings.setOnPreferenceClickListener {
-            SettingsRouter.with(this).navigateWithinSettings(R.id.downloadSettingsFragment)
-            return@setOnPreferenceClickListener true
-        }
-        about.apply {
-            title = buildString {
-                append(getString(R.string.about))
-                append(" ")
-                append(getString(R.string.hanime_app_name))
-            }
-            summary = getString(R.string.current_version, "v${BuildConfig.VERSION_NAME}")
-        }
-        clearCache.apply {
-            val cacheDir = context.cacheDir
-            var folderSize = cacheDir?.folderSize ?: 0L
-            summary = generateClearCacheSummary(folderSize)
-            setOnPreferenceClickListener {
-                if (folderSize != 0L) {
-                    context.showAlertDialog {
-                        setTitle(R.string.sure_to_clear)
-                        setMessage(R.string.sure_to_clear_cache)
-                        setPositiveButton(R.string.confirm) { _, _ ->
-                            CoroutineScope(Dispatchers.IO).launch {
-                                if (cacheDir?.deleteRecursively() == true) {
-                                    folderSize = cacheDir.folderSize
-                                    withContext(Dispatchers.Main) {
-                                        showShortToast(R.string.clear_success)
-                                        summary = generateClearCacheSummary(folderSize)
-                                    }
-                                } else {
-                                    folderSize = cacheDir.folderSize
-                                    withContext(Dispatchers.Main) {
-                                        showShortToast(R.string.clear_failed)
-                                        summary = generateClearCacheSummary(folderSize)
-                                    }
-                                }
-                            }
-                        }
-                        setNegativeButton(R.string.cancel, null)
-                    }
-                } else showShortToast(R.string.cache_empty)
-                return@setOnPreferenceClickListener true
-            }
-        }
-        submitBug.apply {
-            setOnPreferenceClickListener {
-                browse(HA1_GITHUB_ISSUE_URL)
-                return@setOnPreferenceClickListener true
-            }
-        }
-        forum.apply {
-            setOnPreferenceClickListener {
-                browse(HA1_GITHUB_FORUM_URL)
-                return@setOnPreferenceClickListener true
-            }
-        }
-        networkSettings.apply {
-            setOnPreferenceClickListener {
-                SettingsRouter.with(this@HomeSettingsFragment)
-                    .navigateWithinSettings(R.id.networkSettingsFragment)
-                return@setOnPreferenceClickListener true
-            }
-        }
-        applyDeepLinks.apply {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                isVisible = true
-                setOnPreferenceClickListener {
-                    showApplyDeepLinksDialog(it.context)
-                    return@setOnPreferenceClickListener true
-                }
-            } else {
-                isVisible = false
-            }
-        }
-        useCIUpdateChannel.apply {
-            setOnPreferenceChangeListener { _, _ ->
-                AppViewModel.getLatestVersion()
-                return@setOnPreferenceChangeListener true
-            }
-        }
-        updatePopupIntervalDays.apply {
-            setSummaryConverter(defValue = 0, converter = ::toIntervalDaysPrettyString)
-        }
-        useAnalytics.apply {
-            setOnPreferenceChangeListener { _, newValue ->
-                val isEnabling = newValue as Boolean
-                if (!isEnabling){
-                    context.showAlertDialog {
-                        setTitle(R.string.about_analytics)
-                        setMessage(context.getString(R.string.about_analytics_summary).parseAsHtml())
-                        setCancelable(false)
-                        setPositiveButton(R.string.ok, null)
-                        setNeutralButton(R.string.deny){ _, _ ->
-                            useAnalytics.isChecked = false
-                            Firebase.analytics.setAnalyticsCollectionEnabled(false)
-                        }
-                    }
-                    return@setOnPreferenceChangeListener false
-                }
-                Firebase.analytics.setAnalyticsCollectionEnabled(true)
-                return@setOnPreferenceChangeListener true
-            }
-        }
-        @Suppress ("DEPRECATION")
-        ossLicense.apply {
-            setOnPreferenceClickListener {
-                LibsBuilder()
-                    .withShowLoadingProgress(true)
-                    .withSearchEnabled(false)
-                    .withActivityTitle(getString(R.string.open_source_license) )
-                    .withAboutIconShown(true)
-                    .withAboutVersionShown(true)
-                    .start(requireContext())
-                true
-            }
-        }
-
-        fakeLauncherIcon.apply {
-        //    summary = getString(R.string.select_fake_icon)
-            val currentAlias = Preferences.fakeLauncherIcon
-            val currentItem = items.find { it.alias == currentAlias } ?: items[0]
-            fakeLauncherIcon.summary = currentItem.name
-            setOnPreferenceClickListener {
-                val adapter = object : ArrayAdapter<LauncherItem>(context, 0, items) {
-                    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                        val view = convertView ?: LayoutInflater.from(context)
-                            .inflate(R.layout.item_simple_icon_with_text, parent, false)
-                        val item = getItem(position)!!
-                        view.findViewById<ImageView>(R.id.icon).setImageResource(item.iconRes)
-                        view.findViewById<TextView>(R.id.name).text = item.name
-                        return view
-                    }
-                }
-                MaterialAlertDialogBuilder(context)
-                    .setTitle(getString(R.string.fake_app_icon))
-                    .setAdapter(adapter) { _, which ->
-                        val selected = items[which]
-                        preferenceManager.sharedPreferences?.edit {
-                            putString(FAKE_LAUNCHER_ICON, selected.alias)
-                        }
-                        val app = context.applicationContext as? HanimeApplication
-                        app?.switchLauncher(selected.alias)
-                        summary = selected.name
-                        showLongToast(getString(R.string.fake_icon_hint))
-                    }
-                    .show()
-                true
             }
         }
     }
@@ -486,70 +186,284 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
         initFlow()
     }
 
+    private fun buildUiState(): HomeSettingsUiState {
+        val currentAlias = Preferences.fakeLauncherIcon
+        val currentItem = launcherItems.find { it.alias == currentAlias } ?: launcherItems.first()
+        val videoLanguageLabel = when (Preferences.videoLanguage) {
+            "zht" -> getString(R.string.traditional_chinese)
+            "zhs" -> getString(R.string.simplified_chinese)
+            else -> Preferences.videoLanguage
+        }
+        val darkModeLabel = when (Preferences.useDarkMode) {
+            "follow_system" -> getString(R.string.follow_system)
+            "always_off" -> getString(R.string.always_off)
+            "always_on" -> getString(R.string.always_on)
+            else -> Preferences.useDarkMode
+        }
+        val appLanguageValue = Preferences.preferenceSp.getString("app_language", "system") ?: "system"
+        val appLanguageLabel = when (appLanguageValue) {
+            "system" -> "跟随系统"
+            "zh-rCN" -> "简体中文"
+            "zh" -> "繁體中文"
+            "ja" -> "日本語"
+            "en" -> "English"
+            else -> appLanguageValue
+        }
+        return HomeSettingsUiState(
+            videoLanguage = videoLanguageLabel,
+            defaultVideoQuality = Preferences.videoQuality,
+            darkMode = darkModeLabel,
+            appLanguage = appLanguageLabel,
+            allowPipMode = Preferences.preferenceSp.getBoolean(ALLOW_PIP_MODE, false),
+            allowResumePlayback = Preferences.allowResumePlayback,
+            showPlayedIndicator = Preferences.showPlayedIndicator,
+            searchArtistIgnoreVideoType = Preferences.searchArtistIgnoreVideoType,
+            disableMobileDataWarning = Preferences.disableMobileDataWarning,
+            disablePredictiveBack = Preferences.disablePredictiveBack,
+            tabletMode = Preferences.tabletMode,
+            disableComments = Preferences.preferenceSp.getBoolean("disable_comments", false),
+            collapseDownloadedGroup = Preferences.collapseDownloadedGroup,
+            useDynamicColor = Preferences.useDynamicColor,
+            useCIUpdateChannel = Preferences.useCIUpdateChannel,
+            useAnalytics = Preferences.isAnalyticsEnabled,
+            useLockScreen = Preferences.preferenceSp.getBoolean("use_lock_screen", false),
+            fakeLauncherIconName = currentItem.name,
+            updateSummary = updateSummary,
+            cacheSummary = cacheSummary,
+            versionSummary = getString(R.string.current_version, "v${BuildConfig.VERSION_NAME}"),
+            updatePopupIntervalSummary = toIntervalDaysPrettyString(Preferences.updatePopupIntervalDays),
+            updatePopupIntervalDays = Preferences.updatePopupIntervalDays,
+            dynamicColorEnabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
+        )
+    }
+
+    private fun saveBoolean(key: String, value: Boolean) {
+        Preferences.preferenceSp.edit { putBoolean(key, value) }
+        uiState = buildUiState()
+    }
+
+    private fun saveString(key: String, value: String) {
+        Preferences.preferenceSp.edit { putString(key, value) }
+        uiState = buildUiState()
+    }
+
+    private fun onVideoLanguageChanged(value: String) {
+        if (value != Preferences.videoLanguage) {
+            saveString(VIDEO_LANGUAGE, value)
+            requireContext().showAlertDialog {
+                setCancelable(false)
+                setTitle(R.string.attention)
+                setMessage(getString(R.string.restart_or_not_working, getString(R.string.video_language)))
+                setPositiveButton(R.string.confirm) { _, _ -> ActivityManager.restart(killProcess = true) }
+                setNegativeButton(R.string.cancel, null)
+            }
+        }
+    }
+
+    private fun onVideoQualityChanged(value: String) {
+        saveString(DEFAULT_VIDEO_QUALITY, value)
+        Toast.makeText(requireContext(), "Success：$value", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun onDarkModeChanged(value: String) {
+        if (value != Preferences.useDarkMode) {
+            saveString(USE_DARK_MODE, value)
+            ThemeUtils.applyDarkModeFromPreferences(requireContext())
+            requireActivity().recreate()
+        }
+    }
+
+    private fun onDynamicColorChanged(value: Boolean) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+        if (value != Preferences.useDynamicColor) {
+            Preferences.preferenceSp.edit { putBoolean(USE_DYNAMIC_COLOR, value) }
+            requireContext().showAlertDialog {
+                setCancelable(false)
+                setTitle(R.string.attention)
+                setMessage(getString(R.string.restart_or_not_working, getString(R.string.dynamic_color_title)))
+                setPositiveButton(R.string.confirm) { _, _ -> ActivityManager.restart(killProcess = true) }
+                setNegativeButton(R.string.cancel, null)
+            }
+        }
+    }
+
+    private fun onAllowPipModeChanged(enabled: Boolean) {
+        if (enabled && !isPipPermissionGranted(requireContext())) {
+            Toast.makeText(requireContext(), getString(R.string.request_pip_alert), Toast.LENGTH_SHORT).show()
+            openPipPermissionSettings(requireContext())
+            saveBoolean(ALLOW_PIP_MODE, false)
+            return
+        }
+        saveBoolean(ALLOW_PIP_MODE, enabled)
+    }
+
+    private fun onDisablePredictiveBackChanged(value: Boolean) {
+        saveBoolean(DISABLE_PREDICTIVE_BACK, value)
+        activity?.recreate()
+    }
+
+    private fun onUseCiUpdateChannelChanged(value: Boolean) {
+        saveBoolean(USE_CI_UPDATE_CHANNEL, value)
+        AppViewModel.getLatestVersion()
+    }
+
+    private fun onUseAnalyticsChanged(value: Boolean) {
+        if (!value) {
+            requireContext().showAlertDialog {
+                setTitle(R.string.about_analytics)
+                setMessage(requireContext().getString(R.string.about_analytics_summary).parseAsHtml())
+                setCancelable(false)
+                setPositiveButton(R.string.ok, null)
+                setNeutralButton(R.string.deny) { _, _ ->
+                    saveBoolean(USE_ANALYTICS, false)
+                    Firebase.analytics.setAnalyticsCollectionEnabled(false)
+                }
+            }
+            return
+        }
+        saveBoolean(USE_ANALYTICS, true)
+        Firebase.analytics.setAnalyticsCollectionEnabled(true)
+    }
+
+    private fun showAppLanguageNotice() {
+        Handler(Looper.getMainLooper()).post {
+            activity?.recreate()
+        }
+    }
+
+    private fun onAppLanguageChanged(value: String) {
+        val old = Preferences.preferenceSp.getString("app_language", "system") ?: "system"
+        if (old != value) {
+            Preferences.preferenceSp.edit { putString("app_language", value) }
+            uiState = buildUiState()
+            showAppLanguageNotice()
+        }
+    }
+
+    private fun onUseLockScreenChanged(value: Boolean) {
+        if (value) {
+            if (!isDeviceSecureCompat(requireContext())) {
+                Toast.makeText(requireContext(), getString(R.string.not_set_sys_lock), Toast.LENGTH_LONG).show()
+                uiState = buildUiState()
+                return
+            }
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+                Toast.makeText(requireContext(), getString(R.string.not_compact_lock_screen), Toast.LENGTH_LONG).show()
+                uiState = buildUiState()
+                return
+            }
+        }
+        saveBoolean("use_lock_screen", value)
+    }
+
+    private fun onCheckUpdateClick() {
+        AppViewModel.getLatestVersion()
+    }
+
+    private fun onUpdatePopupIntervalDaysChanged(value: Int) {
+        Preferences.preferenceSp.edit { putInt(UPDATE_POPUP_INTERVAL_DAYS, value) }
+        uiState = buildUiState()
+    }
+
+    private fun clearCache() {
+        val cacheDir = requireContext().cacheDir
+        val folderSize = cacheDir?.folderSize ?: 0L
+        if (folderSize == 0L) {
+            showShortToast(R.string.cache_empty)
+            return
+        }
+        requireContext().showAlertDialog {
+            setTitle(R.string.sure_to_clear)
+            setMessage(R.string.sure_to_clear_cache)
+            setPositiveButton(R.string.confirm) { _, _ ->
+                CoroutineScope(Dispatchers.IO).launch {
+                    val success = cacheDir?.deleteRecursively() == true
+                    val newSize = cacheDir.folderSize
+                    withContext(Dispatchers.Main) {
+                        cacheSummary = generateClearCacheSummary(newSize).toString()
+                        if (success) showShortToast(R.string.clear_success) else showShortToast(R.string.clear_failed)
+                        uiState = buildUiState()
+                    }
+                }
+            }
+            setNegativeButton(R.string.cancel, null)
+        }
+    }
+
+    private fun showFakeLauncherDialog() {
+        val adapter = object : ArrayAdapter<LauncherItem>(requireContext(), 0, launcherItems) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = convertView ?: LayoutInflater.from(context)
+                    .inflate(R.layout.item_simple_icon_with_text, parent, false)
+                val item = getItem(position)!!
+                view.findViewById<ImageView>(R.id.icon).setImageResource(item.iconRes)
+                view.findViewById<TextView>(R.id.name).text = item.name
+                return view
+            }
+        }
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.fake_app_icon))
+            .setAdapter(adapter) { _, which ->
+                val selected = launcherItems[which]
+                Preferences.preferenceSp.edit { putString(FAKE_LAUNCHER_ICON, selected.alias) }
+                (requireContext().applicationContext as? HanimeApplication)?.switchLauncher(selected.alias)
+                showLongToast(getString(R.string.fake_icon_hint))
+                uiState = buildUiState()
+            }
+            .show()
+    }
+
+    private fun openOpenSourceLicense() {
+        LibsBuilder()
+            .withShowLoadingProgress(true)
+            .withSearchEnabled(false)
+            .withActivityTitle(getString(R.string.open_source_license))
+            .withAboutIconShown(true)
+            .withAboutVersionShown(true)
+            .start(requireContext())
+    }
+
     private fun initFlow() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 AppViewModel.versionFlow.collect { state ->
-                    when (state) {
+                    updateSummary = when (state) {
                         is WebsiteState.Error -> {
                             checkUpdateTimes++
-                            update.setSummary(R.string.check_update_failed)
-                            update.setOnPreferenceClickListener {
-                                if (checkUpdateTimes > 2) {
-                                    showUpdateFailedDialog(it.context)
-                                } else {
-                                    AppViewModel.getLatestVersion()
-                                }
-                                return@setOnPreferenceClickListener true
-                            }
+                            getString(R.string.check_update_failed)
                         }
 
-                        is WebsiteState.Loading -> {
-                            update.setSummary(R.string.checking_update)
-                            update.onPreferenceClickListener = null
-                        }
+                        is WebsiteState.Loading -> getString(R.string.checking_update)
 
                         is WebsiteState.Success -> {
                             if (state.info == null) {
-                                update.setSummary(R.string.already_latest_update)
-                                update.onPreferenceClickListener = null
+                                getString(R.string.already_latest_update)
                             } else {
-                                update.summary =
-                                    getString(R.string.check_update_success, state.info.version)
-                                update.setOnPreferenceClickListener {
-                                    viewLifecycleOwner.lifecycleScope.launch {
-                                        it.context.showUpdateDialog(state.info)
-                                    }
-                                    return@setOnPreferenceClickListener true
-                                }
+                                getString(R.string.check_update_success, state.info.version)
                             }
                         }
                     }
+                    uiState = buildUiState()
                 }
             }
         }
     }
 
-    // #issue-124: Support deep links.
     @RequiresApi(Build.VERSION_CODES.S)
     private fun showApplyDeepLinksDialog(context: Context) {
         context.showAlertDialog {
             setTitle(R.string.apply_deep_links)
             setView(R.layout.dialog_apply_deep_links)
             setPositiveButton(R.string.go_to_settings) { _, _ ->
-                // #issue-197: 有些手机不支持直接从应用里跳转到深层链接界面
-                // 这个权限是一个系统级权限，所以没办法，不支持的手机只能自己找地方开了。
                 try {
                     val intent = Intent().apply {
                         action = Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS
                         addCategory(Intent.CATEGORY_DEFAULT)
                         data = "package:${context.packageName}".toUri()
-                        flags = Intent.FLAG_ACTIVITY_NO_HISTORY or
-                                Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+                        flags = Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
                     }
                     requireActivity().startActivity(intent)
                 } catch (e: Exception) {
-                    // 竟然还有手机不支持打开的
                     showShortToast(R.string.action_app_open_by_default_settings_not_support)
                     e.printStackTrace()
                 }
@@ -558,26 +472,8 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
         }
     }
 
-    private fun showUpdateFailedDialog(context: Context) {
-        context.showAlertDialog {
-            setTitle(R.string.do_not_check_update_again)
-            setMessage(getString(R.string.update_failed_tips).trimIndent())
-            setPositiveButton(R.string.take_me_to_download) { _, _ ->
-                browse(HA1_GITHUB_RELEASES_URL)
-            }
-            setNegativeButton(R.string.cancel, null)
-        }
-    }
-
     private fun generateClearCacheSummary(size: Long): CharSequence {
         return getString(R.string.cache_usage_summary, size.formatFileSizeV2()).parseAsHtml()
-//        return spannable {
-//            size.formatFileSizeV2().span {
-//                style(Typeface.BOLD)
-//            }
-//            " ".text()
-//            getString(R.string.cache_occupy).text()
-//        }
     }
 
     @OptIn(ExperimentalTime::class)
@@ -588,7 +484,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
         } else {
             getString(
                 R.string.last_update_popup_check_time,
-                Instant.fromEpochSeconds(Preferences.lastUpdatePopupTime)
+                Instant.fromEpochSeconds(lastUpdatePopupTime)
                     .toLocalDateTime(TimeZone.currentSystemDefault())
                     .format(LocalDateTime.Formats.ISO)
             )
@@ -598,6 +494,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
             else -> getString(R.string.which_days, value)
         } + "\n" + msg
     }
+
     private fun isDeviceSecureCompat(context: Context): Boolean {
         val km = context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
         return km.isDeviceSecure
@@ -609,7 +506,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
             val mode = appOps.unsafeCheckOpNoThrow(
                 AppOpsManager.OPSTR_PICTURE_IN_PICTURE,
                 android.os.Process.myUid(),
-                context.packageName
+                context.packageName,
             )
             mode == AppOpsManager.MODE_ALLOWED
         } else {
@@ -618,8 +515,7 @@ class HomeSettingsFragment : YenalySettingsFragment(R.xml.settings_home) {
     }
 
     private fun openPipPermissionSettings(context: Context) {
-        val intent = Intent("android.settings.PICTURE_IN_PICTURE_SETTINGS",
-            "package:${context.packageName}".toUri())
+        val intent = Intent("android.settings.PICTURE_IN_PICTURE_SETTINGS", "package:${context.packageName}".toUri())
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         context.startActivity(intent)
     }
