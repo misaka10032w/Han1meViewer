@@ -2,14 +2,17 @@ package com.yenaly.han1meviewer.ui.preview
 
 import com.yenaly.han1meviewer.logic.model.Announcement
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
+import com.yenaly.han1meviewer.logic.model.HanimePreview
 import com.yenaly.han1meviewer.logic.model.HomePage
 import com.yenaly.han1meviewer.logic.model.Playlists
 import com.yenaly.han1meviewer.logic.model.SubscriptionItem
 import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
 import com.yenaly.han1meviewer.ui.fragment.home.HomeCategory
-import java.time.LocalDate
-import java.time.YearMonth
 
+
+/**
+ * Compose预览用数据源
+ */
 val fakeArtists = listOf(
     SubscriptionItem("初音未来", "null"),
     SubscriptionItem("绫波丽", "null"),
@@ -79,17 +82,6 @@ val fakeVideosItem = SubscriptionVideosItem(
     reviews = "100%",
     uploadTime = "2020-12-12",
 )
-
-fun generateFakeCheckInRecords(
-    yearMonth: YearMonth = YearMonth.now(),
-    maxState: Int = 2,
-): Map<LocalDate, Int> {
-    val daysInMonth = yearMonth.lengthOfMonth()
-    return (1..daysInMonth).associate { day ->
-        val date = LocalDate.of(yearMonth.year, yearMonth.month, day)
-        date to (0..maxState).random()
-    }
-}
 
 val fakePlaylists = listOf(
     Playlists.Playlist(
@@ -237,4 +229,38 @@ val fakeCategories = listOf(
         sort = "他們在看",
         videos = fakeHomePageVideos.shuffled().take(5),
     ),
+)
+
+val fakeTagList1 = listOf("新番", "预告", "校园", "妹妹", "姐系", "正太", "萝莉")
+val fakeTagList2 = listOf("新番", "预告", "校园", "妹妹", "姐系", "正太", "萝莉", "伪娘", "NTR", "SM")
+
+val fakeNewHanimeInfo = listOf(
+    HanimePreview.PreviewInfo(
+        title = "日文标题",
+        videoTitle = "中文标题 第1话",
+        coverUrl = fakeHomePageVideos.first().coverUrl,
+        introduction = "这是用于预览的简介内容，用来确认 Compose 版布局是否正常。",
+        brand = "发行商 A",
+        releaseDate = "2024-01-01",
+        videoCode = fakeHomePageVideos.first().videoCode,
+        tags = fakeTagList1,
+        relatedPicsUrl = listOf(
+            fakeHomePageVideos[1].coverUrl,
+            fakeHomePageVideos[2].coverUrl
+        ),
+    ),
+    HanimePreview.PreviewInfo(
+        title = "日文标题2",
+        videoTitle = "中文标题 第2话",
+        coverUrl = fakeHomePageVideos.first().coverUrl,
+        introduction = "这是用于预览的简介内容，用来确认 Compose 版布局是否正常。",
+        brand = "发行商 B",
+        releaseDate = "2022-05-02",
+        videoCode = fakeHomePageVideos.first().videoCode,
+        tags = fakeTagList2,
+        relatedPicsUrl = listOf(
+            fakeHomePageVideos[1].coverUrl,
+            fakeHomePageVideos[2].coverUrl
+        ),
+    )
 )

@@ -1,21 +1,44 @@
 package com.yenaly.han1meviewer.ui.screen.home.preview
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -27,28 +50,36 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.exception.HanimeNotFoundException
@@ -60,13 +91,16 @@ import com.yenaly.han1meviewer.ui.component.ComponentPreview
 import com.yenaly.han1meviewer.ui.component.EmptyContent
 import com.yenaly.han1meviewer.ui.component.ErrorContent
 import com.yenaly.han1meviewer.ui.component.LoadingContent
+import com.yenaly.han1meviewer.ui.component.TagChipGroup
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
-import com.yenaly.han1meviewer.ui.view.CollapsibleTags
+import com.yenaly.han1meviewer.ui.preview.fakeNewHanimeInfo
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun PreviewScreen(
     previewState: WebsiteState<HanimePreview>,
+    getCachedPreviewState: (String) -> WebsiteState<HanimePreview>?,
     commentCount: Int,
     onBack: () -> Unit,
     onLoadDate: (String) -> Unit,
@@ -75,7 +109,8 @@ fun PreviewScreen(
 ) {
     var currentDateCode by rememberSaveable { mutableStateOf(currentDateCode()) }
     var selectedIndex by rememberSaveable(currentDateCode) { mutableIntStateOf(0) }
-    var previewImageUrl by remember { mutableStateOf<String?>(null) }
+    var imageViewerState by remember { mutableStateOf<PreviewImageViewerState?>(null) }
+    var monthAnimationDirection by remember { mutableIntStateOf(1) }
 
     val currentDateLabel = remember(currentDateCode) { toNormalDateLabel(currentDateCode) }
     val prevDateCode = remember(currentDateCode) { shiftMonthCode(currentDateCode, -1) }
@@ -83,17 +118,48 @@ fun PreviewScreen(
     val prevDateLabel = remember(prevDateCode) { toNormalDateLabel(prevDateCode) }
     val nextDateLabel = remember(nextDateCode) { toNormalDateLabel(nextDateCode) }
 
-    val success = previewState as? WebsiteState.Success
-    val currentPreview = success?.info?.previewInfo?.getOrNull(selectedIndex)
+    val displayState = remember(currentDateCode, previewState) {
+        val cached = getCachedPreviewState(currentDateCode)
+        if (previewState is WebsiteState.Loading && cached is WebsiteState.Success) {
+            cached
+        } else {
+            previewState
+        }
+    }
 
-    val canPrev = when (previewState) {
+    val success = displayState as? WebsiteState.Success
+    success?.info?.previewInfo?.getOrNull(selectedIndex)
+    val previewInfoList = success?.info?.previewInfo.orEmpty()
+    val previewPagerState = rememberPagerState(
+        initialPage = selectedIndex,
+        pageCount = { previewInfoList.size.coerceAtLeast(1) })
+    val scope = rememberCoroutineScope()
+
+    val canPrev = when (displayState) {
         is WebsiteState.Loading -> false
-        is WebsiteState.Success -> previewState.info.hasPrevious
+        is WebsiteState.Success -> displayState.info.hasPrevious
         is WebsiteState.Error -> true
     }
-    val canNext = when (previewState) {
-        is WebsiteState.Success -> previewState.info.hasNext
+    val canNext = when (displayState) {
+        is WebsiteState.Success -> displayState.info.hasNext
         else -> false
+    }
+    val monthHeaderState = remember(
+        currentDateCode,
+        success?.info?.headerPicUrl,
+        prevDateLabel,
+        nextDateLabel,
+        canPrev,
+        canNext,
+    ) {
+        PreviewMonthHeaderState(
+            dateCode = currentDateCode,
+            headerImageUrl = success?.info?.headerPicUrl,
+            prevLabel = prevDateLabel,
+            nextLabel = nextDateLabel,
+            canPrev = canPrev,
+            canNext = canNext,
+        )
     }
 
     LaunchedEffect(currentDateCode) {
@@ -101,28 +167,61 @@ fun PreviewScreen(
         selectedIndex = 0
     }
 
-    if (previewImageUrl != null) {
-        androidx.compose.ui.window.Dialog(onDismissRequest = { previewImageUrl = null }) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black)
-                    .clickable { previewImageUrl = null },
-                contentAlignment = Alignment.Center,
-            ) {
-                AsyncImage(
-                    model = previewImageUrl,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit,
-                )
+    LaunchedEffect(selectedIndex, previewInfoList.size) {
+        if (previewInfoList.isEmpty()) return@LaunchedEffect
+        val targetPage = selectedIndex.coerceIn(previewInfoList.indices)
+        if (previewPagerState.currentPage != targetPage) {
+            if (!previewPagerState.isScrollInProgress) {
+                previewPagerState.scrollToPage(targetPage)
             }
         }
     }
 
+    LaunchedEffect(previewPagerState.currentPage, previewInfoList.size) {
+        if (previewInfoList.isEmpty()) return@LaunchedEffect
+        val pagerPage = previewPagerState.currentPage.coerceIn(previewInfoList.indices)
+        if (pagerPage != selectedIndex) {
+            selectedIndex = pagerPage
+        }
+    }
+
+    imageViewerState?.let { viewerState ->
+        PreviewImageViewerDialog(
+            imageUrls = viewerState.imageUrls,
+            initialPage = viewerState.initialPage,
+            onDismiss = { imageViewerState = null },
+        )
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
-            title = { Text(stringResource(R.string.latest_hanime_list_monthly, currentDateLabel)) },
+            title = {
+                AnimatedContent(
+                    targetState = currentDateLabel,
+                    transitionSpec = {
+                        val forward = monthAnimationDirection >= 0
+                        (slideInVertically(
+                            animationSpec = tween(320, easing = LinearOutSlowInEasing),
+                            initialOffsetY = { height -> if (forward) height / 2 else -height / 2 }
+                        ) + fadeIn(
+                            animationSpec = tween(
+                                260,
+                                delayMillis = 40,
+                                easing = LinearOutSlowInEasing
+                            )
+                        )) togetherWith
+                                (slideOutVertically(
+                                    animationSpec = tween(220, easing = FastOutLinearInEasing),
+                                    targetOffsetY = { height -> if (forward) -height / 2 else height / 2 }
+                                ) + fadeOut(
+                                    animationSpec = tween(170, easing = FastOutLinearInEasing)
+                                ))
+                    },
+                    label = "preview_month_title",
+                ) { animatedDateLabel ->
+                    Text(stringResource(R.string.latest_hanime_list_monthly, animatedDateLabel))
+                }
+            },
             navigationIcon = {
                 IconButton(onClick = onBack) {
                     Icon(
@@ -155,18 +254,52 @@ fun PreviewScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
-                PreviewHeaderSection(
-                    headerImageUrl = success?.info?.headerPicUrl,
-                    prevLabel = prevDateLabel,
-                    nextLabel = nextDateLabel,
-                    canPrev = canPrev,
-                    canNext = canNext,
-                    onPrev = { currentDateCode = prevDateCode },
-                    onNext = { currentDateCode = nextDateCode },
-                )
+                AnimatedContent(
+                    targetState = monthHeaderState,
+                    contentKey = { it.dateCode },
+                    transitionSpec = {
+                        val forward = monthAnimationDirection >= 0
+                        (slideInHorizontally(
+                            animationSpec = tween(420, easing = LinearOutSlowInEasing),
+                            initialOffsetX = { width -> if (forward) width else -width }
+                        ) + fadeIn(
+                            animationSpec = tween(
+                                320,
+                                delayMillis = 70,
+                                easing = LinearOutSlowInEasing
+                            )
+                        )) togetherWith
+                                (slideOutHorizontally(
+                                    animationSpec = tween(260, easing = FastOutLinearInEasing),
+                                    targetOffsetX = { width -> if (forward) -width else width }
+                                ) + fadeOut(
+                                    animationSpec = tween(
+                                        190,
+                                        easing = FastOutLinearInEasing
+                                    )
+                                ))
+                    },
+                    label = "preview_month_header",
+                ) { animatedHeaderState ->
+                    PreviewHeaderSection(
+                        headerImageUrl = animatedHeaderState.headerImageUrl,
+                        prevLabel = animatedHeaderState.prevLabel,
+                        nextLabel = animatedHeaderState.nextLabel,
+                        canPrev = animatedHeaderState.canPrev,
+                        canNext = animatedHeaderState.canNext,
+                        onPrev = {
+                            monthAnimationDirection = -1
+                            currentDateCode = shiftMonthCode(animatedHeaderState.dateCode, -1)
+                        },
+                        onNext = {
+                            monthAnimationDirection = 1
+                            currentDateCode = shiftMonthCode(animatedHeaderState.dateCode, 1)
+                        },
+                    )
+                }
             }
 
-            when (previewState) {
+            when (displayState) {
                 is WebsiteState.Loading -> item {
                     LoadingContent(modifier = Modifier.padding(horizontal = 16.dp))
                 }
@@ -174,10 +307,10 @@ fun PreviewScreen(
                 is WebsiteState.Error -> item {
                     ErrorContent(
                         title = stringResource(R.string.hanime_list),
-                        message = if (previewState.throwable is HanimeNotFoundException) {
+                        message = if (displayState.throwable is HanimeNotFoundException) {
                             stringResource(R.string.preview_page_updating)
                         } else {
-                            previewState.throwable.pienization.toString()
+                            displayState.throwable.pienization.toString()
                         },
                         onRetry = { onLoadDate(currentDateCode) },
                         modifier = Modifier.padding(horizontal = 16.dp),
@@ -187,25 +320,46 @@ fun PreviewScreen(
                 is WebsiteState.Success -> {
                     item {
                         PreviewTourRow(
-                            latestHanime = previewState.info.latestHanime,
+                            latestHanime = displayState.info.latestHanime,
                             selectedIndex = selectedIndex,
-                            onSelect = { selectedIndex = it },
+                            onSelect = {
+                                if (it != previewPagerState.currentPage) {
+                                    scope.launch {
+                                        previewPagerState.animateScrollToPage(it)
+                                    }
+                                }
+                            },
                         )
                     }
 
                     item {
-                        if (currentPreview == null) {
+                        if (previewInfoList.isEmpty()) {
                             EmptyContent(
                                 title = stringResource(R.string.empty_content),
                                 description = stringResource(R.string.new_anime_trailers),
                                 modifier = Modifier.padding(horizontal = 16.dp),
                             )
                         } else {
-                            PreviewInfoCard(
-                                previewInfo = currentPreview,
-                                onOpenVideo = { code -> code?.let(onOpenVideo) },
-                                onOpenImage = { previewImageUrl = it },
-                            )
+                            HorizontalPager(
+                                state = previewPagerState,
+                                beyondViewportPageCount = 1,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 620.dp)
+                                    .animateContentSize(),
+                                verticalAlignment = Alignment.Top,
+                            ) { page ->
+                                PreviewInfoCard(
+                                    previewInfo = previewInfoList[page],
+                                    onOpenVideo = { code -> code?.let(onOpenVideo) },
+                                    onOpenImage = { index, imageUrls ->
+                                        imageViewerState = PreviewImageViewerState(
+                                            imageUrls = imageUrls,
+                                            initialPage = index,
+                                        )
+                                    },
+                                )
+                            }
                         }
                     }
                 }
@@ -213,6 +367,15 @@ fun PreviewScreen(
         }
     }
 }
+
+private data class PreviewMonthHeaderState(
+    val dateCode: String,
+    val headerImageUrl: String?,
+    val prevLabel: String,
+    val nextLabel: String,
+    val canPrev: Boolean,
+    val canNext: Boolean,
+)
 
 @Composable
 private fun PreviewHeaderSection(
@@ -240,7 +403,10 @@ private fun PreviewHeaderSection(
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        listOf(Color.Transparent, MaterialTheme.colorScheme.surface.copy(alpha = 0.88f))
+                        listOf(
+                            Color.Transparent,
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.88f)
+                        )
                     )
                 )
         )
@@ -267,8 +433,25 @@ private fun PreviewTourRow(
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
 ) {
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    val windowInfo = LocalWindowInfo.current
+    val density = LocalDensity.current
+    val edgePadding = remember(windowInfo.containerSize) {
+        with(density) {
+            val containerWidthDp = windowInfo.containerSize.width.toDp()
+            ((containerWidthDp - 92.dp) / 2).coerceAtLeast(16.dp)
+        }
+    }
+
+    LaunchedEffect(selectedIndex, latestHanime.size) {
+        if (latestHanime.isEmpty()) return@LaunchedEffect
+        centerPreviewTourItem(listState, selectedIndex)
+    }
+
     LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp),
+        state = listState,
+        contentPadding = PaddingValues(horizontal = edgePadding),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         itemsIndexed(
@@ -276,7 +459,12 @@ private fun PreviewTourRow(
             key = { index, item -> item.videoCode.ifBlank { "tour-$index" } },
         ) { index, item ->
             OutlinedCard(
-                onClick = { onSelect(index) },
+                onClick = {
+                    onSelect(index)
+                    scope.launch {
+                        centerPreviewTourItem(listState, index)
+                    }
+                },
                 shape = RoundedCornerShape(18.dp),
             ) {
                 Box {
@@ -301,11 +489,19 @@ private fun PreviewTourRow(
     }
 }
 
+private suspend fun centerPreviewTourItem(
+    listState: LazyListState,
+    index: Int,
+) {
+    if (index < 0) return
+    listState.animateScrollToItem(index)
+}
+
 @Composable
 private fun PreviewInfoCard(
     previewInfo: HanimePreview.PreviewInfo,
     onOpenVideo: (String?) -> Unit,
-    onOpenImage: (String) -> Unit,
+    onOpenImage: (Int, List<String>) -> Unit,
 ) {
     ElevatedCard(
         modifier = Modifier
@@ -314,19 +510,25 @@ private fun PreviewInfoCard(
         shape = RoundedCornerShape(28.dp),
     ) {
         Column {
-            Box(modifier = Modifier.fillMaxWidth().height(220.dp)) {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp)) {
                 AsyncImage(
                     model = previewInfo.coverUrl,
                     contentDescription = previewInfo.videoTitle,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
+                    alignment = Alignment.TopCenter
                 )
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(
                             Brush.verticalGradient(
-                                listOf(Color.Transparent, MaterialTheme.colorScheme.surface.copy(alpha = 0.92f))
+                                listOf(
+                                    Color.Transparent,
+                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)
+                                )
                             )
                         )
                 )
@@ -356,7 +558,7 @@ private fun PreviewInfoCard(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 Row {
-                    Column (modifier = Modifier.weight(1f) ) {
+                    Column(modifier = Modifier.weight(1f)) {
                         if (!previewInfo.brand.isNullOrBlank()) {
                             Text(
                                 text = "${stringResource(R.string.brand)}: ${previewInfo.brand}",
@@ -385,13 +587,18 @@ private fun PreviewInfoCard(
                 }
 
                 if (previewInfo.tags.isNotEmpty()) {
-                    PreviewTagsView(tags = previewInfo.tags)
+                    TagChipGroup(tags = previewInfo.tags)
                 }
 
                 if (previewInfo.relatedPicsUrl.isNotEmpty()) {
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        itemsIndexed(previewInfo.relatedPicsUrl, key = { index, _ -> "$index-${previewInfo.videoCode}" }) { _, url ->
-                            ElevatedCard(onClick = { onOpenImage(url) }, shape = RoundedCornerShape(16.dp)) {
+                        itemsIndexed(
+                            previewInfo.relatedPicsUrl,
+                            key = { index, _ -> "$index-${previewInfo.videoCode}" }) { index, url ->
+                            ElevatedCard(
+                                onClick = { onOpenImage(index, previewInfo.relatedPicsUrl) },
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
                                 AsyncImage(
                                     model = url,
                                     contentDescription = null,
@@ -410,22 +617,199 @@ private fun PreviewInfoCard(
 }
 
 @Composable
-private fun PreviewTagsView(tags: List<String>) {
-    val ownerLifecycle = LocalLifecycleOwner.current.lifecycle
-    AndroidView(
-        modifier = Modifier.fillMaxWidth(),
-        factory = { context ->
-            CollapsibleTags(context).apply {
-                lifecycle = ownerLifecycle
-                isCollapsedEnabled = true
+private fun PreviewImageViewerDialog(
+    imageUrls: List<String>,
+    initialPage: Int,
+    onDismiss: () -> Unit,
+) {
+    val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { imageUrls.size.coerceAtLeast(1) })
+    var isCurrentImageZoomed by remember { mutableStateOf(false) }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false,
+        ),
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.surface,
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize(),
+                    beyondViewportPageCount = 1,
+                    userScrollEnabled = !isCurrentImageZoomed,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) { page ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                    ) {
+                        AsyncImage(
+                            model = imageUrls[page],
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer { alpha = 0.24f },
+                            contentScale = ContentScale.Crop,
+                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    Brush.verticalGradient(
+                                        listOf(
+                                            MaterialTheme.colorScheme.surface.copy(alpha = 0.18f),
+                                            MaterialTheme.colorScheme.surface.copy(alpha = 0.42f),
+                                        )
+                                    )
+                                )
+                        )
+                        AsyncImage(
+                            model = imageUrls[page],
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .align(Alignment.Center),
+                            contentScale = ContentScale.Fit,
+                        )
+                        ZoomablePreviewImage(
+                            imageUrl = imageUrls[page],
+                            isActivePage = pagerState.currentPage == page,
+                            onZoomStateChange = { zoomed ->
+                                if (pagerState.currentPage == page) {
+                                    isCurrentImageZoomed = zoomed
+                                }
+                            },
+                            onDismiss = onDismiss,
+                        )
+                    }
+                }
+
+                LaunchedEffect(pagerState.currentPage) {
+                    isCurrentImageZoomed = false
+                }
+
+                IconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .statusBarsPadding()
+                        .padding(16.dp)
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.72f), CircleShape),
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_baseline_arrow_back_24),
+                        contentDescription = stringResource(R.string.back),
+                        tint = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+
+                if (imageUrls.size > 1) {
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .navigationBarsPadding()
+                            .padding(bottom = 24.dp)
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.72f), RoundedCornerShape(999.dp))
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        repeat(imageUrls.size) { index ->
+                            val selected = pagerState.currentPage == index
+                            Box(
+                                modifier = Modifier
+                                    .size(if (selected) 8.dp else 6.dp)
+                                    .background(
+                                        color = if (selected) Color.White else Color.White.copy(alpha = 0.45f),
+                                        shape = CircleShape,
+                                    )
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "${pagerState.currentPage + 1}/${imageUrls.size}",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    }
+                }
             }
-        },
-        update = { view ->
-            view.lifecycle = ownerLifecycle
-            view.tags = tags
-        },
+        }
+    }
+}
+
+@Composable
+private fun ZoomablePreviewImage(
+    imageUrl: String,
+    isActivePage: Boolean,
+    onZoomStateChange: (Boolean) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var scale by remember(imageUrl) { mutableFloatStateOf(1f) }
+    var offset by remember(imageUrl) { mutableStateOf(Offset.Zero) }
+
+    LaunchedEffect(scale, isActivePage) {
+        if (isActivePage) {
+            onZoomStateChange(scale > 1.01f)
+        }
+    }
+
+    AsyncImage(
+        model = imageUrl,
+        contentDescription = null,
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(imageUrl, scale) {
+                detectTapGestures(
+                    onTap = {
+                        if (scale <= 1.01f) onDismiss()
+                    },
+                    onDoubleTap = {
+                        if (scale > 1.01f) {
+                            scale = 1f
+                            offset = Offset.Zero
+                        } else {
+                            scale = 2f
+                        }
+                    },
+                )
+            }
+            .then(
+                if (scale > 1.01f) {
+                    Modifier.pointerInput(imageUrl) {
+                        detectTransformGestures { _, pan, zoom, _ ->
+                            val newScale = (scale * zoom).coerceIn(1f, 4f)
+                            scale = newScale
+                            offset = if (newScale <= 1f) {
+                                Offset.Zero
+                            } else {
+                                offset + pan
+                            }
+                        }
+                    }
+                } else {
+                    Modifier
+                }
+            )
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+                translationX = offset.x
+                translationY = offset.y
+            },
+        contentScale = ContentScale.Fit,
     )
 }
+
+private data class PreviewImageViewerState(
+    val imageUrls: List<String>,
+    val initialPage: Int,
+)
 
 private fun currentDateCode(): String = currentCodeFrom(2024, 1).let {
     val now = java.time.LocalDate.now()
@@ -462,23 +846,12 @@ private fun PreviewScreenPreview() {
         hasPrevious = true,
         hasNext = true,
         latestHanime = fakeHomePageVideos.take(5),
-        previewInfo = listOf(
-            HanimePreview.PreviewInfo(
-                title = "日文标题",
-                videoTitle = "中文标题 第1话",
-                coverUrl = fakeHomePageVideos.first().coverUrl,
-                introduction = "这是用于预览的简介内容，用来确认 Compose 版布局是否正常。",
-                brand = "发行商 A",
-                releaseDate = "2024-01-01",
-                videoCode = fakeHomePageVideos.first().videoCode,
-                tags = listOf("新番", "预告", "校园"),
-                relatedPicsUrl = listOf(fakeHomePageVideos[1].coverUrl, fakeHomePageVideos[2].coverUrl),
-            )
-        ),
+        previewInfo = fakeNewHanimeInfo
     )
     ComponentPreview {
         PreviewScreen(
             previewState = WebsiteState.Success(preview),
+            getCachedPreviewState = { null },
             commentCount = 12,
             onBack = {},
             onLoadDate = {},
