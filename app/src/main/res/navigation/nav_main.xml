@@ -52,8 +52,7 @@
     <!-- 搜索页 -->
     <fragment
         android:id="@+id/searchFragment"
-        android:name="com.yenaly.han1meviewer.ui.fragment.search.SearchFragment"
-        tools:layout="@layout/fragment_search">
+        android:name="com.yenaly.han1meviewer.ui.fragment.search.SearchFragment">
     </fragment>
 
     <!-- 视频页（详情+播放器合一） -->
