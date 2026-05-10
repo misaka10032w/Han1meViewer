@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.AlertDialog
@@ -64,6 +65,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ResolutionLinkMap
 import com.yenaly.han1meviewer.logic.entity.CheckInRecordEntity
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
@@ -84,6 +86,11 @@ import kotlinx.datetime.format
 
 private val previewSafeDateFormat = LocalDate.Formats.ISO
 
+data class DownloadPromptState(
+    val newQuality: String,
+    val oldQuality: String? = null,
+)
+
 @Composable
 fun VideoIntroductionScreen(
     video: HanimeVideo?,
@@ -92,6 +99,7 @@ fun VideoIntroductionScreen(
     hideRelatedInIntro: Boolean,
     shareText: String,
     playlistInitialIndex: Int,
+    downloadPrompt: DownloadPromptState?,
     onRetry: () -> Unit,
     onOpenVideo: (HanimeInfo) -> Unit,
     onOpenArtist: (HanimeVideo.Artist) -> Unit,
@@ -99,7 +107,11 @@ fun VideoIntroductionScreen(
     onToggleFavorite: () -> Unit,
     onManageMyList: (List<String>, List<Boolean>) -> Unit,
     onQuickCheckIn: (CheckInRecordEntity) -> Unit,
-    onDownload: () -> Unit,
+    onPrepareDownload: (String) -> Unit,
+    onDismissDownloadPrompt: () -> Unit,
+    onConfirmDownloadPrompt: () -> Unit,
+    onRequestOpenOfficialDownloadPage: () -> Unit,
+    onRequestOpenDownloadPermissionSettings: () -> Unit,
     onShare: () -> Unit,
     onCopyShareText: () -> Unit,
     onOpenWebPage: () -> Unit,
@@ -124,13 +136,18 @@ fun VideoIntroductionScreen(
                 hideRelatedInIntro = hideRelatedInIntro,
                 shareText = shareText,
                 playlistInitialIndex = playlistInitialIndex,
+                downloadPrompt = downloadPrompt,
                 onOpenVideo = onOpenVideo,
                 onOpenArtist = onOpenArtist,
                 onToggleSubscribe = onToggleSubscribe,
                 onToggleFavorite = onToggleFavorite,
                 onManageMyList = onManageMyList,
                 onQuickCheckIn = onQuickCheckIn,
-                onDownload = onDownload,
+                onPrepareDownload = onPrepareDownload,
+                onDismissDownloadPrompt = onDismissDownloadPrompt,
+                onConfirmDownloadPrompt = onConfirmDownloadPrompt,
+                onRequestOpenOfficialDownloadPage = onRequestOpenOfficialDownloadPage,
+                onRequestOpenDownloadPermissionSettings = onRequestOpenDownloadPermissionSettings,
                 onShare = onShare,
                 onCopyShareText = onCopyShareText,
                 onOpenWebPage = onOpenWebPage,
@@ -168,13 +185,18 @@ private fun VideoIntroductionContent(
     hideRelatedInIntro: Boolean,
     shareText: String,
     playlistInitialIndex: Int,
+    downloadPrompt: DownloadPromptState?,
     onOpenVideo: (HanimeInfo) -> Unit,
     onOpenArtist: (HanimeVideo.Artist) -> Unit,
     onToggleSubscribe: (HanimeVideo.Artist) -> Unit,
     onToggleFavorite: () -> Unit,
     onManageMyList: (List<String>, List<Boolean>) -> Unit,
     onQuickCheckIn: (CheckInRecordEntity) -> Unit,
-    onDownload: () -> Unit,
+    onPrepareDownload: (String) -> Unit,
+    onDismissDownloadPrompt: () -> Unit,
+    onConfirmDownloadPrompt: () -> Unit,
+    onRequestOpenOfficialDownloadPage: () -> Unit,
+    onRequestOpenDownloadPermissionSettings: () -> Unit,
     onShare: () -> Unit,
     onCopyShareText: () -> Unit,
     onOpenWebPage: () -> Unit,
@@ -188,6 +210,46 @@ private fun VideoIntroductionContent(
     var showPlaylistSheet by remember { mutableStateOf(false) }
     var showQuickCheckInDialog by remember { mutableStateOf(false) }
     var showMyListDialog by remember { mutableStateOf(false) }
+    var showDownloadQualityDialog by remember { mutableStateOf(false) }
+    var showPermissionSettingsDialog by remember { mutableStateOf(false) }
+
+    if (showDownloadQualityDialog) {
+        DownloadQualityDialog(
+            videoUrls = video.videoUrls,
+            onDismiss = { showDownloadQualityDialog = false },
+            onOpenOfficial = {
+                showDownloadQualityDialog = false
+                onRequestOpenOfficialDownloadPage()
+            },
+            onSelectQuality = { quality ->
+                showDownloadQualityDialog = false
+                onPrepareDownload(quality)
+            },
+        )
+    }
+
+    if (downloadPrompt != null) {
+        DownloadConfirmDialog(
+            video = video,
+            prompt = downloadPrompt,
+            onDismiss = onDismissDownloadPrompt,
+            onConfirm = onConfirmDownloadPrompt,
+            onOpenOfficial = {
+                onDismissDownloadPrompt()
+                onRequestOpenOfficialDownloadPage()
+            },
+        )
+    }
+
+    if (showPermissionSettingsDialog) {
+        PermissionSettingsDialog(
+            onDismiss = { showPermissionSettingsDialog = false },
+            onConfirm = {
+                showPermissionSettingsDialog = false
+                onRequestOpenDownloadPermissionSettings()
+            },
+        )
+    }
 
     if (showPlaylistSheet && video.playlist != null) {
         PlaylistBottomSheet(
@@ -261,7 +323,7 @@ private fun VideoIntroductionContent(
                     onOpenOriginalComic = onOpenOriginalComic,
                     onToggleFavorite = onToggleFavorite,
                     onManageMyList = { showMyListDialog = true },
-                    onDownload = onDownload,
+                    onDownload = { showDownloadQualityDialog = true },
                     onShare = onShare,
                     onCopyShareText = onCopyShareText,
                     onOpenWebPage = onOpenWebPage,
@@ -300,6 +362,138 @@ private fun VideoIntroductionContent(
             }
         }
     }
+}
+
+@Composable
+private fun DownloadQualityDialog(
+    videoUrls: ResolutionLinkMap,
+    onDismiss: () -> Unit,
+    onOpenOfficial: () -> Unit,
+    onSelectQuality: (String) -> Unit,
+) {
+    val qualities = videoUrls.keys.toList()
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.download)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                qualities.forEach { quality ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .selectable(
+                                selected = false,
+                                onClick = {
+                                    if (quality == com.yenaly.han1meviewer.HanimeResolution.RES_UNKNOWN) {
+                                        onOpenOfficial()
+                                    } else {
+                                        onSelectQuality(quality)
+                                    }
+                                },
+                            )
+                            .padding(vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text(quality)
+                        if (quality == com.yenaly.han1meviewer.HanimeResolution.RES_UNKNOWN) {
+                            Text(
+                                text = stringResource(R.string.go_to_official),
+                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.labelMedium,
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+    )
+}
+
+@Composable
+private fun DownloadConfirmDialog(
+    video: HanimeVideo,
+    prompt: DownloadPromptState,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    onOpenOfficial: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                stringResource(
+                    if (prompt.oldQuality != null) R.string.sure_to_redownload else R.string.sure_to_download
+                )
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(stringResource(R.string.download_video_detail_below))
+                prompt.oldQuality?.let {
+                    Text(stringResource(R.string.check_video_exists_in_download, it))
+                }
+                Text(stringResource(R.string.name_with_colon) + video.title)
+                Text(
+                    stringResource(R.string.quality_with_colon) + if (
+                        prompt.oldQuality != null && prompt.oldQuality != prompt.newQuality
+                    ) {
+                        "${prompt.oldQuality} → ${prompt.newQuality}"
+                    } else {
+                        prompt.newQuality
+                    }
+                )
+                Text(
+                    text = stringResource(R.string.after_download_tips),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(stringResource(R.string.sure))
+            }
+        },
+        dismissButton = {
+            Row {
+                TextButton(onClick = onOpenOfficial) {
+                    Text(stringResource(R.string.go_to_official))
+                }
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.no))
+                }
+            }
+        },
+    )
+}
+
+@Composable
+private fun PermissionSettingsDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.settings)) },
+        text = { Text("请前往设置开启存储权限，以便保存下载内容。") },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(stringResource(R.string.go_to_settings))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+    )
 }
 
 @OptIn(ExperimentalFoundationApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -886,6 +1080,7 @@ private fun VideoIntroductionScreenPreview() {
             hideRelatedInIntro = false,
             shareText = "share text",
             playlistInitialIndex = 1,
+            downloadPrompt = null,
             onRetry = {},
             onOpenVideo = {},
             onOpenArtist = {},
@@ -893,7 +1088,11 @@ private fun VideoIntroductionScreenPreview() {
             onToggleFavorite = {},
             onManageMyList = { _, _ -> },
             onQuickCheckIn = {},
-            onDownload = {},
+            onPrepareDownload = {},
+            onDismissDownloadPrompt = {},
+            onConfirmDownloadPrompt = {},
+            onRequestOpenOfficialDownloadPage = {},
+            onRequestOpenDownloadPermissionSettings = {},
             onShare = {},
             onCopyShareText = {},
             onOpenWebPage = {},
@@ -917,6 +1116,7 @@ private fun VideoIntroductionScreenLoadingPreview() {
             hideRelatedInIntro = false,
             shareText = "",
             playlistInitialIndex = 0,
+            downloadPrompt = null,
             onRetry = {},
             onOpenVideo = {},
             onOpenArtist = {},
@@ -924,7 +1124,11 @@ private fun VideoIntroductionScreenLoadingPreview() {
             onToggleFavorite = {},
             onManageMyList = { _, _ -> },
             onQuickCheckIn = {},
-            onDownload = {},
+            onPrepareDownload = {},
+            onDismissDownloadPrompt = {},
+            onConfirmDownloadPrompt = {},
+            onRequestOpenOfficialDownloadPage = {},
+            onRequestOpenDownloadPermissionSettings = {},
             onShare = {},
             onCopyShareText = {},
             onOpenWebPage = {},
@@ -948,6 +1152,7 @@ private fun VideoIntroductionScreenErrorPreview() {
             hideRelatedInIntro = false,
             shareText = "",
             playlistInitialIndex = 0,
+            downloadPrompt = null,
             onRetry = {},
             onOpenVideo = {},
             onOpenArtist = {},
@@ -955,7 +1160,11 @@ private fun VideoIntroductionScreenErrorPreview() {
             onToggleFavorite = {},
             onManageMyList = { _, _ -> },
             onQuickCheckIn = {},
-            onDownload = {},
+            onPrepareDownload = {},
+            onDismissDownloadPrompt = {},
+            onConfirmDownloadPrompt = {},
+            onRequestOpenOfficialDownloadPage = {},
+            onRequestOpenDownloadPermissionSettings = {},
             onShare = {},
             onCopyShareText = {},
             onOpenWebPage = {},

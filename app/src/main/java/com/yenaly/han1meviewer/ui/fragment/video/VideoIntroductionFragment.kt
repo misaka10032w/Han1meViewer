@@ -5,6 +5,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.appcompat.app.AlertDialog
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.net.toUri
@@ -15,8 +18,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.itxca.spannablex.spannable
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
 import com.yenaly.han1meviewer.HAdvancedSearch
 import com.yenaly.han1meviewer.HCacheManager
@@ -34,6 +35,7 @@ import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
+import com.yenaly.han1meviewer.ui.screen.video.DownloadPromptState
 import com.yenaly.han1meviewer.ui.screen.video.VideoIntroductionScreen
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
@@ -67,6 +69,7 @@ class VideoIntroductionFragment : Fragment() {
     }
 
     private var checkedQuality: String? = null
+    private var pendingDownloadPrompt by mutableStateOf<DownloadPromptState?>(null)
 
     private val storagePermissionRequester: PermissionRequester?
         get() = activity as? PermissionRequester
@@ -91,6 +94,7 @@ class VideoIntroductionFragment : Fragment() {
                     hideRelatedInIntro = viewModel.hideRelatedInIntro,
                     shareText = videoShareText,
                     playlistInitialIndex = viewModel.horizontalScrollPositions[viewModel.videoCode] ?: 0,
+                    downloadPrompt = pendingDownloadPrompt,
                     onRetry = { viewModel.getHanimeVideo(viewModel.videoCode) },
                     onOpenVideo = { item -> openVideo(item.videoCode) },
                     onOpenArtist = ::openArtistSearch,
@@ -100,7 +104,20 @@ class VideoIntroductionFragment : Fragment() {
                         updateMyListSelection(video?.myList, selectedStates)
                     },
                     onQuickCheckIn = ::saveQuickCheckIn,
-                    onDownload = { video?.let(::startDownloadFlow) },
+                    onPrepareDownload = { quality ->
+                        checkedQuality = quality
+                        video?.let(::startDownloadFlow)
+                    },
+                    onDismissDownloadPrompt = {
+                        pendingDownloadPrompt = null
+                    },
+                    onConfirmDownloadPrompt = {
+                        video?.let(::confirmPendingDownload)
+                    },
+                    onRequestOpenOfficialDownloadPage = {
+                        browse(getHanimeVideoDownloadLink(viewModel.videoCode))
+                    },
+                    onRequestOpenDownloadPermissionSettings = ::openDownloadPermissionSettings,
                     onShare = {
                         if (videoShareText.isNotBlank()) {
                             shareText(videoShareText, getString(R.string.long_press_share_to_copy))
@@ -178,17 +195,11 @@ class VideoIntroductionFragment : Fragment() {
 
                 launch {
                     viewModel.loadDownloadedFlow.collect { entity ->
-                        val videoData = viewModel.hanimeVideoFlow.value ?: return@collect
-                        val newQuality = checkedQuality ?: return@collect
-                        if (entity == null) {
-                            notifyDownload(videoData, oldQuality = null, newQuality = newQuality) {
-                                launch { enqueueDownloadWork(videoData) }
-                            }
-                        } else {
-                            notifyDownload(videoData, oldQuality = entity.quality, newQuality = newQuality) {
-                                launch { enqueueDownloadWork(videoData, redownload = true) }
-                            }
-                        }
+                        val quality = checkedQuality ?: return@collect
+                        pendingDownloadPrompt = DownloadPromptState(
+                            newQuality = quality,
+                            oldQuality = entity?.quality,
+                        )
                     }
                 }
 
@@ -353,21 +364,7 @@ class VideoIntroductionFragment : Fragment() {
         }
         storagePermissionRequester?.requestStoragePermission(
             onGranted = {
-                val qualities = videoData.videoUrls.keys.toTypedArray()
-                MaterialAlertDialogBuilder(requireContext())
-                    .setTitle(R.string.download)
-                    .setItems(qualities) { _, which ->
-                        val key = qualities[which]
-                        if (key == com.yenaly.han1meviewer.HanimeResolution.RES_UNKNOWN) {
-                            showShortToast(R.string.cannot_download_here)
-                            browse(getHanimeVideoDownloadLink(viewModel.videoCode))
-                        } else {
-                            checkedQuality = key
-                            viewModel.findDownloadedHanime(viewModel.videoCode)
-                        }
-                    }
-                    .setNegativeButton(R.string.cancel, null)
-                    .show()
+                viewModel.findDownloadedHanime(viewModel.videoCode)
             },
             onDenied = {
                 Toast.makeText(
@@ -377,46 +374,15 @@ class VideoIntroductionFragment : Fragment() {
                 ).show()
                 parentFragmentManager.popBackStack()
             },
-            onPermanentlyDenied = { showGoToSettingsDialog() },
+            onPermanentlyDenied = { openDownloadPermissionSettings() },
         )
     }
 
-    private fun notifyDownload(
-        info: HanimeVideo,
-        oldQuality: String?,
-        newQuality: String,
-        action: () -> Unit,
-    ) {
-        val notifyMsg = spannable {
-            getString(R.string.download_video_detail_below).text()
-            newline(2)
-            if (oldQuality != null) {
-                getString(R.string.check_video_exists_in_download, oldQuality).text()
-                newline(2)
-            }
-            getString(R.string.name_with_colon).text()
-            newline()
-            info.title.span { style(android.graphics.Typeface.BOLD) }
-            newline()
-            getString(R.string.quality_with_colon).text()
-            newline()
-            if (oldQuality != null && oldQuality != newQuality) {
-                "$oldQuality → ".text()
-                newQuality.span { style(android.graphics.Typeface.BOLD) }
-            } else {
-                newQuality.span { style(android.graphics.Typeface.BOLD) }
-            }
-            newline(2)
-            getString(R.string.after_download_tips).text()
-        }
-        requireContext().showAlertDialog {
-            setTitle(if (oldQuality != null) R.string.sure_to_redownload else R.string.sure_to_download)
-            setMessage(notifyMsg)
-            setPositiveButton(R.string.sure) { _, _ -> action() }
-            setNegativeButton(R.string.no, null)
-            setNeutralButton(R.string.go_to_official) { _, _ ->
-                browse(getHanimeVideoDownloadLink(viewModel.videoCode))
-            }
+    private fun confirmPendingDownload(videoData: HanimeVideo) {
+        val redownload = pendingDownloadPrompt?.oldQuality != null
+        pendingDownloadPrompt = null
+        viewLifecycleOwner.lifecycleScope.launch {
+            enqueueDownloadWork(videoData, redownload = redownload)
         }
     }
 
@@ -437,7 +403,7 @@ class VideoIntroductionFragment : Fragment() {
         )
     }
 
-    private fun showGoToSettingsDialog() {
+    private fun openDownloadPermissionSettings() {
         AlertDialog.Builder(requireContext())
             .setTitle("权限被永久拒绝")
             .setMessage("请前往设置开启存储权限，以便保存下载内容。")
