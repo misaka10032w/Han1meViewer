@@ -285,17 +285,17 @@ fun SearchStateIndicator(
         ) { CircularProgressIndicator() }
 
         is PageLoadingState.NoMoreData -> if (resultCount == 0) EmptyView(
-            "没有搜索到结果",
-            R.drawable.h_chan_speechless
+            hint = "没有搜索到结果",
+            picRes = R.drawable.h_chan_speechless
         )
 
         is PageLoadingState.Error -> EmptyView(
-            "加载失败: ${state.throwable.message}",
-            R.drawable.h_chan_sad
+            hint = "加载失败: ${state.throwable.message}",
+            picRes = R.drawable.h_chan_sad
         )
         is PageLoadingState.Success -> if (resultCount == 0) EmptyView(
-            "没有搜索到结果",
-            R.drawable.h_chan_speechless
+            hint = "没有搜索到结果",
+            picRes = R.drawable.h_chan_speechless
         )
     }
 }

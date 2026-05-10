@@ -22,6 +22,7 @@ import com.yenaly.han1meviewer.R
 @Composable
 fun EmptyView(
     hint: String,
+    subHint: String = "",
     picRes: Int = R.drawable.h_chan_speechless,
 ) {
     Box(
@@ -46,6 +47,11 @@ fun EmptyView(
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
             )
+            Text(
+                text = subHint,
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }
@@ -54,6 +60,6 @@ fun EmptyView(
 @Composable
 private fun EmptyViewPreview() {
     ComponentPreview {
-        EmptyView("发生了一些事情")
+        EmptyView(hint = "发生了一些事情", subHint = "reason: 404 Not Found")
     }
 }

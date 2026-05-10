@@ -213,8 +213,8 @@ fun MyPlayListScreen(
                 is WebsiteState.Error -> {
                     if (playlists.isEmpty()) {
                         EmptyView(
-                            "${stringResource(R.string.load_failed_retry)}: ${result.throwable.message}",
-                            R.drawable.h_chan_sad
+                            hint = "${stringResource(R.string.load_failed_retry)}: ${result.throwable.message}",
+                            picRes = R.drawable.h_chan_sad
                         )
                     } else {
                         // 显示旧缓存内容（保持体验）

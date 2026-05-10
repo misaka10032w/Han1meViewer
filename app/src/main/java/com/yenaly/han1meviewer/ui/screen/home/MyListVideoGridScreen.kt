@@ -7,23 +7,27 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,7 +54,7 @@ import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun MyListVideoGridScreen(
     items: List<HanimeInfo>,
@@ -76,9 +80,11 @@ internal fun MyListVideoGridScreen(
     val deleteSuccessText = stringResource(R.string.delete_success)
 
     val refreshing = state is PageLoadingState.Loading && pendingRefresh
+    val refreshingState = rememberPullToRefreshState()
     val isError = state is PageLoadingState.Error && items.isEmpty()
     val isEmpty = state is PageLoadingState.NoMoreData && items.isEmpty()
-    val shouldBootstrap = items.isEmpty() && state is PageLoadingState.Loading && loadedPageCount == 0
+    val shouldBootstrap =
+        items.isEmpty() && state is PageLoadingState.Loading && loadedPageCount == 0
 
     LaunchedEffect(shouldBootstrap) {
         if (shouldBootstrap) {
@@ -134,7 +140,7 @@ internal fun MyListVideoGridScreen(
 
     Scaffold(
         topBar = {
-            LargeTopAppBar(
+            TopAppBar(
                 title = {
                     Column {
                         Text(stringResource(titleRes))
@@ -167,6 +173,7 @@ internal fun MyListVideoGridScreen(
     ) { paddingValues ->
         PullToRefreshBox(
             isRefreshing = refreshing,
+            state = refreshingState,
             onRefresh = {
                 pendingRefresh = true
                 onRefresh()
@@ -174,6 +181,13 @@ internal fun MyListVideoGridScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
+            indicator = {
+                PullToRefreshDefaults.LoadingIndicator(
+                    state = refreshingState,
+                    isRefreshing = refreshing,
+                    modifier = Modifier.align(Alignment.TopCenter),
+                )
+            }
         ) {
             when {
                 isError -> ErrorContent(
@@ -203,6 +217,7 @@ internal fun MyListVideoGridScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun MyListVideoGrid(
     items: List<HanimeInfo>,
@@ -239,7 +254,7 @@ private fun MyListVideoGrid(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    CircularProgressIndicator(strokeWidth = 2.5.dp)
+                    LoadingIndicator(modifier = Modifier.size(25.dp))
                     Text(
                         text = stringResource(R.string.loading),
                         style = MaterialTheme.typography.bodyMedium,

@@ -16,6 +16,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -28,6 +29,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,7 +63,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CommentScreen(
     commentsFlow: StateFlow<List<VideoComments.VideoComment>>,
@@ -92,7 +95,7 @@ fun CommentScreen(
     var selectedReasonIndex by remember { mutableIntStateOf(-1) }
     var latestReportMessage by remember { mutableStateOf<String?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
-
+    val refreshingState = rememberPullToRefreshState()
     LaunchedEffect(reportMessageFlow) {
         reportMessageFlow.collect {
             latestReportMessage = it.text
@@ -324,7 +327,15 @@ fun CommentScreen(
         PullToRefreshBox(
             isRefreshing = state is WebsiteState.Loading && !isPreviewCommentPrefetched,
             onRefresh = onRefresh,
+            state = refreshingState,
             modifier = Modifier.fillMaxSize(),
+            indicator = {
+                PullToRefreshDefaults.LoadingIndicator(
+                    state = refreshingState,
+                    isRefreshing = state is WebsiteState.Loading && !isPreviewCommentPrefetched,
+                    modifier = Modifier.align(Alignment.TopCenter),
+                )
+            }
         ) {
             when {
                 state is WebsiteState.Error && sortedComments.isEmpty() -> {

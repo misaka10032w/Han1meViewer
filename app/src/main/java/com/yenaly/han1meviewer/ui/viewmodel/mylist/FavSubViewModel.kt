@@ -46,9 +46,10 @@ class FavSubViewModel(application: Application) : YenalyViewModel(application) {
                     when (state) {
                         is PageLoadingState.Success -> {
                             csrfToken = state.info.csrfToken
-                            _loadedPageCount.value = page
-                            if (state.info.hanimeInfo.isEmpty()){
+                            if (state.info.hanimeInfo.isEmpty()) {
                                 _favVideoStateFlow.update { PageLoadingState.NoMoreData }
+                            } else {
+                                _loadedPageCount.value = page
                             }
                             val baseList = if (isRefreshing) emptyList() else prevList
                             isRefreshing = false

@@ -47,7 +47,7 @@ import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.state.DownloadState
 import com.yenaly.han1meviewer.ui.component.ComponentPreview
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
-import com.yenaly.han1meviewer.ui.component.EmptyContent
+import com.yenaly.han1meviewer.ui.component.EmptyView
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
 import kotlinx.coroutines.flow.Flow
@@ -94,9 +94,8 @@ internal fun DownloadingScreen(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
-            EmptyContent(
-                title = stringResource(R.string.empty_content),
-                description = stringResource(R.string.downloading),
+            EmptyView(
+                hint = stringResource(R.string.empty_content)
             )
         }
     } else {
