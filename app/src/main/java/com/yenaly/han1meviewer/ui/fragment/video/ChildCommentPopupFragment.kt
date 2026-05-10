@@ -3,53 +3,31 @@ package com.yenaly.han1meviewer.ui.fragment.video
 import android.app.Dialog
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
-import android.widget.TextView
-import androidx.annotation.OptIn
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.badge.BadgeDrawable
-import com.google.android.material.badge.BadgeUtils
-import com.google.android.material.badge.ExperimentalBadgeUtils
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.Snackbar
 import com.yenaly.han1meviewer.COMMENT_ID
 import com.yenaly.han1meviewer.Preferences
-import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.PopUpFragmentChildCommentBinding
-import com.yenaly.han1meviewer.logic.model.ReportReason
-import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.adapter.VideoCommentRvAdapter
+import com.yenaly.han1meviewer.logic.model.VideoCommentArgs
+import com.yenaly.han1meviewer.ui.screen.video.ChildCommentScreen
+import com.yenaly.han1meviewer.ui.screen.video.CommentMessage
+import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
-import com.yenaly.han1meviewer.util.parseTimeStrToMinutes
-import com.yenaly.han1meviewer.util.safeSortedBy
-import com.yenaly.han1meviewer.util.setGravity
 import com.yenaly.yenaly_libs.base.YenalyBottomSheetDialogFragment
 import com.yenaly.yenaly_libs.utils.arguments
-import com.yenaly.yenaly_libs.utils.dp
-import com.yenaly.yenaly_libs.utils.showShortToast
-import com.yenaly.yenaly_libs.utils.unsafeLazy
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
 
-/**
- * @project Hanime1
- * @author Yenaly Liew
- * @time 2022/06/21 021 22:58
- */
 class ChildCommentPopupFragment :
     YenalyBottomSheetDialogFragment<PopUpFragmentChildCommentBinding>() {
 
     val commentId by arguments<String>(COMMENT_ID)
-    //向上查找搞到VideoFragment初始化好的CommentViewModel
+
     val viewModel: CommentViewModel by lazy {
         var ancestor: Fragment? = parentFragment
         while (ancestor != null && ancestor !is VideoFragment) {
@@ -62,169 +40,93 @@ class ChildCommentPopupFragment :
             ViewModelProvider(requireActivity())[CommentViewModel::class.java]
         }
     }
-    private var reportReason: List<ReportReason>? = null
-    private val replyAdapter by unsafeLazy {
-        VideoCommentRvAdapter(this){ item ->
-            if (reportReason == null) {
-                reportReason = viewModel.reportReason
-            }
-            var checkedIndex = -1
-            val reportDialog = MaterialAlertDialogBuilder(requireContext())
-                .setTitle(getString(R.string.whats_wrong_with_him))
-                .setIcon(R.drawable.ic_baseline_report_24)
-                .setSingleChoiceItems(
-                    reportReason?.map { it.value }?.toTypedArray(),
-                    checkedIndex
-                ) { _, which ->
-                    checkedIndex = which
-                }
-                .setNegativeButton(R.string.cancel, null)
-                .setPositiveButton(getString(R.string.submit)) { _, _ ->
-                    if (checkedIndex != -1) {
-                        val chosen = reportReason!![checkedIndex]
-                        val reasonKey = chosen.reasonKey ?: chosen.value
-                        viewModel.reportComment(
-                            reasonKey,
-                            viewModel.currentUserId,
-                            "${ Preferences.baseUrl }watch?v=${viewModel.code}",
-                            item.reportableType,
-                            item.reportableId
-                        )
-                        Log.i("ReportComment", "viewModel.reportComment: \n" +
-                                "chosen: $reasonKey\n" +
-                                "currentUserId: ${viewModel.currentUserId}\n" +
-                                "redirectUrl: ${ Preferences.baseUrl }watch?v=${viewModel.code}\n" +
-                                "reportableType: ${item.reportableType}\n" +
-                                "reportableId: ${item.reportableId}")
-                    } else {
-                        showShortToast(getString(R.string.report_reason_hint))
-                    }
-                }
-                .create()
-            reportDialog.show()
-        }
-    }
 
     override fun getViewBinding(layoutInflater: LayoutInflater) =
         PopUpFragmentChildCommentBinding.inflate(layoutInflater)
 
     override fun initData(savedInstanceState: Bundle?, dialog: Dialog) {
-        if (commentId == null) dialog.dismiss()
-
-        binding.rvReply.layoutManager = LinearLayoutManager(context)
-        binding.rvReply.adapter = replyAdapter
-        viewModel.getCommentReply(commentId!!)
-
-        lifecycleScope.launch {
-            viewModel.videoReplyStateFlow.collect { state ->
-                when (state) {
-                    is WebsiteState.Error -> {
-                        showShortToast(R.string.load_reply_failed)
-                        dialog.dismiss()
-                    }
-
-                    is WebsiteState.Loading -> Unit
-
-                    is WebsiteState.Success -> {
-               //         binding.rvReplyContainer.layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
-                    }
-                }
-            }
+        val currentCommentId = commentId ?: run {
+            dialog.dismiss()
+            return
         }
 
-        lifecycleScope.launch {
-            viewModel.videoReplyFlow.collectLatest { list ->
-                val sortedlist = list.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = false)
-                replyAdapter.submitList(sortedlist)
-                attachRedDotCount(list.size)
-            }
-        }
-
-        lifecycleScope.launch {
-            viewModel.postReplyFlow.collect { state ->
-                when (state) {
-                    is WebsiteState.Error -> {
-                        showShortToast(R.string.send_failed)
-                        replyAdapter.replyPopup?.enableSendButton()
-                    }
-
-                    is WebsiteState.Loading -> {
-                        showShortToast(R.string.sending_reply)
-                    }
-
-                    is WebsiteState.Success -> {
-                        showShortToast(R.string.send_success)
-                        replyAdapter.replyPopup?.enableSendButton()
-                        viewModel.getCommentReply(commentId!!)
-                        replyAdapter.replyPopup?.dismiss()
-                    }
-                }
-            }
-        }
-
-        lifecycleScope.launch {
-            viewModel.commentLikeFlow.collect { state ->
-                when (state) {
-                    is WebsiteState.Error -> showShortToast(state.throwable.message)
-                    is WebsiteState.Loading -> Unit
-                    is WebsiteState.Success -> {
-                        viewModel.handleCommentLike(state.info)
-                        replyAdapter.notifyItemChanged(state.info.commentPosition, 0)
-                    }
-                }
-            }
-        }
-
-        lifecycleScope.launch {
-            viewModel.reportMessage.collect { msg ->
-                val text = if (msg.args.isNotEmpty()) {
-                    getString(msg.resId, *msg.args.toTypedArray())
-                } else {
-                    getString(msg.resId)
-                }
-                val snackBar = Snackbar.make(
-                    dialog.findViewById(android.R.id.content),
-                    text,
-                    Snackbar.LENGTH_LONG
+        binding.composeContent.setViewCompositionStrategy(
+            ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+        )
+        binding.composeContent.setContent {
+            HanimeTheme {
+                ChildCommentScreen(
+                    commentsFlow = viewModel.videoReplyFlow,
+                    commentStateFlow = viewModel.videoReplyStateFlow,
+                    reportMessageFlow = viewModel.reportMessage.map { message ->
+                        val text = if (message.args.isNotEmpty()) {
+                            getString(message.resId, *message.args.toTypedArray())
+                        } else {
+                            getString(message.resId)
+                        }
+                        CommentMessage(text)
+                    },
+                    postReplyStateFlow = viewModel.postReplyFlow,
+                    commentLikeStateFlow = viewModel.commentLikeFlow,
+                    reportReasons = viewModel.reportReason,
+                    isAlreadyLogin = Preferences.isAlreadyLogin,
+                    onRefresh = { viewModel.getCommentReply(currentCommentId) },
+                    onReply = { _, text ->
+                        viewModel.postReply(currentCommentId, text)
+                    },
+                    onReport = { comment, reason ->
+                        viewModel.reportComment(
+                            reason.reasonKey ?: reason.value,
+                            viewModel.currentUserId,
+                            "${Preferences.baseUrl}watch?v=${viewModel.code}",
+                            comment.reportableType,
+                            comment.reportableId,
+                        )
+                    },
+                    onThumbUp = { comment ->
+                        viewModel.likeChildComment(
+                            true,
+                            0,
+                            comment,
+                            likeCommentStatus = comment.post.likeCommentStatus,
+                        )
+                    },
+                    onThumbDown = { comment ->
+                        viewModel.likeChildComment(
+                            false,
+                            0,
+                            comment,
+                            unlikeCommentStatus = comment.post.unlikeCommentStatus,
+                        )
+                    },
+                    onCommentLikeSuccess = viewModel::handleCommentLike,
                 )
-                val textView = snackBar.view.findViewById<TextView>(
-                    com.google.android.material.R.id.snackbar_text
-                )
-                textView.maxLines = 5
-                textView.ellipsize = null
-                textView.isSingleLine = false
-                snackBar.show()
             }
         }
+
+        viewModel.getCommentReply(currentCommentId)
     }
+
     override fun onStart() {
         super.onStart()
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
         val bottomSheet = dialog?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
         bottomSheet?.let {
             val behavior = BottomSheetBehavior.from(it)
-            behavior.peekHeight = resources.getDimensionPixelSize(R.dimen.bottom_sheet_min_height)
+            behavior.peekHeight = resources.getDimensionPixelSize(com.yenaly.han1meviewer.R.dimen.bottom_sheet_min_height)
             behavior.isFitToContents = true
             behavior.state = BottomSheetBehavior.STATE_COLLAPSED
-            it.minimumHeight = resources.getDimensionPixelSize(R.dimen.bottom_sheet_min_height)
+            it.minimumHeight = resources.getDimensionPixelSize(com.yenaly.han1meviewer.R.dimen.bottom_sheet_min_height)
         }
     }
 
     override fun setStyle() { }
+
     override fun onDestroyView() {
         super.onDestroyView()
         viewModel.clearVideoReplyList()
-        replyAdapter.submitList(emptyList())
     }
-    private fun getWindowHeight(): Int {
-        val window = dialog?.window ?: return resources.displayMetrics.heightPixels
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.windowManager.currentWindowMetrics.bounds.height()
-        } else {
-            @Suppress("DEPRECATION")
-            window.windowManager.defaultDisplay.height
-        }
-    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
         dialog.window?.apply {
@@ -236,13 +138,5 @@ class ChildCommentPopupFragment :
             }
         }
         return dialog
-    }
-    @OptIn(ExperimentalBadgeUtils::class)
-    private fun attachRedDotCount(count: Int) {
-        val badgeDrawable = BadgeDrawable.create(requireContext())
-        badgeDrawable.isVisible = count > 0
-        badgeDrawable.number = count
-        BadgeUtils.attachBadgeDrawable(badgeDrawable, binding.tvChildComment)
-        badgeDrawable.setGravity(binding.tvChildComment, Gravity.END, 8.dp)
     }
 }

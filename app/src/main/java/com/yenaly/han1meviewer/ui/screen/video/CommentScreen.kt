@@ -12,9 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -22,7 +19,6 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -110,75 +106,43 @@ fun CommentScreen(
     }
 
     if (replyingComment != null) {
-        AlertDialog(
-            onDismissRequest = {
+        CommentInputDialog(
+            title = stringResource(R.string.reply),
+            label = stringResource(R.string.comment),
+            text = replyText,
+            onTextChange = { replyText = it },
+            onConfirm = {
+                replyingComment?.let { onReply(it, replyText.text) }
                 replyingComment = null
                 replyText = TextFieldValue("")
             },
-            title = { Text(stringResource(R.string.reply)) },
-            text = {
-                OutlinedTextField(
-                    value = replyText,
-                    onValueChange = { replyText = it },
-                    label = { Text(stringResource(R.string.comment)) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
+            onDismiss = {
+                replyingComment = null
+                replyText = TextFieldValue("")
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    replyingComment?.let { onReply(it, replyText.text) }
-                    replyingComment = null
-                    replyText = TextFieldValue("")
-                }) {
-                    Text(stringResource(R.string.submit))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    replyingComment = null
-                    replyText = TextFieldValue("")
-                }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
+            confirmText = stringResource(R.string.submit),
         )
     }
 
     if (showComposeDialog) {
-        AlertDialog(
-            onDismissRequest = {
+        CommentInputDialog(
+            title = stringResource(R.string.comment),
+            label = stringResource(R.string.comment),
+            text = composeText,
+            onTextChange = { composeText = it },
+            onConfirm = {
+                val text = composeText.text.trim()
+                if (text.isNotBlank()) {
+                    onComposeComment(text)
+                    showComposeDialog = false
+                    composeText = TextFieldValue("")
+                }
+            },
+            onDismiss = {
                 showComposeDialog = false
                 composeText = TextFieldValue("")
             },
-            title = { Text(stringResource(R.string.comment)) },
-            text = {
-                OutlinedTextField(
-                    value = composeText,
-                    onValueChange = { composeText = it },
-                    label = { Text(stringResource(R.string.comment)) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    val text = composeText.text.trim()
-                    if (text.isNotBlank()) {
-                        onComposeComment(text)
-                        showComposeDialog = false
-                        composeText = TextFieldValue("")
-                    }
-                }) {
-                    Text(stringResource(R.string.submit))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    showComposeDialog = false
-                    composeText = TextFieldValue("")
-                }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
+            confirmText = stringResource(R.string.submit),
         )
     }
 
@@ -213,86 +177,22 @@ fun CommentScreen(
     }
 
     if (reportComment != null) {
-        AlertDialog(
-            onDismissRequest = {
+        CommentReportDialog(
+            reportReasons = reportReasons,
+            selectedReasonIndex = selectedReasonIndex,
+            onSelectReason = { selectedReasonIndex = it },
+            onConfirm = {
+                val reason = reportReasons.getOrNull(selectedReasonIndex)
+                val target = reportComment
+                if (reason != null && target != null) {
+                    onReport(target, reason)
+                }
                 reportComment = null
                 selectedReasonIndex = -1
             },
-            title = { Text(stringResource(R.string.whats_wrong_with_him)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    reportReasons.forEachIndexed { index, reason ->
-                        ElevatedCard(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.elevatedCardColors(
-                                containerColor = if (selectedReasonIndex == index) {
-                                    MaterialTheme.colorScheme.secondaryContainer
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceContainerLow
-                                }
-                            ),
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .selectable(
-                                        selected = selectedReasonIndex == index,
-                                        onClick = { selectedReasonIndex = index },
-                                    )
-                                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            ) {
-                                Icon(
-                                    painter = painterResource(
-                                        if (selectedReasonIndex == index) {
-                                            R.drawable.ic_baseline_check_circle_24
-                                        } else {
-                                            R.drawable.baseline_remove_circle_24
-                                        }
-                                    ),
-                                    contentDescription = null,
-                                    tint = if (selectedReasonIndex == index) {
-                                        MaterialTheme.colorScheme.primary
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                    },
-                                )
-                                Text(
-                                    text = reason.value,
-                                    color = if (selectedReasonIndex == index) {
-                                        MaterialTheme.colorScheme.onSecondaryContainer
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurface
-                                    },
-                                )
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    enabled = selectedReasonIndex >= 0,
-                    onClick = {
-                    val reason = reportReasons.getOrNull(selectedReasonIndex)
-                    val target = reportComment
-                    if (reason != null && target != null) {
-                        onReport(target, reason)
-                    }
-                    reportComment = null
-                    selectedReasonIndex = -1
-                }) {
-                    Text(stringResource(R.string.submit))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    reportComment = null
-                    selectedReasonIndex = -1
-                }) {
-                    Text(stringResource(R.string.cancel))
-                }
+            onDismiss = {
+                reportComment = null
+                selectedReasonIndex = -1
             },
         )
     }
