@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.fragment.home.myplaylist
+package com.yenaly.han1meviewer.ui.screen.home.myplaylist
 
 import android.content.Context
 import android.util.Log

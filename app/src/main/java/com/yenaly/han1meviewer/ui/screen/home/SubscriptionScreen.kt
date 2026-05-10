@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.fragment.home.subscription
+package com.yenaly.han1meviewer.ui.screen.home
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.LinearOutSlowInEasing

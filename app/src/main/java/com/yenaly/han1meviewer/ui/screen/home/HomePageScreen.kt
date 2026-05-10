@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.fragment.home
+package com.yenaly.han1meviewer.ui.screen.home
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -43,6 +43,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -86,6 +87,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yenaly.han1meviewer.HanimeConstants
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.Announcement
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
@@ -98,6 +101,9 @@ import com.yenaly.han1meviewer.ui.preview.fakeBanner
 import com.yenaly.han1meviewer.ui.preview.fakeCategories
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
+import com.yenaly.yenaly_libs.utils.putSpValue
+import kotlinx.coroutines.delay
+import androidx.compose.runtime.collectAsState
 
 // ─────────────────────────────────────────────
 // CompositionLocal：搜索历史查询函数
@@ -141,11 +147,11 @@ data class HomeCategory(
  */
 @Composable
 fun SearchOverlay(
+    modifier: Modifier = Modifier,
     visible: Boolean,
     onDismiss: () -> Unit,
     onNavigateToSearch: (String) -> Unit,
-    onQueryHistory: (suspend (String) -> List<String>)? = null,
-    modifier: Modifier = Modifier
+    onQueryHistory: (suspend (String) -> List<String>)? = null
 ) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var historySuggestions by remember { mutableStateOf<List<String>>(emptyList()) }
@@ -166,15 +172,15 @@ fun SearchOverlay(
 
     // 实时搜索历史建议（防抖 300ms）
     LaunchedEffect(searchQuery) {
-        if (searchQuery.isNotBlank() && onQueryHistory != null) {
-            kotlinx.coroutines.delay(300)
+        historySuggestions = if (searchQuery.isNotBlank() && onQueryHistory != null) {
+            delay(300)
             try {
-                historySuggestions = onQueryHistory(searchQuery)
+                onQueryHistory(searchQuery)
             } catch (_: Exception) {
-                historySuggestions = emptyList()
+                emptyList()
             }
         } else {
-            historySuggestions = emptyList()
+            emptyList()
         }
     }
 
@@ -649,7 +655,7 @@ fun AnnouncementListDialog(
 ) {
     var expandedIndex by remember { mutableIntStateOf(-1) }
 
-    androidx.compose.material3.AlertDialog(
+    AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("公告列表", style = MaterialTheme.typography.titleLarge) },
         text = {
@@ -969,7 +975,7 @@ fun HomePageScreen(
     var announcements by remember { mutableStateOf<List<Announcement>>(emptyList()) }
     DisposableEffect(viewModel.announcements, lifecycleOwner) {
         val observer = Observer<List<Announcement>> { list ->
-            announcements = list ?: emptyList()
+            announcements = list
         }
         viewModel.announcements.observe(lifecycleOwner, observer)
         onDispose { }
@@ -1023,7 +1029,7 @@ fun HomePageScreen(
             ) {
                 when (val currentState = state) {
                     is WebsiteState.Loading -> {
-                        if (viewModel.homePageFlow.value !is WebsiteState.Success) {
+                        if (viewModel.homePageFlow.collectAsState().value !is WebsiteState.Success) {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
@@ -1056,7 +1062,7 @@ fun HomePageScreen(
                                     )
                                 },
                                 onCloseAnnouncement = {
-                                    com.yenaly.yenaly_libs.utils.putSpValue(
+                                    putSpValue(
                                         "last_dismiss_time",
                                         System.currentTimeMillis(),
                                         "setting_pref"
@@ -1123,7 +1129,7 @@ fun HomePageScreen(
 /** 将 HomePage 数据转换为分类行列表 */
 private fun buildCategoryList(homePage: HomePage): List<HomeCategory> {
     val isAVSite =
-        com.yenaly.han1meviewer.Preferences.baseUrl == com.yenaly.han1meviewer.HanimeConstants.HANIME_URL[3]
+        Preferences.baseUrl == HanimeConstants.HANIME_URL[3]
 
     return listOfNotNull(
         HomeCategory(

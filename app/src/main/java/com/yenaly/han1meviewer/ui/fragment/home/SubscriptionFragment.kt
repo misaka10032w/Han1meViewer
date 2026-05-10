@@ -16,7 +16,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.getHanimeSearchShareText
 import com.yenaly.han1meviewer.getHanimeShareText
 import com.yenaly.han1meviewer.ui.fragment.LoginNeededFragmentMixin
-import com.yenaly.han1meviewer.ui.fragment.home.subscription.SubscriptionApp
+import com.yenaly.han1meviewer.ui.screen.home.SubscriptionApp
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.MySubscriptionsViewModel
 import com.yenaly.han1meviewer.util.openVideo

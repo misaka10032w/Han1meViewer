@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.text.SpannableString
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
@@ -21,8 +22,6 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.imageview.ShapeableImageView
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
-import com.yenaly.han1meviewer.HAdvancedSearch
-import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.getHanimeShareText
 import com.yenaly.han1meviewer.logic.DatabaseRepo
@@ -38,6 +37,8 @@ import com.yenaly.yenaly_libs.utils.application
 import com.yenaly.yenaly_libs.utils.copyTextToClipboard
 import com.yenaly.yenaly_libs.utils.showShortToast
 import coil.load
+import com.yenaly.han1meviewer.ui.screen.home.HomePageScreen
+import com.yenaly.han1meviewer.ui.screen.home.LocalSearchHistoryQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -89,7 +90,12 @@ class HomePageFragment : Fragment() {
                             },
                             onShowExitDialog = { showExitConfirmationDialog() },
                             onShowAnnouncementDialog = { title, content, imageUrl ->
-                                showAnnouncementDialog(requireContext(), title, android.text.SpannableString(content), imageUrl)
+                                showAnnouncementDialog(
+                                    requireContext(),
+                                    title,
+                                    SpannableString(content),
+                                    imageUrl
+                                )
                             }
                         )
                     }

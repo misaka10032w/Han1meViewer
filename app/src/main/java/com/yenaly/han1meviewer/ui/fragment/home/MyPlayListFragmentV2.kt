@@ -15,7 +15,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.getHanimeShareText
 import com.yenaly.han1meviewer.ui.fragment.LoginNeededFragmentMixin
-import com.yenaly.han1meviewer.ui.fragment.home.myplaylist.MyPlayListScreen
+import com.yenaly.han1meviewer.ui.screen.home.myplaylist.MyPlayListScreen
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
 import com.yenaly.yenaly_libs.utils.copyTextToClipboard
