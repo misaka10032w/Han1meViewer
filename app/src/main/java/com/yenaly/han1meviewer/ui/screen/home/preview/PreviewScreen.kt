@@ -88,7 +88,7 @@ import com.yenaly.han1meviewer.logic.model.HanimePreview
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.pienization
 import com.yenaly.han1meviewer.ui.component.ComponentPreview
-import com.yenaly.han1meviewer.ui.component.EmptyContent
+import com.yenaly.han1meviewer.ui.component.EmptyView
 import com.yenaly.han1meviewer.ui.component.ErrorContent
 import com.yenaly.han1meviewer.ui.component.LoadingContent
 import com.yenaly.han1meviewer.ui.component.TagChipGroup
@@ -334,10 +334,9 @@ fun PreviewScreen(
 
                     item {
                         if (previewInfoList.isEmpty()) {
-                            EmptyContent(
-                                title = stringResource(R.string.empty_content),
-                                description = stringResource(R.string.new_anime_trailers),
-                                modifier = Modifier.padding(horizontal = 16.dp),
+                            EmptyView(
+                                hint = stringResource(R.string.empty_content),
+                                subHint = stringResource(R.string.new_anime_trailers)
                             )
                         } else {
                             HorizontalPager(
@@ -847,6 +846,29 @@ private fun PreviewScreenPreview() {
         hasNext = true,
         latestHanime = fakeHomePageVideos.take(5),
         previewInfo = fakeNewHanimeInfo
+    )
+    ComponentPreview {
+        PreviewScreen(
+            previewState = WebsiteState.Success(preview),
+            getCachedPreviewState = { null },
+            commentCount = 12,
+            onBack = {},
+            onLoadDate = {},
+            onOpenComment = { _, _ -> },
+            onOpenVideo = {},
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 420, heightDp = 900)
+@Composable
+private fun PreviewScreenEmptyPreview() {
+    val preview = HanimePreview(
+        headerPicUrl = null,
+        hasPrevious = true,
+        hasNext = false,
+        latestHanime = emptyList(),
+        previewInfo = emptyList()
     )
     ComponentPreview {
         PreviewScreen(

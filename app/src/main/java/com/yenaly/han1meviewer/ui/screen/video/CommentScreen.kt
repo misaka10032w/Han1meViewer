@@ -14,11 +14,10 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -30,7 +29,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -44,8 +42,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -56,10 +54,13 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.ReportReason
 import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.component.EmptyContent
+import com.yenaly.han1meviewer.ui.component.CommentInputDialog
+import com.yenaly.han1meviewer.ui.component.CommentReportDialog
+import com.yenaly.han1meviewer.ui.component.EmptyView
 import com.yenaly.han1meviewer.ui.component.ErrorContent
 import com.yenaly.han1meviewer.ui.component.VideoCommentCard
 import com.yenaly.han1meviewer.ui.fragment.video.CommentFragment
+import com.yenaly.han1meviewer.ui.preview.fakeCommentList
 import com.yenaly.han1meviewer.util.parseTimeStrToMinutes
 import com.yenaly.han1meviewer.util.safeSortedBy
 import kotlinx.coroutines.flow.Flow
@@ -266,12 +267,9 @@ fun CommentScreen(
                 }
 
                 sortedComments.isEmpty() -> {
-                    EmptyContent(
-                        title = stringResource(R.string.comment_not_found),
-                        description = latestReportMessage,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(16.dp),
+                    EmptyView(
+                        hint = stringResource(R.string.comment_not_found),
+                        subHint = latestReportMessage ?: ""
                     )
                 }
 
@@ -364,26 +362,6 @@ private fun rememberCommentFabVisibility(listState: LazyListState): androidx.com
 @Preview(showBackground = true, widthDp = 420, heightDp = 900)
 @Composable
 private fun CommentScreenPreview() {
-    val fakeCommentList = listOf(
-        VideoComments.VideoComment(
-            avatar = "https://picsum.photos/64/64",
-            username = "preview_user",
-            date = "2小時前",
-            content = "這是一條用於預覽的評論內容。",
-            thumbUp = 12,
-            isChildComment = false,
-            hasMoreReplies = true,
-            replyCount = 3,
-            id = "1",
-            post = VideoComments.VideoComment.POST(
-                foreignId = "1",
-                likeCommentStatus = false,
-                unlikeCommentStatus = false,
-            ),
-            reportableId = "1",
-            reportableType = "comment",
-        )
-    )
     CommentScreen(
         commentsFlow = MutableStateFlow(fakeCommentList),
         commentStateFlow = MutableStateFlow(WebsiteState.Success(VideoComments(fakeCommentList.toMutableList()))),
@@ -399,6 +377,28 @@ private fun CommentScreenPreview() {
                 reasonKey = "spam",
             )
         ),
+        isPreviewCommentPrefetched = false,
+        isAlreadyLogin = true,
+        onRefresh = {},
+        onReply = { _, _ -> },
+        onReport = { _, _ -> },
+        onThumbUp = {},
+        onThumbDown = {},
+        onViewMoreReplies = {},
+        onSortChange = {},
+        onComposeComment = {},
+    )
+}
+
+@Preview(showBackground = true, widthDp = 420, heightDp = 900)
+@Composable
+private fun CommentScreenEmptyPreview() {
+    CommentScreen(
+        commentsFlow = MutableStateFlow(emptyList()),
+        commentStateFlow = MutableStateFlow(WebsiteState.Success(VideoComments(fakeCommentList.toMutableList()))),
+        reportMessageFlow = flowOf(CommentMessage("")),
+        currentSortType = MutableStateFlow(CommentFragment.SortType.LATEST),
+        reportReasons = emptyList(),
         isPreviewCommentPrefetched = false,
         isAlreadyLogin = true,
         onRefresh = {},

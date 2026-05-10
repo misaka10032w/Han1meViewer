@@ -1,12 +1,18 @@
 package com.yenaly.han1meviewer.ui.preview
 
+import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
+import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
+import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.logic.model.Announcement
+import com.yenaly.han1meviewer.logic.model.DownloadHeaderNode
+import com.yenaly.han1meviewer.logic.model.DownloadItemNode
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimePreview
 import com.yenaly.han1meviewer.logic.model.HomePage
 import com.yenaly.han1meviewer.logic.model.Playlists
 import com.yenaly.han1meviewer.logic.model.SubscriptionItem
 import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
+import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.ui.fragment.home.HomeCategory
 
 
@@ -263,4 +269,71 @@ val fakeNewHanimeInfo = listOf(
             fakeHomePageVideos[2].coverUrl
         ),
     )
+)
+
+val fakeCommentList = listOf(
+    VideoComments.VideoComment(
+        avatar = "https://picsum.photos/64/64",
+        username = "preview_child_1",
+        date = "10分鐘前",
+        content = "這是一條子評論預覽內容，用來確認 Compose 版底部評論頁的列表與對話框入口樣式。",
+        thumbUp = 8,
+        isChildComment = true,
+        hasMoreReplies = false,
+        replyCount = 0,
+        id = "1",
+        post = VideoComments.VideoComment.POST(
+            foreignId = "1",
+            likeCommentStatus = false,
+            unlikeCommentStatus = false,
+        ),
+        reportableId = "1",
+        reportableType = "comment",
+    ),
+    VideoComments.VideoComment(
+        avatar = "https://picsum.photos/64/65",
+        username = "preview_child_2",
+        date = "3分鐘前",
+        content = "第二條子評論，帶一點更短的文案和不同的點贊狀態。",
+        thumbUp = 15,
+        isChildComment = true,
+        hasMoreReplies = false,
+        replyCount = 0,
+        id = "2",
+        post = VideoComments.VideoComment.POST(
+            foreignId = "2",
+            likeCommentStatus = true,
+            unlikeCommentStatus = false,
+        ),
+        reportableId = "2",
+        reportableType = "comment",
+    )
+)
+val fakeDownloadedVideos = fakeHomePageVideos.take(3).mapIndexed { index, item ->
+    VideoWithCategories(
+        video = HanimeDownloadEntity(
+            groupId = 1,
+            coverUrl = item.coverUrl,
+            coverUri = null,
+            title = item.title,
+            addDate = System.currentTimeMillis(),
+            videoCode = item.videoCode,
+            videoUri = "test$index.mp4",
+            quality = "720P",
+            videoUrl = "https://example.com/test$index.mp4",
+            length = 100L * 1024 * 1024,
+            downloadedLength = 100L * 1024 * 1024,
+            state = com.yenaly.han1meviewer.logic.state.DownloadState.Finished,
+            id = index + 1,
+        ),
+        categories = emptyList(),
+    )
+}
+val fakeDownloadedGroups = listOf(DownloadGroupEntity(name = "未分组", orderIndex = 0, id = 1))
+val fakeDownloadedNodes = listOf(
+    DownloadHeaderNode(groupKey = "未分组", originalVideos = fakeDownloadedVideos, isExpanded = true),
+    DownloadItemNode(fakeDownloadedVideos[0], "未分组"),
+    DownloadItemNode(fakeDownloadedVideos[1], "未分组"),
+    DownloadHeaderNode(groupKey = "分组1", originalVideos = fakeDownloadedVideos, isExpanded = true),
+    DownloadItemNode(fakeDownloadedVideos[0], "分组1"),
 )

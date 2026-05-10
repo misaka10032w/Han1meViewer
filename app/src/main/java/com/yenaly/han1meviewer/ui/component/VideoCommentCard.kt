@@ -29,6 +29,20 @@ import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.VideoComments
 
+/**
+ * 视频评论卡片组件。
+ *
+ * 展示单条评论，支持回复、点赞、点踩、举报等操作，
+ * 可选的更多回复入口。
+ *
+ * @param modifier 修饰符
+ * @param comment 评论数据
+ * @param onReply 回复回调
+ * @param onThumbUp 点赞回调
+ * @param onThumbDown 点踩回调
+ * @param onReport 举报回调
+ * @param onViewMoreReplies 查看更多回复回调，为 null 时不显示入口
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VideoCommentCard(

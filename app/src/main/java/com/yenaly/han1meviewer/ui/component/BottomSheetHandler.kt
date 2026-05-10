@@ -14,6 +14,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 
+/**
+ * 底部抽屉拖拽手柄。
+ *
+ * 显示一个水平居中的胶囊形指示条，提示用户可拖拽底部面板。
+ * 容器高 32dp，手柄宽 100dp、高 3dp，使用主题主色。
+ */
 @Composable
 fun BottomSheetHandler() {
     Box(

@@ -23,6 +23,18 @@ import com.yenaly.han1meviewer.logic.model.SubscriptionItem
 import com.yenaly.han1meviewer.ui.fragment.RetryableImage
 import com.yenaly.han1meviewer.ui.preview.fakeArtists
 
+
+/**
+ * 艺术家条目组件
+ *
+ * @param artist 艺术家订阅信息，包含名称和头像地址
+ * @param onClickArtist 点击回调，参数为艺术家名称
+ * @param onLongClickArtist 长按回调，参数为艺术家名称
+ * @param modifier 应用于根 [Column] 布局的修饰符，默认 [Modifier]
+ *
+ * @see SubscriptionItem
+ * @see RetryableImage
+ */
 @Composable
 fun ArtistItem(
     artist: SubscriptionItem,

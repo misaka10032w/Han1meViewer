@@ -58,14 +58,14 @@ import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.LOCAL_DATE_TIME_FORMAT
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
-import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.logic.model.DownloadHeaderNode
 import com.yenaly.han1meviewer.logic.model.DownloadItemNode
 import com.yenaly.han1meviewer.logic.model.DownloadedNode
 import com.yenaly.han1meviewer.ui.component.ComponentPreview
-import com.yenaly.han1meviewer.ui.component.EmptyContent
-import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
+import com.yenaly.han1meviewer.ui.component.EmptyView
+import com.yenaly.han1meviewer.ui.preview.fakeDownloadedGroups
+import com.yenaly.han1meviewer.ui.preview.fakeDownloadedNodes
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
@@ -130,9 +130,9 @@ fun DownloadedScreen(
 
     if (nodes.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            EmptyContent(
-                title = stringResource(R.string.empty_content),
-                description = stringResource(R.string.downloaded),
+            EmptyView(
+                hint = stringResource(R.string.empty_content),
+                subHint = stringResource(R.string.downloaded),
             )
         }
         return
@@ -539,36 +539,33 @@ private fun MoveGroupDialog(
 @Preview(showBackground = true, widthDp = 420, heightDp = 900)
 @Composable
 private fun DownloadedScreenPreview() {
-    val videos = fakeHomePageVideos.take(2).mapIndexed { index, item ->
-        VideoWithCategories(
-            video = HanimeDownloadEntity(
-                groupId = 1,
-                coverUrl = item.coverUrl,
-                coverUri = null,
-                title = item.title,
-                addDate = System.currentTimeMillis(),
-                videoCode = item.videoCode,
-                videoUri = "test$index.mp4",
-                quality = "720P",
-                videoUrl = "https://example.com/test$index.mp4",
-                length = 100L * 1024 * 1024,
-                downloadedLength = 100L * 1024 * 1024,
-                state = com.yenaly.han1meviewer.logic.state.DownloadState.Finished,
-                id = index + 1,
-            ),
-            categories = emptyList(),
-        )
-    }
-    val groups = listOf(DownloadGroupEntity(name = "未分组", orderIndex = 0, id = 1))
-    val nodes = listOf(
-        DownloadHeaderNode(groupKey = "未分组", originalVideos = videos, isExpanded = true),
-        DownloadItemNode(videos[0], "未分组"),
-        DownloadItemNode(videos[1], "未分组"),
-    )
     ComponentPreview {
         DownloadedScreen(
-            nodes = nodes,
-            groups = groups,
+            nodes = fakeDownloadedNodes,
+            groups = fakeDownloadedGroups,
+            showCreateGroupDialog = false,
+            onToggleGroup = {},
+            onHeaderLongClick = {},
+            onOpenVideo = {},
+            onLocalPlayback = {},
+            onExternalPlayback = {},
+            onDeleteVideo = {},
+            onMoveVideoGroup = { _, _ -> },
+            onRenameGroup = { _, _ -> },
+            onCreateGroup = {},
+            onDeleteGroup = {},
+            onCreateGroupDialogChange = {},
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 420, heightDp = 900)
+@Composable
+private fun DownloadedScreenEmptyPreview() {
+    ComponentPreview {
+        DownloadedScreen(
+            nodes = emptyList(),
+            groups = emptyList(),
             showCreateGroupDialog = false,
             onToggleGroup = {},
             onHeaderLongClick = {},

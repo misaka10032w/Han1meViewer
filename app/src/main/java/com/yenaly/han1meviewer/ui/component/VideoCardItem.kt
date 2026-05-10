@@ -2,7 +2,6 @@ package com.yenaly.han1meviewer.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,6 +34,17 @@ import com.yenaly.han1meviewer.logic.model.VideoItemType
 import com.yenaly.han1meviewer.ui.fragment.RetryableImage
 import com.yenaly.han1meviewer.ui.preview.fakeVideosItem
 
+
+/**
+ * 标准视频卡片项组件。
+ *
+ * 展示视频封面、标题等信息，支持水平和垂直两种布局，支持点击和长按交互。
+ *
+ * @param videoItem 视频数据
+ * @param isHorizontalCard 是否为水平卡片布局，默认为 true
+ * @param onClickVideosItem 点击回调，参数为视频 ID
+ * @param onLongClickVideosItem 长按回调，参数为视频 ID 和视频标题
+ */
 @Composable
 fun VideoCardItem(
     videoItem: VideoItemType,

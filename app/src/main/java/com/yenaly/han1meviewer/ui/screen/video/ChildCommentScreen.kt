@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,6 +32,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yenaly.han1meviewer.R
@@ -40,14 +40,20 @@ import com.yenaly.han1meviewer.logic.model.ReportReason
 import com.yenaly.han1meviewer.logic.model.VideoCommentArgs
 import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.component.EmptyContent
+import com.yenaly.han1meviewer.ui.component.CommentInputDialog
+import com.yenaly.han1meviewer.ui.component.CommentReportDialog
+import com.yenaly.han1meviewer.ui.component.ComponentPreview
+import com.yenaly.han1meviewer.ui.component.EmptyView
 import com.yenaly.han1meviewer.ui.component.ErrorContent
 import com.yenaly.han1meviewer.ui.component.LoadingContent
 import com.yenaly.han1meviewer.ui.component.VideoCommentCard
+import com.yenaly.han1meviewer.ui.preview.fakeCommentList
 import com.yenaly.han1meviewer.util.parseTimeStrToMinutes
 import com.yenaly.han1meviewer.util.safeSortedBy
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -182,11 +188,8 @@ fun ChildCommentScreen(
                 }
 
                 sortedComments.isEmpty() -> {
-                    EmptyContent(
-                        title = stringResource(R.string.comment_not_found),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 24.dp),
+                    EmptyView(
+                        hint = stringResource(R.string.comment_not_found)
                     )
                 }
 
@@ -282,6 +285,67 @@ fun ChildCommentScreen(
                 reportComment = null
                 selectedReasonIndex = -1
             },
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 420, heightDp = 900)
+@Composable
+private fun ChildCommentScreenPreview() {
+    ComponentPreview {
+        ChildCommentScreen(
+            commentsFlow = MutableStateFlow(fakeCommentList),
+            commentStateFlow = MutableStateFlow(WebsiteState.Success(VideoComments(fakeCommentList.toMutableList()))),
+            reportMessageFlow = flowOf(CommentMessage("")),
+            postReplyStateFlow = flowOf(WebsiteState.Success(Unit)),
+            commentLikeStateFlow = flowOf(
+                WebsiteState.Success(
+                    VideoCommentArgs(
+                        isPositive = true,
+                        commentPosition = 0,
+                        comment = fakeCommentList.first(),
+                    )
+                )
+            ),
+            reportReasons = listOf(
+                ReportReason(
+                    lang = ReportReason.Language(
+                        zhrTW = "垃圾訊息",
+                        zhrCN = "垃圾信息",
+                        en = "Spam",
+                    ),
+                    reasonKey = "spam",
+                )
+            ),
+            isAlreadyLogin = true,
+            onRefresh = {},
+            onReply = { _, _ -> },
+            onReport = { _, _ -> },
+            onThumbUp = {},
+            onThumbDown = {},
+            onCommentLikeSuccess = {},
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 420, heightDp = 900)
+@Composable
+private fun ChildCommentScreenEmptyPreview() {
+    ComponentPreview {
+        ChildCommentScreen(
+            commentsFlow = MutableStateFlow(emptyList()),
+            commentStateFlow = MutableStateFlow(WebsiteState.Success(VideoComments(mutableListOf()))),
+            reportMessageFlow = flowOf(CommentMessage("")),
+            postReplyStateFlow = flowOf(WebsiteState.Loading),
+            commentLikeStateFlow = flowOf(WebsiteState.Loading),
+            reportReasons = emptyList(),
+            isAlreadyLogin = true,
+            onRefresh = {},
+            onReply = { _, _ -> },
+            onReport = { _, _ -> },
+            onThumbUp = {},
+            onThumbDown = {},
+            onCommentLikeSuccess = {},
         )
     }
 }
