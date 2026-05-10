@@ -1,5 +1,10 @@
 package com.yenaly.han1meviewer.ui.screen.video
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,8 +14,10 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -29,6 +36,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -92,6 +100,7 @@ fun CommentScreen(
     var latestReportMessage by remember { mutableStateOf<String?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val refreshingState = rememberPullToRefreshState()
+    val listState = rememberLazyListState()
     LaunchedEffect(reportMessageFlow) {
         reportMessageFlow.collect {
             latestReportMessage = it.text
@@ -104,6 +113,7 @@ fun CommentScreen(
     val sortedComments = remember(comments, sortType) {
         sortComments(comments, sortType)
     }
+    val showCommentFab by rememberCommentFabVisibility(listState)
 
     if (replyingComment != null) {
         CommentInputDialog(
@@ -201,16 +211,22 @@ fun CommentScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             if (isAlreadyLogin) {
-                ExtendedFloatingActionButton(
-                    text = { Text(stringResource(R.string.comment)) },
-                    icon = {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_baseline_reply_24),
-                            contentDescription = null,
-                        )
-                    },
-                    onClick = { showComposeDialog = true },
-                )
+                AnimatedVisibility(
+                    visible = showCommentFab,
+                    enter = fadeIn() + slideInVertically { it / 2 },
+                    exit = fadeOut() + slideOutVertically { it / 2 },
+                ) {
+                    ExtendedFloatingActionButton(
+                        text = { Text(stringResource(R.string.comment)) },
+                        icon = {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_baseline_reply_24),
+                                contentDescription = null,
+                            )
+                        },
+                        onClick = { showComposeDialog = true },
+                    )
+                }
             }
         }
     ) { paddingValues ->
@@ -261,6 +277,7 @@ fun CommentScreen(
 
                 else -> {
                     LazyColumn(
+                        state = listState,
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -324,6 +341,25 @@ private fun sortText(type: CommentFragment.SortType): String = when (type) {
 }
 
 data class CommentMessage(val text: String)
+
+@Composable
+private fun rememberCommentFabVisibility(listState: LazyListState): androidx.compose.runtime.State<Boolean> {
+    return remember(listState) {
+        derivedStateOf {
+            val scrollOffset = listState.firstVisibleItemScrollOffset
+            val firstVisibleItemIndex = listState.firstVisibleItemIndex
+            val lastScrolledBackward = listState.lastScrolledBackward
+            val lastScrolledForward = listState.lastScrolledForward
+
+            when {
+                firstVisibleItemIndex == 0 && scrollOffset == 0 -> true
+                lastScrolledBackward -> true
+                lastScrolledForward -> false
+                else -> true
+            }
+        }
+    }
+}
 
 @Preview(showBackground = true, widthDp = 420, heightDp = 900)
 @Composable
