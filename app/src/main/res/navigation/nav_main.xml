@@ -82,9 +82,6 @@
         android:id="@+id/nv_fav_video"
         android:name="com.yenaly.han1meviewer.ui.fragment.home.MyFavVideoFragment" />
     <fragment
-        android:id="@+id/nv_playlist"
-        android:name="com.yenaly.han1meviewer.ui.fragment.home.MyPlaylistFragment" />
-    <fragment
         android:id="@+id/nv_watch_later"
         android:name="com.yenaly.han1meviewer.ui.fragment.home.MyWatchLaterFragment" />
     <fragment
