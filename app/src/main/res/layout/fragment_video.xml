@@ -32,8 +32,8 @@
                     app:collapsedTitleTextAppearance="@android:color/transparent"
                     app:expandedTitleTextAppearance="@android:color/transparent">
 
-                    <com.yenaly.han1meviewer.ui.view.video.HJzvdStd
-                        android:id="@+id/video_player"
+                    <androidx.compose.ui.platform.ComposeView
+                        android:id="@+id/video_player_host"
                         android:layout_width="match_parent"
                         android:layout_height="250dp"
                         app:layout_collapseMode="parallax"

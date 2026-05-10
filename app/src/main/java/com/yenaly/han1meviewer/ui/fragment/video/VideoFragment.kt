@@ -11,6 +11,7 @@ import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.util.Log
 import android.util.Rational
+import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -20,11 +21,18 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnNextLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -40,6 +48,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
+import com.google.android.material.transition.MaterialSharedAxis
 import com.yenaly.han1meviewer.COMMENT_TYPE
 import com.yenaly.han1meviewer.FROM_DOWNLOAD
 import com.yenaly.han1meviewer.FirebaseConstants
@@ -57,6 +66,8 @@ import com.yenaly.han1meviewer.logic.exception.ParseException
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.adapter.HanimeVideoRvAdapter
+import com.yenaly.han1meviewer.ui.screen.video.VideoScreen
+import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.view.video.ExoMediaKernel
 import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
 import com.yenaly.han1meviewer.ui.view.video.HMediaKernel
@@ -68,7 +79,6 @@ import com.yenaly.han1meviewer.util.checkBadGuy
 import com.yenaly.han1meviewer.util.getOrCreateBadgeOnTextViewAt
 import com.yenaly.han1meviewer.util.openVideo
 import com.yenaly.han1meviewer.util.showAlertDialog
-import com.yenaly.yenaly_libs.base.YenalyFragment
 import com.yenaly.yenaly_libs.utils.OrientationManager
 import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.dp
@@ -80,7 +90,12 @@ import com.yenaly.yenaly_libs.utils.view.setUpFragmentStateAdapter
 import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 
-class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager.OrientationChangeListener {
+class VideoFragment : androidx.fragment.app.Fragment(), OrientationManager.OrientationChangeListener {
+
+    private var _binding: FragmentVideoBinding? = null
+    private val binding get() = _binding!!
+    private var videoPlayer: HJzvdStd? = null
+    private val requireVideoPlayer get() = checkNotNull(videoPlayer)
 
     val viewModel by viewModels<VideoViewModel>()
     private val commentViewModel by viewModels<CommentViewModel>()
@@ -128,11 +143,61 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
     private val isCurrentlyLandscape: Boolean
         get() = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-    override fun getViewBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentVideoBinding {
-        return FragmentVideoBinding.inflate(inflater, container, false)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enterTransition = MaterialSharedAxis(MaterialSharedAxis.X, true)
+        exitTransition = MaterialSharedAxis(MaterialSharedAxis.X, true)
+        reenterTransition = MaterialSharedAxis(MaterialSharedAxis.X, false)
+        returnTransition = MaterialSharedAxis(MaterialSharedAxis.X, false)
     }
 
-    override fun initData(savedInstanceState: Bundle?) {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
+        val videoBinding = FragmentVideoBinding.inflate(inflater, container, false)
+        _binding = videoBinding
+        if (videoPlayer == null) {
+            videoPlayer = createVideoPlayerView()
+        }
+        if (videoPlayer?.parent !== binding.collapsingToolbar) {
+            (videoPlayer?.parent as? ViewGroup)?.removeView(videoPlayer)
+            binding.collapsingToolbar.addView(videoPlayer, 0)
+        }
+        val contentRoot = videoBinding.root
+        return ComposeView(requireContext()).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                val videoState by viewModel.hanimeVideoStateFlow.collectAsStateWithLifecycle()
+                HanimeTheme {
+                    VideoScreen(
+                        state = videoState,
+                        onRetry = { viewModel.getHanimeVideo(videoCode, videoUri) },
+                    ) {
+                        AndroidView(
+                            factory = { contentRoot },
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun createVideoPlayerView(): HJzvdStd {
+        return HJzvdStd(ContextThemeWrapper(requireContext(), requireContext().theme)).apply {
+            layoutParams = com.google.android.material.appbar.CollapsingToolbarLayout.LayoutParams(
+                MATCH_PARENT,
+                250.dp,
+            ).apply {
+                collapseMode = com.google.android.material.appbar.CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PARALLAX
+                parallaxMultiplier = 0.7f
+            }
+        }
+    }
+
+    private fun initData(savedInstanceState: Bundle?) {
         if (videoCode == "-1") {
             viewModel.fromDownload = true
         } else {
@@ -140,7 +205,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         }
         viewModel.videoCode = videoCode
         commentViewModel.code = videoCode
-        binding.videoPlayer.videoCode = videoCode
+        requireVideoPlayer.videoCode = videoCode
         checkBadGuy(requireContext(), R.raw.akarin)
 //        ViewCompat.setOnApplyWindowInsetsListener(binding.videoPlayer) { v, insets ->
 //            val navBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
@@ -151,7 +216,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
 //        }
         orientationManager = OrientationManager(requireActivity(), this)
         lifecycle.addObserver(orientationManager)
-        binding.videoPlayer.orientationManager = orientationManager
+        requireVideoPlayer.orientationManager = orientationManager
         initViewPager()
         initHKeyframe()
         viewModel.getHanimeVideo(videoCode, videoUri)
@@ -172,7 +237,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
 
         val behavior = (binding.appbar.layoutParams as CoordinatorLayout.LayoutParams)
             .behavior as VideoPlayerAppBarBehavior
-        binding.videoPlayer.onVideoStateChanged = { state ->
+        requireVideoPlayer.onVideoStateChanged = { state ->
             when (state) {
                 Jzvd.STATE_PLAYING, Jzvd.STATE_PREPARING -> {
                     behavior.disableScroll = true
@@ -207,20 +272,22 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.videoPlayer.fullscreenListener = object : HJzvdStd.FullscreenListener {
+        initData(savedInstanceState)
+        bindDataObservers()
+        requireVideoPlayer.fullscreenListener = object : HJzvdStd.FullscreenListener {
             override fun onFullscreenChanged(isFullscreen: Boolean) {
                 jzBackCallback.isEnabled = isFullscreen
                 Log.i("JZVD screen state", isFullscreen.toString())
                 // 退出全屏后恢复平板布局
                 if (!isFullscreen && isTabletMode) {
-                    binding.videoPlayer.post { syncTabletUi(force = true) }
+                    requireVideoPlayer.post { syncTabletUi(force = true) }
                 }
             }
         }
     }
 
     @OptIn(ExperimentalTime::class)
-    override fun bindDataObservers() {
+    private fun bindDataObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
                 viewModel.hanimeVideoStateFlow.collect { state ->
@@ -239,17 +306,17 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
                             videoTitle = state.info.title
 
                             if (state.info.videoUrls.isEmpty()) {
-                                binding.videoPlayer.startButton.setOnClickListener {
+                                requireVideoPlayer.startButton.setOnClickListener {
                                     showShortToast(R.string.fail_to_get_video_link)
                                     requireContext().browse(getHanimeVideoLink(videoCode))
                                 }
                             } else {
-                                binding.videoPlayer.setUp(
+                                requireVideoPlayer.setUp(
                                     HanimeDataSource(state.info.title, state.info.videoUrls),
                                     Jzvd.SCREEN_NORMAL, kernel
                                 )
                             }
-                            binding.videoPlayer.posterImageView.load(state.info.coverUrl) {
+                            requireVideoPlayer.posterImageView.load(state.info.coverUrl) {
                                 crossfade(true)
                             }
                             if (!fromDownload) {
@@ -264,7 +331,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
                             }
                             val history = DatabaseRepo.WatchHistory.findBy(videoCode)
                             val progress = history?.progress ?: 0L
-                            binding.videoPlayer.savedProgress = progress
+                            requireVideoPlayer.savedProgress = progress
                             // 平板模式：加载完成后同步相关视频区域状态
                             if (isTabletMode) {
                                 syncTabletUi(force = true)
@@ -289,7 +356,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
                 .flowWithLifecycle(viewLifecycleOwner.lifecycle)
                 .collect {
                     Log.i("HKeyframe", "KeyframeFlow:collected entity: $it")
-                    binding.videoPlayer.hKeyframe = it
+                    requireVideoPlayer.hKeyframe = it
                     viewModel.hKeyframes = it
                 }
         }
@@ -308,7 +375,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
 
     override fun onPause() {
         super.onPause()
-        val progress = binding.videoPlayer.currentPositionWhenPlaying
+        val progress = requireVideoPlayer.currentPositionWhenPlaying
         val videoCode = videoCode
         lifecycleScope.launch {
             DatabaseRepo.WatchHistory.updateProgress(videoCode, progress)
@@ -322,6 +389,9 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         tabletRightRecyclerView = null
         lastAppliedTabletLandscape = null
         super.onDestroyView()
+        videoPlayer = null
+        _binding?.unbind()
+        _binding = null
         Jzvd.releaseAllVideos()
     }
 
@@ -329,14 +399,14 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
     override fun onOrientationChanged(orientation: OrientationManager.ScreenOrientation) {
         if (!isTabletMode
             && Jzvd.CURRENT_JZVD != null
-            && (binding.videoPlayer.state == Jzvd.STATE_PLAYING || binding.videoPlayer.state == Jzvd.STATE_PAUSE)
-            && binding.videoPlayer.screen != Jzvd.SCREEN_TINY
+            && (requireVideoPlayer.state == Jzvd.STATE_PLAYING || requireVideoPlayer.state == Jzvd.STATE_PAUSE)
+            && requireVideoPlayer.screen != Jzvd.SCREEN_TINY
             && Jzvd.FULLSCREEN_ORIENTATION != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         ) {
-            if (orientation.isLandscape && binding.videoPlayer.screen == Jzvd.SCREEN_NORMAL) {
+            if (orientation.isLandscape && requireVideoPlayer.screen == Jzvd.SCREEN_NORMAL) {
                 changeScreenFullLandscape(orientation)
             } else if (orientation === OrientationManager.ScreenOrientation.PORTRAIT
-                && binding.videoPlayer.screen == Jzvd.SCREEN_FULLSCREEN
+                && requireVideoPlayer.screen == Jzvd.SCREEN_FULLSCREEN
             ) {
                 changeScreenNormal()
             }
@@ -508,23 +578,23 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
 
     // 安全设置播放器高度（绕过 CollapsingToolbarLayout 的类型强转崩溃）
     private fun safeSetPlayerHeight(height: Int) {
-        val lp = binding.videoPlayer.layoutParams
+        val lp = requireVideoPlayer.layoutParams
         if (lp is com.google.android.material.appbar.CollapsingToolbarLayout.LayoutParams) {
             lp.height = height
-            binding.videoPlayer.layoutParams = lp
+            requireVideoPlayer.layoutParams = lp
         }
     }
 
     private fun changeScreenNormal() {
-        if (binding.videoPlayer.screen == Jzvd.SCREEN_FULLSCREEN) {
-            binding.videoPlayer.gotoNormalScreen()
+        if (requireVideoPlayer.screen == Jzvd.SCREEN_FULLSCREEN) {
+            requireVideoPlayer.gotoNormalScreen()
         }
     }
 
     private fun changeScreenFullLandscape(orientation: OrientationManager.ScreenOrientation) {
-        if (binding.videoPlayer.screen != Jzvd.SCREEN_FULLSCREEN) {
+        if (requireVideoPlayer.screen != Jzvd.SCREEN_FULLSCREEN) {
             if (System.currentTimeMillis() - Jzvd.lastAutoFullscreenTime > 2000) {
-                binding.videoPlayer.autoFullscreen(orientation)
+                requireVideoPlayer.autoFullscreen(orientation)
                 Jzvd.lastAutoFullscreenTime = System.currentTimeMillis()
             }
         }
@@ -548,19 +618,19 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
     }
 
     private fun initHKeyframe() {
-        binding.videoPlayer.onGoHomeClickListener = {
+        requireVideoPlayer.onGoHomeClickListener = {
             if (context is MainActivity && resources.getBoolean(R.bool.isTablet)) {
                 findNavController().popBackStack()
             }
             requireContext().startActivity<MainActivity>()
         }
-        binding.videoPlayer.onKeyframeClickListener = { v ->
-            binding.videoPlayer.clickHKeyframe(v)
+        requireVideoPlayer.onKeyframeClickListener = { v ->
+            requireVideoPlayer.clickHKeyframe(v)
         }
-        binding.videoPlayer.onKeyframeLongClickListener = {
-            val mi: JZMediaInterface? = binding.videoPlayer.mediaInterface
+        requireVideoPlayer.onKeyframeLongClickListener = {
+            val mi: JZMediaInterface? = requireVideoPlayer.mediaInterface
             if (mi != null && !mi.isPlaying) {
-                val currentPosition = binding.videoPlayer.currentPositionWhenPlaying
+                val currentPosition = requireVideoPlayer.currentPositionWhenPlaying
                 it.context.showAlertDialog {
                     setTitle(R.string.add_to_h_keyframe)
                     setMessage(buildString {
@@ -610,7 +680,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         val icon = Icon.createWithResource(requireContext(), R.drawable.ic_baseline_pause_24_tintwhite)
         val action = RemoteAction(icon, getString(R.string.play_pause), getString(R.string.play_pause), intent)
         val sourceRect = Rect()
-        binding.videoPlayer.getGlobalVisibleRect(sourceRect)
+        requireVideoPlayer.getGlobalVisibleRect(sourceRect)
         val params = PictureInPictureParams.Builder()
             .setSourceRectHint(sourceRect)
             .setAspectRatio(aspectRatio)
@@ -644,7 +714,7 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
 
 
     fun shouldEnterPip(): Boolean {
-        return binding.videoPlayer.state == Jzvd.STATE_PLAYING || binding.videoPlayer.state == Jzvd.STATE_PAUSE
+        return requireVideoPlayer.state == Jzvd.STATE_PLAYING || requireVideoPlayer.state == Jzvd.STATE_PAUSE
     }
     fun onPipModeChanged(isInPip: Boolean) {
         if (isInPip) {
@@ -657,11 +727,11 @@ class VideoFragment : YenalyFragment<FragmentVideoBinding>(), OrientationManager
         binding.videoTl.isVisible = !isInPip
         binding.videoVp.isUserInputEnabled = !isInPip
         binding.videoVp.isVisible = !isInPip
-        binding.videoPlayer.setControlsVisible(!isInPip)
+        requireVideoPlayer.setControlsVisible(!isInPip)
         if (isInPip) updatePipAction()
     }
     fun togglePlayPause() {
-        val player = binding.videoPlayer
+        val player = requireVideoPlayer
         if (player.mediaInterface.isPlaying) {
             player.mediaInterface.pause()
         } else {
