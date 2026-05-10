@@ -40,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -69,6 +70,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -106,6 +108,8 @@ fun CommentScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val refreshingState = rememberPullToRefreshState()
     val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    val loginFirstText = stringResource(R.string.login_first)
     LaunchedEffect(reportMessageFlow) {
         reportMessageFlow.collect {
             latestReportMessage = it.text
@@ -303,10 +307,34 @@ fun CommentScreen(
                         items(sortedComments, key = { it.stableKey }) { comment ->
                             VideoCommentCard(
                                 comment = comment,
-                                onReply = { replyingComment = comment },
-                                onThumbUp = { onThumbUp(comment) },
-                                onThumbDown = { onThumbDown(comment) },
-                                onReport = { reportComment = comment },
+                                onReply = {
+                                    if (!isAlreadyLogin) {
+                                        scope.launch { snackbarHostState.showSnackbar(loginFirstText) }
+                                    } else {
+                                        replyingComment = comment
+                                    }
+                                },
+                                onThumbUp = {
+                                    if (!isAlreadyLogin) {
+                                        scope.launch { snackbarHostState.showSnackbar(loginFirstText) }
+                                    } else {
+                                        onThumbUp(comment)
+                                    }
+                                },
+                                onThumbDown = {
+                                    if (!isAlreadyLogin) {
+                                        scope.launch { snackbarHostState.showSnackbar(loginFirstText) }
+                                    } else {
+                                        onThumbDown(comment)
+                                    }
+                                },
+                                onReport = {
+                                    if (!isAlreadyLogin) {
+                                        scope.launch { snackbarHostState.showSnackbar(loginFirstText) }
+                                    } else {
+                                        reportComment = comment
+                                    }
+                                },
                                 onViewMoreReplies = if (comment.hasMoreReplies) {
                                     { onViewMoreReplies(comment) }
                                 } else {
