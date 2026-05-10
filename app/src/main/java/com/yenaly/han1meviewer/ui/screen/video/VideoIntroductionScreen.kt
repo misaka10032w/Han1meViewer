@@ -1,0 +1,969 @@
+package com.yenaly.han1meviewer.ui.screen.video
+
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.logic.entity.CheckInRecordEntity
+import com.yenaly.han1meviewer.logic.model.HanimeInfo
+import com.yenaly.han1meviewer.logic.model.HanimeVideo
+import com.yenaly.han1meviewer.logic.state.VideoLoadingState
+import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
+import com.yenaly.han1meviewer.ui.component.ComponentPreview
+import com.yenaly.han1meviewer.ui.component.EmptyContent
+import com.yenaly.han1meviewer.ui.component.ErrorContent
+import com.yenaly.han1meviewer.ui.component.ExpandableRichText
+import com.yenaly.han1meviewer.ui.component.LoadingContent
+import com.yenaly.han1meviewer.ui.component.TagChipGroup
+import com.yenaly.han1meviewer.ui.component.VideoCardItem
+import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
+import com.yenaly.han1meviewer.ui.preview.fakeTagList2
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.format
+
+private val previewSafeDateFormat = LocalDate.Formats.ISO
+
+@Composable
+fun VideoIntroductionScreen(
+    video: HanimeVideo?,
+    state: VideoLoadingState<HanimeVideo>,
+    fromDownload: Boolean,
+    hideRelatedInIntro: Boolean,
+    shareText: String,
+    playlistInitialIndex: Int,
+    onRetry: () -> Unit,
+    onOpenVideo: (HanimeInfo) -> Unit,
+    onOpenArtist: (HanimeVideo.Artist) -> Unit,
+    onToggleSubscribe: (HanimeVideo.Artist) -> Unit,
+    onToggleFavorite: () -> Unit,
+    onManageMyList: (List<String>, List<Boolean>) -> Unit,
+    onQuickCheckIn: (CheckInRecordEntity) -> Unit,
+    onDownload: () -> Unit,
+    onShare: () -> Unit,
+    onCopyShareText: () -> Unit,
+    onOpenWebPage: () -> Unit,
+    onOpenOriginalComic: (() -> Unit)?,
+    onCopyText: (String) -> Unit,
+    onShowAllPlaylist: (() -> Unit)?,
+    onPlaylistScrollChange: (Int) -> Unit,
+    onIntroductionLinkClick: (String) -> Unit,
+) {
+    val maxScreenWidth = LocalWindowInfo.current.containerSize.width.dp
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .widthIn(max = maxScreenWidth)
+    ) {
+        val currentVideo = video ?: (state as? VideoLoadingState.Success)?.info
+        when {
+            currentVideo != null -> VideoIntroductionContent(
+                video = currentVideo,
+                fromDownload = fromDownload,
+                hideRelatedInIntro = hideRelatedInIntro,
+                shareText = shareText,
+                playlistInitialIndex = playlistInitialIndex,
+                onOpenVideo = onOpenVideo,
+                onOpenArtist = onOpenArtist,
+                onToggleSubscribe = onToggleSubscribe,
+                onToggleFavorite = onToggleFavorite,
+                onManageMyList = onManageMyList,
+                onQuickCheckIn = onQuickCheckIn,
+                onDownload = onDownload,
+                onShare = onShare,
+                onCopyShareText = onCopyShareText,
+                onOpenWebPage = onOpenWebPage,
+                onOpenOriginalComic = onOpenOriginalComic,
+                onCopyText = onCopyText,
+                onShowAllPlaylist = onShowAllPlaylist,
+                onPlaylistScrollChange = onPlaylistScrollChange,
+                onIntroductionLinkClick = onIntroductionLinkClick,
+            )
+
+            state is VideoLoadingState.Error -> ErrorContent(
+                title = stringResource(R.string.load_failed_retry),
+                message = state.throwable.message,
+                onRetry = onRetry,
+                modifier = Modifier.align(Alignment.Center),
+            )
+
+            state is VideoLoadingState.NoContent -> EmptyContent(
+                hint = stringResource(R.string.video_might_not_exist),
+            )
+
+            else -> LoadingContent(
+                modifier = Modifier.align(Alignment.Center),
+                message = stringResource(R.string.loading),
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun VideoIntroductionContent(
+    video: HanimeVideo,
+    fromDownload: Boolean,
+    hideRelatedInIntro: Boolean,
+    shareText: String,
+    playlistInitialIndex: Int,
+    onOpenVideo: (HanimeInfo) -> Unit,
+    onOpenArtist: (HanimeVideo.Artist) -> Unit,
+    onToggleSubscribe: (HanimeVideo.Artist) -> Unit,
+    onToggleFavorite: () -> Unit,
+    onManageMyList: (List<String>, List<Boolean>) -> Unit,
+    onQuickCheckIn: (CheckInRecordEntity) -> Unit,
+    onDownload: () -> Unit,
+    onShare: () -> Unit,
+    onCopyShareText: () -> Unit,
+    onOpenWebPage: () -> Unit,
+    onOpenOriginalComic: (() -> Unit)?,
+    onCopyText: (String) -> Unit,
+    onShowAllPlaylist: (() -> Unit)?,
+    onPlaylistScrollChange: (Int) -> Unit,
+    onIntroductionLinkClick: (String) -> Unit,
+) {
+    val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    var showPlaylistSheet by remember { mutableStateOf(false) }
+    var showQuickCheckInDialog by remember { mutableStateOf(false) }
+    var showMyListDialog by remember { mutableStateOf(false) }
+
+    if (showPlaylistSheet && video.playlist != null) {
+        PlaylistBottomSheet(
+            playlist = video.playlist,
+            onDismiss = { showPlaylistSheet = false },
+            onOpenVideo = {
+                showPlaylistSheet = false
+                onOpenVideo(it)
+            },
+        )
+    }
+
+    if (showQuickCheckInDialog) {
+        QuickCheckInDialog(
+            video = video,
+            onDismiss = { showQuickCheckInDialog = false },
+            onConfirm = {
+                onQuickCheckIn(it)
+                showQuickCheckInDialog = false
+            },
+        )
+    }
+
+    if (showMyListDialog && video.myList != null) {
+        MyListDialog(
+            myList = video.myList,
+            onDismiss = { showMyListDialog = false },
+            onConfirm = { selectedStates ->
+                onManageMyList(video.myList.titleArray.toList(), selectedStates)
+                showMyListDialog = false
+            },
+        )
+    }
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 6.dp, top = 12.dp, end = 6.dp, bottom = 24.dp + bottomInset),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        video.artist?.let { artist ->
+            item(key = "artist") {
+                ArtistSection(
+                    artist = artist,
+                    onOpenArtist = { onOpenArtist(artist) },
+                    onToggleSubscribe = { onToggleSubscribe(artist) },
+                )
+            }
+        }
+
+        item(key = "title") {
+            TitleSection(video = video, onCopyText = onCopyText)
+        }
+
+        item(key = "meta") {
+            MetaSection(video = video, fromDownload = fromDownload)
+        }
+
+        item(key = "intro") {
+            ExpandableIntroductionSection(
+                introduction = video.introduction.orEmpty(),
+                onIntroductionLinkClick = onIntroductionLinkClick,
+            )
+        }
+
+        if (!fromDownload) {
+            item(key = "actions") {
+                ActionSection(
+                    isFav = video.isFav,
+                    hasOriginalComic = !video.originalComic.isNullOrBlank(),
+                    onQuickCheckIn = { showQuickCheckInDialog = true },
+                    onOpenOriginalComic = onOpenOriginalComic,
+                    onToggleFavorite = onToggleFavorite,
+                    onManageMyList = { showMyListDialog = true },
+                    onDownload = onDownload,
+                    onShare = onShare,
+                    onCopyShareText = onCopyShareText,
+                    onOpenWebPage = onOpenWebPage,
+                )
+            }
+        }
+
+        if (video.tags.isNotEmpty()) {
+            item(key = "tags") {
+                TagsSection(tags = video.tags)
+            }
+        }
+
+        if (!fromDownload && video.playlist != null && video.playlist.video.isNotEmpty()) {
+            item(key = "playlist") {
+                PlaylistSection(
+                    playlist = video.playlist,
+                    initialIndex = playlistInitialIndex,
+                    onOpenVideo = onOpenVideo,
+                    onShowAllPlaylist = if (onShowAllPlaylist != null) {
+                        { showPlaylistSheet = true }
+                    } else {
+                        null
+                    },
+                    onPlaylistScrollChange = onPlaylistScrollChange,
+                )
+            }
+        }
+
+        if (!fromDownload && !hideRelatedInIntro && video.relatedHanimes.isNotEmpty()) {
+            item(key = "related") {
+                RelatedVideosSection(
+                    videos = video.relatedHanimes,
+                    onOpenVideo = onOpenVideo,
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun QuickCheckInDialog(
+    video: HanimeVideo,
+    onDismiss: () -> Unit,
+    onConfirm: (CheckInRecordEntity) -> Unit,
+) {
+    var feeling by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(video.title) },
+        text = {
+            OutlinedTextField(
+                value = feeling,
+                onValueChange = {
+                    if (it.length <= 200) {
+                        feeling = it
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(stringResource(R.string.dialog_feeling_hint)) },
+                minLines = 3,
+                supportingText = {
+                    Text("${feeling.length}/200")
+                },
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val time = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                    val sep = "\u001E"
+                    val record = CheckInRecordEntity(
+                        date = java.time.LocalDate.now().toString(),
+                        time = time,
+                        type = "自慰",
+                        sideDishes = "${video.title}$sep${video.playlist?.video?.firstOrNull { it.isPlaying }?.videoCode ?: ""}".removeSuffix(sep),
+                        feeling = feeling,
+                    )
+                    onConfirm(record)
+                }
+            ) {
+                Text(stringResource(R.string.dialog_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.dialog_cancel))
+            }
+        },
+    )
+}
+
+@Composable
+private fun MyListDialog(
+    myList: HanimeVideo.MyList,
+    onDismiss: () -> Unit,
+    onConfirm: (List<Boolean>) -> Unit,
+) {
+    var selectedStates by remember(myList.myListInfo) {
+        mutableStateOf(myList.myListInfo.map { it.isSelected })
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.add_to_playlist)) },
+        text = {
+            LazyColumn(
+                modifier = Modifier.heightIn(max = 320.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(myList.myListInfo.indices.toList()) { index ->
+                    val info = myList.myListInfo[index]
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .toggleable(
+                                value = selectedStates[index],
+                                onValueChange = { checked ->
+                                    selectedStates = selectedStates.toMutableList().also { it[index] = checked }
+                                },
+                            )
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Checkbox(
+                            checked = selectedStates[index],
+                            onCheckedChange = null,
+                        )
+                        Text(info.title)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(selectedStates) }) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.back))
+            }
+        },
+    )
+}
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun PlaylistBottomSheet(
+    playlist: HanimeVideo.Playlist,
+    onDismiss: () -> Unit,
+    onOpenVideo: (HanimeInfo) -> Unit,
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        dragHandle = { BottomSheetHandler() },
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.series_video),
+                        style = MaterialTheme.typography.headlineSmall,
+                    )
+                    playlist.playlistName?.takeIf { it.isNotBlank() }?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                Text(
+                    text = stringResource(R.string.blank_brackets, playlist.video.size),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(bottom = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(playlist.video, key = { it.videoCode }) { item ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .combinedClickable(
+                                onClick = { onOpenVideo(item) },
+                                onLongClick = null,
+                            )
+                            .padding(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        AsyncImage(
+                            model = item.coverUrl,
+                            contentDescription = item.title,
+                            modifier = Modifier
+                                .width(100.dp)
+                                .height(66.dp)
+                                .clip(androidx.compose.foundation.shape.RoundedCornerShape(10.dp)),
+                            contentScale = ContentScale.Crop,
+                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = item.title,
+                                style = MaterialTheme.typography.titleSmall,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(
+                                text = item.currentArtist.orEmpty(),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ArtistSection(
+    artist: HanimeVideo.Artist,
+    onOpenArtist: () -> Unit,
+    onToggleSubscribe: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .combinedClickable(onClick = onOpenArtist, onLongClick = null)
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            AsyncImage(
+                model = artist.avatarUrl,
+                contentDescription = artist.name,
+                modifier = Modifier
+                    .size(52.dp)
+                    .clip(androidx.compose.foundation.shape.CircleShape),
+                contentScale = ContentScale.Crop,
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = artist.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = artist.genre,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            artist.post?.let {
+                Button(onClick = onToggleSubscribe) {
+                    Text(
+                        text = if (artist.isSubscribed) {
+                            stringResource(R.string.subscribed)
+                        } else {
+                            stringResource(R.string.subscribe)
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun TitleSection(video: HanimeVideo, onCopyText: (String) -> Unit) {
+    val primaryTitle = video.chineseTitle?.takeIf { it.isNotBlank() } ?: video.title
+    val secondaryTitle = video.title.takeIf { it != primaryTitle }
+
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(
+            text = primaryTitle,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.combinedClickable(
+                onClick = {},
+                onLongClick = { onCopyText(primaryTitle) },
+            )
+        )
+        secondaryTitle?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.combinedClickable(
+                    onClick = {},
+                    onLongClick = { onCopyText(it) },
+                )
+            )
+        }
+    }
+}
+
+@Composable
+private fun MetaSection(video: HanimeVideo, fromDownload: Boolean) {
+    val viewsText = if (fromDownload) {
+        stringResource(R.string.s_view_times, "0721")
+    } else {
+        stringResource(R.string.s_view_times, video.views.toString())
+    }
+    val uploadTime = video.uploadTime?.format(previewSafeDateFormat).orEmpty()
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            text = viewsText,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Box(
+            modifier = Modifier
+                .size(width = 1.dp, height = 16.dp)
+                .background(MaterialTheme.colorScheme.primary)
+        )
+        Text(
+            text = uploadTime,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun ExpandableIntroductionSection(
+    introduction: String,
+    onIntroductionLinkClick: (String) -> Unit,
+) {
+    if (introduction.isBlank()) return
+    ExpandableRichText(
+        text = introduction,
+        onLinkClick = onIntroductionLinkClick,
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun ActionSection(
+    isFav: Boolean,
+    hasOriginalComic: Boolean,
+    onQuickCheckIn: () -> Unit,
+    onOpenOriginalComic: (() -> Unit)?,
+    onToggleFavorite: () -> Unit,
+    onManageMyList: () -> Unit,
+    onDownload: () -> Unit,
+    onShare: () -> Unit,
+    onCopyShareText: () -> Unit,
+    onOpenWebPage: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        VideoActionButton(
+            iconRes = R.drawable.ic_baseline_check_circle_24,
+            label = stringResource(R.string.quick_checkin),
+            onClick = onQuickCheckIn,
+        )
+        if (hasOriginalComic && onOpenOriginalComic != null) {
+            VideoActionButton(
+                iconRes = R.drawable.ic_baseline_book,
+                label = stringResource(R.string.original_comic),
+                onClick = onOpenOriginalComic,
+            )
+        }
+        VideoActionButton(
+            iconRes = if (isFav) R.drawable.ic_baseline_favorite_24 else R.drawable.ic_baseline_favorite_border_24,
+            label = if (isFav) stringResource(R.string.liked) else stringResource(R.string.add_to_fav),
+            onClick = onToggleFavorite,
+        )
+        VideoActionButton(
+            iconRes = R.drawable.baseline_format_list_bulleted_24,
+            label = stringResource(R.string.add_to_playlist),
+            onClick = onManageMyList,
+        )
+        VideoActionButton(
+            iconRes = R.drawable.ic_baseline_download_24,
+            label = stringResource(R.string.download),
+            onClick = onDownload,
+        )
+        VideoActionButton(
+            iconRes = R.drawable.ic_baseline_share_24,
+            label = stringResource(R.string.share),
+            onClick = onShare,
+            onLongClick = onCopyShareText,
+        )
+        VideoActionButton(
+            iconRes = R.drawable.ic_baseline_language_24,
+            label = stringResource(R.string.jump_to_webpage),
+            onClick = onOpenWebPage,
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun VideoActionButton(
+    iconRes: Int,
+    label: String,
+    onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
+) {
+    Column(
+        modifier = Modifier
+            .widthIn(min = 76.dp)
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(14.dp))
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+            )
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+private fun TagsSection(tags: List<String>) {
+    TagChipGroup(
+        tags = tags,
+        collapsible = true,
+        collapsedMaxLines = 2,
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
+@Composable
+private fun PlaylistSection(
+    playlist: HanimeVideo.Playlist,
+    initialIndex: Int,
+    onOpenVideo: (HanimeInfo) -> Unit,
+    onShowAllPlaylist: (() -> Unit)?,
+    onPlaylistScrollChange: (Int) -> Unit,
+) {
+    SectionHeader(
+        title = stringResource(R.string.series_video),
+        subtitle = playlist.playlistName,
+        actionText = if (onShowAllPlaylist != null) "更多" else null,
+        onActionClick = onShowAllPlaylist,
+    )
+    val listState = remember(playlist.video, initialIndex) {
+        LazyListState(firstVisibleItemIndex = initialIndex)
+    }
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.firstVisibleItemIndex }
+            .distinctUntilChanged()
+            .collect(onPlaylistScrollChange)
+    }
+    LazyRow(
+        state = listState,
+        contentPadding = PaddingValues(horizontal = 2.dp),
+    ) {
+        items(playlist.video, key = { it.videoCode }) { item ->
+            VideoCardItem(
+                videoItem = item,
+                isHorizontalCard = item.itemType == HanimeInfo.NORMAL,
+                onClickVideosItem = { onOpenVideo(item) },
+                onLongClickVideosItem = { _, _ -> },
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun RelatedVideosSection(
+    videos: List<HanimeInfo>,
+    onOpenVideo: (HanimeInfo) -> Unit,
+) {
+    SectionHeader(title = stringResource(R.string.related_video))
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val cardWidth = if (videos.firstOrNull()?.itemType == HanimeInfo.NORMAL) {
+            dimensionResource(R.dimen.video_cover_width)
+        } else {
+            dimensionResource(R.dimen.video_cover_simplified_width)
+        }
+        val columns = maxOf(1, (maxWidth / cardWidth).toInt())
+        FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            maxItemsInEachRow = columns,
+            horizontalArrangement = Arrangement.Start
+        ) {
+            videos.forEach { item ->
+                VideoCardItem(
+                    videoItem = item,
+                    isHorizontalCard = item.itemType == HanimeInfo.NORMAL,
+                    onClickVideosItem = { onOpenVideo(item) },
+                    onLongClickVideosItem = { _, _ -> },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SectionHeader(
+    title: String,
+    subtitle: String? = null,
+    actionText: String? = null,
+    onActionClick: (() -> Unit)? = null,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+                subtitle?.takeIf { it.isNotBlank() }?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            if (!actionText.isNullOrBlank() && onActionClick != null) {
+                TextButton(onClick = onActionClick) {
+                    Text(actionText)
+                }
+            }
+        }
+        HorizontalDivider()
+    }
+}
+
+private val previewVideoIntroduction = HanimeVideo(
+    title = "Shishunki no Obenkyou 2",
+    coverUrl = fakeHomePageVideos.first().coverUrl,
+    chineseTitle = "思春期的性学习 第2话",
+    introduction = "思春期的性学习 2。为了拓展自己的知识，女主开始在图书馆进行一些不太适合公开讨论的研究。\nhttps://hanime1.me/watch?v=101573",
+    uploadTime = LocalDate(2024, 5, 10),
+    views = "137.6万次",
+    videoUrls = com.yenaly.han1meviewer.HanimeResolution().apply {
+        parseResolution("720P", "https://example.com/video.mp4", "video/mp4")
+    }.toResolutionLinkMap(),
+    tags = fakeTagList2,
+    playlist = HanimeVideo.Playlist(
+        playlistName = "思春期系列",
+        video = fakeHomePageVideos.take(5).mapIndexed { index, item ->
+            item.copy(isPlaying = index == 1)
+        },
+    ),
+    relatedHanimes = fakeHomePageVideos,
+    artist = HanimeVideo.Artist(
+        name = "製作社A",
+        avatarUrl = fakeHomePageVideos.first().coverUrl,
+        genre = "3D",
+        post = HanimeVideo.Artist.POST(
+            userId = "1001",
+            artistId = "2002",
+            isSubscribed = true,
+        ),
+    ),
+    isFav = true,
+    currentUserId = "10086",
+    originalComic = "https://example.com/comic",
+)
+
+@Preview(showBackground = true, widthDp = 420, heightDp = 900, device = "id:pixel_tablet")
+@Composable
+private fun VideoIntroductionScreenPreview() {
+    ComponentPreview {
+        VideoIntroductionScreen(
+            video = previewVideoIntroduction,
+            state = VideoLoadingState.Success(previewVideoIntroduction),
+            fromDownload = false,
+            hideRelatedInIntro = false,
+            shareText = "share text",
+            playlistInitialIndex = 1,
+            onRetry = {},
+            onOpenVideo = {},
+            onOpenArtist = {},
+            onToggleSubscribe = {},
+            onToggleFavorite = {},
+            onManageMyList = { _, _ -> },
+            onQuickCheckIn = {},
+            onDownload = {},
+            onShare = {},
+            onCopyShareText = {},
+            onOpenWebPage = {},
+            onOpenOriginalComic = {},
+            onCopyText = {},
+            onShowAllPlaylist = {},
+            onPlaylistScrollChange = {},
+            onIntroductionLinkClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 420, heightDp = 900)
+@Composable
+private fun VideoIntroductionScreenLoadingPreview() {
+    ComponentPreview {
+        VideoIntroductionScreen(
+            video = null,
+            state = VideoLoadingState.Loading,
+            fromDownload = false,
+            hideRelatedInIntro = false,
+            shareText = "",
+            playlistInitialIndex = 0,
+            onRetry = {},
+            onOpenVideo = {},
+            onOpenArtist = {},
+            onToggleSubscribe = {},
+            onToggleFavorite = {},
+            onManageMyList = { _, _ -> },
+            onQuickCheckIn = {},
+            onDownload = {},
+            onShare = {},
+            onCopyShareText = {},
+            onOpenWebPage = {},
+            onOpenOriginalComic = null,
+            onCopyText = {},
+            onShowAllPlaylist = null,
+            onPlaylistScrollChange = {},
+            onIntroductionLinkClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 420, heightDp = 900)
+@Composable
+private fun VideoIntroductionScreenErrorPreview() {
+    ComponentPreview {
+        VideoIntroductionScreen(
+            video = null,
+            state = VideoLoadingState.Error(Throwable("network error")),
+            fromDownload = false,
+            hideRelatedInIntro = false,
+            shareText = "",
+            playlistInitialIndex = 0,
+            onRetry = {},
+            onOpenVideo = {},
+            onOpenArtist = {},
+            onToggleSubscribe = {},
+            onToggleFavorite = {},
+            onManageMyList = { _, _ -> },
+            onQuickCheckIn = {},
+            onDownload = {},
+            onShare = {},
+            onCopyShareText = {},
+            onOpenWebPage = {},
+            onOpenOriginalComic = null,
+            onCopyText = {},
+            onShowAllPlaylist = null,
+            onPlaylistScrollChange = {},
+            onIntroductionLinkClick = {},
+        )
+    }
+}
