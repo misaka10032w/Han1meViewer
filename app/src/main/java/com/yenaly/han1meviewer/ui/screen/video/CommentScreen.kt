@@ -300,7 +300,7 @@ fun CommentScreen(
                             }
                         }
 
-                        items(sortedComments, key = { it.realReplyId }) { comment ->
+                        items(sortedComments, key = { it.stableKey }) { comment ->
                             VideoCommentCard(
                                 comment = comment,
                                 onReply = { replyingComment = comment },

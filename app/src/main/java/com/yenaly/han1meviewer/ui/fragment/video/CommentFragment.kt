@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.fragment.video
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
@@ -49,8 +50,8 @@ class CommentFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: android.view.LayoutInflater,
-        container: android.view.ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?,
     ) = ComposeView(requireContext()).apply {
         layoutParams = ViewGroup.LayoutParams(
@@ -71,7 +72,14 @@ class CommentFragment : Fragment() {
                     onRefresh = { viewModel.getComment(commentTypePrefix, viewModel.code) },
                     onReply = { comment, text ->
                         if (!isAlreadyLogin) return@CommentScreen
-                        viewModel.postReply(comment.realReplyId, text)
+                        val replyTargetId = comment.replyTargetIdOrNull
+                        if (replyTargetId == null) {
+                            lifecycleScope.launch {
+                                reportMessages.emit(CommentMessage(getString(R.string.there_is_a_small_issue)))
+                            }
+                            return@CommentScreen
+                        }
+                        viewModel.postReply(replyTargetId, text)
                     },
                     onReport = { comment, reason ->
                         viewModel.reportComment(
@@ -119,11 +127,18 @@ class CommentFragment : Fragment() {
                         }
                     },
                     onViewMoreReplies = { comment ->
+                        val replyTargetId = comment.replyTargetIdOrNull
+                        if (replyTargetId == null) {
+                            lifecycleScope.launch {
+                                reportMessages.emit(CommentMessage(getString(R.string.there_is_a_small_issue)))
+                            }
+                            return@CommentScreen
+                        }
                         ChildCommentPopupFragment().apply {
                             arguments = Bundle().apply {
-                                putString(com.yenaly.han1meviewer.COMMENT_ID, comment.realReplyId)
+                                putString(com.yenaly.han1meviewer.COMMENT_ID, replyTargetId)
                             }
-                        }.show(childFragmentManager, "child_comment_popup_${comment.realReplyId}")
+                        }.show(childFragmentManager, "child_comment_popup_$replyTargetId")
                     },
                     onSortChange = { viewModel.setSortType(it) },
                     onComposeComment = {

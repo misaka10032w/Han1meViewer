@@ -206,7 +206,7 @@ fun ChildCommentScreen(
                         contentPadding = PaddingValues(bottom = 24.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        items(sortedComments, key = { it.realReplyId }) { comment ->
+                        items(sortedComments, key = { it.stableKey }) { comment ->
                             VideoCommentCard(
                                 comment = comment,
                                 onReply = {
