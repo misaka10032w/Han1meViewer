@@ -88,7 +88,7 @@ import com.yenaly.han1meviewer.logic.model.HanimePreview
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.pienization
 import com.yenaly.han1meviewer.ui.component.ComponentPreview
-import com.yenaly.han1meviewer.ui.component.EmptyView
+import com.yenaly.han1meviewer.ui.component.EmptyContent
 import com.yenaly.han1meviewer.ui.component.ErrorContent
 import com.yenaly.han1meviewer.ui.component.LoadingContent
 import com.yenaly.han1meviewer.ui.component.TagChipGroup
@@ -334,7 +334,7 @@ fun PreviewScreen(
 
                     item {
                         if (previewInfoList.isEmpty()) {
-                            EmptyView(
+                            EmptyContent(
                                 hint = stringResource(R.string.empty_content),
                                 subHint = stringResource(R.string.new_anime_trailers)
                             )

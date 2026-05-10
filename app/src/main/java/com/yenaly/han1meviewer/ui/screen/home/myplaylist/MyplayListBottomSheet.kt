@@ -57,7 +57,7 @@ import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
-import com.yenaly.han1meviewer.ui.component.EmptyView
+import com.yenaly.han1meviewer.ui.component.EmptyContent
 import com.yenaly.han1meviewer.ui.fragment.RetryableImage
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
@@ -133,7 +133,7 @@ fun PlaylistBottomSheet(
                     context
                 )
                 if (playlist.isEmpty()) {
-                    EmptyView(stringResource(R.string.empty_content))
+                    EmptyContent(stringResource(R.string.empty_content))
                 }
             }
         }

@@ -55,7 +55,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.ui.component.ComponentPreview
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
-import com.yenaly.han1meviewer.ui.component.EmptyView
+import com.yenaly.han1meviewer.ui.component.EmptyContent
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import kotlinx.coroutines.flow.Flow
 import java.text.SimpleDateFormat
@@ -174,7 +174,7 @@ private fun WatchHistoryScreen(
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center,
             ) {
-                EmptyView(
+                EmptyContent(
                     hint = stringResource(R.string.watch_history_empty_title),
                     subHint = stringResource(R.string.watch_history_empty_description),
                 )

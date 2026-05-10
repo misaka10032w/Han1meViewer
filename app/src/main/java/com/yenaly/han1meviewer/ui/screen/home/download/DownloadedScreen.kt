@@ -63,7 +63,7 @@ import com.yenaly.han1meviewer.logic.model.DownloadHeaderNode
 import com.yenaly.han1meviewer.logic.model.DownloadItemNode
 import com.yenaly.han1meviewer.logic.model.DownloadedNode
 import com.yenaly.han1meviewer.ui.component.ComponentPreview
-import com.yenaly.han1meviewer.ui.component.EmptyView
+import com.yenaly.han1meviewer.ui.component.EmptyContent
 import com.yenaly.han1meviewer.ui.preview.fakeDownloadedGroups
 import com.yenaly.han1meviewer.ui.preview.fakeDownloadedNodes
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
@@ -130,7 +130,7 @@ fun DownloadedScreen(
 
     if (nodes.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            EmptyView(
+            EmptyContent(
                 hint = stringResource(R.string.empty_content),
                 subHint = stringResource(R.string.downloaded),
             )

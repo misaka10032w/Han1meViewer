@@ -63,7 +63,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.Playlists
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.component.EmptyView
+import com.yenaly.han1meviewer.ui.component.EmptyContent
 import com.yenaly.han1meviewer.ui.component.PlaylistItem
 import com.yenaly.han1meviewer.ui.fragment.getColumnCount
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
@@ -212,7 +212,7 @@ fun MyPlayListScreen(
 
                 is WebsiteState.Error -> {
                     if (playlists.isEmpty()) {
-                        EmptyView(
+                        EmptyContent(
                             hint = "${stringResource(R.string.load_failed_retry)}: ${result.throwable.message}",
                             picRes = R.drawable.h_chan_sad
                         )
@@ -354,7 +354,7 @@ fun AnimatedPageContent(
 
             is WebsiteState.Success -> {
                 if (target.info.playlists.isEmpty() && playlists.isEmpty()){
-                    EmptyView(stringResource(R.string.empty_content))
+                    EmptyContent(stringResource(R.string.empty_content))
                     return@AnimatedContent
                 }
                 LazyVerticalGrid(

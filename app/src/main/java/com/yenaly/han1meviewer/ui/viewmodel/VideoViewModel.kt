@@ -3,6 +3,9 @@ package com.yenaly.han1meviewer.ui.viewmodel
 import android.app.Application
 import android.os.Parcelable
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -61,7 +64,7 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
     var fromDownload = false
 
     // 平板横屏模式下，左栏不显示相关视频（右栏已显示）
-    var hideRelatedInIntro = false
+    var hideRelatedInIntro by mutableStateOf(false)
     var hKeyframes: HKeyframeEntity? = null
     private val _videoList = MutableLiveData<List<HanimeInfo>>()
     val videoList: LiveData<List<HanimeInfo>> = _videoList

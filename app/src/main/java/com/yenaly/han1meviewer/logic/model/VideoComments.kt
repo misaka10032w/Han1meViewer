@@ -1,7 +1,5 @@
 package com.yenaly.han1meviewer.logic.model
 
-import android.util.Log
-
 /**
  * @project Hanime1
  * @author Yenaly Liew

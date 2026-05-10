@@ -45,7 +45,7 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.CommentInputDialog
 import com.yenaly.han1meviewer.ui.component.CommentReportDialog
 import com.yenaly.han1meviewer.ui.component.ComponentPreview
-import com.yenaly.han1meviewer.ui.component.EmptyView
+import com.yenaly.han1meviewer.ui.component.EmptyContent
 import com.yenaly.han1meviewer.ui.component.ErrorContent
 import com.yenaly.han1meviewer.ui.component.LoadingContent
 import com.yenaly.han1meviewer.ui.component.VideoCommentCard
@@ -193,7 +193,7 @@ fun ChildCommentScreen(
                 }
 
                 sortedComments.isEmpty() -> {
-                    EmptyView(
+                    EmptyContent(
                         hint = stringResource(R.string.comment_not_found)
                     )
                 }

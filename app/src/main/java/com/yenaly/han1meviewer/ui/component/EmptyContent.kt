@@ -29,7 +29,7 @@ import com.yenaly.han1meviewer.R
  * @param picRes 占位图片资源 ID，默认为 h_chan_speechless
  */
 @Composable
-fun EmptyView(
+fun EmptyContent(
     hint: String,
     subHint: String = "",
     picRes: Int = R.drawable.h_chan_speechless,
@@ -69,6 +69,6 @@ fun EmptyView(
 @Composable
 private fun EmptyViewPreview() {
     ComponentPreview {
-        EmptyView(hint = "发生了一些事情", subHint = "reason: 404 Not Found")
+        EmptyContent(hint = "发生了一些事情", subHint = "reason: 404 Not Found")
     }
 }

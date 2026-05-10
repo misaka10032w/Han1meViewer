@@ -66,7 +66,7 @@ import com.yenaly.han1meviewer.logic.model.SubscriptionItem
 import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.ArtistItem
-import com.yenaly.han1meviewer.ui.component.EmptyView
+import com.yenaly.han1meviewer.ui.component.EmptyContent
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.preview.fakeArtists
 import com.yenaly.han1meviewer.ui.preview.fakeVideos
@@ -183,7 +183,7 @@ fun SubscriptionApp(
 
                 is WebsiteState.Error -> {
                     if (cachedArtists.value.isEmpty()) {
-                        EmptyView(
+                        EmptyContent(
                             hint = "${stringResource(R.string.load_failed_retry)}: ${result.throwable.message}",
                             picRes = R.drawable.h_chan_sad
                         )

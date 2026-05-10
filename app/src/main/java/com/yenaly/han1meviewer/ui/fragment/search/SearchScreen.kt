@@ -73,7 +73,7 @@ import com.yenaly.han1meviewer.logic.entity.SearchHistoryEntity
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
-import com.yenaly.han1meviewer.ui.component.EmptyView
+import com.yenaly.han1meviewer.ui.component.EmptyContent
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.han1meviewer.ui.viewmodel.SearchViewModel
@@ -284,16 +284,16 @@ fun SearchStateIndicator(
             contentAlignment = Alignment.Center
         ) { CircularProgressIndicator() }
 
-        is PageLoadingState.NoMoreData -> if (resultCount == 0) EmptyView(
+        is PageLoadingState.NoMoreData -> if (resultCount == 0) EmptyContent(
             hint = "没有搜索到结果",
             picRes = R.drawable.h_chan_speechless
         )
 
-        is PageLoadingState.Error -> EmptyView(
+        is PageLoadingState.Error -> EmptyContent(
             hint = "加载失败: ${state.throwable.message}",
             picRes = R.drawable.h_chan_sad
         )
-        is PageLoadingState.Success -> if (resultCount == 0) EmptyView(
+        is PageLoadingState.Success -> if (resultCount == 0) EmptyContent(
             hint = "没有搜索到结果",
             picRes = R.drawable.h_chan_speechless
         )

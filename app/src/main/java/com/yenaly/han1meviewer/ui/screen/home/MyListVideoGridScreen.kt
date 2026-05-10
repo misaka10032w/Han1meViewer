@@ -47,7 +47,7 @@ import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.ComponentPreview
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
-import com.yenaly.han1meviewer.ui.component.EmptyView
+import com.yenaly.han1meviewer.ui.component.EmptyContent
 import com.yenaly.han1meviewer.ui.component.ErrorContent
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
@@ -199,7 +199,7 @@ internal fun MyListVideoGridScreen(
                     modifier = Modifier.align(Alignment.Center),
                 )
 
-                isEmpty -> EmptyView(
+                isEmpty -> EmptyContent(
                     hint = stringResource(R.string.empty_content),
                 )
 
