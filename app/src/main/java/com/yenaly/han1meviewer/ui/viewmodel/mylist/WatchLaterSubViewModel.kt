@@ -46,9 +46,10 @@ class WatchLaterSubViewModel(application: Application) : YenalyViewModel(applica
                 _watchLaterFlow.update { prevList ->
                     when (state) {
                         is PageLoadingState.Success -> {
-                            _loadedPageCount.value = page
                             if (state.info.hanimeInfo.isEmpty()) {
                                 _watchLaterStateFlow.update { PageLoadingState.NoMoreData }
+                            } else {
+                                _loadedPageCount.value = page
                             }
                             val baseList = if (isRefreshing) emptyList() else prevList
                             isRefreshing = false
