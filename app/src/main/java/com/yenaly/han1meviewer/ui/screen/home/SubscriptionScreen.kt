@@ -64,9 +64,11 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.MySubscriptions
 import com.yenaly.han1meviewer.logic.model.SubscriptionItem
 import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
+import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.ArtistItem
 import com.yenaly.han1meviewer.ui.component.EmptyContent
+import com.yenaly.han1meviewer.ui.component.LoadMoreFooter
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.preview.fakeArtists
 import com.yenaly.han1meviewer.ui.preview.fakeVideos
@@ -324,18 +326,10 @@ fun SubscriptionPageContent(
                 onLongClickVideosItem = onLongClickVideosItem
             )
         }
-
-        if (canLoadMore) {
-            item(span = { GridItemSpan(videoColumns) }) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp)
-                        .background(MaterialTheme.colorScheme.background),
-                    contentAlignment = Alignment.Center
-                ) {
-                    LoadingIndicator(color = MaterialTheme.colorScheme.primary)
-                }
+        if (videos.isNotEmpty()){
+            item(span = { GridItemSpan(maxLineSpan) }){
+                var loadState by remember { mutableStateOf<PageLoadingState<*>>(PageLoadingState.Success(emptyList<String>())) }
+                LoadMoreFooter(state = loadState, isLoadingMore = canLoadMore, loadedPage = currentPage)
             }
         }
     }

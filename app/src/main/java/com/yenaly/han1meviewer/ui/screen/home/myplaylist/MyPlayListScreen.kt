@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -62,8 +61,10 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.Playlists
+import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.EmptyContent
+import com.yenaly.han1meviewer.ui.component.LoadMoreFooter
 import com.yenaly.han1meviewer.ui.component.PlaylistItem
 import com.yenaly.han1meviewer.ui.fragment.getColumnCount
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
@@ -371,33 +372,23 @@ fun AnimatedPageContent(
                             onPlaylistClick(playlist.listCode, playlist.title)
                         }
                     }
-                    if (isLoadingMore) {
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            Box(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                LoadingIndicator()
-                            }
-                        }
-                    }
-                    if (noMorePlaylists && playlists.isNotEmpty()) {
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            Box(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 16.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.load_complete_with_pages, playlistPage - 1),
-                                    style = MaterialTheme.typography.bodySmall.copy(
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                )
-                            }
+                    if (playlists.isNotEmpty()){
+                        item(span = { GridItemSpan(maxLineSpan) }){
+                            LoadMoreFooter(
+                                state = when (state) {
+                                    is WebsiteState.Loading -> PageLoadingState.Loading
+                                    is WebsiteState.Error -> PageLoadingState.Error(state.throwable)
+                                    is WebsiteState.Success<Playlists> -> {
+                                        if (state.info.playlists.isEmpty()){
+                                            PageLoadingState.NoMoreData
+                                        } else {
+                                            PageLoadingState.Success(Unit)
+                                        }
+                                    }
+                                },
+                                loadedPage = playlistPage - 1,
+                                isLoadingMore = isLoadingMore
+                            )
                         }
                     }
                 }

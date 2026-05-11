@@ -49,6 +49,7 @@ import com.yenaly.han1meviewer.ui.component.ComponentPreview
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.EmptyContent
 import com.yenaly.han1meviewer.ui.component.ErrorContent
+import com.yenaly.han1meviewer.ui.component.LoadMoreFooter
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import kotlinx.coroutines.flow.Flow
@@ -244,40 +245,9 @@ private fun MyListVideoGrid(
                 onLongClickVideosItem = { _, _ -> onDeleteItem(item) },
             )
         }
-
-        if (loadingMore) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    LoadingIndicator(modifier = Modifier.size(25.dp))
-                    Text(
-                        text = stringResource(R.string.loading),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-        }
-
-        if (items.isNotEmpty() && state is PageLoadingState.NoMoreData) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = stringResource(R.string.load_complete_with_pages, loadedPageCount),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+        if (items.isNotEmpty()){
+            item(span = { GridItemSpan(maxLineSpan) }){
+                LoadMoreFooter(state = state, loadedPage = loadedPageCount, isLoadingMore = loadingMore)
             }
         }
     }
