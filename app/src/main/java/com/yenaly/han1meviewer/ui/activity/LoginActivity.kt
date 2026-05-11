@@ -8,7 +8,6 @@ import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
-import android.view.View
 import android.webkit.CookieManager
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
@@ -18,41 +17,32 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.LayoutRes
-import androidx.appcompat.app.AlertDialog
-import androidx.core.text.parseAsHtml
-import androidx.databinding.DataBindingUtil
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
-import com.google.android.material.textfield.TextInputEditText
 import com.yenaly.han1meviewer.HANIME_LOGIN_URL
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.USER_AGENT
-import com.yenaly.han1meviewer.databinding.ActivityLoginBinding
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.login
-import com.yenaly.han1meviewer.util.createAlertDialog
-import com.yenaly.han1meviewer.util.showWithBlurEffect
+import com.yenaly.han1meviewer.ui.screen.login.LoginDialog
+import com.yenaly.han1meviewer.ui.screen.login.LoginScreen
+import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.yenaly_libs.base.frame.FrameActivity
 import com.yenaly.yenaly_libs.utils.showShortToast
-import com.yenaly.yenaly_libs.utils.unsafeLazy
 import kotlinx.coroutines.launch
 import java.util.Locale
 
 class LoginActivity : FrameActivity() {
     private lateinit var scannerLauncher: ActivityResultLauncher<Intent>
-    companion object {
-        const val TAG = "LoginActivity"
-
-        private const val HL = """<span style="color: #FF0000;"><b>H</b></span><b>a1</b>ogin"""
-        // val hlSpannedTitle = HL.parseAsHtml()
-    }
-
-    private lateinit var binding: ActivityLoginBinding
-
-    private val dialog = unsafeLazy { LoginDialog(R.layout.dialog_login) }
+    private var isRefreshing by mutableStateOf(true)
+    private var showLoginDialog by mutableStateOf(false)
+    private var isLoggingIn by mutableStateOf(false)
 
     override fun setUiStyle() {
         enableEdgeToEdge()
@@ -64,27 +54,12 @@ class LoginActivity : FrameActivity() {
             ActivityResultContracts.RequestPermission()
         ) { isGranted ->
             if (isGranted) {
-                scannerLauncher.launch(Intent(this, QRcodeScannerActivity::class.java))
+                scannerLauncher.launch(Intent(this, ManualInputCookiesActivity::class.java))
             } else {
                 Toast.makeText(this, getString(R.string.request_camera), Toast.LENGTH_SHORT).show()
             }
         }
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_login)
-        setSupportActionBar(binding.toolbar)
-        binding.toolbar.setNavigationOnClickListener {
-            onBackPressedDispatcher.onBackPressed()
-        }
-        supportActionBar?.let {
-            it.title = HL.parseAsHtml()
-            it.setDisplayHomeAsUpEnabled(true)
-            it.setHomeActionContentDescription(R.string.back)
-        }
-        initWebView()
-        binding.srlLogin.setOnRefreshListener {
-            binding.wvLogin.loadUrl(HANIME_LOGIN_URL)
-        }
-        binding.srlLogin.autoRefresh()
         scannerLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
@@ -96,42 +71,45 @@ class LoginActivity : FrameActivity() {
                 finish()
             }
         }
-        binding.fabQr.setOnClickListener {
-            scannerLauncher.launch(Intent(this, QRcodeScannerActivity::class.java))
+
+        val composeView = ComposeView(this)
+        setContentView(composeView)
+        composeView.setContent {
+            HanimeTheme {
+                if (showLoginDialog) {
+                    LoginDialog(
+                        isLoggingIn = isLoggingIn,
+                        onDismiss = { showLoginDialog = false },
+                        onLogin = { username, password -> handleLogin(username, password) },
+                    )
+                }
+                LoginScreen(
+                    isRefreshing = isRefreshing,
+                    onBack = { onBackPressedDispatcher.onBackPressed() },
+                    onRefresh = { webView?.loadUrl(HANIME_LOGIN_URL) },
+                    onShowLoginDialog = { showLoginDialog = true },
+                    onOpenQrScanner = { openQrScanner() },
+                    webViewFactory = { createWebView() },
+                )
+            }
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        if (dialog.isInitialized()) {
-            dialog.value.dismiss()
-        }
-        binding.wvLogin.removeAllViews()
-        binding.wvLogin.destroy()
-        binding.unbind()
-    }
-
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK && binding.wvLogin.canGoBack()) {
-            binding.wvLogin.goBack()
-            return true
-        }
-        return super.onKeyDown(keyCode, event)
-    }
+    private var webView: WebView? = null
 
     @SuppressLint("SetJavaScriptEnabled")
-    private fun initWebView() {
-        binding.wvLogin.apply {
+    private fun createWebView(): WebView {
+        return WebView(this).apply {
+            webView = this
             CookieManager.getInstance().removeAllCookies(null)
             CookieManager.getInstance().flush()
-            // #issue-17: 谷歌登录需要开启JavaScript，但是谷歌拒絕這種登錄方式，遂放棄
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.userAgentString = USER_AGENT
 
             webViewClient = object : WebViewClient() {
                 override fun onPageFinished(view: WebView, url: String) {
-                    binding.srlLogin.finishRefresh()
+                    isRefreshing = false
                 }
 
                 override fun shouldOverrideUrlLoading(
@@ -150,88 +128,69 @@ class LoginActivity : FrameActivity() {
                     }
                     return super.shouldOverrideUrlLoading(view, request)
                 }
+
                 override fun onReceivedError(
                     view: WebView?,
                     request: WebResourceRequest?,
-                    error: WebResourceError?
+                    error: WebResourceError?,
                 ) {
-                    // #issue-146
-                    // #issue-160: 修复字段销毁后调用引发的错误
                     if (request?.isForMainFrame == true && !isDestroyed && !isFinishing) {
-                        binding.srlLogin.finishRefresh()
-                        dialog.value.show()
+                        isRefreshing = false
+                        showLoginDialog = true
+                    }
+                }
+            }
+            loadUrl(HANIME_LOGIN_URL)
+        }
+    }
+
+    private fun openQrScanner() {
+        scannerLauncher.launch(Intent(this, ManualInputCookiesActivity::class.java))
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK && webView?.canGoBack() == true) {
+            webView?.goBack()
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        webView?.removeAllViews()
+        webView?.destroy()
+    }
+
+    private fun handleLogin(username: String, password: String) {
+        isLoggingIn = true
+        lifecycleScope.launch {
+            NetworkRepo.login(username, password).collect { state ->
+                when (state) {
+                    WebsiteState.Loading -> Unit
+
+                    is WebsiteState.Error -> {
+                        isLoggingIn = false
+                        state.throwable.printStackTrace()
+                        if (state.throwable is IllegalStateException) {
+                            showShortToast(R.string.account_or_password_wrong)
+                        } else {
+                            showShortToast(R.string.login_failed)
+                        }
+                    }
+
+                    is WebsiteState.Success -> {
+                        login(state.info)
+                        setResult(RESULT_OK)
+                        showLoginDialog = false
+                        showShortToast(R.string.login_success)
+                        finish()
                     }
                 }
             }
         }
     }
 
-    inner class LoginDialog(@LayoutRes layoutRes: Int) {
-        private val etUsername: TextInputEditText
-        private val etPassword: TextInputEditText
-
-        private val dialog: AlertDialog
-
-        private val username get() = etUsername.text?.toString().orEmpty()
-        private val password get() = etPassword.text?.toString().orEmpty()
-
-        init {
-            val view = View.inflate(this@LoginActivity, layoutRes, null)
-            etUsername = view.findViewById(R.id.et_username)
-            etPassword = view.findViewById(R.id.et_password)
-            dialog = createAlertDialog {
-                setView(view)
-                setCancelable(false)
-                setTitle(R.string.try_login_here)
-                setPositiveButton(R.string.login, null)
-                setNegativeButton(R.string.cancel, null)
-            }
-            dialog.setOnShowListener {
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                    handleLogin()
-                }
-            }
-        }
-
-        private fun handleLogin() {
-            lifecycleScope.launch {
-                NetworkRepo.login(username, password).collect { state ->
-                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled =
-                        state !is WebsiteState.Loading
-                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).isEnabled =
-                        state !is WebsiteState.Loading
-                    when (state) {
-                        WebsiteState.Loading -> Unit
-
-                        is WebsiteState.Error -> {
-                            state.throwable.printStackTrace()
-                            if (state.throwable is IllegalStateException) {
-                                showShortToast(R.string.account_or_password_wrong)
-                            } else {
-                                showShortToast(R.string.login_failed)
-                            }
-                        }
-
-                        is WebsiteState.Success -> {
-                            login(state.info)
-                            setResult(RESULT_OK)
-                            dialog.dismiss()
-                            showShortToast(R.string.login_success)
-                            finish()
-                        }
-                    }
-                }
-            }
-        }
-
-        fun show() {
-            dialog.showWithBlurEffect()
-        }
-
-        fun dismiss() {
-            dialog.dismiss()
-        }
-    }
     private fun applyAppLocale(context: Context): Context {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         val lang = prefs.getString("app_language", "system") ?: "system"
