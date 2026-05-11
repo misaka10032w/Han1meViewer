@@ -61,8 +61,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -146,7 +146,7 @@ fun DailyCheckInScreen(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            CenterAlignedTopAppBar(
+            TopAppBar(
                 colors = topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface
@@ -160,21 +160,21 @@ fun DailyCheckInScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    FilledIconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Localized description"
+                            painter = painterResource(R.drawable.ic_baseline_arrow_back_24),
+                            contentDescription = stringResource(R.string.back),
                         )
                     }
                 },
                 actions = {
-                    IconButton(onClick = { showReport = true }) {
+                    FilledIconButton(onClick = { showReport = true }) {
                         Icon(
                             imageVector = Icons.Filled.DateRange,
                             contentDescription = stringResource(R.string.checkin_report)
                         )
                     }
-                    IconButton(onClick = onAddWidget) {
+                    FilledIconButton(onClick = onAddWidget) {
                         Icon(
                             imageVector = Icons.Filled.Add,
                             contentDescription = stringResource(R.string.add_widget)
@@ -316,7 +316,7 @@ private fun ContributionReportDialog(
                 TopAppBar(
                     title = { Text(stringResource(R.string.checkin_report)) },
                     navigationIcon = {
-                        IconButton(onClick = onDismiss) {
+                        FilledIconButton(onClick = onDismiss) {
                             Icon(
                                 Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "close"
@@ -340,7 +340,7 @@ private fun ContributionReportDialog(
                                 else MaterialTheme.colorScheme.onSurface
                             )
                         }
-                        IconButton(onClick = onToggleFullscreen) {
+                        FilledIconButton(onClick = onToggleFullscreen) {
                             Image(
                                 painter = painterResource(R.drawable.baseline_screen_rotation_24),
                                 contentDescription = if (isFullscreen)

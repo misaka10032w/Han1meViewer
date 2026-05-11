@@ -45,6 +45,7 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -223,7 +224,7 @@ fun PreviewScreen(
                 }
             },
             navigationIcon = {
-                IconButton(onClick = onBack) {
+                FilledIconButton(onClick = onBack) {
                     Icon(
                         painter = painterResource(R.drawable.ic_baseline_arrow_back_24),
                         contentDescription = stringResource(R.string.back),
@@ -231,7 +232,7 @@ fun PreviewScreen(
                 }
             },
             actions = {
-                IconButton(onClick = { onOpenComment(currentDateLabel, currentDateCode) }) {
+                FilledIconButton(onClick = { onOpenComment(currentDateLabel, currentDateCode) }) {
                     BadgedBox(
                         badge = {
                             if (commentCount > 0) {

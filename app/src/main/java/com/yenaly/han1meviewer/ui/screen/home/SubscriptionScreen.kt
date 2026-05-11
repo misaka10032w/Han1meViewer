@@ -23,16 +23,16 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -124,7 +124,7 @@ fun SubscriptionApp(
         modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            CenterAlignedTopAppBar(
+            TopAppBar(
                 colors = topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface
@@ -138,11 +138,10 @@ fun SubscriptionApp(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = navigateBack) {
+                    FilledIconButton(onClick = navigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "back button",
-                            tint = MaterialTheme.colorScheme.onSurface,
+                            contentDescription = "back button"
                         )
                     }
                 },
@@ -164,7 +163,7 @@ fun SubscriptionApp(
             when (val result = state) {
                 is WebsiteState.Loading -> {
                     if (cachedArtists.value.isEmpty() || cachedVideos.value.isEmpty()) {
-                        CircularProgressIndicator(Modifier.align(Alignment.Center))
+                        LoadingIndicator(Modifier.align(Alignment.Center))
                     } else {
                         // 显示旧数据，刷新中不替换内容
                         AnimatedPageContent(
@@ -238,6 +237,7 @@ fun SubscriptionApp(
         }
     }
 }
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SubscriptionPageContent(
     gridState: LazyGridState,
@@ -334,7 +334,7 @@ fun SubscriptionPageContent(
                         .background(MaterialTheme.colorScheme.background),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    LoadingIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             }
         }
@@ -395,10 +395,10 @@ fun SubscriptionAppPreviewBody() {
                 onRefresh = {}
             ),
         topBar = {
-            CenterAlignedTopAppBar(
+            TopAppBar(
                 title = { Text(stringResource(R.string.my_subscribe)) },
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    FilledIconButton(onClick = {}) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "返回"

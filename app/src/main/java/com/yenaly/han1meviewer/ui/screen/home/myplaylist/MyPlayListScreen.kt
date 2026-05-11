@@ -27,15 +27,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -132,24 +132,23 @@ fun MyPlayListScreen(
         modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            CenterAlignedTopAppBar(
+            TopAppBar(
                 colors = topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 title = { Text(stringResource(R.string.my_list)) },
                 navigationIcon = {
-                    IconButton(onClick = navigateBack) {
+                    FilledIconButton(onClick = navigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "back button",
-                            tint = MaterialTheme.colorScheme.onSurface,
+                            contentDescription = "back button"
                         )
                     }
                 },
                 scrollBehavior = scrollBehavior,
                 actions = {
-                    IconButton(onClick = {
+                    FilledIconButton(onClick = {
                         context.showAlertDialog {
                             setTitle(R.string.create_new_playlist)
                             val etView = View.inflate(context, R.layout.dialog_playlist_modify_edit_text, null)
@@ -168,8 +167,7 @@ fun MyPlayListScreen(
                     }) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = stringResource(R.string.create_new_playlist),
-                            tint = MaterialTheme.colorScheme.onSurface
+                            contentDescription = stringResource(R.string.create_new_playlist)
                         )
                     }
                 }
