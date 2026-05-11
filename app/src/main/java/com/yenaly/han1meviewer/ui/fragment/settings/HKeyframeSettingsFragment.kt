@@ -2,26 +2,21 @@ package com.yenaly.han1meviewer.ui.fragment.settings
 
 import android.os.Bundle
 import androidx.annotation.IntRange
-import androidx.appcompat.app.AppCompatActivity
-import androidx.preference.Preference
-import androidx.preference.PreferenceCategory
-import androidx.preference.SeekBarPreference
-import androidx.preference.SwitchPreferenceCompat
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ComposeView
+import androidx.core.content.edit
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.ui.activity.SettingsActivity
 import com.yenaly.han1meviewer.ui.activity.SettingsRouter
-import com.yenaly.han1meviewer.ui.fragment.IToolbarFragment
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
+import com.yenaly.han1meviewer.ui.screen.settings.HKeyframeSettingsScreen
+import com.yenaly.han1meviewer.ui.screen.settings.HKeyframeSettingsUiState
+import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
-import com.yenaly.han1meviewer.util.setSummaryConverter
-import com.yenaly.yenaly_libs.base.settings.YenalySettingsFragment
 
-/**
- * @project Han1meViewer
- * @author Yenaly Liew
- * @time 2023/11/15 015 10:59
- */
-class HKeyframeSettingsFragment : YenalySettingsFragment(R.xml.settings_h_keyframe) {
+class HKeyframeSettingsFragment : androidx.fragment.app.Fragment() {
 
     companion object {
         const val H_KEYFRAMES_ENABLE = "h_keyframes_enable"
@@ -31,96 +26,84 @@ class HKeyframeSettingsFragment : YenalySettingsFragment(R.xml.settings_h_keyfra
         const val SHARED_H_KEYFRAMES_USE_FIRST = "shared_h_keyframes_use_first"
         const val SHARED_H_KEYFRAME_MANAGE = "shared_h_keyframe_manage"
         const val WHEN_COUNTDOWN_REMIND = "when_countdown_remind"
-
-        const val H_KEYFRAME_MANAGE_CATEGORY = "h_keyframe_manage_category"
-        const val H_KEYFRAME_SHARED_CATEGORY = "shared_h_keyframes_category"
-        const val H_KEYFRAME_CUSTOM_CATEGORY = "h_keyframe_custom_category"
     }
 
-    private val hKeyframesEnable
-            by safePreference<SwitchPreferenceCompat>(H_KEYFRAMES_ENABLE)
-    private val hKeyframeManage
-            by safePreference<Preference>(H_KEYFRAME_MANAGE)
-
-    private val sharedHKeyframesEnable
-            by safePreference<SwitchPreferenceCompat>(SHARED_H_KEYFRAMES_ENABLE)
-    private val sharedHKeyframesUseFirst
-            by safePreference<SwitchPreferenceCompat>(SHARED_H_KEYFRAMES_USE_FIRST)
-    private val sharedHKeyframesManage
-            by safePreference<Preference>(SHARED_H_KEYFRAME_MANAGE)
-
-    private val showCommentWhenCountdown
-            by safePreference<SwitchPreferenceCompat>(SHOW_COMMENT_WHEN_COUNTDOWN)
-    private val whenCountdownRemind
-            by safePreference<SeekBarPreference>(WHEN_COUNTDOWN_REMIND)
-
-    private val manageCategory
-            by safePreference<PreferenceCategory>(H_KEYFRAME_MANAGE_CATEGORY)
-    private val sharedCategory
-            by safePreference<PreferenceCategory>(H_KEYFRAME_SHARED_CATEGORY)
-    private val customCategory
-            by safePreference<PreferenceCategory>(H_KEYFRAME_CUSTOM_CATEGORY)
+    private var uiState by mutableStateOf<HKeyframeSettingsUiState?>(null)
 
     override fun onStart() {
         super.onStart()
         (activity as? ToolbarHost)?.setupToolbar(
             getString(R.string.h_keyframe_settings),
-            canNavigateBack = true
+            canNavigateBack = true,
         )
     }
 
-    override fun onPreferencesCreated(savedInstanceState: Bundle?) {
-        hKeyframesEnable.apply {
-            summary = keyframeTip(isChecked)
-            manageCategory.isVisible = isChecked
-            sharedCategory.isVisible = isChecked
-            customCategory.isVisible = isChecked
-            setOnPreferenceChangeListener { _, newValue ->
-                val isChecked = newValue as Boolean
-                summary = keyframeTip(isChecked)
-                manageCategory.isVisible = isChecked
-                sharedCategory.isVisible = isChecked
-                customCategory.isVisible = isChecked
-                return@setOnPreferenceChangeListener true
+    override fun onCreateView(
+        inflater: android.view.LayoutInflater,
+        container: android.view.ViewGroup?,
+        savedInstanceState: Bundle?,
+    ) = ComposeView(requireContext()).apply {
+        uiState = buildUiState()
+        setContent {
+            HanimeTheme {
+                uiState?.let { state ->
+                    HKeyframeSettingsScreen(
+                        state = state,
+                        onHKeyframesEnableChange = {
+                            saveBoolean(H_KEYFRAMES_ENABLE, it)
+                        },
+                        onOpenHKeyframeManage = {
+                            SettingsRouter.with(this@HKeyframeSettingsFragment)
+                                .navigateWithinSettings(R.id.hKeyframesFragment)
+                        },
+                        onSharedHKeyframesEnableChange = {
+                            saveBoolean(SHARED_H_KEYFRAMES_ENABLE, it)
+                        },
+                        onSharedHKeyframesUseFirstChange = {
+                            saveBoolean(SHARED_H_KEYFRAMES_USE_FIRST, it)
+                        },
+                        onOpenSharedHKeyframeManage = {
+                            SettingsRouter.with(this@HKeyframeSettingsFragment)
+                                .navigateWithinSettings(R.id.sharedHKeyframesFragment)
+                        },
+                        onShowCommentWhenCountdownChange = {
+                            saveBoolean(SHOW_COMMENT_WHEN_COUNTDOWN, it)
+                        },
+                        onWhenCountdownRemindChange = {
+                            saveInt(WHEN_COUNTDOWN_REMIND, it)
+                        },
+                    )
+                }
             }
         }
-        hKeyframeManage.apply {
-            setOnPreferenceClickListener {
-                SettingsRouter.with(this@HKeyframeSettingsFragment)
-                    .navigateWithinSettings(R.id.hKeyframesFragment)
-                return@setOnPreferenceClickListener true
-            }
-        }
-        sharedHKeyframesEnable.apply {
-            sharedHKeyframesUseFirst.isVisible = isChecked
-            sharedHKeyframesManage.isVisible = isChecked
-            setOnPreferenceChangeListener { _, newValue ->
-                val isChecked = newValue as Boolean
-                sharedHKeyframesUseFirst.isVisible = isChecked
-                sharedHKeyframesManage.isVisible = isChecked
-                return@setOnPreferenceChangeListener true
-            }
-        }
-        sharedHKeyframesManage.apply {
-            setOnPreferenceClickListener {
-                SettingsRouter.with(this@HKeyframeSettingsFragment)
-                    .navigateWithinSettings(R.id.sharedHKeyframesFragment)
-                return@setOnPreferenceClickListener true
-            }
-        }
-        whenCountdownRemind.apply {
-            setSummaryConverter(
-                defValue = HJzvdStd.DEF_COUNTDOWN_SEC,
-                converter = ::toPrettyCountdownRemindString
-            )
-        }
+    }
+
+    private fun buildUiState(): HKeyframeSettingsUiState {
+        return HKeyframeSettingsUiState(
+            hKeyframesEnable = Preferences.hKeyframesEnable,
+            hKeyframesSummary = keyframeTip(Preferences.hKeyframesEnable),
+            sharedHKeyframesEnable = Preferences.sharedHKeyframesEnable,
+            sharedHKeyframesUseFirst = Preferences.sharedHKeyframesUseFirst,
+            showCommentWhenCountdown = Preferences.showCommentWhenCountdown,
+            whenCountdownRemind = Preferences.whenCountdownRemind / 1000,
+            whenCountdownRemindSummary = toPrettyCountdownRemindString(Preferences.whenCountdownRemind / 1000),
+        )
+    }
+
+    private fun saveBoolean(key: String, value: Boolean) {
+        Preferences.preferenceSp.edit { putBoolean(key, value) }
+        uiState = buildUiState()
+    }
+
+    private fun saveInt(key: String, value: Int) {
+        Preferences.preferenceSp.edit { putInt(key, value) }
+        uiState = buildUiState()
     }
 
     private fun toPrettyCountdownRemindString(@IntRange(from = 5, to = 30) value: Int): String {
         return buildString {
-            val countdown = value
-            append(getString(R.string.will_remind_before_d_seconds, countdown))
-            if (countdown == HJzvdStd.DEF_COUNTDOWN_SEC) append(" (${getString(R.string.default_)})")
+            append(getString(R.string.will_remind_before_d_seconds, value))
+            if (value == HJzvdStd.DEF_COUNTDOWN_SEC) append(" (${getString(R.string.default_)})")
         }
     }
 
