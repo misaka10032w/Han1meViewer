@@ -61,7 +61,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="start"
             android:fitsSystemWindows="true"
-            app:headerLayout="@layout/nav_header_ability"
+            app:headerLayout="@layout/layout_drawer_header_compose"
             app:menu="@menu/menu_main_nv"
             app:itemTextColor="@color/nav_item_text_color"
             app:background="?attr/colorSurfaceContainerLow"

@@ -35,6 +35,10 @@ import androidx.activity.viewModels
 import androidx.appcompat.widget.Toolbar
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
@@ -75,6 +79,8 @@ import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.fragment.settings.NetworkSettingsFragment
 import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
+import com.yenaly.han1meviewer.ui.screen.main.MainDrawerHeader
+import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
 import com.yenaly.han1meviewer.util.logScreenViewEvent
@@ -135,6 +141,11 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
     }
 
     // Predictive back preview: cache of previous fragment for showing behind scaled view
+    private var headerAvatarUrl by mutableStateOf<String?>(null)
+    private var headerUsername by mutableStateOf<String?>(null)
+    private var headerIsLoggedIn by mutableStateOf(false)
+    private var headerIsLoading by mutableStateOf(false)
+    private var headerCurrentSite by mutableStateOf(Preferences.baseUrl)
     private var previewImageView: ImageView? = null
     private val previewBitmapCache = HashMap<Int, android.graphics.Bitmap>() // destId → bitmap
     private val backCornerRadius by lazy { 24f.dp.toFloat() }
@@ -476,37 +487,20 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             }
         }
 
-        binding.nvMain.getHeaderView(0)?.let { header ->
-            val headerAvatar = header.findViewById<ImageView>(R.id.header_avatar)
-            val headerUsername = header.findViewById<TextView>(R.id.header_username)
-            lifecycleScope.launch {
-                repeatOnLifecycle(Lifecycle.State.CREATED) {
-                    viewModel.homePageFlow.collect { state ->
-                        if (state is WebsiteState.Success) {
-                            if (isAlreadyLogin) {
-                                if (state.info.username == null) {
-                                    headerAvatar.load(R.drawable.bg_default_header) {
-                                        crossfade(true)
-                                        transformations(CircleCropTransformation())
-                                    }
-                                    headerUsername.setText(R.string.refresh_page_or_login_expired)
-                                } else {
-                                    headerAvatar.load(state.info.avatarUrl) {
-                                        crossfade(true)
-                                        transformations(CircleCropTransformation())
-                                    }
-                                    headerUsername.text = state.info.username
-                                }
-                            } else {
-                                initHeaderView()
-                            }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.CREATED) {
+                viewModel.homePageFlow.collect { state ->
+                    if (state is WebsiteState.Success) {
+                        headerIsLoading = false
+                        if (isAlreadyLogin) {
+                            headerIsLoggedIn = true
+                            headerAvatarUrl = state.info.avatarUrl
+                            headerUsername = state.info.username
                         } else {
-                            headerAvatar.load(R.drawable.bg_default_header) {
-                                crossfade(true)
-                                transformations(CircleCropTransformation())
-                            }
-                            headerUsername.setText(R.string.loading)
+                            initHeaderView()
                         }
+                    } else {
+                        headerIsLoading = true
                     }
                 }
             }
@@ -555,61 +549,59 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
 
     @SuppressLint("SetTextI18n")
     private fun initHeaderView() {
+        headerCurrentSite = Preferences.baseUrl
+        headerIsLoggedIn = isAlreadyLogin
+        headerIsLoading = !isAlreadyLogin
         binding.nvMain.getHeaderView(0)?.let { view ->
-            val headerAvatar = view.findViewById<ShapeableImageView>(R.id.header_avatar)
-            val headerUsername = view.findViewById<TextView>(R.id.header_username)
-
-            val siteSwitchBtn = view.findViewById<ShapeableImageView>(R.id.btn_switch_site)
-            val currentSiteHint = view.findViewById<TextView>(R.id.text_current_site)
-            val currentSite = Preferences.baseUrl
-            currentSiteHint.text = "${getString(R.string.current_site)}\n $currentSite"
-
-            siteSwitchBtn.setOnClickListener {
-                showAlertDialog {
-                    setTitle(R.string.confirm_switch_site)
-                    setPositiveButton(R.string.sure) { _, _ ->
-                        val avSite = HANIME_URL[3]
-                        val selectedBaseUrl = Preferences.selectedBaseUrl
-                        if (currentSite in ANIME_URL) {
-                            Preferences.preferenceSp.edit(true) {
-                                putString(NetworkSettingsFragment.SELECTED_BASE_URL, currentSite)
-                                putString(NetworkSettingsFragment.DOMAIN_NAME, avSite)
+            (view.findViewById<ComposeView>(R.id.drawer_header_compose))?.setContent {
+                HanimeTheme {
+                    MainDrawerHeader(
+                        avatarUrl = headerAvatarUrl,
+                        username = headerUsername,
+                        isLoggedIn = headerIsLoggedIn,
+                        isLoading = headerIsLoading,
+                        currentSite = headerCurrentSite,
+                        onAvatarClick = {
+                            if (isAlreadyLogin) {
+                                showAlertDialog {
+                                    setTitle(R.string.sure_to_logout)
+                                    setPositiveButton(R.string.sure) { _, _ -> logoutWithRefresh() }
+                                    setNegativeButton(R.string.no, null)
+                                }
+                            } else {
+                                gotoLoginActivity()
                             }
-                            Handler(Looper.getMainLooper()).postDelayed({
-                                ActivityManager.restart(killProcess = true)
-                            }, 500)
-                        } else {
-                            Preferences.preferenceSp.edit(true) {
-                                putString(NetworkSettingsFragment.DOMAIN_NAME, selectedBaseUrl)
-                            }
-                            Handler(Looper.getMainLooper()).postDelayed({
-                                ActivityManager.restart(killProcess = true)
-                            }, 500)
-                        }
-                    }
-                    setNegativeButton(R.string.no, null)
+                        },
+                        onSwitchSiteClick = { showSiteSwitchDialog() },
+                    )
                 }
             }
-            if (isAlreadyLogin) {
-                headerAvatar.setOnClickListener {
-                    showAlertDialog {
-                        setTitle(R.string.sure_to_logout)
-                        setPositiveButton(R.string.sure) { _, _ ->
-                            logoutWithRefresh()
-                        }
-                        setNegativeButton(R.string.no, null)
+        }
+    }
+
+    private fun showSiteSwitchDialog() {
+        val currentSite = Preferences.baseUrl
+        showAlertDialog {
+            setTitle(R.string.confirm_switch_site)
+            setPositiveButton(R.string.sure) { _, _ ->
+                val avSite = HANIME_URL[3]
+                val selectedBaseUrl = Preferences.selectedBaseUrl
+                if (currentSite in ANIME_URL) {
+                    Preferences.preferenceSp.edit(true) {
+                        putString(NetworkSettingsFragment.SELECTED_BASE_URL, currentSite)
+                        putString(NetworkSettingsFragment.DOMAIN_NAME, avSite)
+                    }
+                } else {
+                    Preferences.preferenceSp.edit(true) {
+                        putString(NetworkSettingsFragment.SELECTED_BASE_URL, selectedBaseUrl)
+                        putString(NetworkSettingsFragment.DOMAIN_NAME, selectedBaseUrl)
                     }
                 }
-            } else {
-                headerAvatar.load(R.drawable.bg_default_header) {
-                    crossfade(true)
-                    transformations(CircleCropTransformation())
-                }
-                headerUsername.setText(R.string.not_logged_in)
-                headerAvatar.setOnClickListener {
-                    gotoLoginActivity()
-                }
+                Handler(Looper.getMainLooper()).postDelayed({
+                    ActivityManager.restart(killProcess = true)
+                }, 500)
             }
+            setNegativeButton(R.string.no, null)
         }
     }
 
