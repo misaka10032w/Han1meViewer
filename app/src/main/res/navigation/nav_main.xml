@@ -102,16 +102,6 @@
     <fragment
         android:id="@+id/nv_preview_comment"
         android:name="com.yenaly.han1meviewer.ui.fragment.home.preview.PreviewCommentFragment" />
-    <!-- 设置模块子导航图 -->
-    <include app:graph="@navigation/nav_settings" />
-
-    <!-- 全局动作 -->
-    <action
-        android:id="@+id/action_global_nav_settings"
-        app:destination="@id/nav_settings" />
-    <action
-        android:id="@+id/action_global_to_hKeyframeSettingsFragment"
-        app:destination="@id/hKeyframeSettingsFragment" />
     <fragment
         android:id="@+id/myPlayListFragmentV2"
         android:name="com.yenaly.han1meviewer.ui.fragment.home.MyPlayListFragmentV2" />

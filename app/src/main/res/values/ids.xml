@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="click_condition" type="id" />
+    <item name="nav_settings" type="id" />
+    <item name="homeSettingsFragment" type="id" />
+    <item name="playerSettingsFragment" type="id" />
+    <item name="hKeyframesFragment" type="id" />
+    <item name="sharedHKeyframesFragment" type="id" />
+    <item name="hKeyframeSettingsFragment" type="id" />
+    <item name="networkSettingsFragment" type="id" />
+    <item name="downloadSettingsFragment" type="id" />
+    <item name="mpvPlayerSettings" type="id" />
+    <item name="action_global_nav_settings" type="id" />
+    <item name="action_global_to_hKeyframeSettingsFragment" type="id" />
+    <item name="action_back_to_main" type="id" />
 </resources>
