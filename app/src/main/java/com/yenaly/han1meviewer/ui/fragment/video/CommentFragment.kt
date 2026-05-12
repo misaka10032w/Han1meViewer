@@ -3,6 +3,15 @@ package com.yenaly.han1meviewer.ui.fragment.video
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.compose.runtime.Composable
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -13,6 +22,7 @@ import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.ui.screen.video.ChildCommentScreen
 import com.yenaly.han1meviewer.ui.screen.video.CommentMessage
 import com.yenaly.han1meviewer.ui.screen.video.CommentScreen
 import com.yenaly.han1meviewer.ui.screen.video.CommentSortType
@@ -22,6 +32,7 @@ import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
 import com.yenaly.han1meviewer.util.checkBadGuy
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.collectAsState
 
@@ -46,6 +57,7 @@ class CommentFragment : Fragment() {
         commentType = arguments?.getString(COMMENT_TYPE)
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -56,7 +68,22 @@ class CommentFragment : Fragment() {
             ViewGroup.LayoutParams.MATCH_PARENT,
         )
         setContent {
+            var childCommentId by remember { mutableStateOf<String?>(null) }
+            val childSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
             HanimeTheme {
+                childCommentId?.let { currentCommentId ->
+                    ChildCommentBottomSheet(
+                        commentId = currentCommentId,
+                        viewModel = viewModel,
+                        sheetState = childSheetState,
+                        onDismiss = {
+                            childCommentId = null
+                            viewModel.clearVideoReplyList()
+                        },
+                    )
+                }
+
                 CommentScreen(
                     commentsFlow = viewModel.videoCommentFlow,
                     commentStateFlow = viewModel.videoCommentStateFlow,
@@ -131,11 +158,7 @@ class CommentFragment : Fragment() {
                             }
                             return@CommentScreen
                         }
-                        ChildCommentPopupFragment().apply {
-                            arguments = Bundle().apply {
-                                putString(com.yenaly.han1meviewer.COMMENT_ID, replyTargetId)
-                            }
-                        }.show(childFragmentManager, "child_comment_popup_$replyTargetId")
+                        childCommentId = replyTargetId
                     },
                     onSortChange = { viewModel.setSortType(it) },
                     onComposeComment = {
@@ -227,5 +250,70 @@ class CommentFragment : Fragment() {
 
     companion object {
         private const val VIDEO_COMMENT_PREFIX = "video"
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChildCommentBottomSheet(
+    commentId: String,
+    viewModel: CommentViewModel,
+    sheetState: androidx.compose.material3.SheetState,
+    onDismiss: () -> Unit,
+) {
+    LaunchedEffect(commentId) {
+        viewModel.getCommentReply(commentId)
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+    ) {
+        ChildCommentScreen(
+            commentsFlow = viewModel.videoReplyFlow,
+            commentStateFlow = viewModel.videoReplyStateFlow,
+            reportMessageFlow = viewModel.reportMessage.map { message ->
+                val text = if (message.args.isNotEmpty()) {
+                    com.yenaly.yenaly_libs.utils.application.getString(message.resId, *message.args.toTypedArray())
+                } else {
+                    com.yenaly.yenaly_libs.utils.application.getString(message.resId)
+                }
+                CommentMessage(text)
+            },
+            postReplyStateFlow = viewModel.postReplyFlow,
+            commentLikeStateFlow = viewModel.commentLikeFlow,
+            reportReasons = viewModel.reportReason,
+            isAlreadyLogin = Preferences.isAlreadyLogin,
+            onRefresh = { viewModel.getCommentReply(commentId) },
+            onReply = { _, text ->
+                viewModel.postReply(commentId, text)
+            },
+            onReport = { comment, reason ->
+                viewModel.reportComment(
+                    reason.reasonKey ?: reason.value,
+                    viewModel.currentUserId,
+                    "${Preferences.baseUrl}watch?v=${viewModel.code}",
+                    comment.reportableType,
+                    comment.reportableId,
+                )
+            },
+            onThumbUp = { comment ->
+                viewModel.likeChildComment(
+                    true,
+                    0,
+                    comment,
+                    likeCommentStatus = comment.post.likeCommentStatus,
+                )
+            },
+            onThumbDown = { comment ->
+                viewModel.likeChildComment(
+                    false,
+                    0,
+                    comment,
+                    unlikeCommentStatus = comment.post.unlikeCommentStatus,
+                )
+            },
+            onCommentLikeSuccess = viewModel::handleCommentLike,
+        )
     }
 }
