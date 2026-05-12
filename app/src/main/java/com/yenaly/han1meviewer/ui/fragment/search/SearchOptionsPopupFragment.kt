@@ -8,7 +8,6 @@ import android.view.View
 import android.widget.Checkable
 import androidx.core.util.isNotEmpty
 import androidx.core.view.isVisible
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.color.MaterialColors
@@ -35,6 +34,7 @@ import com.yenaly.han1meviewer.ui.popup.HTimePickerPopup
 import com.yenaly.han1meviewer.ui.viewmodel.SearchViewModel
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.base.YenalyBottomSheetDialogFragment
+import com.yenaly.yenaly_libs.utils.findActivityOrNull
 import com.yenaly.yenaly_libs.utils.mapToArray
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -52,7 +52,14 @@ class SearchOptionsPopupFragment :
         private const val POP_UP_BORDER_RADIUS = 36F
     }
 
-    val viewModel by viewModels<SearchViewModel>({ requireParentFragment() })
+    val viewModel by lazy(LazyThreadSafetyMode.NONE) {
+        val activity = requireContext().findActivityOrNull<com.yenaly.han1meviewer.ui.activity.MainActivity>()
+        if (activity != null) {
+            androidx.lifecycle.ViewModelProvider(activity)[SearchViewModel::class.java]
+        } else {
+            androidx.lifecycle.ViewModelProvider(requireParentFragment())[SearchViewModel::class.java]
+        }
+    }
 
     /**
      * 是否用户真正使用了高级搜索里面的功能

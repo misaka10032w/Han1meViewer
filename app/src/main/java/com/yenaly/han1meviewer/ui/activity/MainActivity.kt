@@ -347,7 +347,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Perm
         }
 
         when (menuItem.itemId) {
-            // 主界面相关 - 这些在 nav_main.xml 中
             R.id.nv_home_page -> safeNavigateTo(R.id.nv_home_page)
             R.id.nv_watch_history -> safeNavigateTo(R.id.action_nv_home_page_to_nv_watch_history)
             R.id.nv_fav_video -> safeNavigateTo(R.id.action_nv_home_page_to_nv_fav_video)

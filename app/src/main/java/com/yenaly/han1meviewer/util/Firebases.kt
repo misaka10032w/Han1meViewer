@@ -14,7 +14,7 @@ fun Activity.logScreenViewEvent(fragment: Fragment) {
 
 fun Activity.logScreenViewEvent(screenClassName: String) {
     Firebase.analytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW) {
-        // example: MainActivity-HomePageFragment
+        // example: MainActivity-HomeRouteScreen
         val screenName = this@logScreenViewEvent.javaClass.simpleName +
             "-" + screenClassName
         Log.d("logScreenViewEvent", "screenName: $screenName")
