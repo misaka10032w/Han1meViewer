@@ -122,7 +122,7 @@ class VideoFragment : androidx.fragment.app.Fragment(), OrientationManager.Orien
 
     private val relatedVideoAdapter by lazy {
         HanimeVideoRvAdapter(VIDEO_LAYOUT_MATCH_PARENT) { item ->
-            openVideo(item.videoCode)
+            (activity as? MainActivity)?.showVideoDetailFragment(item.videoCode)
         }
     }
 
