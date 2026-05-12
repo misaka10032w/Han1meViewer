@@ -1,6 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="click_condition" type="id" />
+    <item name="nav_main" type="id" />
+    <item name="action_global_to_video" type="id" />
+    <item name="nv_home_page" type="id" />
+    <item name="action_home_to_search" type="id" />
+    <item name="action_nv_home_page_to_nv_preview" type="id" />
+    <item name="action_nv_home_page_to_nv_daily_check_in" type="id" />
+    <item name="action_nv_home_page_to_nv_watch_history" type="id" />
+    <item name="action_nv_home_page_to_nv_subscription" type="id" />
+    <item name="action_nv_home_page_to_nv_watch_later" type="id" />
+    <item name="action_nv_home_page_to_nv_playlist" type="id" />
+    <item name="action_nv_home_page_to_nv_fav_video" type="id" />
+    <item name="action_nv_home_page_to_nv_download" type="id" />
+    <item name="action_nv_home_page_to_myPlayListFragmentV2" type="id" />
+    <item name="searchFragment" type="id" />
+    <item name="videoFragment" type="id" />
+    <item name="action_video_to_search" type="id" />
+    <item name="action_video_to_home" type="id" />
+    <item name="nv_watch_history" type="id" />
+    <item name="nv_fav_video" type="id" />
+    <item name="nv_watch_later" type="id" />
+    <item name="nv_subscription" type="id" />
+    <item name="nv_daily_check_in" type="id" />
+    <item name="nv_download" type="id" />
+    <item name="nv_preview" type="id" />
+    <item name="action_nv_preview_to_nv_preview_comment" type="id" />
+    <item name="nv_preview_comment" type="id" />
+    <item name="myPlayListFragmentV2" type="id" />
     <item name="nav_settings" type="id" />
     <item name="homeSettingsFragment" type="id" />
     <item name="playerSettingsFragment" type="id" />

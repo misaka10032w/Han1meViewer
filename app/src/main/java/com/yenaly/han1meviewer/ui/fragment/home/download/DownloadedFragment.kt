@@ -84,21 +84,6 @@ class DownloadedFragment : Fragment() {
         }
     }
 
-    fun onToolbarMenuSelected(menuItem: MenuItem): Boolean {
-        return when (menuItem.itemId) {
-            R.id.tb_search -> {
-                showLongToast(requireContext().getString(R.string.coming_soon))
-                true
-            }
-
-            R.id.tb_add_group -> {
-                showCreateGroupDialog = true
-                true
-            }
-
-            else -> false
-        }
-    }
 
     private fun moveVideoGroup(video: VideoWithCategories, targetGroupId: Int) {
         viewModel.updateVideoGroup(video.video.videoCode, targetGroupId)

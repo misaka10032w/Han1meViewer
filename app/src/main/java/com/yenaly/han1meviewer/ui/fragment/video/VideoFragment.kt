@@ -37,7 +37,6 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -102,13 +101,8 @@ class VideoFragment : androidx.fragment.app.Fragment(), OrientationManager.Orien
     private val kernel = HMediaKernel.Type.fromString(Preferences.switchPlayerKernel)
 
     private val fromDownload by lazy { requireArguments().getBoolean(FROM_DOWNLOAD, false) }
-    private val navArgs: VideoFragmentArgs by navArgs()
     private val videoCode by lazy {
-        try {
-            navArgs.videoCode.takeIf { it.isNotBlank() }
-        } catch (_: Exception) {
-            null
-        } ?: requireArguments().getString(VIDEO_CODE) ?: error("Missing video code")
+        requireArguments().getString(VIDEO_CODE) ?: error("Missing video code")
     }
     private val videoUri by lazy { requireArguments().getString("LOCAL_URI") }
     private var videoTitle: String? = null
