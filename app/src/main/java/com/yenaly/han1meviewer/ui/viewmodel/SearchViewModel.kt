@@ -43,7 +43,6 @@ class SearchViewModel(
     var page: Int = 1
     var query: String? = null
 
-    // START: Use in [ChildCommentPopupFragment.kt]
     var genre: String?
         get() = state["genre"]
         set(value) { state["genre"] = value }
@@ -70,10 +69,6 @@ class SearchViewModel(
     var tagMap = SparseArray<Set<SearchOption>>()
     var brandMap = SparseArray<Set<SearchOption>>()
 
-    // END: Use in [ChildCommentPopupFragment.kt]
-
-    // START: Use in [SearchOptionsPopupFragment.kt]
-
     val genres by unsafeLazy {
         loadAssetAs<List<SearchOption>>(if (Preferences.baseUrl == HANIME_URL[3]) "search_options/genre_av.json" else "search_options/genre.json").orEmpty()
     }
@@ -96,8 +91,6 @@ class SearchViewModel(
     val timeList by unsafeLazy {
         loadAssetAs<List<SearchOption>>("search_options/release_date.json").orEmpty()
     }
-
-    // END: Use in [SearchOptionsPopupFragment.kt]
 
     private val _searchStateFlow =
         MutableStateFlow<PageLoadingState<List<HanimeInfo>>>(PageLoadingState.Loading)
