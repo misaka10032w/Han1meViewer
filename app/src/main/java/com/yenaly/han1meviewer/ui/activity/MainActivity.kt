@@ -26,8 +26,6 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,13 +36,11 @@ import androidx.biometric.BiometricPrompt
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
-import androidx.core.os.bundleOf
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
@@ -53,27 +49,20 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
-import coil.load
-import coil.transform.CircleCropTransformation
-import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.snackbar.Snackbar
-import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
 import com.yenaly.han1meviewer.HanimeConstants.ANIME_URL
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.databinding.ActivityMainBinding
 import com.yenaly.han1meviewer.logic.exception.CloudFlareBlockedException
 import com.yenaly.han1meviewer.logic.state.WebsiteState
@@ -83,11 +72,11 @@ import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.fragment.settings.NetworkSettingsFragment
 import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.han1meviewer.ui.screen.main.DailyCheckInRoute
-import com.yenaly.han1meviewer.ui.screen.main.MainDrawerHeader
-import com.yenaly.han1meviewer.ui.screen.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.screen.main.MainNavHost
 import com.yenaly.han1meviewer.ui.screen.main.DownloadRoute
 import com.yenaly.han1meviewer.ui.screen.main.HomeRoute
+import com.yenaly.han1meviewer.ui.screen.main.MainDestinationSpec
+import com.yenaly.han1meviewer.ui.screen.main.MainDrawerHeader
+import com.yenaly.han1meviewer.ui.screen.main.MainNavHost
 import com.yenaly.han1meviewer.ui.screen.main.MyFavVideoRoute
 import com.yenaly.han1meviewer.ui.screen.main.MyPlaylistRoute
 import com.yenaly.han1meviewer.ui.screen.main.MyWatchLaterRoute
@@ -111,14 +100,13 @@ import com.yenaly.yenaly_libs.utils.showSnackBar
 import com.yenaly.yenaly_libs.utils.textFromClipboard
 import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
-import androidx.core.graphics.createBitmap
 
 /**
  * @project Hanime1
  * @author Yenaly Liew
  * @time 2022/06/08 008 17:35
  */
-class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, ToolbarHost,
+class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener,
     PermissionRequester {
 
     val viewModel by viewModels<MainViewModel>()
@@ -159,9 +147,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
     private var headerIsLoggedIn by mutableStateOf(false)
     private var headerIsLoading by mutableStateOf(false)
     private var headerCurrentSite by mutableStateOf(Preferences.baseUrl)
-    private var previewImageView: ImageView? = null
-    private val previewBitmapCache = HashMap<Int, android.graphics.Bitmap>() // destId → bitmap
-    private val backCornerRadius by lazy { 24f.dp.toFloat() }
 
 
     override fun getViewBinding(layoutInflater: LayoutInflater): ActivityMainBinding =
@@ -185,10 +170,10 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             handleNavigationItemSelected(menuItem)
             true
         }
-        setSupportActionBar(findViewById(R.id.toolbar))
+//        setSupportActionBar(findViewById(R.id.toolbar))
         initHeaderView()
         initMenu()
-        (binding.fcvMain as ComposeView).setContent {
+        binding.fcvMain.setContent {
             HanimeTheme {
                 val composeNavController = rememberNavController()
                 LaunchedEffect(composeNavController) {
@@ -216,19 +201,11 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             }
         }
 
-        // Initialize preview ImageView for predictive back gesture
-        previewImageView = binding.root.findViewById(R.id.preview_image)
-        previewImageView?.isClickable = false
-        previewImageView?.isEnabled = false
-        previewImageView?.setOnTouchListener { _, _ -> false }
-
         ViewCompat.setOnApplyWindowInsetsListener(binding.nvMain) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             WindowInsetsCompat.CONSUMED
         }
-
-        setupPredictiveBack()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -718,28 +695,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
     }
 
 
-    override fun setupToolbar(title: CharSequence, canNavigateBack: Boolean) {
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        toolbar.menu.clear()
-        supportActionBar?.apply {
-            this.title = title
-            setDisplayHomeAsUpEnabled(canNavigateBack)
-            if (canNavigateBack) {
-                setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24)
-            } else {
-                setHomeAsUpIndicator(null)
-            }
-        }
-    }
-
-    override fun hideToolbar() {
-        binding.toolbar.visibility = View.GONE
-    }
-
-    override fun showToolbar() {
-        binding.toolbar.visibility = View.VISIBLE
-    }
-
     fun showVideoDetailFragment(videoCode: String, fileUri: String? = null) {
         navController.navigate(VideoRoute(videoCode, fileUri))
     }
@@ -845,111 +800,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
 
     fun togglePlayPause() {
         Log.i("pipmode", "togglePlayPause pending Compose-hosted video bridge")
-    }
-
-    private fun setupPredictiveBack() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return
-        if (Preferences.disablePredictiveBack) {
-            onBackInvokedDispatcher.registerOnBackInvokedCallback(
-                android.window.OnBackInvokedDispatcher.PRIORITY_OVERLAY
-            ) {
-                onBackPressedDispatcher.onBackPressed()
-            }
-        } else {
-            onBackInvokedDispatcher.registerOnBackInvokedCallback(
-                android.window.OnBackInvokedDispatcher.PRIORITY_OVERLAY,
-                object : android.window.OnBackAnimationCallback {
-                    private var fragmentView: View? = null
-                    private var viewWidth = 0f
-                    private var viewHeight = 0f
-
-                    override fun onBackStarted(backEvent: android.window.BackEvent) {
-                        if (currentMainDestination == MainDestinationSpec.Home) {
-                            fragmentView = null
-                            return
-                        }
-                        fragmentView = binding.fcvMain
-                        fragmentView?.let {
-                            viewWidth = it.width.toFloat()
-                            viewHeight = it.height.toFloat()
-
-                            // Apply rounded corners
-                            it.clipToOutline = true
-                            it.outlineProvider = object : android.view.ViewOutlineProvider() {
-                                override fun getOutline(view: View, outline: android.graphics.Outline) {
-                                    outline.setRoundRect(
-                                        0, 0, view.width, view.height, backCornerRadius
-                                    )
-                                }
-                            }
-
-                            // Show the cached preview of previous fragment
-                            showCachedPreview()
-                        }
-                    }
-
-                    override fun onBackProgressed(backEvent: android.window.BackEvent) {
-                        val v = fragmentView ?: return
-                        val progress = backEvent.progress.coerceIn(0f, 1f)
-                        val scale = 1f - progress * 0.1f
-                        val touchX = backEvent.touchX
-                        val touchY = backEvent.touchY
-                        v.pivotX = viewWidth / 2f
-                        v.pivotY = viewHeight / 2f
-                        v.scaleX = scale
-                        v.scaleY = scale
-                        v.translationX = (touchX - viewWidth / 2f) * progress * 0.1f
-                        v.translationY = (touchY - viewHeight / 2f) * progress * 0.1f
-                    }
-
-                    override fun onBackInvoked() {
-                        fragmentView?.clipToOutline = false
-                        hidePreview()
-                        onBackPressedDispatcher.onBackPressed()
-                    }
-
-                    override fun onBackCancelled() {
-                        fragmentView?.clipToOutline = false
-                        hidePreview()
-                        fragmentView?.animate()
-                            ?.scaleX(1f)?.scaleY(1f)
-                            ?.translationX(0f)?.translationY(0f)
-                            ?.setDuration(200)
-                            ?.start()
-                    }
-                }
-            )
-        }
-    }
-
-    /**
-     * Show the cached preview bitmap when back gesture starts
-     */
-    private fun showCachedPreview() {
-        val prevDestId = navController.previousBackStackEntry?.destination?.id ?: return
-        val bitmap = synchronized(previewBitmapCache) {
-            previewBitmapCache[prevDestId]
-        }
-        if (bitmap != null && previewImageView != null) {
-            previewImageView?.setImageBitmap(bitmap)
-            previewImageView?.visibility = View.VISIBLE
-        }
-    }
-
-    /**
-     * Hide the preview ImageView and dim overlay
-     */
-    private fun hidePreview() {
-        previewImageView?.visibility = View.GONE
-        previewImageView?.setImageBitmap(null)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        synchronized(previewBitmapCache) {
-            previewBitmapCache.values.forEach { it.recycle() }
-            previewBitmapCache.clear()
-        }
     }
 
 }

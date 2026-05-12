@@ -15,32 +15,7 @@
         <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fitsSystemWindows="true"
             android:background="?android:colorBackground">
-
-
-            <com.google.android.material.appbar.AppBarLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fitsSystemWindows="true"
-                android:theme="@style/ThemeOverlay.AppCompat.DayNight.ActionBar">
-
-                <androidx.appcompat.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
-            </com.google.android.material.appbar.AppBarLayout>
-
-            <!-- Predictive back preview: shows previous fragment behind scaled current view -->
-            <ImageView
-                android:id="@+id/preview_image"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:contentDescription="@null"
-                android:visibility="gone"
-                android:scaleType="fitXY"
-                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
             <androidx.compose.ui.platform.ComposeView
                 android:id="@+id/fcv_main"

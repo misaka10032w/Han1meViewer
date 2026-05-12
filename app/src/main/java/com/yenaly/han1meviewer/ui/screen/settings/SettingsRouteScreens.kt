@@ -26,6 +26,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.annotation.IntRange
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -1250,6 +1251,7 @@ private fun openPipPermissionSettings(context: Context) {
     context.startActivity(intent)
 }
 
+@RequiresApi(Build.VERSION_CODES.S)
 private fun showApplyDeepLinksDialog(context: Context, activity: Activity) {
     context.showAlertDialog {
         setTitle(R.string.apply_deep_links)

@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.graphics.Color
+import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
@@ -17,20 +18,35 @@ import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.os.bundleOf
+import androidx.fragment.app.FragmentContainerView
+import androidx.fragment.app.commit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.load
+import coil3.SingletonImageLoader
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.imageview.ShapeableImageView
+import com.yenaly.han1meviewer.PREVIEW_COMMENT_PREFIX
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.getHanimeSearchShareText
 import com.yenaly.han1meviewer.getHanimeShareText
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
+import com.yenaly.han1meviewer.logic.model.HanimePreview
+import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.fragment.search.SearchOptionsPopupFragment
+import com.yenaly.han1meviewer.ui.fragment.search.SearchScreen
+import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.han1meviewer.ui.screen.home.DailyCheckInScreen
 import com.yenaly.han1meviewer.ui.screen.home.HomePageScreen
 import com.yenaly.han1meviewer.ui.screen.home.LocalSearchHistoryQuery
@@ -40,12 +56,17 @@ import com.yenaly.han1meviewer.ui.screen.home.SubscriptionApp
 import com.yenaly.han1meviewer.ui.screen.home.WatchHistoryScreen
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadScreen
 import com.yenaly.han1meviewer.ui.screen.home.myplaylist.MyPlayListScreen
+import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewScreen
+import com.yenaly.han1meviewer.ui.screen.video.CommentScreen
 import com.yenaly.han1meviewer.ui.viewmodel.CheckInCalendarViewModel
+import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.DownloadViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MyListViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
 import com.yenaly.han1meviewer.ui.viewmodel.MySubscriptionsViewModel
+import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
+import com.yenaly.han1meviewer.ui.viewmodel.PreviewViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.SearchViewModel
 import com.yenaly.han1meviewer.ui.widget.CheckInWidgetProvider
 import com.yenaly.han1meviewer.util.SafFileManager
@@ -58,6 +79,7 @@ import com.yenaly.yenaly_libs.utils.showLongToast
 import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -73,11 +95,6 @@ fun HomeRouteScreen(
     val context = LocalContext.current
     val viewModel: MainViewModel = viewModel()
     val checkInViewModel: CheckInCalendarViewModel = viewModel()
-
-    DisposableEffect(Unit) {
-        activity.hideToolbar()
-        onDispose { }
-    }
 
     CompositionLocalProvider(
         LocalSearchHistoryQuery provides { keyword: String ->
@@ -123,15 +140,10 @@ fun HomeRouteScreen(
 
 @Composable
 fun WatchHistoryRouteScreen(
-    activity: MainActivity,
     onBack: () -> Unit,
     onNavigateToVideo: (String) -> Unit,
 ) {
     val viewModel: MainViewModel = viewModel()
-    DisposableEffect(Unit) {
-        activity.hideToolbar()
-        onDispose { activity.showToolbar() }
-    }
     WatchHistoryScreen(
         historiesFlow = viewModel.loadAllWatchHistories(),
         onBack = onBack,
@@ -143,15 +155,10 @@ fun WatchHistoryRouteScreen(
 
 @Composable
 fun MyFavVideoRouteScreen(
-    activity: MainActivity,
     onBack: () -> Unit,
     onNavigateToVideo: (String) -> Unit,
 ) {
     val viewModel: MyListViewModel = viewModel()
-    DisposableEffect(Unit) {
-        activity.hideToolbar()
-        onDispose { activity.showToolbar() }
-    }
     MyFavVideoScreen(
         favVideoFlow = viewModel.fav.favVideoFlow,
         favVideoStateFlow = viewModel.fav.favVideoStateFlow,
@@ -182,15 +189,10 @@ fun MyFavVideoRouteScreen(
 
 @Composable
 fun MyWatchLaterRouteScreen(
-    activity: MainActivity,
     onBack: () -> Unit,
     onNavigateToVideo: (String) -> Unit,
 ) {
     val viewModel: MyListViewModel = viewModel()
-    DisposableEffect(Unit) {
-        activity.hideToolbar()
-        onDispose { activity.showToolbar() }
-    }
     MyWatchLaterScreen(
         watchLaterFlow = viewModel.watchLater.watchLaterFlow,
         watchLaterStateFlow = viewModel.watchLater.watchLaterStateFlow,
@@ -368,6 +370,216 @@ fun DownloadRouteScreen(
             showLongToast(context.getString(R.string.delete_success))
         },
     )
+}
+
+@Composable
+fun SearchRouteScreen(
+    activity: MainActivity,
+    route: SearchRoute,
+    onBack: () -> Unit,
+    onNavigateToVideo: (String) -> Unit,
+) {
+    val viewModel: SearchViewModel = viewModel()
+
+    LaunchedEffect(route.advancedSearchJson) {
+        route.advancedSearchJson?.let { json ->
+            runCatching { Json.decodeFromString<Map<String, String>>(json) }
+                .onSuccess { params ->
+                    params.forEach { (key, value) ->
+                        when (key.uppercase()) {
+                            "QUERY" -> viewModel.query = value
+                            "GENRE" -> viewModel.genre = value
+                            "SORT" -> viewModel.sort = value
+                            "YEAR" -> viewModel.year = value.toIntOrNull()
+                            "MONTH" -> viewModel.month = value.toIntOrNull()
+                            "DURATION" -> viewModel.duration = value
+                        }
+                    }
+                }
+        }
+    }
+
+    SearchScreen(
+        viewModel = viewModel,
+        initialQuery = route.query,
+        onBack = onBack,
+        onOpenVideo = onNavigateToVideo,
+        onLongPressCopy = { videoCode, title ->
+            copyTextToClipboard(getHanimeShareText(title, videoCode))
+            showShortToast(R.string.copy_to_clipboard)
+        },
+        onOpenAdvancedSearch = {
+            try {
+                SearchOptionsPopupFragment().show(activity.supportFragmentManager, "search_options")
+            } catch (_: Exception) {
+                showShortToast("高级搜索暂不可用")
+            }
+        },
+    )
+}
+
+@Composable
+fun PreviewRouteScreen(
+    onBack: () -> Unit,
+    onNavigateToPreviewComment: (String, String) -> Unit,
+    onNavigateToVideo: (String) -> Unit,
+) {
+    val context = LocalContext.current
+    val viewModel: PreviewViewModel = viewModel()
+    val commentViewModel: CommentViewModel = viewModel()
+    val imageLoader = remember(context) { SingletonImageLoader.get(context) }
+    val previewState = viewModel.previewFlow.collectAsStateWithLifecycle().value
+    val commentCount = PreviewCommentPrefetcher.here(commentViewModel)
+        .commentFlow
+        .collectAsStateWithLifecycle()
+        .value
+        .size
+
+    fun preloadImages(preview: HanimePreview?) {
+        if (preview == null) return
+        buildList {
+            preview.headerPicUrl?.let(::add)
+            addAll(preview.latestHanime.map { it.coverUrl })
+            addAll(preview.previewInfo.mapNotNull { it.coverUrl })
+        }.distinct().forEach { url ->
+            imageLoader.enqueue(
+                ImageRequest.Builder(context)
+                    .data(url)
+                    .crossfade(true)
+                    .build()
+            )
+        }
+    }
+
+    LaunchedEffect(previewState) {
+        when (val state = previewState) {
+            is WebsiteState.Success -> preloadImages(state.info)
+            else -> Unit
+        }
+    }
+
+    DisposableEffect(Unit) {
+        PreviewCommentPrefetcher.here(commentViewModel)
+            .tag(PreviewCommentPrefetcher.Scope.PREVIEW_ACTIVITY)
+        onDispose {
+            PreviewCommentPrefetcher.bye(PreviewCommentPrefetcher.Scope.PREVIEW_ACTIVITY)
+            commentViewModel.clearCommentData()
+        }
+    }
+
+    PreviewScreen(
+        previewState = previewState,
+        getCachedPreviewState = viewModel::getCachedPreview,
+        commentCount = commentCount,
+        onBack = onBack,
+        onLoadDate = { code ->
+            viewModel.getHanimePreview(code)
+            viewModel.preloadPreview(shiftMonthCodeForPreview(code, -1))
+            viewModel.preloadPreview(shiftMonthCodeForPreview(code, 1))
+            PreviewCommentPrefetcher.here(commentViewModel).fetch(PREVIEW_COMMENT_PREFIX, code)
+        },
+        onOpenComment = onNavigateToPreviewComment,
+        onOpenVideo = onNavigateToVideo,
+    )
+}
+
+@Composable
+fun PreviewCommentRouteScreen(
+    route: PreviewCommentRoute,
+    onBack: () -> Unit,
+) {
+    val viewModel: CommentViewModel = viewModel()
+    val comments = viewModel.videoCommentFlow
+    val commentState = viewModel.videoCommentStateFlow
+
+    LaunchedEffect(route.dateCode) {
+        viewModel.code = route.dateCode
+        val prefetched = PreviewCommentPrefetcher.here(viewModel).commentFlow.value
+        if (prefetched.isNotEmpty()) {
+            viewModel.updateComments(prefetched)
+        } else {
+            viewModel.getComment(PREVIEW_COMMENT_PREFIX, route.dateCode)
+        }
+    }
+
+    DisposableEffect(Unit) {
+        PreviewCommentPrefetcher.here(viewModel)
+            .tag(PreviewCommentPrefetcher.Scope.PREVIEW_COMMENT_ACTIVITY)
+        onDispose {
+            PreviewCommentPrefetcher.bye(PreviewCommentPrefetcher.Scope.PREVIEW_COMMENT_ACTIVITY)
+        }
+    }
+
+    CommentScreen(
+        commentsFlow = comments,
+        commentStateFlow = commentState,
+        reportMessageFlow = kotlinx.coroutines.flow.emptyFlow(),
+        currentSortType = viewModel.currentSortType,
+        reportReasons = viewModel.reportReason,
+        isPreviewCommentPrefetched = true,
+        isAlreadyLogin = com.yenaly.han1meviewer.Preferences.isAlreadyLogin,
+        onRefresh = { viewModel.getComment(PREVIEW_COMMENT_PREFIX, route.dateCode) },
+        onReply = { _, _: String -> },
+        onReport = { _, _ -> },
+        onThumbUp = { _ -> },
+        onThumbDown = { _ -> },
+        onViewMoreReplies = { _ -> },
+        onSortChange = viewModel::setSortType,
+        onComposeComment = { _: String -> },
+    )
+}
+
+@Composable
+fun VideoRouteScreen(
+    activity: MainActivity,
+    route: VideoRoute,
+) {
+    val containerId = remember(route.videoCode, route.localUri) { View.generateViewId() }
+
+    AndroidView(
+        factory = { context ->
+            FragmentContainerView(context).apply {
+                id = containerId
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                )
+            }
+        },
+        update = {
+            val tag = "compose_video_${route.videoCode}_${route.localUri.orEmpty()}"
+            val existing = activity.supportFragmentManager.findFragmentByTag(tag)
+            if (existing == null) {
+                activity.supportFragmentManager.commit {
+                    setReorderingAllowed(true)
+                    replace(
+                        containerId,
+                        VideoFragment().apply {
+                            arguments = Bundle().apply {
+                                putString(VIDEO_CODE, route.videoCode)
+                                putString("LOCAL_URI", route.localUri)
+                            }
+                        },
+                        tag,
+                    )
+                }
+            }
+        },
+    )
+}
+
+private fun shiftMonthCodeForPreview(code: String, delta: Int): String {
+    var year = code.substring(0, 4).toInt()
+    var month = code.substring(4, 6).toInt() + delta
+    while (month < 1) {
+        month += 12
+        year -= 1
+    }
+    while (month > 12) {
+        month -= 12
+        year += 1
+    }
+    return "%04d%02d".format(year, month)
 }
 
 private fun showAnnouncementDialog(
