@@ -550,6 +550,20 @@ fun VideoRouteScreen(
     route: VideoRoute,
 ) {
     val containerId = remember(route.videoCode, route.localUri) { View.generateViewId() }
+    val tag = remember(route.videoCode, route.localUri) { videoBridgeTag(route.videoCode, route.localUri) }
+
+    DisposableEffect(activity, tag) {
+        onDispose {
+            activity.supportFragmentManager.findFragmentByTag(tag)?.let { fragment ->
+                if (!activity.supportFragmentManager.isStateSaved) {
+                    activity.supportFragmentManager.commit {
+                        setReorderingAllowed(true)
+                        remove(fragment)
+                    }
+                }
+            }
+        }
+    }
 
     AndroidView(
         factory = { context ->
@@ -561,14 +575,13 @@ fun VideoRouteScreen(
                 )
             }
         },
-        update = {
-            val tag = videoBridgeTag(route.videoCode, route.localUri)
+        update = { container ->
             val existing = activity.supportFragmentManager.findFragmentByTag(tag)
-            if (existing == null) {
+            if (existing == null || existing.id != container.id) {
                 activity.supportFragmentManager.commit {
                     setReorderingAllowed(true)
                     replace(
-                        containerId,
+                        container.id,
                         VideoFragment().apply {
                             arguments = Bundle().apply {
                                 putString(VIDEO_CODE, route.videoCode)
