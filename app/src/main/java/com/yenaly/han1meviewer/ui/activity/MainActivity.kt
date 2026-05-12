@@ -597,6 +597,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Perm
     }
 
     private fun findCurrentVideoFragment(): VideoFragment? {
+        if (currentMainDestination != MainDestinationSpec.Video) return null
         val currentRoute = navController.currentBackStackEntry?.toRoute<VideoRoute>() ?: return null
         return supportFragmentManager.findFragmentByTag(
             videoBridgeTag(currentRoute.videoCode, currentRoute.localUri)
