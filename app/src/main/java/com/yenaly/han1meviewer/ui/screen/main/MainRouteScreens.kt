@@ -26,7 +26,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.os.bundleOf
 import androidx.core.util.isNotEmpty
 import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.commit
@@ -53,7 +52,7 @@ import com.yenaly.han1meviewer.logic.model.SearchOption.Companion.flatten
 import com.yenaly.han1meviewer.logic.model.SearchOption.Companion.get
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.fragment.search.SearchScreen
+import com.yenaly.han1meviewer.ui.screen.search.SearchScreen
 import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -63,7 +62,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size

@@ -94,7 +94,7 @@ import com.yenaly.han1meviewer.logic.model.Announcement
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HomePage
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.fragment.RetryableImage
+import com.yenaly.han1meviewer.ui.screen.RetryableImage
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.preview.fakeAnnouncements
 import com.yenaly.han1meviewer.ui.preview.fakeBanner

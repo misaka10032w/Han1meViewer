@@ -1,5 +1,6 @@
-package com.yenaly.han1meviewer.ui.fragment.search
+package com.yenaly.han1meviewer.ui.screen.search
 
+import android.util.SparseArray
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -514,13 +515,13 @@ fun SearchScreen(
 // 辅助
 // ─────────────────────────────────────────────
 
-private fun tagFlatten(map: android.util.SparseArray<Set<SearchOption>>): Set<String> {
+private fun tagFlatten(map: SparseArray<Set<SearchOption>>): Set<String> {
     val r = mutableSetOf<String>(); for (i in 0 until map.size()) {
         map.valueAt(i).mapNotNullTo(r) { it.searchKey }
     }; return r
 }
 
-private fun brandFlatten(map: android.util.SparseArray<Set<SearchOption>>): Set<String> {
+private fun brandFlatten(map: SparseArray<Set<SearchOption>>): Set<String> {
     val r = mutableSetOf<String>(); for (i in 0 until map.size()) {
         map.valueAt(i).mapNotNullTo(r) { it.searchKey }
     }; return r

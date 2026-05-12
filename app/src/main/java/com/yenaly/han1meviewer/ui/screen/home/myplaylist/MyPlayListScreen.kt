@@ -66,7 +66,7 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.EmptyContent
 import com.yenaly.han1meviewer.ui.component.LoadMoreFooter
 import com.yenaly.han1meviewer.ui.component.PlaylistItem
-import com.yenaly.han1meviewer.ui.fragment.getColumnCount
+import com.yenaly.han1meviewer.ui.screen.getColumnCount
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.showShortToast

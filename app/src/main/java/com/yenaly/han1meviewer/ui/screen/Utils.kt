@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.fragment
+package com.yenaly.han1meviewer.ui.screen
 
 import android.util.Log
 import androidx.compose.runtime.Composable

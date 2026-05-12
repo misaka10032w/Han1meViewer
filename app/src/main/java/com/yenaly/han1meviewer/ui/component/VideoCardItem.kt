@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.VideoItemType
-import com.yenaly.han1meviewer.ui.fragment.RetryableImage
+import com.yenaly.han1meviewer.ui.screen.RetryableImage
 import com.yenaly.han1meviewer.ui.preview.fakeVideosItem
 
 
