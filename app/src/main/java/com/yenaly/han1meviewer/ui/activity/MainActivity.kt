@@ -35,8 +35,10 @@ import androidx.activity.viewModels
 import androidx.appcompat.widget.Toolbar
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.app.ActivityCompat
@@ -56,7 +58,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
-import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import androidx.preference.PreferenceManager
@@ -79,7 +82,19 @@ import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.fragment.settings.NetworkSettingsFragment
 import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
+import com.yenaly.han1meviewer.ui.screen.main.DailyCheckInRoute
 import com.yenaly.han1meviewer.ui.screen.main.MainDrawerHeader
+import com.yenaly.han1meviewer.ui.screen.main.MainDestinationSpec
+import com.yenaly.han1meviewer.ui.screen.main.MainNavHost
+import com.yenaly.han1meviewer.ui.screen.main.DownloadRoute
+import com.yenaly.han1meviewer.ui.screen.main.HomeRoute
+import com.yenaly.han1meviewer.ui.screen.main.MyFavVideoRoute
+import com.yenaly.han1meviewer.ui.screen.main.MyPlaylistRoute
+import com.yenaly.han1meviewer.ui.screen.main.MyWatchLaterRoute
+import com.yenaly.han1meviewer.ui.screen.main.SearchRoute
+import com.yenaly.han1meviewer.ui.screen.main.SubscriptionRoute
+import com.yenaly.han1meviewer.ui.screen.main.VideoRoute
+import com.yenaly.han1meviewer.ui.screen.main.WatchHistoryRoute
 import com.yenaly.han1meviewer.ui.screen.settings.SettingsDestinationSpec
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
@@ -108,16 +123,13 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
 
     val viewModel by viewModels<MainViewModel>()
 
-    private lateinit var navHostFragment: NavHostFragment
-    lateinit var navController: NavController
-//    private var detailNavController: NavController? = null
+    lateinit var navController: NavHostController
+    private var currentMainDestination by mutableStateOf(MainDestinationSpec.Home)
 
     companion object {
         private const val REQUEST_WRITE_EXTERNAL_STORAGE = 1234
         const val ACTION_TOGGLE_PLAY = "com.yenaly.han1meviewer.ACTION_TOGGLE_PLAY"
     }
-
-    val currentFragment get() = navHostFragment.childFragmentManager.primaryNavigationFragment
 
     // 登錄完了後讓activity刷新主頁
     private val loginDataLauncher =
@@ -168,8 +180,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
      */
     @SuppressLint("ClickableViewAccessibility")
     override fun initData(savedInstanceState: Bundle?) {
-        navHostFragment = supportFragmentManager.findFragmentById(R.id.fcv_main) as NavHostFragment
-        navController = navHostFragment.navController
         binding.dlMain.addDrawerListener(this)
         binding.nvMain.setNavigationItemSelectedListener { menuItem ->
             handleNavigationItemSelected(menuItem)
@@ -178,33 +188,39 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         setSupportActionBar(findViewById(R.id.toolbar))
         initHeaderView()
         initMenu()
-        
+        (binding.fcvMain as ComposeView).setContent {
+            HanimeTheme {
+                val composeNavController = rememberNavController()
+                LaunchedEffect(composeNavController) {
+                    navController = composeNavController
+                }
+                MainNavHost(
+                    activity = this,
+                    navController = composeNavController,
+                    onDestinationChanged = { destination ->
+                        currentMainDestination = destination
+                        val currentCheckedId = binding.nvMain.checkedItem?.itemId
+                        val targetId = destination.menuItemId
+                        if (targetId != null && targetId != currentCheckedId) {
+                            binding.nvMain.setCheckedItem(targetId)
+                        }
+                        binding.dlMain.setDrawerLockMode(
+                            if (destination.drawerEnabled) {
+                                DrawerLayout.LOCK_MODE_UNLOCKED
+                            } else {
+                                DrawerLayout.LOCK_MODE_LOCKED_CLOSED
+                            }
+                        )
+                    },
+                )
+            }
+        }
+
         // Initialize preview ImageView for predictive back gesture
         previewImageView = binding.root.findViewById(R.id.preview_image)
         previewImageView?.isClickable = false
         previewImageView?.isEnabled = false
         previewImageView?.setOnTouchListener { _, _ -> false }
-
-        // Cache fragment views when they become primary for predictive back preview
-        navHostFragment.childFragmentManager.registerFragmentLifecycleCallbacks(
-            object : FragmentManager.FragmentLifecycleCallbacks() {
-                override fun onFragmentResumed(fm: FragmentManager, f: Fragment) {
-                    val destId = navController.currentDestination?.id ?: return
-                    val view = f.view ?: return
-                    if (view.width <= 0 || view.height <= 0) return
-                    try {
-                        val bmp = createBitmap(view.width, view.height)
-                        val canvas = android.graphics.Canvas(bmp)
-                        view.draw(canvas)
-                        synchronized(previewBitmapCache) {
-                            previewBitmapCache[destId]?.recycle()
-                            previewBitmapCache[destId] = bmp
-                        }
-                    } catch (_: Exception) {}
-                }
-            },
-            false
-        )
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.nvMain) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -212,27 +228,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             WindowInsetsCompat.CONSUMED
         }
 
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            val currentCheckedId = binding.nvMain.checkedItem?.itemId
-            val targetId = when (destination.id) {
-                R.id.nv_home_page -> R.id.nv_home_page
-                R.id.nv_watch_history -> R.id.nv_watch_history
-                R.id.nv_fav_video -> R.id.nv_fav_video
-                R.id.nv_playlist -> R.id.nv_playlist
-                R.id.nv_watch_later -> R.id.nv_watch_later
-                R.id.nv_subscription -> R.id.nv_subscription
-                R.id.nv_download -> R.id.nv_download
-                else -> null
-            }
-            if (targetId != null && targetId != currentCheckedId) {
-                binding.nvMain.setCheckedItem(targetId)
-            }
-            if (destination.id == R.id.nv_home_page){
-                binding.dlMain.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
-            } else {
-                binding.dlMain.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-            }
-        }
         setupPredictiveBack()
     }
 
@@ -302,23 +297,10 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             return
         }
 
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.fcv_main) as? NavHostFragment ?: return
-        val navController = navHostFragment.navController
-        if (navHostFragment.childFragmentManager.isStateSaved) {
-            Log.w("deeplink", "❌ Cannot navigate: state already saved")
-            return
-        }
-
         //String形式TAG
         intent.getStringExtra("startSearchFromTag")?.let { tag ->
             intent.removeExtra("startSearchFromTag")
-            if (navController.currentDestination?.id != R.id.searchFragment) {
-                navController.navigate(
-                    R.id.searchFragment,
-                    bundleOf(ADVANCED_SEARCH_MAP to tag)
-                )
-            }
+            navController.navigate(SearchRoute(query = tag))
             return
         }
 
@@ -328,8 +310,9 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         if (map != null) {
             intent.removeExtra("startSearchFromMap")
             navController.navigate(
-                R.id.searchFragment,
-                bundleOf(ADVANCED_SEARCH_MAP to map)
+                SearchRoute(
+                    advancedSearchJson = kotlinx.serialization.json.Json.encodeToString(map)
+                )
             )
         }
 
@@ -411,7 +394,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             R.id.nv_download -> safeNavigateTo(R.id.action_nv_home_page_to_nv_download)
 
             R.id.nv_settings -> {
-                SettingsRouter.with(currentFragment ?: return)
+                SettingsRouter.with(this)
                     .toSettingsActivity(destination = SettingsDestinationSpec.Home)
             }
         }
@@ -420,7 +403,16 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
 
     private fun safeNavigateTo(destinationId: Int) {
         try {
-            navController.navigate(destinationId)
+            when (destinationId) {
+                R.id.nv_home_page -> navController.navigate(HomeRoute)
+                R.id.action_nv_home_page_to_nv_watch_history -> navController.navigate(WatchHistoryRoute)
+                R.id.action_nv_home_page_to_nv_fav_video -> navController.navigate(MyFavVideoRoute)
+                R.id.action_nv_home_page_to_myPlayListFragmentV2 -> navController.navigate(MyPlaylistRoute)
+                R.id.action_nv_home_page_to_nv_watch_later -> navController.navigate(MyWatchLaterRoute)
+                R.id.action_nv_home_page_to_nv_subscription -> navController.navigate(SubscriptionRoute)
+                R.id.action_nv_home_page_to_nv_daily_check_in -> navController.navigate(DailyCheckInRoute)
+                R.id.action_nv_home_page_to_nv_download -> navController.navigate(DownloadRoute)
+            }
         } catch (e: IllegalArgumentException) {
             Log.e("Navigation", "Navigation destination not found: $destinationId", e)
         }
@@ -633,6 +625,10 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
         initMenu()
     }
 
+    fun openMainDrawer() {
+        binding.dlMain.openDrawer(GravityCompat.START)
+    }
+
     /**
      * 设置toolbar与navController关联
      *
@@ -745,22 +741,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
     }
 
     fun showVideoDetailFragment(videoCode: String, fileUri: String? = null) {
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.fcv_main)
-        val childFragmentManager = navHostFragment?.childFragmentManager
-
-        if (childFragmentManager != null && !childFragmentManager.isStateSaved) {
-//            val navController = navHostFragment.findNavController()
-            val args = bundleOf(
-                VIDEO_CODE to videoCode,
-                "LOCAL_URI" to fileUri
-            ) // KEY 要与 Fragment 中读取的 key 对应
-            navController.navigate(
-                R.id.videoFragment,
-                args
-            )
-        } else {
-            Log.w("Navigation", "❌ Cannot navigate: FragmentManager has already saved its state.")
-        }
+        navController.navigate(VideoRoute(videoCode, fileUri))
     }
 
     private var onGranted: (() -> Unit)? = null
@@ -863,11 +844,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
     }
 
     fun togglePlayPause() {
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.fcv_main) as NavHostFragment
-        val videoFragment =
-            navHostFragment.childFragmentManager.primaryNavigationFragment as? VideoFragment
-        videoFragment?.togglePlayPause()
+        Log.i("pipmode", "togglePlayPause pending Compose-hosted video bridge")
     }
 
     private fun setupPredictiveBack() {
@@ -887,12 +864,11 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                     private var viewHeight = 0f
 
                     override fun onBackStarted(backEvent: android.window.BackEvent) {
-                        if (navController.currentDestination?.id == R.id.nv_home_page) {
+                        if (currentMainDestination == MainDestinationSpec.Home) {
                             fragmentView = null
                             return
                         }
-                        fragmentView = navHostFragment.childFragmentManager
-                            .primaryNavigationFragment?.view
+                        fragmentView = binding.fcvMain
                         fragmentView?.let {
                             viewWidth = it.width.toFloat()
                             viewHeight = it.height.toFloat()

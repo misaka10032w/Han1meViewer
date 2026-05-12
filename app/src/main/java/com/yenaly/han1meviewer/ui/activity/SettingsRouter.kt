@@ -20,6 +20,9 @@ class SettingsRouter private constructor(
         @JvmStatic
         fun with(fragment: Fragment) = SettingsRouter(fragment.requireContext())
 
+        @JvmStatic
+        fun with(context: Context) = SettingsRouter(context)
+
         fun resolveStartDestination(intent: Intent): SettingsDestinationSpec {
             val legacyId = intent.getIntExtra(DESTINATION, 0)
             SettingsDestinationSpec.fromLegacyId(legacyId)?.let { return it }

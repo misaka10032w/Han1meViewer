@@ -142,41 +142,32 @@ class HanimeVideoRvAdapter(
         }.also { viewHolder ->
             when (viewType) {
                 HanimeInfo.SIMPLIFIED -> {
-                    when (context) {
-                        is MainActivity -> {
-                            val fragment = context.currentFragment
-                            when (fragment) {
-                                is SearchFragment -> {
-                                    viewHolder.getView<View>(R.id.frame).widthMatchParent()
-                                }
+                    when (hostFragment) {
+                        is SearchFragment -> {
+                            viewHolder.getView<View>(R.id.frame).widthMatchParent()
+                        }
 
-                                is VideoFragment -> when (videoWidthType) {
-                                    VIDEO_LAYOUT_MATCH_PARENT ->
-                                        viewHolder.getView<View>(R.id.frame).widthMatchParent()
-                                    VIDEO_LAYOUT_WRAP_CONTENT ->
-                                        viewHolder.getView<View>(R.id.frame).widthWrapContent()
-                                }
-                            }
+                        is VideoFragment -> when (videoWidthType) {
+                            VIDEO_LAYOUT_MATCH_PARENT ->
+                                viewHolder.getView<View>(R.id.frame).widthMatchParent()
+                            VIDEO_LAYOUT_WRAP_CONTENT ->
+                                viewHolder.getView<View>(R.id.frame).widthWrapContent()
                         }
                     }
 
                 }
 
                 HanimeInfo.NORMAL -> {
-                    when (context) {
-                        is MainActivity -> {
-                            val fragment = context.currentFragment
-                            when (fragment) {
-                                is VideoFragment -> when (videoWidthType) {
-                                    VIDEO_LAYOUT_MATCH_PARENT ->
-                                        viewHolder.getView<View>(R.id.frame).widthMatchParent()
-                                    VIDEO_LAYOUT_WRAP_CONTENT ->
-                                        viewHolder.getView<View>(R.id.frame).widthWrapContent()
-                                }
-                                is HomePageFragment -> {
-                                    viewHolder.getView<View>(R.id.frame).widthWrapContent()
-                                }
-                            }
+                    when (hostFragment) {
+                        is VideoFragment -> when (videoWidthType) {
+                            VIDEO_LAYOUT_MATCH_PARENT ->
+                                viewHolder.getView<View>(R.id.frame).widthMatchParent()
+                            VIDEO_LAYOUT_WRAP_CONTENT ->
+                                viewHolder.getView<View>(R.id.frame).widthWrapContent()
+                        }
+
+                        is HomePageFragment -> {
+                            viewHolder.getView<View>(R.id.frame).widthWrapContent()
                         }
                     }
                     with(VideoCoverSize.Normal) {

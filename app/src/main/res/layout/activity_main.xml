@@ -42,15 +42,12 @@
                 android:scaleType="fitXY"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-            <androidx.fragment.app.FragmentContainerView
+            <androidx.compose.ui.platform.ComposeView
                 android:id="@+id/fcv_main"
-                android:transitionGroup="true"
-                android:name="androidx.navigation.fragment.NavHostFragment"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:layout_behavior="@string/appbar_scrolling_view_behavior"
-                app:defaultNavHost="true"
-                app:navGraph="@navigation/nav_main" />
+                android:transitionGroup="true"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
