@@ -21,10 +21,6 @@ import com.yenaly.han1meviewer.VIDEO_LAYOUT_WRAP_CONTENT
 import com.yenaly.han1meviewer.VideoCoverSize
 import com.yenaly.han1meviewer.getHanimeShareText
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
-import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.fragment.home.HomePageFragment
-import com.yenaly.han1meviewer.ui.fragment.home.preview.PreviewFragment
-import com.yenaly.han1meviewer.ui.fragment.search.SearchFragment
 import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.yenaly_libs.utils.copyTextToClipboard
 import com.yenaly.yenaly_libs.utils.dp
@@ -143,10 +139,6 @@ class HanimeVideoRvAdapter(
             when (viewType) {
                 HanimeInfo.SIMPLIFIED -> {
                     when (hostFragment) {
-                        is SearchFragment -> {
-                            viewHolder.getView<View>(R.id.frame).widthMatchParent()
-                        }
-
                         is VideoFragment -> when (videoWidthType) {
                             VIDEO_LAYOUT_MATCH_PARENT ->
                                 viewHolder.getView<View>(R.id.frame).widthMatchParent()
@@ -165,10 +157,6 @@ class HanimeVideoRvAdapter(
                             VIDEO_LAYOUT_WRAP_CONTENT ->
                                 viewHolder.getView<View>(R.id.frame).widthWrapContent()
                         }
-
-                        is HomePageFragment -> {
-                            viewHolder.getView<View>(R.id.frame).widthWrapContent()
-                        }
                     }
                     with(VideoCoverSize.Normal) {
                         viewHolder.getView<ViewGroup>(R.id.cover_wrapper).resizeForVideoCover()
@@ -176,23 +164,21 @@ class HanimeVideoRvAdapter(
                 }
             }
             viewHolder.itemView.apply {
-                if (hostFragment  !is PreviewFragment) {
-                    setOnClickListener {
-                        val position = viewHolder.bindingAdapterPosition
-                        val item = getItem(position)
-                        if (item.isPlaying) {
-                            showShortToast(R.string.watching_this_video_now)
-                        } else {
-                            onItemClick(item)
-                        }
+                setOnClickListener {
+                    val position = viewHolder.bindingAdapterPosition
+                    val item = getItem(position)
+                    if (item.isPlaying) {
+                        showShortToast(R.string.watching_this_video_now)
+                    } else {
+                        onItemClick(item)
                     }
-                    setOnLongClickListener {
-                        val position = viewHolder.bindingAdapterPosition
-                        val item = getItem(position)
-                        copyTextToClipboard(getHanimeShareText(item.title, item.videoCode))
-                        showShortToast(R.string.copy_to_clipboard)
-                        return@setOnLongClickListener true
-                    }
+                }
+                setOnLongClickListener {
+                    val position = viewHolder.bindingAdapterPosition
+                    val item = getItem(position)
+                    copyTextToClipboard(getHanimeShareText(item.title, item.videoCode))
+                    showShortToast(R.string.copy_to_clipboard)
+                    return@setOnLongClickListener true
                 }
             }
         }

@@ -109,6 +109,7 @@ fun MainNavHost(
         }
         composable<PreviewRoute> {
             PreviewRouteScreen(
+                activity = activity,
                 onBack = { navController.popBackStack() },
                 onNavigateToPreviewComment = { date, dateCode ->
                     navController.navigate(PreviewCommentRoute(date, dateCode))
@@ -118,6 +119,7 @@ fun MainNavHost(
         }
         composable<PreviewCommentRoute> {
             PreviewCommentRouteScreen(
+                activity = activity,
                 route = it.toRoute(),
                 onBack = { navController.popBackStack() },
             )

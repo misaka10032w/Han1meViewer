@@ -38,7 +38,6 @@ import androidx.core.view.isVisible
 import androidx.core.view.size
 import androidx.core.view.updatePadding
 import androidx.fragment.app.FragmentActivity
-import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -62,6 +61,7 @@ import com.yenaly.han1meviewer.util.setStateViewLayout
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.OrientationManager
 import com.yenaly.yenaly_libs.utils.appScreenWidth
+import com.yenaly.yenaly_libs.utils.findActivityOrNull
 import com.yenaly.yenaly_libs.utils.navBarHeight
 import com.yenaly.yenaly_libs.utils.statusBarHeight
 import com.yenaly.yenaly_libs.utils.unsafeLazy
@@ -651,7 +651,9 @@ class HJzvdStd @JvmOverloads constructor(
                 CURRENT_JZVD.clearFloatScreen()
             }
             else -> {
-                findNavController().navigateUp()
+                context.findActivityOrNull<FragmentActivity>()
+                    ?.onBackPressedDispatcher
+                    ?.onBackPressed()
             }
         }
     }
@@ -713,11 +715,10 @@ class HJzvdStd @JvmOverloads constructor(
             R.id.super_resolution -> clickSuperResolution()
             R.id.go_home -> {
                 if (screen != SCREEN_FULLSCREEN) {
-                    findNavController().navigate(
-                        R.id.nv_home_page,
-                        null,
-                        NavOptions.Builder().setPopUpTo(R.id.nav_main, true).build()
-                    )
+                    context.findActivityOrNull<MainActivity>()?.let { activity ->
+                        activity.finish()
+                        return
+                    }
                 } else {
                     onGoHomeClickListener?.invoke(v)
                 }

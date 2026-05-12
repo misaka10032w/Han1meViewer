@@ -9,19 +9,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.TextPaint
-import android.text.style.CharacterStyle
 import android.util.Log
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -54,8 +48,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupWithNavController
+import androidx.navigation.toRoute
 import androidx.preference.PreferenceManager
 import com.google.android.material.snackbar.Snackbar
 import com.yenaly.han1meviewer.HanimeConstants.ANIME_URL
@@ -68,7 +61,6 @@ import com.yenaly.han1meviewer.logic.exception.CloudFlareBlockedException
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
-import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.fragment.settings.NetworkSettingsFragment
 import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.han1meviewer.ui.screen.main.DailyCheckInRoute
@@ -83,12 +75,12 @@ import com.yenaly.han1meviewer.ui.screen.main.MyWatchLaterRoute
 import com.yenaly.han1meviewer.ui.screen.main.SearchRoute
 import com.yenaly.han1meviewer.ui.screen.main.SubscriptionRoute
 import com.yenaly.han1meviewer.ui.screen.main.VideoRoute
+import com.yenaly.han1meviewer.ui.screen.main.videoBridgeTag
 import com.yenaly.han1meviewer.ui.screen.main.WatchHistoryRoute
 import com.yenaly.han1meviewer.ui.screen.settings.SettingsDestinationSpec
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
-import com.yenaly.han1meviewer.util.logScreenViewEvent
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.han1meviewer.util.showUpdateDialog
 import com.yenaly.han1meviewer.videoUrlRegex
@@ -106,8 +98,7 @@ import kotlin.time.ExperimentalTime
  * @author Yenaly Liew
  * @time 2022/06/08 008 17:35
  */
-class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener,
-    PermissionRequester {
+class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, PermissionRequester {
 
     val viewModel by viewModels<MainViewModel>()
 
@@ -154,10 +145,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener,
 
     override fun setUiStyle() {
         enableEdgeToEdge()
-    }
-
-    override val onFragmentResumedListener: (Fragment) -> Unit = { fragment ->
-        logScreenViewEvent(fragment)
     }
 
     /**
@@ -606,97 +593,15 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener,
         binding.dlMain.openDrawer(GravityCompat.START)
     }
 
-    /**
-     * 设置toolbar与navController关联
-     *
-     * 必须最后调用！先设置好toolbar！
-     */
-    fun Toolbar.setupWithMainNavController() {
-        supportActionBar!!.title = if (Preferences.baseUrl == HANIME_URL[3]) createAppbarTitleAV(context) else createAppbarTitle(context)
-        val appBarConfiguration = AppBarConfiguration(setOf(R.id.nv_home_page), binding.dlMain)
-        this.setupWithNavController(navController, appBarConfiguration)
-
-        val typedValue = TypedValue()
-        if (context.theme.resolveAttribute(androidx.appcompat.R.attr.colorPrimary, typedValue, true)) {
-            (this.navigationIcon as? androidx.appcompat.graphics.drawable.DrawerArrowDrawable)?.color = typedValue.data
-        }
-    }
-
-    fun createAppbarTitle(context: Context): SpannableString {
-        val fullText = "Han1meViewer"
-        val spannable = SpannableString(fullText)
-
-        val redSpan = object : CharacterStyle() {
-            private val color = Color.RED
-            override fun updateDrawState(tp: TextPaint) {
-                tp.color = color
-                tp.isFakeBoldText = true
-            }
-        }
-        spannable.setSpan(redSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-        val typedValue = TypedValue()
-        context.theme.resolveAttribute(com.google.android.material.R.attr.colorOnBackground, typedValue, true)
-        val themeColor = typedValue.data
-
-        val boldThemeSpan = object : CharacterStyle() {
-            override fun updateDrawState(tp: TextPaint) {
-                tp.color = themeColor
-                tp.isFakeBoldText = true
-            }
-        }
-
-        spannable.setSpan(boldThemeSpan, 1, 6, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        val normalThemeSpan = object : CharacterStyle() {
-            override fun updateDrawState(tp: TextPaint) {
-                tp.color = themeColor
-                tp.isFakeBoldText = false
-            }
-        }
-
-        spannable.setSpan(normalThemeSpan, 6, fullText.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        return spannable
-    }
-
-    fun createAppbarTitleAV(context: Context): SpannableString {
-        val fullText = "HAViewer"
-        val spannable = SpannableString(fullText)
-
-        val redSpan = object : CharacterStyle() {
-            private val color = Color.RED
-            override fun updateDrawState(tp: TextPaint) {
-                tp.color = color
-                tp.isFakeBoldText = true
-            }
-        }
-        spannable.setSpan(redSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-        val typedValue = TypedValue()
-        context.theme.resolveAttribute(com.google.android.material.R.attr.colorOnBackground, typedValue, true)
-        val themeColor = typedValue.data
-
-        val boldThemeSpan = object : CharacterStyle() {
-            override fun updateDrawState(tp: TextPaint) {
-                tp.color = themeColor
-                tp.isFakeBoldText = true
-            }
-        }
-
-        spannable.setSpan(boldThemeSpan, 1, 2, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        val normalThemeSpan = object : CharacterStyle() {
-            override fun updateDrawState(tp: TextPaint) {
-                tp.color = themeColor
-                tp.isFakeBoldText = false
-            }
-        }
-
-        spannable.setSpan(normalThemeSpan, 2, fullText.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        return spannable
-    }
-
-
     fun showVideoDetailFragment(videoCode: String, fileUri: String? = null) {
         navController.navigate(VideoRoute(videoCode, fileUri))
+    }
+
+    private fun findCurrentVideoFragment(): VideoFragment? {
+        val currentRoute = navController.currentBackStackEntry?.toRoute<VideoRoute>() ?: return null
+        return supportFragmentManager.findFragmentByTag(
+            videoBridgeTag(currentRoute.videoCode, currentRoute.localUri)
+        ) as? VideoFragment
     }
 
     private var onGranted: (() -> Unit)? = null
@@ -766,10 +671,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener,
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        val currentFragment = supportFragmentManager
-            .findFragmentById(R.id.fcv_main)
-            ?.childFragmentManager
-            ?.primaryNavigationFragment
+        val currentFragment = findCurrentVideoFragment()
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val allowPip = prefs.getBoolean("allow_pip_mode", true)
@@ -788,10 +690,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener,
     ) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
 
-        val currentFragment = supportFragmentManager
-            .findFragmentById(R.id.fcv_main)
-            ?.childFragmentManager
-            ?.primaryNavigationFragment
+        val currentFragment = findCurrentVideoFragment()
 
         if (currentFragment is VideoFragment) {
             currentFragment.onPipModeChanged(isInPictureInPictureMode)
@@ -799,7 +698,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener,
     }
 
     fun togglePlayPause() {
-        Log.i("pipmode", "togglePlayPause pending Compose-hosted video bridge")
+        findCurrentVideoFragment()?.togglePlayPause()
     }
 
 }

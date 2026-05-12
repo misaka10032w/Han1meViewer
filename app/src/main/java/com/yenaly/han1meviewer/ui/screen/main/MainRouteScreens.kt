@@ -379,7 +379,7 @@ fun SearchRouteScreen(
     onBack: () -> Unit,
     onNavigateToVideo: (String) -> Unit,
 ) {
-    val viewModel: SearchViewModel = viewModel()
+    val viewModel: SearchViewModel = viewModel(viewModelStoreOwner = activity)
 
     LaunchedEffect(route.advancedSearchJson) {
         route.advancedSearchJson?.let { json ->
@@ -420,13 +420,14 @@ fun SearchRouteScreen(
 
 @Composable
 fun PreviewRouteScreen(
+    activity: MainActivity,
     onBack: () -> Unit,
     onNavigateToPreviewComment: (String, String) -> Unit,
     onNavigateToVideo: (String) -> Unit,
 ) {
     val context = LocalContext.current
     val viewModel: PreviewViewModel = viewModel()
-    val commentViewModel: CommentViewModel = viewModel()
+    val commentViewModel: CommentViewModel = viewModel(viewModelStoreOwner = activity)
     val imageLoader = remember(context) { SingletonImageLoader.get(context) }
     val previewState = viewModel.previewFlow.collectAsStateWithLifecycle().value
     val commentCount = PreviewCommentPrefetcher.here(commentViewModel)
@@ -485,10 +486,11 @@ fun PreviewRouteScreen(
 
 @Composable
 fun PreviewCommentRouteScreen(
+    activity: MainActivity,
     route: PreviewCommentRoute,
     onBack: () -> Unit,
 ) {
-    val viewModel: CommentViewModel = viewModel()
+    val viewModel: CommentViewModel = viewModel(viewModelStoreOwner = activity)
     val comments = viewModel.videoCommentFlow
     val commentState = viewModel.videoCommentStateFlow
 
@@ -547,7 +549,7 @@ fun VideoRouteScreen(
             }
         },
         update = {
-            val tag = "compose_video_${route.videoCode}_${route.localUri.orEmpty()}"
+            val tag = videoBridgeTag(route.videoCode, route.localUri)
             val existing = activity.supportFragmentManager.findFragmentByTag(tag)
             if (existing == null) {
                 activity.supportFragmentManager.commit {

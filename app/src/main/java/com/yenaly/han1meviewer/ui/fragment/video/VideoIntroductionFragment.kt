@@ -11,13 +11,11 @@ import androidx.compose.runtime.setValue
 import androidx.appcompat.app.AlertDialog
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.net.toUri
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.findNavController
 import com.yenaly.han1meviewer.ADVANCED_SEARCH_MAP
 import com.yenaly.han1meviewer.HAdvancedSearch
 import com.yenaly.han1meviewer.HCacheManager
@@ -47,6 +45,7 @@ import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import com.yenaly.han1meviewer.worker.HanimeDownloadWorker
 import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.copyToClipboard
+import com.yenaly.yenaly_libs.utils.findActivityOrNull
 import com.yenaly.yenaly_libs.utils.shareText
 import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.unsafeLazy
@@ -258,18 +257,20 @@ class VideoIntroductionFragment : Fragment() {
         val bundleMap = HashMap<String, Serializable>().apply {
             map.forEach { (key, value) -> put(key.name, value) }
         }
-        try {
-            findNavController().navigate(
-                R.id.searchFragment,
-                bundleOf(ADVANCED_SEARCH_MAP to bundleMap),
-            )
-        } catch (_: IllegalStateException) {
-            context?.startActivity(
-                Intent(context, MainActivity::class.java).apply {
+        requireContext().findActivityOrNull<MainActivity>()?.let { activity ->
+            activity.startActivity(
+                Intent(activity, MainActivity::class.java).apply {
                     putExtra("startSearchFromMap", HashMap(bundleMap))
+                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 }
             )
+            return
         }
+        context?.startActivity(
+            Intent(context, MainActivity::class.java).apply {
+                putExtra("startSearchFromMap", HashMap(bundleMap))
+            }
+        )
     }
 
     private fun toggleArtistSubscription(artist: HanimeVideo.Artist) {
