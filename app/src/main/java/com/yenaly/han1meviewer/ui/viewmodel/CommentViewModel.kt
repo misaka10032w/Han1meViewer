@@ -11,7 +11,7 @@ import com.yenaly.han1meviewer.logic.model.ReportReason
 import com.yenaly.han1meviewer.logic.model.VideoCommentArgs
 import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.fragment.video.CommentFragment
+import com.yenaly.han1meviewer.ui.screen.video.CommentSortType
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
 import com.yenaly.han1meviewer.util.loadAssetAs
 import com.yenaly.yenaly_libs.base.YenalyViewModel
@@ -71,9 +71,9 @@ class CommentViewModel(application: Application) : YenalyViewModel(application) 
         loadAssetAs<List<ReportReason>>("report_reason.json").orEmpty()
     }
 
-    private val _currentSortType = MutableStateFlow(CommentFragment.SortType.LATEST)
+    private val _currentSortType = MutableStateFlow(CommentSortType.LATEST)
     val currentSortType = _currentSortType.asStateFlow()
-    fun setSortType(type: CommentFragment.SortType) {
+    fun setSortType(type: CommentSortType) {
         _currentSortType.value = type
     }
     fun clearCommentData(){

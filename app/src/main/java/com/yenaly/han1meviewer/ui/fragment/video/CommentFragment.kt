@@ -15,6 +15,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.screen.video.CommentMessage
 import com.yenaly.han1meviewer.ui.screen.video.CommentScreen
+import com.yenaly.han1meviewer.ui.screen.video.CommentSortType
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
@@ -39,10 +40,6 @@ class CommentFragment : Fragment() {
     private val reportMessages = MutableSharedFlow<CommentMessage>()
     private val commentTypePrefix: String
         get() = arguments?.getString(COMMENT_TYPE) ?: VIDEO_COMMENT_PREFIX
-
-    enum class SortType {
-        LATEST, EARLIEST, MOST_REPLY, MOST_LIKES, MOST_DISLIKES
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -62,7 +62,6 @@ import com.yenaly.han1meviewer.ui.component.CommentReportDialog
 import com.yenaly.han1meviewer.ui.component.EmptyContent
 import com.yenaly.han1meviewer.ui.component.ErrorContent
 import com.yenaly.han1meviewer.ui.component.VideoCommentCard
-import com.yenaly.han1meviewer.ui.fragment.video.CommentFragment
 import com.yenaly.han1meviewer.ui.preview.fakeCommentList
 import com.yenaly.han1meviewer.util.parseTimeStrToMinutes
 import com.yenaly.han1meviewer.util.safeSortedBy
@@ -78,7 +77,7 @@ fun CommentScreen(
     commentsFlow: StateFlow<List<VideoComments.VideoComment>>,
     commentStateFlow: StateFlow<WebsiteState<VideoComments>>,
     reportMessageFlow: Flow<CommentMessage>,
-    currentSortType: StateFlow<CommentFragment.SortType>,
+    currentSortType: StateFlow<CommentSortType>,
     reportReasons: List<ReportReason>,
     isPreviewCommentPrefetched: Boolean,
     isAlreadyLogin: Boolean,
@@ -88,7 +87,7 @@ fun CommentScreen(
     onThumbUp: (VideoComments.VideoComment) -> Unit,
     onThumbDown: (VideoComments.VideoComment) -> Unit,
     onViewMoreReplies: (VideoComments.VideoComment) -> Unit,
-    onSortChange: (CommentFragment.SortType) -> Unit,
+    onSortChange: (CommentSortType) -> Unit,
     onComposeComment: (String) -> Unit,
 ) {
     val comments by commentsFlow.collectAsStateWithLifecycle()
@@ -178,7 +177,7 @@ fun CommentScreen(
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
                 )
-                CommentFragment.SortType.entries.forEach { type ->
+                CommentSortType.entries.forEach { type ->
                     FilledTonalButton(
                         onClick = {
                             onSortChange(type)
@@ -353,22 +352,22 @@ fun CommentScreen(
 
 private fun sortComments(
     list: List<VideoComments.VideoComment>,
-    type: CommentFragment.SortType,
+    type: CommentSortType,
 ): List<VideoComments.VideoComment> = when (type) {
-    CommentFragment.SortType.LATEST -> list.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = false)
-    CommentFragment.SortType.EARLIEST -> list.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = true)
-    CommentFragment.SortType.MOST_REPLY -> list.safeSortedBy({ it.replyCount ?: 0 }, descending = true)
-    CommentFragment.SortType.MOST_LIKES -> list.safeSortedBy({ it.realLikesCount ?: 0 }, descending = true)
-    CommentFragment.SortType.MOST_DISLIKES -> list.safeSortedBy({ it.realLikesCount ?: 0 }, descending = false)
+    CommentSortType.LATEST -> list.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = false)
+    CommentSortType.EARLIEST -> list.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = true)
+    CommentSortType.MOST_REPLY -> list.safeSortedBy({ it.replyCount ?: 0 }, descending = true)
+    CommentSortType.MOST_LIKES -> list.safeSortedBy({ it.realLikesCount ?: 0 }, descending = true)
+    CommentSortType.MOST_DISLIKES -> list.safeSortedBy({ it.realLikesCount ?: 0 }, descending = false)
 }
 
 @Composable
-private fun sortText(type: CommentFragment.SortType): String = when (type) {
-    CommentFragment.SortType.LATEST -> stringResource(R.string.sort_by_newest)
-    CommentFragment.SortType.EARLIEST -> stringResource(R.string.sort_by_oldest)
-    CommentFragment.SortType.MOST_REPLY -> stringResource(R.string.sort_by_replies)
-    CommentFragment.SortType.MOST_LIKES -> stringResource(R.string.sort_most_likes)
-    CommentFragment.SortType.MOST_DISLIKES -> stringResource(R.string.sort_most_dislikes)
+private fun sortText(type: CommentSortType): String = when (type) {
+    CommentSortType.LATEST -> stringResource(R.string.sort_by_newest)
+    CommentSortType.EARLIEST -> stringResource(R.string.sort_by_oldest)
+    CommentSortType.MOST_REPLY -> stringResource(R.string.sort_by_replies)
+    CommentSortType.MOST_LIKES -> stringResource(R.string.sort_most_likes)
+    CommentSortType.MOST_DISLIKES -> stringResource(R.string.sort_most_dislikes)
 }
 
 data class CommentMessage(val text: String)
@@ -399,7 +398,7 @@ private fun CommentScreenPreview() {
         commentsFlow = MutableStateFlow(fakeCommentList),
         commentStateFlow = MutableStateFlow(WebsiteState.Success(VideoComments(fakeCommentList.toMutableList()))),
         reportMessageFlow = flowOf(CommentMessage("")),
-        currentSortType = MutableStateFlow(CommentFragment.SortType.LATEST),
+        currentSortType = MutableStateFlow(CommentSortType.LATEST),
         reportReasons = listOf(
             ReportReason(
                 lang = ReportReason.Language(
@@ -430,7 +429,7 @@ private fun CommentScreenEmptyPreview() {
         commentsFlow = MutableStateFlow(emptyList()),
         commentStateFlow = MutableStateFlow(WebsiteState.Success(VideoComments(fakeCommentList.toMutableList()))),
         reportMessageFlow = flowOf(CommentMessage("")),
-        currentSortType = MutableStateFlow(CommentFragment.SortType.LATEST),
+        currentSortType = MutableStateFlow(CommentSortType.LATEST),
         reportReasons = emptyList(),
         isPreviewCommentPrefetched = false,
         isAlreadyLogin = true,
