@@ -80,6 +80,7 @@ import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
 import com.yenaly.han1meviewer.ui.fragment.settings.NetworkSettingsFragment
 import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.han1meviewer.ui.screen.main.MainDrawerHeader
+import com.yenaly.han1meviewer.ui.screen.settings.SettingsDestinationSpec
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
@@ -219,7 +220,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
                 R.id.nv_fav_video -> R.id.nv_fav_video
                 R.id.nv_playlist -> R.id.nv_playlist
                 R.id.nv_watch_later -> R.id.nv_watch_later
-                R.id.nav_settings -> R.id.nv_settings
                 R.id.nv_subscription -> R.id.nv_subscription
                 R.id.nv_download -> R.id.nv_download
                 else -> null
@@ -410,10 +410,9 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Tool
             R.id.nv_daily_check_in -> safeNavigateTo(R.id.action_nv_home_page_to_nv_daily_check_in)
             R.id.nv_download -> safeNavigateTo(R.id.action_nv_home_page_to_nv_download)
 
-            // 设置相关 - 这些在 nav_settings.xml 中
             R.id.nv_settings -> {
-                // 导航到设置图的起始目的地
-                navController.navigate(R.id.action_global_nav_settings)
+                SettingsRouter.with(currentFragment ?: return)
+                    .toSettingsActivity(destination = SettingsDestinationSpec.Home)
             }
         }
         binding.dlMain.closeDrawer(GravityCompat.START)
