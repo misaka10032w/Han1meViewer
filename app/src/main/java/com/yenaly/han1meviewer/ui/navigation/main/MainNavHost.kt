@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.screen.main
+package com.yenaly.han1meviewer.ui.navigation.main
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.scaleOut
@@ -12,7 +12,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Composable

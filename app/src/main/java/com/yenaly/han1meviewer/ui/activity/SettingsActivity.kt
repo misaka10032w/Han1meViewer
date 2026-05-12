@@ -14,8 +14,8 @@ import androidx.core.view.updatePadding
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.databinding.ActivitySettingsBinding
 import com.yenaly.han1meviewer.ui.fragment.ToolbarHost
-import com.yenaly.han1meviewer.ui.screen.settings.SettingsActivityContent
-import com.yenaly.han1meviewer.ui.screen.settings.SettingsDestinationSpec
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsActivityContent
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsDestinationSpec
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.SettingsViewModel
 import com.yenaly.yenaly_libs.base.YenalyActivity

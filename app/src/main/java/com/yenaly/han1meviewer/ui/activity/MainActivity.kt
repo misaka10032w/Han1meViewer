@@ -24,7 +24,6 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.appcompat.widget.Toolbar
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.compose.runtime.LaunchedEffect
@@ -41,7 +40,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -63,21 +61,21 @@ import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
 import com.yenaly.han1meviewer.ui.fragment.settings.NetworkSettingsFragment
 import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
-import com.yenaly.han1meviewer.ui.screen.main.DailyCheckInRoute
-import com.yenaly.han1meviewer.ui.screen.main.DownloadRoute
-import com.yenaly.han1meviewer.ui.screen.main.HomeRoute
-import com.yenaly.han1meviewer.ui.screen.main.MainDestinationSpec
+import com.yenaly.han1meviewer.ui.navigation.main.DailyCheckInRoute
+import com.yenaly.han1meviewer.ui.navigation.main.DownloadRoute
+import com.yenaly.han1meviewer.ui.navigation.main.HomeRoute
+import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
 import com.yenaly.han1meviewer.ui.screen.main.MainDrawerHeader
-import com.yenaly.han1meviewer.ui.screen.main.MainNavHost
-import com.yenaly.han1meviewer.ui.screen.main.MyFavVideoRoute
-import com.yenaly.han1meviewer.ui.screen.main.MyPlaylistRoute
-import com.yenaly.han1meviewer.ui.screen.main.MyWatchLaterRoute
-import com.yenaly.han1meviewer.ui.screen.main.SearchRoute
-import com.yenaly.han1meviewer.ui.screen.main.SubscriptionRoute
-import com.yenaly.han1meviewer.ui.screen.main.VideoRoute
-import com.yenaly.han1meviewer.ui.screen.main.videoBridgeTag
-import com.yenaly.han1meviewer.ui.screen.main.WatchHistoryRoute
-import com.yenaly.han1meviewer.ui.screen.settings.SettingsDestinationSpec
+import com.yenaly.han1meviewer.ui.navigation.main.MainNavHost
+import com.yenaly.han1meviewer.ui.navigation.main.MyFavVideoRoute
+import com.yenaly.han1meviewer.ui.navigation.main.MyPlaylistRoute
+import com.yenaly.han1meviewer.ui.navigation.main.MyWatchLaterRoute
+import com.yenaly.han1meviewer.ui.navigation.main.SearchRoute
+import com.yenaly.han1meviewer.ui.navigation.main.SubscriptionRoute
+import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
+import com.yenaly.han1meviewer.ui.bridge.videoBridgeTag
+import com.yenaly.han1meviewer.ui.navigation.main.WatchHistoryRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsDestinationSpec
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
@@ -91,6 +89,7 @@ import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.showSnackBar
 import com.yenaly.yenaly_libs.utils.textFromClipboard
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import kotlin.time.ExperimentalTime
 
 /**
@@ -275,7 +274,7 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Perm
             intent.removeExtra("startSearchFromMap")
             navController.navigate(
                 SearchRoute(
-                    advancedSearchJson = kotlinx.serialization.json.Json.encodeToString(map)
+                    advancedSearchJson = Json.encodeToString(map)
                 )
             )
         }

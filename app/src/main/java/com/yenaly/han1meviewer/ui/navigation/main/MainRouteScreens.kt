@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.screen.main
+package com.yenaly.han1meviewer.ui.navigation.main
 
 import android.app.Dialog
 import android.appwidget.AppWidgetManager
@@ -37,6 +37,7 @@ import coil3.request.crossfade
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.imageview.ShapeableImageView
 import com.yenaly.han1meviewer.PREVIEW_COMMENT_PREFIX
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.getHanimeSearchShareText
@@ -58,6 +59,7 @@ import com.yenaly.han1meviewer.ui.screen.home.WatchHistoryScreen
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadScreen
 import com.yenaly.han1meviewer.ui.screen.home.myplaylist.MyPlayListScreen
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewScreen
+import com.yenaly.han1meviewer.ui.bridge.videoBridgeTag
 import com.yenaly.han1meviewer.ui.screen.search.AdvancedSearchSheet
 import com.yenaly.han1meviewer.ui.screen.search.SearchScreen
 import com.yenaly.han1meviewer.ui.screen.video.CommentScreen
@@ -80,6 +82,7 @@ import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import com.yenaly.yenaly_libs.utils.copyTextToClipboard
 import com.yenaly.yenaly_libs.utils.showLongToast
 import com.yenaly.yenaly_libs.utils.showShortToast
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -183,12 +186,12 @@ fun MyFavVideoRouteScreen(
         onRefresh = {
             viewModel.fav.favVideoPage = 1
             viewModel.fav.clearMyListItems()
-            viewModel.fav.getMyFavVideoItems(com.yenaly.han1meviewer.Preferences.savedUserId, 1)
+            viewModel.fav.getMyFavVideoItems(Preferences.savedUserId, 1)
             viewModel.fav.favVideoPage = 2
         },
         onLoadMore = {
             val page = viewModel.fav.favVideoPage
-            viewModel.fav.getMyFavVideoItems(com.yenaly.han1meviewer.Preferences.savedUserId, page)
+            viewModel.fav.getMyFavVideoItems(Preferences.savedUserId, page)
             viewModel.fav.favVideoPage = page + 1
         },
     )
@@ -311,7 +314,7 @@ fun DownloadRouteScreen(
         downloadingFlow = viewModel.loadAllDownloadingHanime(),
         downloadedFlow = viewModel.downloaded,
         downloadedGroupsFlow = viewModel.downloadedGroups,
-        collapseDownloadedGroup = com.yenaly.han1meviewer.Preferences.collapseDownloadedGroup,
+        collapseDownloadedGroup = Preferences.collapseDownloadedGroup,
         onBack = onBack,
         onPauseAll = { items ->
             items.forEach { entity -> if (entity.isDownloading) HanimeDownloadManagerV2.stopTask(entity) }
@@ -323,7 +326,7 @@ fun DownloadRouteScreen(
         onResumeItem = HanimeDownloadManagerV2::resumeTask,
         onDeleteDownloadingItem = HanimeDownloadManagerV2::deleteTask,
         onImportDownloaded = {
-            if (!com.yenaly.han1meviewer.Preferences.safDownloadPath.isNullOrBlank() && !com.yenaly.han1meviewer.Preferences.isUsePrivateStorage) {
+            if (!Preferences.safDownloadPath.isNullOrBlank() && !Preferences.isUsePrivateStorage) {
                 runBlocking {
                     scanAndImportHanimeDownloads(context, dao)
                 }
@@ -528,11 +531,11 @@ fun PreviewCommentRouteScreen(
     CommentScreen(
         commentsFlow = comments,
         commentStateFlow = commentState,
-        reportMessageFlow = kotlinx.coroutines.flow.emptyFlow(),
+        reportMessageFlow = emptyFlow(),
         currentSortType = viewModel.currentSortType,
         reportReasons = viewModel.reportReason,
         isPreviewCommentPrefetched = true,
-        isAlreadyLogin = com.yenaly.han1meviewer.Preferences.isAlreadyLogin,
+        isAlreadyLogin = Preferences.isAlreadyLogin,
         onRefresh = { viewModel.getComment(PREVIEW_COMMENT_PREFIX, route.dateCode) },
         onReply = { _, _: String -> },
         onReport = { _, _ -> },
@@ -550,7 +553,12 @@ fun VideoRouteScreen(
     route: VideoRoute,
 ) {
     val containerId = remember(route.videoCode, route.localUri) { View.generateViewId() }
-    val tag = remember(route.videoCode, route.localUri) { videoBridgeTag(route.videoCode, route.localUri) }
+    val tag = remember(route.videoCode, route.localUri) {
+        videoBridgeTag(
+            route.videoCode,
+            route.localUri
+        )
+    }
 
     DisposableEffect(activity, tag) {
         onDispose {

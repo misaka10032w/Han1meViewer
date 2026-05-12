@@ -7,7 +7,7 @@ import android.os.Bundle
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.ui.screen.settings.SettingsDestinationSpec
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsDestinationSpec
 import com.yenaly.yenaly_libs.utils.activity
 
 class SettingsRouter private constructor(

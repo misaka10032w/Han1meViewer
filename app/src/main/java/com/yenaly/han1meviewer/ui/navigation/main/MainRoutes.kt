@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.screen.main
+package com.yenaly.han1meviewer.ui.navigation.main
 
 import androidx.annotation.IdRes
 import androidx.navigation.NavDestination

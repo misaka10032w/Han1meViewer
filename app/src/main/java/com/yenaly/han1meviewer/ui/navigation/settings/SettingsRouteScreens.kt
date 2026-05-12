@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.yenaly.han1meviewer.ui.screen.settings
+package com.yenaly.han1meviewer.ui.navigation.settings
 
 import android.Manifest
 import android.app.Activity
@@ -13,6 +13,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.Process
 import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
@@ -71,6 +72,22 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.activity.SettingsActivity
+import com.yenaly.han1meviewer.ui.screen.settings.DelayResultUi
+import com.yenaly.han1meviewer.ui.screen.settings.DownloadSettingsScreen
+import com.yenaly.han1meviewer.ui.screen.settings.DownloadSettingsUiState
+import com.yenaly.han1meviewer.ui.screen.settings.HKeyframeSettingsScreen
+import com.yenaly.han1meviewer.ui.screen.settings.HKeyframeSettingsUiState
+import com.yenaly.han1meviewer.ui.screen.settings.HKeyframesScreen
+import com.yenaly.han1meviewer.ui.screen.settings.HomeSettingsScreen
+import com.yenaly.han1meviewer.ui.screen.settings.HomeSettingsUiState
+import com.yenaly.han1meviewer.ui.screen.settings.MpvChoiceDialog
+import com.yenaly.han1meviewer.ui.screen.settings.MpvPlayerSettingsScreen
+import com.yenaly.han1meviewer.ui.screen.settings.MpvPlayerSettingsUiState
+import com.yenaly.han1meviewer.ui.screen.settings.NetworkSettingsScreen
+import com.yenaly.han1meviewer.ui.screen.settings.NetworkSettingsUiState
+import com.yenaly.han1meviewer.ui.screen.settings.PlayerSettingsScreen
+import com.yenaly.han1meviewer.ui.screen.settings.PlayerSettingsUiState
+import com.yenaly.han1meviewer.ui.screen.settings.SharedHKeyframesScreen
 import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
 import com.yenaly.han1meviewer.ui.view.video.HMediaKernel
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
@@ -234,8 +251,17 @@ fun HomeSettingsRouteScreen(
                 context.showAlertDialog {
                     setCancelable(false)
                     setTitle(R.string.attention)
-                    setMessage(context.getString(R.string.restart_or_not_working, context.getString(R.string.video_language)))
-                    setPositiveButton(R.string.confirm) { _, _ -> ActivityManager.restart(killProcess = true) }
+                    setMessage(
+                        context.getString(
+                            R.string.restart_or_not_working,
+                            context.getString(R.string.video_language)
+                        )
+                    )
+                    setPositiveButton(R.string.confirm) { _, _ ->
+                        ActivityManager.restart(
+                            killProcess = true
+                        )
+                    }
                     setNegativeButton(R.string.cancel, null)
                 }
             }
@@ -254,7 +280,11 @@ fun HomeSettingsRouteScreen(
         },
         onAllowPipModeChange = { enabled ->
             if (enabled && !isPipPermissionGranted(context)) {
-                Toast.makeText(context, context.getString(R.string.request_pip_alert), Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.request_pip_alert),
+                    Toast.LENGTH_SHORT
+                ).show()
                 openPipPermissionSettings(context)
                 saveBoolean(HOME_ALLOW_PIP_MODE, false)
                 refreshKey++
@@ -304,8 +334,17 @@ fun HomeSettingsRouteScreen(
                 context.showAlertDialog {
                     setCancelable(false)
                     setTitle(R.string.attention)
-                    setMessage(context.getString(R.string.restart_or_not_working, context.getString(R.string.dynamic_color_title)))
-                    setPositiveButton(R.string.confirm) { _, _ -> ActivityManager.restart(killProcess = true) }
+                    setMessage(
+                        context.getString(
+                            R.string.restart_or_not_working,
+                            context.getString(R.string.dynamic_color_title)
+                        )
+                    )
+                    setPositiveButton(R.string.confirm) { _, _ ->
+                        ActivityManager.restart(
+                            killProcess = true
+                        )
+                    }
                     setNegativeButton(R.string.cancel, null)
                 }
             }
@@ -337,12 +376,20 @@ fun HomeSettingsRouteScreen(
         onUseLockScreenChange = { value ->
             if (value) {
                 if (!isDeviceSecureCompat(context)) {
-                    Toast.makeText(context, context.getString(R.string.not_set_sys_lock), Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.not_set_sys_lock),
+                        Toast.LENGTH_LONG
+                    ).show()
                     refreshKey++
                     return@HomeSettingsScreen
                 }
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
-                    Toast.makeText(context, context.getString(R.string.not_compact_lock_screen), Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.not_compact_lock_screen),
+                        Toast.LENGTH_LONG
+                    ).show()
                     refreshKey++
                     return@HomeSettingsScreen
                 }
@@ -389,7 +436,12 @@ fun HomeSettingsRouteScreen(
                 .setTitle(context.getString(R.string.fake_app_icon))
                 .setAdapter(adapter) { _, which ->
                     val selected = launcherItems[which]
-                    Preferences.preferenceSp.edit { putString(HOME_FAKE_LAUNCHER_ICON, selected.alias) }
+                    Preferences.preferenceSp.edit {
+                        putString(
+                            HOME_FAKE_LAUNCHER_ICON,
+                            selected.alias
+                        )
+                    }
                     (context.applicationContext as? HanimeApplication)?.switchLauncher(selected.alias)
                     showLongToast(context.getString(R.string.fake_icon_hint))
                     refreshKey++
@@ -422,7 +474,9 @@ fun HomeSettingsRouteScreen(
                         withContext(Dispatchers.Main) {
                             cacheKey++
                             refreshKey++
-                            if (success) showShortToast(R.string.clear_success) else showShortToast(R.string.clear_failed)
+                            if (success) showShortToast(R.string.clear_success) else showShortToast(
+                                R.string.clear_failed
+                            )
                         }
                     }
                 }
@@ -450,7 +504,12 @@ fun PlayerSettingsRouteScreen(
             context.getString(R.string.d_speed_times, 1f) to "1",
             context.getString(R.string.d_speed_times, 1.5f) to "1.5",
             context.getString(R.string.d_speed_times, 2f) to "2",
-            "${context.getString(R.string.d_speed_times, 2.5f)} (${context.getString(R.string.default_)})" to "2.5",
+            "${
+                context.getString(
+                    R.string.d_speed_times,
+                    2.5f
+                )
+            } (${context.getString(R.string.default_)})" to "2.5",
             context.getString(R.string.d_speed_times, 2.8f) to "2.8",
             context.getString(R.string.d_speed_times, 3f) to "3",
             context.getString(R.string.d_speed_times, 3.2f) to "3.2",
@@ -593,7 +652,10 @@ fun NetworkSettingsRouteScreen() {
         onApplyProxy = { type, ip, port ->
             val valid = when (type) {
                 HProxySelector.TYPE_DIRECT, HProxySelector.TYPE_SYSTEM -> true
-                HProxySelector.TYPE_HTTP, HProxySelector.TYPE_SOCKS -> HProxySelector.validateIp(ip) && HProxySelector.validatePort(port)
+                HProxySelector.TYPE_HTTP, HProxySelector.TYPE_SOCKS -> HProxySelector.validateIp(ip) && HProxySelector.validatePort(
+                    port
+                )
+
                 else -> false
             }
             if (!valid) {
@@ -964,8 +1026,14 @@ private fun buildHomeSettingsUiState(
         fakeLauncherIconName = currentItem.name,
         updateSummary = updateSummary,
         cacheSummary = cacheSummary,
-        versionSummary = context.getString(R.string.current_version, "v${BuildConfig.VERSION_NAME}"),
-        updatePopupIntervalSummary = toIntervalDaysPrettyString(context, Preferences.updatePopupIntervalDays),
+        versionSummary = context.getString(
+            R.string.current_version,
+            "v${BuildConfig.VERSION_NAME}"
+        ),
+        updatePopupIntervalSummary = toIntervalDaysPrettyString(
+            context,
+            Preferences.updatePopupIntervalDays
+        ),
         updatePopupIntervalDays = Preferences.updatePopupIntervalDays,
         dynamicColorEnabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
     )
@@ -999,12 +1067,23 @@ private fun buildPlayerSettingsUiState(context: Context): PlayerSettingsUiState 
 private fun buildNetworkSettingsUiState(context: Context): NetworkSettingsUiState {
     return NetworkSettingsUiState(
         domainName = Preferences.baseUrl,
-        domainDisplay = buildDomainOptions(context).firstOrNull { it.second == Preferences.baseUrl }?.first ?: Preferences.baseUrl,
+        domainDisplay = buildDomainOptions(context).firstOrNull { it.second == Preferences.baseUrl }?.first
+            ?: Preferences.baseUrl,
         proxySummary = when (Preferences.proxyType) {
             HProxySelector.TYPE_DIRECT -> context.getString(R.string.direct)
             HProxySelector.TYPE_SYSTEM -> context.getString(R.string.system_proxy)
-            HProxySelector.TYPE_HTTP -> context.getString(R.string.http_proxy, Preferences.proxyIp, Preferences.proxyPort)
-            HProxySelector.TYPE_SOCKS -> context.getString(R.string.socks_proxy, Preferences.proxyIp, Preferences.proxyPort)
+            HProxySelector.TYPE_HTTP -> context.getString(
+                R.string.http_proxy,
+                Preferences.proxyIp,
+                Preferences.proxyPort
+            )
+
+            HProxySelector.TYPE_SOCKS -> context.getString(
+                R.string.socks_proxy,
+                Preferences.proxyIp,
+                Preferences.proxyPort
+            )
+
             else -> context.getString(R.string.direct)
         },
         useBuiltInHosts = Preferences.useBuiltInHosts,
@@ -1022,7 +1101,10 @@ private fun buildDownloadSettingsUiState(context: Context): DownloadSettingsUiSt
             uri ?: return DownloadSettingsUiState(
                 downloadPathSummary = "null",
                 downloadCountLimit = Preferences.downloadCountLimit,
-                downloadCountLimitSummary = toDownloadCountLimitPrettyString(context, Preferences.downloadCountLimit),
+                downloadCountLimitSummary = toDownloadCountLimitPrettyString(
+                    context,
+                    Preferences.downloadCountLimit
+                ),
                 downloadSpeedLimitIndex = Preferences.preferenceSp.getInt(
                     DOWNLOAD_SPEED_LIMIT,
                     SpeedLimitInterceptor.NO_LIMIT_INDEX,
@@ -1043,7 +1125,10 @@ private fun buildDownloadSettingsUiState(context: Context): DownloadSettingsUiSt
     return DownloadSettingsUiState(
         downloadPathSummary = pathSummary,
         downloadCountLimit = Preferences.downloadCountLimit,
-        downloadCountLimitSummary = toDownloadCountLimitPrettyString(context, Preferences.downloadCountLimit),
+        downloadCountLimitSummary = toDownloadCountLimitPrettyString(
+            context,
+            Preferences.downloadCountLimit
+        ),
         downloadSpeedLimitIndex = speedIndex,
         downloadSpeedLimitSummary = SpeedLimitInterceptor.SPEED_BYTES[speedIndex]
             .toDownloadSpeedPrettyString(context),
@@ -1087,7 +1172,10 @@ private fun buildHKeyframeSettingsUiState(context: Context): HKeyframeSettingsUi
         sharedHKeyframesUseFirst = Preferences.sharedHKeyframesUseFirst,
         showCommentWhenCountdown = Preferences.showCommentWhenCountdown,
         whenCountdownRemind = Preferences.whenCountdownRemind / 1000,
-        whenCountdownRemindSummary = toPrettyCountdownRemindString(context, Preferences.whenCountdownRemind / 1000),
+        whenCountdownRemindSummary = toPrettyCountdownRemindString(
+            context,
+            Preferences.whenCountdownRemind / 1000
+        ),
     )
 }
 
@@ -1236,7 +1324,7 @@ private fun isPipPermissionGranted(context: Context): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         val mode = appOps.unsafeCheckOpNoThrow(
             AppOpsManager.OPSTR_PICTURE_IN_PICTURE,
-            android.os.Process.myUid(),
+            Process.myUid(),
             context.packageName,
         )
         mode == AppOpsManager.MODE_ALLOWED
@@ -1246,7 +1334,10 @@ private fun isPipPermissionGranted(context: Context): Boolean {
 }
 
 private fun openPipPermissionSettings(context: Context) {
-    val intent = Intent("android.settings.PICTURE_IN_PICTURE_SETTINGS", "package:${context.packageName}".toUri())
+    val intent = Intent(
+        "android.settings.PICTURE_IN_PICTURE_SETTINGS",
+        "package:${context.packageName}".toUri()
+    )
     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
     context.startActivity(intent)
 }

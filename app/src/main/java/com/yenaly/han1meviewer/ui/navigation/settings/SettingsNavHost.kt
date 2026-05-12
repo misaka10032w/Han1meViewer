@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.screen.settings
+package com.yenaly.han1meviewer.ui.navigation.settings
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
