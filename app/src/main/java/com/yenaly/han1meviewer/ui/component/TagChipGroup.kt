@@ -3,8 +3,6 @@ package com.yenaly.han1meviewer.ui.component
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
@@ -24,10 +22,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -55,7 +53,6 @@ fun TagChipGroup(
 
     val tagColors = rememberTagChipColors(tags)
     var expanded by rememberSaveable(tags, collapsible, collapsedMaxLines) { mutableStateOf(false) }
-    var overflowDetected by remember(tags, collapsible, collapsedMaxLines) { mutableStateOf(false) }
     var chipContentHeightTarget by remember(
         tags,
         collapsible,
@@ -98,83 +95,126 @@ fun TagChipGroup(
             val y: Int,
         )
 
-        val positions = mutableListOf<ChipPosition>()
-        val lineHeights = mutableListOf<Int>()
-        val lineTops = mutableListOf<Int>()
-        var line = 0
-        var x = 0
-        var y = 0
+        data class FlowLayoutResult(
+            val positions: List<ChipPosition>,
+            val lineHeights: List<Int>,
+            val lineTops: List<Int>,
+            val contentWidth: Int,
+        ) {
+            val lineCount: Int
+                get() = lineHeights.size
 
-        if (chipPlaceables.isNotEmpty()) {
-            lineHeights += 0
-            lineTops += 0
+            val height: Int
+                get() = if (lineCount > 0) lineTops.last() + lineHeights.last() else 0
         }
 
-        chipPlaceables.forEachIndexed { index, placeable ->
-            val shouldWrap = x > 0 && maxWidth != Int.MAX_VALUE && x + placeable.width > maxWidth
-            if (shouldWrap) {
-                y += lineHeights[line] + spacingY
-                line += 1
-                x = 0
-                lineHeights += 0
-                lineTops += y
+        fun calculateFlowLayout(placeables: List<Placeable>): FlowLayoutResult {
+            if (placeables.isEmpty()) {
+                return FlowLayoutResult(
+                    positions = emptyList(),
+                    lineHeights = emptyList(),
+                    lineTops = emptyList(),
+                    contentWidth = 0,
+                )
             }
 
-            positions += ChipPosition(index = index, line = line, x = x, y = y)
-            lineHeights[line] = maxOf(lineHeights[line], placeable.height)
-            x += placeable.width + spacingX
+            val positions = mutableListOf<ChipPosition>()
+            val lineHeights = mutableListOf(0)
+            val lineTops = mutableListOf(0)
+            var line = 0
+            var x = 0
+            var y = 0
+
+            placeables.forEachIndexed { index, placeable ->
+                val shouldWrap =
+                    x > 0 && maxWidth != Int.MAX_VALUE && x + placeable.width > maxWidth
+                if (shouldWrap) {
+                    y += lineHeights[line] + spacingY
+                    line += 1
+                    x = 0
+                    lineHeights += 0
+                    lineTops += y
+                }
+
+                positions += ChipPosition(index = index, line = line, x = x, y = y)
+                lineHeights[line] = maxOf(lineHeights[line], placeable.height)
+                x += placeable.width + spacingX
+            }
+
+            val contentWidth = positions.maxOfOrNull { position ->
+                position.x + placeables[position.index].width
+            } ?: 0
+
+            return FlowLayoutResult(
+                positions = positions,
+                lineHeights = lineHeights,
+                lineTops = lineTops,
+                contentWidth = contentWidth,
+            )
         }
 
-        val totalLines = if (chipPlaceables.isEmpty()) 0 else line + 1
-        val hasOverflowNow = collapsible && totalLines > collapsedMaxLines
-        if (hasOverflowNow && !overflowDetected) {
-            overflowDetected = true
-        }
-        val showToggle = collapsible && (expanded || overflowDetected)
-        val visibleLines = if (showToggle && !expanded) collapsedMaxLines else totalLines
-        val visibleCount = positions.indexOfFirst { it.line >= visibleLines }
-            .let { if (it == -1) positions.size else it }
-        val chipContentHeight = if (visibleLines > 0) {
-            lineTops[visibleLines - 1] + lineHeights[visibleLines - 1]
+        val chipLayout = calculateFlowLayout(chipPlaceables)
+        val hasOverflow = collapsible && chipLayout.lineCount > collapsedMaxLines
+        val togglePlaceable = if (hasOverflow) {
+            subcompose(TagChipSlot.Toggle) {
+                TextButton(onClick = { expanded = !expanded }) {
+                    Icon(
+                        imageVector = Icons.Filled.KeyboardArrowDown,
+                        contentDescription = null,
+                        modifier = Modifier.graphicsLayer {
+                            rotationZ = arrowRotation
+                        },
+                    )
+//                    Spacer(modifier = Modifier.width(4.dp))
+//                    Text(text = if (expanded) collapseText else expandText)
+                }
+            }.single().measure(contentConstraints)
         } else {
-            0
+            null
         }
+
+        val contentPlaceables: List<Placeable>
+        val contentLayout: FlowLayoutResult
+
+        if (togglePlaceable != null) {
+            if (expanded) {
+                contentPlaceables = chipPlaceables + togglePlaceable
+                contentLayout = calculateFlowLayout(contentPlaceables)
+            } else {
+                var visibleChipCount = chipPlaceables.size
+                var bestPlaceables: List<Placeable>? = null
+                var bestLayout: FlowLayoutResult? = null
+
+                while (visibleChipCount >= 0) {
+                    val candidatePlaceables = chipPlaceables.take(visibleChipCount) + togglePlaceable
+                    val candidateLayout = calculateFlowLayout(candidatePlaceables)
+                    if (candidateLayout.lineCount <= collapsedMaxLines) {
+                        bestPlaceables = candidatePlaceables
+                        bestLayout = candidateLayout
+                        break
+                    }
+                    visibleChipCount -= 1
+                }
+
+                contentPlaceables = bestPlaceables ?: listOf(togglePlaceable)
+                contentLayout = bestLayout ?: calculateFlowLayout(contentPlaceables)
+            }
+        } else {
+            contentPlaceables = chipPlaceables
+            contentLayout = chipLayout
+        }
+
+        val chipContentHeight = contentLayout.height
         if (chipContentHeightTarget != chipContentHeight) {
             chipContentHeightTarget = chipContentHeight
         }
 
-        val headerPlaceables = if (!headerTitle.isNullOrBlank() || collapsible) {
+        val headerPlaceables = if (!headerTitle.isNullOrBlank()) {
             subcompose(TagChipSlot.Header) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    if (!headerTitle.isNullOrBlank()) {
-                        Text(
-                            text = headerTitle,
-                            style = MaterialTheme.typography.titleLarge,
-                        )
-                    } else {
-                        Spacer(modifier = Modifier.width(0.dp))
-                    }
-
-                    if (showToggle) {
-                        TextButton(onClick = { expanded = !expanded }) {
-                            Icon(
-                                imageVector = Icons.Filled.KeyboardArrowDown,
-                                contentDescription = null,
-                                modifier = Modifier.graphicsLayer {
-                                    rotationZ = arrowRotation
-                                },
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = if (expanded) collapseText else expandText
-                            )
-                        }
-                    }
-                }
+                Text(
+                    text = headerTitle,
+                    style = MaterialTheme.typography.titleLarge,
+                )
             }.map { measurable -> measurable.measure(contentConstraints) }
         } else {
             emptyList()
@@ -183,9 +223,7 @@ fun TagChipGroup(
         val headerHeight = headerPlaceables.maxOfOrNull { it.height } ?: 0
         val headerSpacing =
             if (headerPlaceables.isNotEmpty() && animatedChipContentHeight > 0) spacingY else 0
-        val contentWidth = positions.take(visibleCount)
-            .maxOfOrNull { position -> position.x + chipPlaceables[position.index].width }
-            ?: 0
+        val contentWidth = contentLayout.contentWidth
         val headerWidth = headerPlaceables.maxOfOrNull { it.width } ?: 0
         val layoutWidth = (constraints.maxWidth.takeUnless { it == Constraints.Infinity }
             ?: maxOf(contentWidth, headerWidth))
@@ -198,8 +236,8 @@ fun TagChipGroup(
                 placeable.placeRelative(0, 0)
             }
             val yOffset = headerHeight + headerSpacing
-            positions.take(visibleCount).forEach { position ->
-                chipPlaceables[position.index].placeRelative(position.x, position.y + yOffset)
+            contentLayout.positions.forEach { position ->
+                contentPlaceables[position.index].placeRelative(position.x, position.y + yOffset)
             }
         }
     }
@@ -208,6 +246,7 @@ fun TagChipGroup(
 private enum class TagChipSlot {
     Header,
     Chips,
+    Toggle,
 }
 
 @Composable
