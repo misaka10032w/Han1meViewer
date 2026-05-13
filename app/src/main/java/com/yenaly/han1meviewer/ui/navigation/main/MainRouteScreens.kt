@@ -15,6 +15,14 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -23,7 +31,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.FragmentContainerView
@@ -480,7 +490,6 @@ fun PreviewRouteScreen(
             .tag(PreviewCommentPrefetcher.Scope.PREVIEW_ACTIVITY)
         onDispose {
             PreviewCommentPrefetcher.bye(PreviewCommentPrefetcher.Scope.PREVIEW_ACTIVITY)
-            commentViewModel.clearCommentData()
         }
     }
 
@@ -500,6 +509,7 @@ fun PreviewRouteScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PreviewCommentRouteScreen(
     activity: MainActivity,
@@ -509,12 +519,16 @@ fun PreviewCommentRouteScreen(
     val viewModel: CommentViewModel = viewModel(viewModelStoreOwner = activity)
     val comments = viewModel.videoCommentFlow
     val commentState = viewModel.videoCommentStateFlow
+    val prefetchedComments = PreviewCommentPrefetcher.here(viewModel)
+        .commentFlow
+        .collectAsStateWithLifecycle()
+        .value
+    val hasPrefetchedComments = prefetchedComments.isNotEmpty()
 
-    LaunchedEffect(route.dateCode) {
+    LaunchedEffect(route.dateCode, hasPrefetchedComments, prefetchedComments) {
         viewModel.code = route.dateCode
-        val prefetched = PreviewCommentPrefetcher.here(viewModel).commentFlow.value
-        if (prefetched.isNotEmpty()) {
-            viewModel.updateComments(prefetched)
+        if (hasPrefetchedComments) {
+            viewModel.updateComments(prefetchedComments)
         } else {
             viewModel.getComment(PREVIEW_COMMENT_PREFIX, route.dateCode)
         }
@@ -528,23 +542,42 @@ fun PreviewCommentRouteScreen(
         }
     }
 
-    CommentScreen(
-        commentsFlow = comments,
-        commentStateFlow = commentState,
-        reportMessageFlow = emptyFlow(),
-        currentSortType = viewModel.currentSortType,
-        reportReasons = viewModel.reportReason,
-        isPreviewCommentPrefetched = true,
-        isAlreadyLogin = Preferences.isAlreadyLogin,
-        onRefresh = { viewModel.getComment(PREVIEW_COMMENT_PREFIX, route.dateCode) },
-        onReply = { _, _: String -> },
-        onReport = { _, _ -> },
-        onThumbUp = { _ -> },
-        onThumbDown = { _ -> },
-        onViewMoreReplies = { _ -> },
-        onSortChange = viewModel::setSortType,
-        onComposeComment = { _: String -> },
-    )
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.latest_hanime_comment, route.date)) },
+                navigationIcon = {
+                    FilledIconButton(onClick = onBack) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_baseline_arrow_back_24),
+                            contentDescription = stringResource(R.string.back),
+                        )
+                    }
+                },
+            )
+        }
+    ) { paddingValues ->
+        CommentScreen(
+            commentsFlow = comments,
+            commentStateFlow = commentState,
+            reportMessageFlow = emptyFlow(),
+            currentSortType = viewModel.currentSortType,
+            reportReasons = viewModel.reportReason,
+            isPreviewCommentPrefetched = hasPrefetchedComments,
+            isAlreadyLogin = Preferences.isAlreadyLogin,
+            onRefresh = { viewModel.getComment(PREVIEW_COMMENT_PREFIX, route.dateCode) },
+            onReply = { _, _: String -> },
+            onReport = { _, _ -> },
+            onThumbUp = { _ -> },
+            onThumbDown = { _ -> },
+            onViewMoreReplies = { _ -> },
+            onSortChange = viewModel::setSortType,
+            onComposeComment = { _: String -> },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+        )
+    }
 }
 
 @Composable

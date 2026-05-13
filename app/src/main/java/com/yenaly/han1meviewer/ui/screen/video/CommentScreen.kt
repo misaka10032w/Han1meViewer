@@ -89,6 +89,7 @@ fun CommentScreen(
     onViewMoreReplies: (VideoComments.VideoComment) -> Unit,
     onSortChange: (CommentSortType) -> Unit,
     onComposeComment: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val comments by commentsFlow.collectAsStateWithLifecycle()
     val state by commentStateFlow.collectAsStateWithLifecycle()
@@ -216,7 +217,7 @@ fun CommentScreen(
     }
 
     Scaffold(
-        modifier = Modifier.widthIn(max = maxScreenWidth),
+        modifier = modifier.widthIn(max = maxScreenWidth),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             if (isAlreadyLogin) {
