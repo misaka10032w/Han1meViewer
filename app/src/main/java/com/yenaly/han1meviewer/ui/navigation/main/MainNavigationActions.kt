@@ -4,7 +4,6 @@ import android.content.Intent
 import androidx.navigation.NavHostController
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsDestinationSpec
-import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.serialization.json.Json
 
 private val loginRequiredDrawerItems = setOf(

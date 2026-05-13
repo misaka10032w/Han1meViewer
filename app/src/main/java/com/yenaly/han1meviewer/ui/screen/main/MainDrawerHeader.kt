@@ -73,7 +73,9 @@ fun MainDrawerHeader(
                     .clip(CircleShape)
                     .clickable(onClick = onAvatarClick),
                 contentScale = ContentScale.Crop,
-                placeholder = painterResource(id = R.drawable.bg_default_header)
+                placeholder = painterResource(id = R.drawable.bg_default_header),
+                fallback = painterResource(id = R.drawable.bg_default_header),
+                error = painterResource(id = R.drawable.bg_default_header),
             )
             Column(
                 modifier = Modifier

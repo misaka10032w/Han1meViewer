@@ -99,7 +99,7 @@ fun HomeRouteScreen(
     onNavigateToVideo: (String) -> Unit,
 ) {
     val context = LocalContext.current
-    val viewModel: MainViewModel = viewModel()
+    val viewModel = activity.viewModel
     val checkInViewModel: CheckInCalendarViewModel = viewModel()
     val confirmToExit = stringResource(R.string.confirm_to_exit)
     val finishedMasturbating = stringResource(R.string.finished_masturbating)

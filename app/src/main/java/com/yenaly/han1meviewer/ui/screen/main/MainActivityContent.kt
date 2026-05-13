@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -50,6 +51,7 @@ fun MainActivityContent(
     pendingNavigationRequests: Flow<Intent>,
     showAuthGuard: Boolean,
     onOpenSettings: (SettingsDestinationSpec) -> Unit,
+    onLogoutClick: () -> Unit,
     onRequireLogin: () -> Unit,
     onSwitchSiteClick: () -> Unit,
     onNavigateControllerReady: (NavHostController) -> Unit,
@@ -61,18 +63,24 @@ fun MainActivityContent(
         val scope = rememberCoroutineScope()
         var currentMainDestination by remember { mutableStateOf(MainDestinationSpec.Home) }
         val backStackEntry by composeNavController.currentBackStackEntryAsState()
-        val currentVideoRoute = if (currentMainDestination == MainDestinationSpec.Video) {
-            backStackEntry?.toRoute<VideoRoute>()
-        } else {
-            null
-        }
+        val currentVideoRoute = backStackEntry?.takeIf {
+            it.destination.hasRoute(VideoRoute::class)
+        }?.toRoute<VideoRoute>()
 
         val homeState by viewModel.homePageFlow.collectAsStateWithLifecycle()
         val versionState by AppViewModel.versionFlow.collectAsStateWithLifecycle()
         val isLoggedIn by Preferences.loginStateFlow.collectAsStateWithLifecycle()
-        val headerAvatarUrl = (homeState as? WebsiteState.Success)?.info?.avatarUrl
-        val headerUsername = (homeState as? WebsiteState.Success)?.info?.username
-        val headerIsLoading = homeState !is WebsiteState.Success && !isLoggedIn
+        val headerAvatarUrl = if (isLoggedIn) {
+            (homeState as? WebsiteState.Success)?.info?.avatarUrl
+        } else {
+            null
+        }
+        val headerUsername = if (isLoggedIn) {
+            (homeState as? WebsiteState.Success)?.info?.username
+        } else {
+            null
+        }
+        val headerIsLoading = isLoggedIn && homeState is WebsiteState.Loading
         val selectedDrawerItemId = currentMainDestination.menuItemId
 
         LaunchedEffect(composeNavController) {
@@ -120,7 +128,7 @@ fun MainActivityContent(
             currentSite = Preferences.baseUrl,
             onAvatarClick = {
                 if (isLoggedIn) {
-                    onOpenSettings(SettingsDestinationSpec.Home)
+                    onLogoutClick()
                 } else {
                     onRequireLogin()
                 }

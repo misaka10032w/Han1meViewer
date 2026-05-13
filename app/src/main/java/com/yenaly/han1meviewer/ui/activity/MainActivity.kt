@@ -37,6 +37,7 @@ import com.yenaly.han1meviewer.HanimeConstants.ANIME_URL
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.bridge.videoBridgeTag
 import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
 import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
@@ -108,6 +109,7 @@ class MainActivity : FrameActivity(), PermissionRequester {
                 onOpenSettings = { destination ->
                     SettingsRouter.with(this).toSettingsActivity(destination = destination)
                 },
+                onLogoutClick = { showLogoutConfirmDialog() },
                 onRequireLogin = { gotoLoginActivity() },
                 onSwitchSiteClick = { showSiteSwitchDialog() },
                 onNavigateControllerReady = { controller -> navController = controller },
@@ -300,6 +302,19 @@ class MainActivity : FrameActivity(), PermissionRequester {
     private fun gotoLoginActivity() {
         val intent = Intent(this, LoginActivity::class.java)
         loginDataLauncher.launch(intent)
+    }
+
+    private fun showLogoutConfirmDialog() {
+        showAlertDialog {
+            setTitle(R.string.sure_to_logout)
+            setPositiveButton(R.string.sure) { _, _ -> logoutWithRefresh() }
+            setNegativeButton(R.string.no, null)
+        }
+    }
+
+    private fun logoutWithRefresh() {
+        logout()
+        viewModel.getHomePage()
     }
 
     fun openMainDrawer() {
