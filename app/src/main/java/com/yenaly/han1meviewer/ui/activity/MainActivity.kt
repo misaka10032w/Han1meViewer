@@ -9,42 +9,38 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.graphics.RenderEffect
-import android.graphics.Shader
+import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.DrawerValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.GravityCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.drawerlayout.widget.DrawerLayout.DrawerListener
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import androidx.compose.material3.rememberDrawerState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.preference.PreferenceManager
@@ -52,9 +48,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.yenaly.han1meviewer.HanimeConstants.ANIME_URL
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.Preferences
-import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.databinding.ActivityMainBinding
 import com.yenaly.han1meviewer.logic.exception.CloudFlareBlockedException
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.logout
@@ -65,16 +59,11 @@ import com.yenaly.han1meviewer.ui.navigation.main.DailyCheckInRoute
 import com.yenaly.han1meviewer.ui.navigation.main.DownloadRoute
 import com.yenaly.han1meviewer.ui.navigation.main.HomeRoute
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.screen.main.MainDrawerHeader
-import com.yenaly.han1meviewer.ui.navigation.main.MainNavHost
-import com.yenaly.han1meviewer.ui.navigation.main.MyFavVideoRoute
-import com.yenaly.han1meviewer.ui.navigation.main.MyPlaylistRoute
-import com.yenaly.han1meviewer.ui.navigation.main.MyWatchLaterRoute
-import com.yenaly.han1meviewer.ui.navigation.main.SearchRoute
-import com.yenaly.han1meviewer.ui.navigation.main.SubscriptionRoute
+import com.yenaly.han1meviewer.ui.navigation.main.handleMainIntent
+import com.yenaly.han1meviewer.ui.navigation.main.navigateDrawerDestination
+import com.yenaly.han1meviewer.ui.screen.main.MainActivityContent
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.bridge.videoBridgeTag
-import com.yenaly.han1meviewer.ui.navigation.main.WatchHistoryRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsDestinationSpec
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
@@ -83,26 +72,30 @@ import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.han1meviewer.util.showUpdateDialog
 import com.yenaly.han1meviewer.videoUrlRegex
 import com.yenaly.yenaly_libs.ActivityManager
-import com.yenaly.yenaly_libs.base.YenalyActivity
-import com.yenaly.yenaly_libs.utils.dp
+import com.yenaly.yenaly_libs.base.frame.FrameActivity
 import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.showSnackBar
 import com.yenaly.yenaly_libs.utils.textFromClipboard
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.serialization.json.Json
 import kotlin.time.ExperimentalTime
+import java.util.Locale
 
 /**
  * @project Hanime1
  * @author Yenaly Liew
  * @time 2022/06/08 008 17:35
  */
-class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, PermissionRequester {
+class MainActivity : FrameActivity(), PermissionRequester {
 
     val viewModel by viewModels<MainViewModel>()
 
     lateinit var navController: NavHostController
     private var currentMainDestination by mutableStateOf(MainDestinationSpec.Home)
+    private var showAuthGuard by mutableStateOf(true)
+    private val drawerOpenRequests = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    private val pendingNavigationRequests = MutableSharedFlow<Intent>(extraBufferCapacity = 1)
 
     companion object {
         private const val REQUEST_WRITE_EXTERNAL_STORAGE = 1234
@@ -114,8 +107,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Perm
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 viewModel.getHomePage()
-                initHeaderView()
-                initMenu()
             }
         }
     private var hasAuthenticated = false
@@ -131,17 +122,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Perm
         }
     }
 
-    // Predictive back preview: cache of previous fragment for showing behind scaled view
-    private var headerAvatarUrl by mutableStateOf<String?>(null)
-    private var headerUsername by mutableStateOf<String?>(null)
-    private var headerIsLoggedIn by mutableStateOf(false)
-    private var headerIsLoading by mutableStateOf(false)
-    private var headerCurrentSite by mutableStateOf(Preferences.baseUrl)
-
-
-    override fun getViewBinding(layoutInflater: LayoutInflater): ActivityMainBinding =
-        ActivityMainBinding.inflate(layoutInflater)
-
     override fun setUiStyle() {
         enableEdgeToEdge()
     }
@@ -149,48 +129,24 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Perm
     /**
      * 初始化数据
      */
+    @OptIn(ExperimentalTime::class)
     @SuppressLint("ClickableViewAccessibility")
-    override fun initData(savedInstanceState: Bundle?) {
-        binding.dlMain.addDrawerListener(this)
-        binding.nvMain.setNavigationItemSelectedListener { menuItem ->
-            handleNavigationItemSelected(menuItem)
-            true
-        }
-//        setSupportActionBar(findViewById(R.id.toolbar))
-        initHeaderView()
-        initMenu()
-        binding.fcvMain.setContent {
-            HanimeTheme {
-                val composeNavController = rememberNavController()
-                LaunchedEffect(composeNavController) {
-                    navController = composeNavController
-                }
-                MainNavHost(
-                    activity = this,
-                    navController = composeNavController,
-                    onDestinationChanged = { destination ->
-                        currentMainDestination = destination
-                        val currentCheckedId = binding.nvMain.checkedItem?.itemId
-                        val targetId = destination.menuItemId
-                        if (targetId != null && targetId != currentCheckedId) {
-                            binding.nvMain.setCheckedItem(targetId)
-                        }
-                        binding.dlMain.setDrawerLockMode(
-                            if (destination.drawerEnabled) {
-                                DrawerLayout.LOCK_MODE_UNLOCKED
-                            } else {
-                                DrawerLayout.LOCK_MODE_LOCKED_CLOSED
-                            }
-                        )
-                    },
-                )
-            }
-        }
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.nvMain) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            WindowInsetsCompat.CONSUMED
+    private fun initData() {
+        setContent {
+            MainActivityContent(
+                activity = this,
+                viewModel = viewModel,
+                drawerOpenRequests = drawerOpenRequests,
+                pendingNavigationRequests = pendingNavigationRequests,
+                showAuthGuard = showAuthGuard,
+                onOpenSettings = { destination ->
+                    SettingsRouter.with(this).toSettingsActivity(destination = destination)
+                },
+                onRequireLogin = { gotoLoginActivity() },
+                onSwitchSiteClick = { showSiteSwitchDialog() },
+                onNavigateControllerReady = { controller -> navController = controller },
+                onDestinationChanged = { destination -> currentMainDestination = destination },
+            )
         }
     }
 
@@ -213,7 +169,8 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Perm
                     onSuccess = {
                         removeAuthGuard()
                         hasAuthenticated = true
-                        initData(savedInstanceState)
+                        showAuthGuard = false
+                        initData()
                     },
                     onFailed = {
                         finish()
@@ -224,74 +181,30 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Perm
                 Toast.makeText(this, R.string.not_compact_lock_screen, Toast.LENGTH_SHORT).show()
                 removeAuthGuard()
                 hasAuthenticated = true
-                initData(savedInstanceState)
+                showAuthGuard = false
+                initData()
             }
         } else {
             removeAuthGuard()
             hasAuthenticated = true
-            initData(savedInstanceState)
+            showAuthGuard = false
+            initData()
         }
-        handleDeeplinkIfNeeded(intent)
+        pendingNavigationRequests.tryEmit(intent)
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(applyAppLocale(newBase))
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        handleDeeplinkIfNeeded(intent)
-    }
-
-    private fun handleDeeplinkIfNeeded(intent: Intent) {
-        Log.i("deeplink", "intent=$intent")
-
-        //外部跳转Deeplink
-        if (intent.action == Intent.ACTION_VIEW) {
-            val uri = intent.data ?: return
-            when (uri.scheme) {
-                "http", "https" -> {
-                    val videoCode = uri.getQueryParameter("v")
-                    if (videoCode != null) {
-                        showVideoDetailFragment(videoCode)
-                    }
-                }
-                "file", "content" -> {
-                    showVideoDetailFragment("-1",uri.toString())
-                }
-            }
-            return
-        }
-
-        //String形式TAG
-        intent.getStringExtra("startSearchFromTag")?.let { tag ->
-            intent.removeExtra("startSearchFromTag")
-            navController.navigate(SearchRoute(query = tag))
-            return
-        }
-
-        // Map形式TAG
-        @Suppress("UNCHECKED_CAST", "DEPRECATION")
-        val map = intent.getSerializableExtra("startSearchFromMap") as? HashMap<String, String>
-        if (map != null) {
-            intent.removeExtra("startSearchFromMap")
-            navController.navigate(
-                SearchRoute(
-                    advancedSearchJson = Json.encodeToString(map)
-                )
-            )
-        }
-
-        val videoCode = intent.getStringExtra("startVideoCode")
-        if (!videoCode.isNullOrEmpty()) {
-            intent.removeExtra("startVideoCode")
-            showVideoDetailFragment(videoCode)
-            return
-        }
-
+        pendingNavigationRequests.tryEmit(intent)
     }
 
     private fun removeAuthGuard() {
-        val root = findViewById<ViewGroup>(R.id.dl_main)
-        val authGuard = findViewById<View>(R.id.auth_guard)
-        root?.removeView(authGuard)
+        showAuthGuard = false
     }
 
     private fun isDeviceSecureCompat(context: Context): Boolean {
@@ -337,53 +250,10 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Perm
         biometricPrompt.authenticate(promptInfo)
     }
 
-    // 处理菜单项点击
-    private fun handleNavigationItemSelected(menuItem: MenuItem) {
-        // 登录检查（保留原有逻辑）
-        if (loginNeededFragmentList.contains(menuItem.itemId) && !isAlreadyLogin) {
-            showShortToast(R.string.login_first)
-            return
-        }
-
-        when (menuItem.itemId) {
-            R.id.nv_home_page -> safeNavigateTo(R.id.nv_home_page)
-            R.id.nv_watch_history -> safeNavigateTo(R.id.action_nv_home_page_to_nv_watch_history)
-            R.id.nv_fav_video -> safeNavigateTo(R.id.action_nv_home_page_to_nv_fav_video)
-            R.id.nv_playlist -> safeNavigateTo(R.id.action_nv_home_page_to_myPlayListFragmentV2)
-            R.id.nv_watch_later -> safeNavigateTo(R.id.action_nv_home_page_to_nv_watch_later)
-            R.id.nv_subscription -> safeNavigateTo(R.id.action_nv_home_page_to_nv_subscription)
-            R.id.nv_daily_check_in -> safeNavigateTo(R.id.action_nv_home_page_to_nv_daily_check_in)
-            R.id.nv_download -> safeNavigateTo(R.id.action_nv_home_page_to_nv_download)
-
-            R.id.nv_settings -> {
-                SettingsRouter.with(this)
-                    .toSettingsActivity(destination = SettingsDestinationSpec.Home)
-            }
-        }
-        binding.dlMain.closeDrawer(GravityCompat.START)
-    }
-
-    private fun safeNavigateTo(destinationId: Int) {
-        try {
-            when (destinationId) {
-                R.id.nv_home_page -> navController.navigate(HomeRoute)
-                R.id.action_nv_home_page_to_nv_watch_history -> navController.navigate(WatchHistoryRoute)
-                R.id.action_nv_home_page_to_nv_fav_video -> navController.navigate(MyFavVideoRoute)
-                R.id.action_nv_home_page_to_myPlayListFragmentV2 -> navController.navigate(MyPlaylistRoute)
-                R.id.action_nv_home_page_to_nv_watch_later -> navController.navigate(MyWatchLaterRoute)
-                R.id.action_nv_home_page_to_nv_subscription -> navController.navigate(SubscriptionRoute)
-                R.id.action_nv_home_page_to_nv_daily_check_in -> navController.navigate(DailyCheckInRoute)
-                R.id.action_nv_home_page_to_nv_download -> navController.navigate(DownloadRoute)
-            }
-        } catch (e: IllegalArgumentException) {
-            Log.e("Navigation", "Navigation destination not found: $destinationId", e)
-        }
-    }
-
     override fun onStart() {
         super.onStart()
         registerPipReceiver()
-        binding.root.post {
+        window.decorView.post {
             textFromClipboard?.let {
                 videoUrlRegex.find(it)?.groupValues?.get(1)?.let { videoCode ->
                     showFindRelatedLinkSnackBar(videoCode)
@@ -412,122 +282,33 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Perm
         unregisterReceiver(pipActionReceiver)
     }
 
-    @OptIn(ExperimentalTime::class)
-    override fun bindDataObservers() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.CREATED) {
-                AppViewModel.versionFlow.collect { state ->
-                    if (state is WebsiteState.Success && Preferences.isUpdateDialogVisible) {
-                        state.info?.let { release ->
-                            Preferences.lastUpdatePopupTime =
-                                kotlin.time.Clock.System.now().epochSeconds
-                            showUpdateDialog(release)
-                        }
-                    }
-                }
-            }
-        }
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.CREATED) {
-                viewModel.homePageFlow.collect { state ->
-                    if (state is WebsiteState.Error) {
-                        if (state.throwable is CloudFlareBlockedException) {
-                            // TODO: 被屏蔽时的处理
-                            Log.e("error", "被屏蔽时的处理")
-                        }
-                    }
-                }
-            }
+    private fun applyAppLocale(context: Context): Context {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        val lang = prefs.getString("app_language", "system") ?: "system"
+
+        val newLocale = when (lang) {
+            "zh-rCN" -> Locale.SIMPLIFIED_CHINESE
+            "zh" -> Locale.TRADITIONAL_CHINESE
+            "en" -> Locale.ENGLISH
+            "ja" -> Locale.JAPANESE
+            else -> Resources.getSystem().configuration.locales.get(0)
         }
 
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.CREATED) {
-                viewModel.homePageFlow.collect { state ->
-                    if (state is WebsiteState.Success) {
-                        headerIsLoading = false
-                        if (isAlreadyLogin) {
-                            headerIsLoggedIn = true
-                            headerAvatarUrl = state.info.avatarUrl
-                            headerUsername = state.info.username
-                        } else {
-                            initHeaderView()
-                        }
-                    } else {
-                        headerIsLoading = true
-                    }
-                }
-            }
-        }
+        Locale.setDefault(newLocale)
+
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(newLocale)
+        return context.createConfigurationContext(config)
     }
 
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
     }
 
-    override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (slideOffset > 0f) {
-                binding.fcvMain.setRenderEffect(
-                    RenderEffect.createBlurEffect(
-                        6.dp * slideOffset,
-                        6.dp * slideOffset,
-                        Shader.TileMode.CLAMP
-                    )
-                )
-            }
-        }
-    }
-
-    override fun onDrawerClosed(drawerView: View) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            binding.fcvMain.setRenderEffect(null)
-        }
-    }
-
-    override fun onDrawerOpened(drawerView: View) {
-
-    }
-
-    override fun onDrawerStateChanged(newState: Int) {
-
-    }
-
     private fun showFindRelatedLinkSnackBar(videoCode: String) {
         showSnackBar(R.string.detect_ha1_related_link_in_clipboard, Snackbar.LENGTH_LONG) {
             setAction(R.string.enter) {
                 showVideoDetailFragment(videoCode)
-            }
-        }
-    }
-
-    @SuppressLint("SetTextI18n")
-    private fun initHeaderView() {
-        headerCurrentSite = Preferences.baseUrl
-        headerIsLoggedIn = isAlreadyLogin
-        headerIsLoading = !isAlreadyLogin
-        binding.nvMain.getHeaderView(0)?.let { view ->
-            (view.findViewById<ComposeView>(R.id.drawer_header_compose))?.setContent {
-                HanimeTheme {
-                    MainDrawerHeader(
-                        avatarUrl = headerAvatarUrl,
-                        username = headerUsername,
-                        isLoggedIn = headerIsLoggedIn,
-                        isLoading = headerIsLoading,
-                        currentSite = headerCurrentSite,
-                        onAvatarClick = {
-                            if (isAlreadyLogin) {
-                                showAlertDialog {
-                                    setTitle(R.string.sure_to_logout)
-                                    setPositiveButton(R.string.sure) { _, _ -> logoutWithRefresh() }
-                                    setNegativeButton(R.string.no, null)
-                                }
-                            } else {
-                                gotoLoginActivity()
-                            }
-                        },
-                        onSwitchSiteClick = { showSiteSwitchDialog() },
-                    )
-                }
             }
         }
     }
@@ -561,21 +342,6 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Perm
     private val loginNeededFragmentList =
         intArrayOf(R.id.nv_fav_video, R.id.nv_watch_later, R.id.nv_playlist, R.id.nv_subscription)
 
-    private fun initMenu() {
-        if (isAlreadyLogin) {
-            loginNeededFragmentList.forEach {
-                binding.nvMain.menu.findItem(it).setOnMenuItemClickListener(null)
-            }
-        } else {
-            loginNeededFragmentList.forEach {
-                binding.nvMain.menu.findItem(it).setOnMenuItemClickListener {
-                    showShortToast(R.string.login_first)
-                    return@setOnMenuItemClickListener false
-                }
-            }
-        }
-    }
-
     private fun gotoLoginActivity() {
         val intent = Intent(this, LoginActivity::class.java)
         loginDataLauncher.launch(intent)
@@ -583,12 +349,10 @@ class MainActivity : YenalyActivity<ActivityMainBinding>(), DrawerListener, Perm
 
     private fun logoutWithRefresh() {
         logout()
-        initHeaderView()
-        initMenu()
     }
 
     fun openMainDrawer() {
-        binding.dlMain.openDrawer(GravityCompat.START)
+        drawerOpenRequests.tryEmit(Unit)
     }
 
     fun showVideoDetailFragment(videoCode: String, fileUri: String? = null) {
