@@ -70,7 +70,47 @@ fun AdvancedSearchSheet(
         DatabaseRepo.HanimeAdvancedSearchRepo.getSearchHistories()
     }.collectAsStateWithLifecycle(initialValue = emptyList())
     var dialogState by remember { mutableStateOf<AdvancedSearchDialogState?>(null) }
+    var selectionVersion by remember { mutableIntStateOf(0) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val typeLabel = stringResource(R.string.type)
+    val sortLabel = stringResource(R.string.sort_option)
+    val tagLabel = stringResource(R.string.tag)
+    val releaseDateLabel = stringResource(R.string.release_date)
+    val durationLabel = stringResource(R.string.duration)
+
+    fun updateSelection(block: () -> Unit) {
+        block()
+        selectionVersion++
+    }
+
+    fun selectedOptionValue(options: List<SearchOption>, searchKey: String?): String? {
+        return options.firstOrNull { it.searchKey == searchKey }?.value
+    }
+
+    val genreTitle = remember(selectionVersion, typeLabel) {
+        selectedOptionValue(viewModel.genres, viewModel.genre)?.let { "$typeLabel: $it" } ?: typeLabel
+    }
+    val sortTitle = remember(selectionVersion, sortLabel) {
+        selectedOptionValue(viewModel.sortOptions, viewModel.sort)?.let { "$sortLabel: $it" } ?: sortLabel
+    }
+    val selectedTagKeys = remember(selectionVersion) { viewModel.tagMap.flatten() }
+    val selectedTagCount = remember(selectionVersion) { selectedTagKeys.size }
+    val selectedTagOptions = remember(selectionVersion) {
+        viewModel.tags.values
+            .flatten()
+            .filter { it.searchKey in selectedTagKeys }
+            .toSet()
+    }
+    val tagTitle = remember(selectionVersion, tagLabel) {
+        if (selectedTagCount > 0) "$tagLabel ($selectedTagCount)" else tagLabel
+    }
+    val releaseDateTitle = remember(selectionVersion, releaseDateLabel) {
+        viewModel.getSearchDate()?.let { "$releaseDateLabel: $it" } ?: releaseDateLabel
+    }
+    val durationTitle = remember(selectionVersion, durationLabel) {
+        selectedOptionValue(viewModel.durations, viewModel.duration)?.let { "$durationLabel: $it" }
+            ?: durationLabel
+    }
 
     dialogState?.let { state ->
         when (state) {
@@ -85,7 +125,7 @@ fun AdvancedSearchSheet(
                                     title = option.value,
                                     selected = index == state.selectedIndex,
                                     onClick = {
-                                        state.onSelect(option)
+                                        updateSelection { state.onSelect(option) }
                                         dialogState = null
                                     },
                                 )
@@ -96,7 +136,7 @@ fun AdvancedSearchSheet(
                     dismissButton = {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             TextButton(onClick = {
-                                state.onReset()
+                                updateSelection { state.onReset() }
                                 dialogState = null
                             }) {
                                 Text(stringResource(R.string.reset))
@@ -180,7 +220,7 @@ fun AdvancedSearchSheet(
                     },
                     confirmButton = {
                         TextButton(onClick = {
-                            state.onSave(selected, broad)
+                            updateSelection { state.onSave(selected, broad) }
                             dialogState = null
                         }) {
                             Text(stringResource(R.string.save))
@@ -189,7 +229,7 @@ fun AdvancedSearchSheet(
                     dismissButton = {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             TextButton(onClick = {
-                                state.onReset()
+                                updateSelection { state.onReset() }
                                 dialogState = null
                             }) {
                                 Text(stringResource(R.string.reset))
@@ -281,9 +321,11 @@ fun AdvancedSearchSheet(
                     confirmButton = {
                         TextButton(onClick = {
                             if (selectedTab == 0) {
-                                state.onSaveSpecific(selectedYear, if (yearOnly) null else selectedMonth)
+                                updateSelection {
+                                    state.onSaveSpecific(selectedYear, if (yearOnly) null else selectedMonth)
+                                }
                             } else {
-                                state.onSaveApproximate(selectedApproximate)
+                                updateSelection { state.onSaveApproximate(selectedApproximate) }
                             }
                             dialogState = null
                         }) {
@@ -293,7 +335,7 @@ fun AdvancedSearchSheet(
                     dismissButton = {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             TextButton(onClick = {
-                                state.onReset()
+                                updateSelection { state.onReset() }
                                 dialogState = null
                             }) {
                                 Text(stringResource(R.string.reset))
@@ -370,10 +412,10 @@ fun AdvancedSearchSheet(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         AdvancedSearchChip(
-                            title = stringResource(R.string.type),
+                            title = genreTitle,
                             checked = viewModel.genre != null,
                             modifier = Modifier.weight(1f),
-                            onLongClick = { viewModel.genre = null },
+                            onLongClick = { updateSelection { viewModel.genre = null } },
                             onClick = {
                                 dialogState = AdvancedSearchDialogState.SingleChoice(
                                     key = "genre",
@@ -386,10 +428,10 @@ fun AdvancedSearchSheet(
                             },
                         )
                         AdvancedSearchChip(
-                            title = stringResource(R.string.sort_option),
+                            title = sortTitle,
                             checked = viewModel.sort != null,
                             modifier = Modifier.weight(1f),
-                            onLongClick = { viewModel.sort = null },
+                            onLongClick = { updateSelection { viewModel.sort = null } },
                             onClick = {
                                 dialogState = AdvancedSearchDialogState.SingleChoice(
                                     key = "sort",
@@ -402,10 +444,10 @@ fun AdvancedSearchSheet(
                             },
                         )
                         AdvancedSearchChip(
-                            title = stringResource(R.string.tag),
+                            title = tagTitle,
                             checked = viewModel.tagMap.isNotEmpty(),
                             modifier = Modifier.weight(1f),
-                            onLongClick = { viewModel.tagMap.clear() },
+                            onLongClick = { updateSelection { viewModel.tagMap.clear() } },
                             onClick = {
                                 dialogState = AdvancedSearchDialogState.MultiChoice(
                                     key = "tag",
@@ -423,7 +465,7 @@ fun AdvancedSearchSheet(
                                         SearchScopeSection(R.string.story_location, viewModel.tags[R.string.story_location]),
                                         SearchScopeSection(R.string.sex_position, viewModel.tags[R.string.sex_position]),
                                     ),
-                                    selected = viewModel.tagMap.flatten().map { SearchOption(searchKey = it) }.toSet(),
+                                    selected = selectedTagOptions,
                                     broad = viewModel.broad,
                                     onSave = { selected, broad ->
                                         viewModel.broad = broad
@@ -451,13 +493,15 @@ fun AdvancedSearchSheet(
                             },
                         )
                         AdvancedSearchChip(
-                            title = stringResource(R.string.release_date),
+                            title = releaseDateTitle,
                             checked = viewModel.year != null || viewModel.month != null || viewModel.approxTime != null,
                             modifier = Modifier.weight(1f),
                             onLongClick = {
-                                viewModel.year = null
-                                viewModel.month = null
-                                viewModel.approxTime = null
+                                updateSelection {
+                                    viewModel.year = null
+                                    viewModel.month = null
+                                    viewModel.approxTime = null
+                                }
                             },
                             onClick = {
                                 dialogState = AdvancedSearchDialogState.ReleaseDate(
@@ -485,10 +529,10 @@ fun AdvancedSearchSheet(
                             },
                         )
                         AdvancedSearchChip(
-                            title = stringResource(R.string.duration),
+                            title = durationTitle,
                             checked = viewModel.duration != null,
                             modifier = Modifier.weight(1f),
-                            onLongClick = { viewModel.duration = null },
+                            onLongClick = { updateSelection { viewModel.duration = null } },
                             onClick = {
                                 dialogState = AdvancedSearchDialogState.SingleChoice(
                                     key = "duration",

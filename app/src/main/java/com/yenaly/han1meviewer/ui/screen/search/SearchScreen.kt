@@ -396,6 +396,16 @@ fun SearchScreen(
         viewModel.page = 1; viewModel.clearHanimeSearchResult(); executeSearch()
     }
 
+    fun hasAdvancedFilters(): Boolean {
+        return viewModel.genre != null ||
+            viewModel.sort != null ||
+            viewModel.duration != null ||
+            viewModel.getSearchDate() != null ||
+            viewModel.tagMap.size() > 0 ||
+            viewModel.brandMap.size() > 0 ||
+            viewModel.broad
+    }
+
     // 初始 query 自动搜索
     LaunchedEffect(initialQuery) {
         if (!initialQuery.isNullOrBlank() && !hasSearched) {
@@ -406,12 +416,18 @@ fun SearchScreen(
     }
     // 高级搜索参数（genre/sort 等）自动搜索
     LaunchedEffect(Unit) {
-        if (!hasSearched && (viewModel.genre != null || viewModel.sort != null || viewModel.duration != null)) {
+        if (!hasSearched && hasAdvancedFilters()) {
             hasSearched = true; doSearch()
         }
     }
     // refreshTriggerFlow
-    LaunchedEffect(Unit) { viewModel.refreshTriggerFlow.collect { executeSearch() } }
+    LaunchedEffect(Unit) {
+        viewModel.refreshTriggerFlow.collect {
+            hasSearched = true
+            searchQuery = viewModel.query.orEmpty()
+            executeSearch()
+        }
+    }
 
     // 历史建议防抖
     @OptIn(FlowPreview::class)
@@ -434,11 +450,16 @@ fun SearchScreen(
     Column(modifier = modifier.fillMaxSize()) {
         SearchAppBar(searchQuery, { searchQuery = it }, onSearch = {
             val q = searchQuery.trim()
-            if (q.isNotBlank()) {
-                hasSearched = true; viewModel.query =
-                    q; focusMgr.clearFocus(); kb?.hide(); viewModel.insertSearchHistory(
+            val shouldSearch = q.isNotBlank() || hasAdvancedFilters()
+            if (shouldSearch) {
+                hasSearched = true; viewModel.query = q.ifBlank { null }
+                focusMgr.clearFocus(); kb?.hide()
+                if (q.isNotBlank()) {
+                    viewModel.insertSearchHistory(
                     SearchHistoryEntity(query = q)
-                ); doSearch()
+                    )
+                }
+                doSearch()
             }
         }, onBack, onOpenAdvancedSearch, { isSearchFocused = it }, focusReq)
 
