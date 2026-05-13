@@ -22,64 +22,35 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.DrawerValue
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import androidx.compose.material3.rememberDrawerState
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import androidx.preference.PreferenceManager
 import com.google.android.material.snackbar.Snackbar
 import com.yenaly.han1meviewer.HanimeConstants.ANIME_URL
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.logic.exception.CloudFlareBlockedException
-import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.logout
-import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
-import com.yenaly.han1meviewer.ui.fragment.settings.NetworkSettingsFragment
-import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
-import com.yenaly.han1meviewer.ui.navigation.main.DailyCheckInRoute
-import com.yenaly.han1meviewer.ui.navigation.main.DownloadRoute
-import com.yenaly.han1meviewer.ui.navigation.main.HomeRoute
-import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.main.handleMainIntent
-import com.yenaly.han1meviewer.ui.navigation.main.navigateDrawerDestination
-import com.yenaly.han1meviewer.ui.screen.main.MainActivityContent
-import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.bridge.videoBridgeTag
-import com.yenaly.han1meviewer.ui.navigation.settings.SettingsDestinationSpec
-import com.yenaly.han1meviewer.ui.theme.HanimeTheme
-import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
+import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
+import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
+import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
+import com.yenaly.han1meviewer.ui.screen.main.MainActivityContent
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
 import com.yenaly.han1meviewer.util.showAlertDialog
-import com.yenaly.han1meviewer.util.showUpdateDialog
 import com.yenaly.han1meviewer.videoUrlRegex
 import com.yenaly.yenaly_libs.ActivityManager
 import com.yenaly.yenaly_libs.base.frame.FrameActivity
-import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.showSnackBar
 import com.yenaly.yenaly_libs.utils.textFromClipboard
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.serialization.json.Json
-import kotlin.time.ExperimentalTime
 import java.util.Locale
 
 /**
@@ -92,10 +63,10 @@ class MainActivity : FrameActivity(), PermissionRequester {
     val viewModel by viewModels<MainViewModel>()
 
     lateinit var navController: NavHostController
-    private var currentMainDestination by mutableStateOf(MainDestinationSpec.Home)
     private var showAuthGuard by mutableStateOf(true)
     private val drawerOpenRequests = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private val pendingNavigationRequests = MutableSharedFlow<Intent>(extraBufferCapacity = 1)
+    private var currentVideoRoute by mutableStateOf<VideoRoute?>(null)
 
     companion object {
         private const val REQUEST_WRITE_EXTERNAL_STORAGE = 1234
@@ -126,11 +97,6 @@ class MainActivity : FrameActivity(), PermissionRequester {
         enableEdgeToEdge()
     }
 
-    /**
-     * 初始化数据
-     */
-    @OptIn(ExperimentalTime::class)
-    @SuppressLint("ClickableViewAccessibility")
     private fun initData() {
         setContent {
             MainActivityContent(
@@ -145,20 +111,19 @@ class MainActivity : FrameActivity(), PermissionRequester {
                 onRequireLogin = { gotoLoginActivity() },
                 onSwitchSiteClick = { showSiteSwitchDialog() },
                 onNavigateControllerReady = { controller -> navController = controller },
-                onDestinationChanged = { destination -> currentMainDestination = destination },
+                onCurrentVideoRouteChanged = { route -> currentVideoRoute = route },
             )
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        @Suppress("UNUSED_VARIABLE")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             installSplashScreen().apply {
                 setKeepOnScreenCondition { !hasAuthenticated }
             }
         } else null
         super.onCreate(savedInstanceState)
-//        window.decorView.post { setStatusBarIcons() }
+
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val useLock = prefs.getBoolean("use_lock_screen", false)
 
@@ -167,7 +132,6 @@ class MainActivity : FrameActivity(), PermissionRequester {
                 authenticate(
                     this,
                     onSuccess = {
-                        removeAuthGuard()
                         hasAuthenticated = true
                         showAuthGuard = false
                         initData()
@@ -179,13 +143,11 @@ class MainActivity : FrameActivity(), PermissionRequester {
             } else {
                 // Android 7~8，不支持 BiometricPrompt
                 Toast.makeText(this, R.string.not_compact_lock_screen, Toast.LENGTH_SHORT).show()
-                removeAuthGuard()
                 hasAuthenticated = true
                 showAuthGuard = false
                 initData()
             }
         } else {
-            removeAuthGuard()
             hasAuthenticated = true
             showAuthGuard = false
             initData()
@@ -201,10 +163,6 @@ class MainActivity : FrameActivity(), PermissionRequester {
         super.onNewIntent(intent)
         setIntent(intent)
         pendingNavigationRequests.tryEmit(intent)
-    }
-
-    private fun removeAuthGuard() {
-        showAuthGuard = false
     }
 
     private fun isDeviceSecureCompat(context: Context): Boolean {
@@ -322,13 +280,13 @@ class MainActivity : FrameActivity(), PermissionRequester {
                 val selectedBaseUrl = Preferences.selectedBaseUrl
                 if (currentSite in ANIME_URL) {
                     Preferences.preferenceSp.edit(true) {
-                        putString(NetworkSettingsFragment.SELECTED_BASE_URL, currentSite)
-                        putString(NetworkSettingsFragment.DOMAIN_NAME, avSite)
+                        putString(SettingsPreferenceKeys.SELECTED_BASE_URL, currentSite)
+                        putString(SettingsPreferenceKeys.DOMAIN_NAME, avSite)
                     }
                 } else {
                     Preferences.preferenceSp.edit(true) {
-                        putString(NetworkSettingsFragment.SELECTED_BASE_URL, selectedBaseUrl)
-                        putString(NetworkSettingsFragment.DOMAIN_NAME, selectedBaseUrl)
+                        putString(SettingsPreferenceKeys.SELECTED_BASE_URL, selectedBaseUrl)
+                        putString(SettingsPreferenceKeys.DOMAIN_NAME, selectedBaseUrl)
                     }
                 }
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -339,16 +297,9 @@ class MainActivity : FrameActivity(), PermissionRequester {
         }
     }
 
-    private val loginNeededFragmentList =
-        intArrayOf(R.id.nv_fav_video, R.id.nv_watch_later, R.id.nv_playlist, R.id.nv_subscription)
-
     private fun gotoLoginActivity() {
         val intent = Intent(this, LoginActivity::class.java)
         loginDataLauncher.launch(intent)
-    }
-
-    private fun logoutWithRefresh() {
-        logout()
     }
 
     fun openMainDrawer() {
@@ -360,10 +311,8 @@ class MainActivity : FrameActivity(), PermissionRequester {
     }
 
     private fun findCurrentVideoFragment(): VideoFragment? {
-        if (currentMainDestination != MainDestinationSpec.Video) return null
-        val currentRoute = navController.currentBackStackEntry?.toRoute<VideoRoute>() ?: return null
         return supportFragmentManager.findFragmentByTag(
-            videoBridgeTag(currentRoute.videoCode, currentRoute.localUri)
+            currentVideoRoute?.let { videoBridgeTag(it.videoCode, it.localUri) } ?: return null
         ) as? VideoFragment
     }
 
@@ -463,5 +412,4 @@ class MainActivity : FrameActivity(), PermissionRequester {
     fun togglePlayPause() {
         findCurrentVideoFragment()?.togglePlayPause()
     }
-
 }

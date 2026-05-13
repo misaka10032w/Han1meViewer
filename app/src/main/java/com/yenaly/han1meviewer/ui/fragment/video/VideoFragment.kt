@@ -4,8 +4,8 @@ import android.app.PendingIntent
 import android.app.PictureInPictureParams
 import android.app.RemoteAction
 import android.content.Intent
-import android.content.res.Configuration
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.graphics.Rect
 import android.graphics.drawable.Icon
 import android.os.Bundle
@@ -43,18 +43,16 @@ import androidx.recyclerview.widget.RecyclerView
 import cn.jzvd.JZMediaInterface
 import cn.jzvd.Jzvd
 import coil.load
+import com.google.android.material.transition.MaterialSharedAxis
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
-import com.google.android.material.transition.MaterialSharedAxis
-import com.yenaly.han1meviewer.COMMENT_TYPE
 import com.yenaly.han1meviewer.FROM_DOWNLOAD
 import com.yenaly.han1meviewer.FirebaseConstants
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VIDEO_CODE
-import com.yenaly.han1meviewer.VIDEO_COMMENT_PREFIX
 import com.yenaly.han1meviewer.VIDEO_LAYOUT_MATCH_PARENT
 import com.yenaly.han1meviewer.databinding.FragmentVideoBinding
 import com.yenaly.han1meviewer.getHanimeVideoLink
@@ -76,12 +74,10 @@ import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.checkBadGuy
 import com.yenaly.han1meviewer.util.getOrCreateBadgeOnTextViewAt
-import com.yenaly.han1meviewer.util.openVideo
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.OrientationManager
 import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.dp
-import com.yenaly.yenaly_libs.utils.makeBundle
 import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.startActivity
 import com.yenaly.yenaly_libs.utils.view.attach
@@ -191,7 +187,7 @@ class VideoFragment : androidx.fragment.app.Fragment(), OrientationManager.Orien
         }
     }
 
-    private fun initData(savedInstanceState: Bundle?) {
+    private fun initData() {
         if (videoCode == "-1") {
             viewModel.fromDownload = true
         } else {
@@ -201,13 +197,6 @@ class VideoFragment : androidx.fragment.app.Fragment(), OrientationManager.Orien
         commentViewModel.code = videoCode
         requireVideoPlayer.videoCode = videoCode
         checkBadGuy(requireContext(), R.raw.akarin)
-//        ViewCompat.setOnApplyWindowInsetsListener(binding.videoPlayer) { v, insets ->
-//            val navBar = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-//            v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-//                topMargin = navBar.top
-//            }
-//            WindowInsetsCompat.CONSUMED
-//        }
         orientationManager = OrientationManager(requireActivity(), this)
         lifecycle.addObserver(orientationManager)
         requireVideoPlayer.orientationManager = orientationManager
@@ -266,7 +255,7 @@ class VideoFragment : androidx.fragment.app.Fragment(), OrientationManager.Orien
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initData(savedInstanceState)
+        initData()
         bindDataObservers()
         requireVideoPlayer.fullscreenListener = object : HJzvdStd.FullscreenListener {
             override fun onFullscreenChanged(isFullscreen: Boolean) {
@@ -602,7 +591,7 @@ class VideoFragment : androidx.fragment.app.Fragment(), OrientationManager.Orien
         binding.videoVp.setUpFragmentStateAdapter(this) {
             addFragment { VideoIntroductionFragment() }
             if (!fromDownload && !disableComments) {
-                addFragment { CommentFragment().makeBundle(COMMENT_TYPE to VIDEO_COMMENT_PREFIX) }
+                addFragment { CommentFragment() }
             }
         }
 

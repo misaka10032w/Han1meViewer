@@ -16,46 +16,28 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.yenaly.han1meviewer.COMMENT_TYPE
-import com.yenaly.han1meviewer.PREVIEW_COMMENT_PREFIX
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.VIDEO_COMMENT_PREFIX
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.screen.video.ChildCommentScreen
 import com.yenaly.han1meviewer.ui.screen.video.CommentMessage
 import com.yenaly.han1meviewer.ui.screen.video.CommentScreen
-import com.yenaly.han1meviewer.ui.screen.video.CommentSortType
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
-import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
 import com.yenaly.han1meviewer.util.checkBadGuy
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.collectAsState
 
 class CommentFragment : Fragment() {
-    private var commentType: String? = null
-
     val viewModel: CommentViewModel by lazy {
-        val parent = parentFragment
-        if (parent == null || commentType == PREVIEW_COMMENT_PREFIX) {
-            ViewModelProvider(requireActivity())[CommentViewModel::class.java]
-        } else {
-            ViewModelProvider(parent)[CommentViewModel::class.java]
-        }
+        ViewModelProvider(parentFragment ?: requireActivity())[CommentViewModel::class.java]
     }
 
     private val reportMessages = MutableSharedFlow<CommentMessage>()
-    private val commentTypePrefix: String
-        get() = arguments?.getString(COMMENT_TYPE) ?: VIDEO_COMMENT_PREFIX
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        commentType = arguments?.getString(COMMENT_TYPE)
-    }
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreateView(
@@ -90,10 +72,9 @@ class CommentFragment : Fragment() {
                     reportMessageFlow = reportMessages.asSharedFlow(),
                     currentSortType = viewModel.currentSortType,
                     reportReasons = viewModel.reportReason,
-                    isPreviewCommentPrefetched = commentType == PREVIEW_COMMENT_PREFIX &&
-                        PreviewCommentPrefetcher.here(viewModel).commentFlow.collectAsState().value.isNotEmpty(),
+                    isPreviewCommentPrefetched = false,
                     isAlreadyLogin = isAlreadyLogin,
-                    onRefresh = { viewModel.getComment(commentTypePrefix, viewModel.code) },
+                    onRefresh = { viewModel.getComment(VIDEO_COMMENT_PREFIX, viewModel.code) },
                     onReply = { comment, text ->
                         if (!isAlreadyLogin) return@CommentScreen
                         val replyTargetId = comment.replyTargetIdOrNull
@@ -163,7 +144,7 @@ class CommentFragment : Fragment() {
                     onSortChange = { viewModel.setSortType(it) },
                     onComposeComment = {
                         viewModel.currentUserId?.let { id ->
-                            viewModel.postComment(id, viewModel.code, commentTypePrefix, it)
+                            viewModel.postComment(id, viewModel.code, VIDEO_COMMENT_PREFIX, it)
                         } ?: lifecycleScope.launch {
                             reportMessages.emit(CommentMessage(getString(R.string.there_is_a_small_issue)))
                         }
@@ -176,17 +157,7 @@ class CommentFragment : Fragment() {
     override fun onViewCreated(view: android.view.View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         checkBadGuy(requireContext(), R.raw.akarin)
-
-        if (commentType == PREVIEW_COMMENT_PREFIX) {
-            val comments = PreviewCommentPrefetcher.here(viewModel).commentFlow.value
-            if (comments.isNotEmpty()) {
-                viewModel.updateComments(comments)
-            } else {
-                viewModel.getComment(commentTypePrefix, viewModel.code)
-            }
-        } else {
-            viewModel.getComment(commentTypePrefix, viewModel.code)
-        }
+        viewModel.getComment(VIDEO_COMMENT_PREFIX, viewModel.code)
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.videoCommentStateFlow.collect { state ->
@@ -198,17 +169,9 @@ class CommentFragment : Fragment() {
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.videoCommentFlow.collect { list ->
-                if (commentType == PREVIEW_COMMENT_PREFIX) {
-                    PreviewCommentPrefetcher.here(viewModel).update(list)
-                }
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
             viewModel.postCommentFlow.collect { state ->
                 when (state) {
-                    is WebsiteState.Success -> viewModel.getComment(commentTypePrefix, viewModel.code)
+                    is WebsiteState.Success -> viewModel.getComment(VIDEO_COMMENT_PREFIX, viewModel.code)
                     else -> Unit
                 }
             }
@@ -217,7 +180,7 @@ class CommentFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.postReplyFlow.collect { state ->
                 when (state) {
-                    is WebsiteState.Success -> viewModel.getComment(commentTypePrefix, viewModel.code)
+                    is WebsiteState.Success -> viewModel.getComment(VIDEO_COMMENT_PREFIX, viewModel.code)
                     else -> Unit
                 }
             }
@@ -248,9 +211,6 @@ class CommentFragment : Fragment() {
         videoFragment?.showRedDotCount(count)
     }
 
-    companion object {
-        private const val VIDEO_COMMENT_PREFIX = "video"
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -283,7 +243,7 @@ private fun ChildCommentBottomSheet(
             postReplyStateFlow = viewModel.postReplyFlow,
             commentLikeStateFlow = viewModel.commentLikeFlow,
             reportReasons = viewModel.reportReason,
-            isAlreadyLogin = Preferences.isAlreadyLogin,
+            isAlreadyLogin = isAlreadyLogin,
             onRefresh = { viewModel.getCommentReply(commentId) },
             onReply = { _, text ->
                 viewModel.postReply(commentId, text)

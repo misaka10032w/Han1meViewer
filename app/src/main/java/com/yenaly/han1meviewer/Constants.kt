@@ -57,8 +57,6 @@ const val ADVANCED_SEARCH_MAP = "ADVANCED_SEARCH_MAP"
 
 const val COMMENT_ID = "COMMENT_ID"
 
-const val COMMENT_TYPE = "COMMENT_TYPE"
-
 const val DATE_CODE = "DATE_CODE"
 
 //const val CSRF_TOKEN = "CSRF_TOKEN"
@@ -73,8 +71,6 @@ const val DATE_CODE = "DATE_CODE"
 const val VIDEO_LAYOUT_WRAP_CONTENT = 1
 
 const val VIDEO_LAYOUT_MATCH_PARENT = 2
-
-// 給CommentFragment傳值，判斷是影片評論區還是預覽評論區 [COMMENT_TYPE]
 
 const val VIDEO_COMMENT_PREFIX = "video"
 
