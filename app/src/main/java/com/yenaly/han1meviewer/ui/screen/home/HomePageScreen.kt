@@ -12,6 +12,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -391,7 +392,6 @@ fun HomePageTopBar(
     onNavigateToPreview: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var expanded by rememberSaveable { mutableStateOf(false) }
     val placeholders = stringArrayResource(R.array.search_placeholders)
     val randomHint = placeholders.random()
     Surface(
@@ -419,54 +419,29 @@ fun HomePageTopBar(
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = 4.dp)
-                    .semantics {
-                        isTraversalGroup = true
-                    },
+                    .height(48.dp)
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) { onSearchClick() }
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.CenterStart
             ) {
-                SearchBar(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .semantics { traversalIndex = 0f },
-                    inputField = {
-                        SearchBarDefaults.InputField(
-                            query = "",
-                            onQueryChange = {},
-                            onSearch = {
-                                expanded = false
-                                onSearchClick()
-                            },
-                            expanded = expanded,
-                            onExpandedChange = { shouldExpand ->
-                                expanded = shouldExpand
-                                if (shouldExpand) {
-                                    expanded = false
-                                    onSearchClick()
-                                }
-                            },
-                            placeholder = {
-                                Text(
-                                    randomHint,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = null,
-                                )
-                            },
-                        )
-                    },
-                    expanded = expanded,
-                    onExpandedChange = { shouldExpand ->
-                        expanded = shouldExpand
-                        if (shouldExpand) {
-                            expanded = false
-                            onSearchClick()
-                        }
-                    },
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        randomHint,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
                 }
             }
 
