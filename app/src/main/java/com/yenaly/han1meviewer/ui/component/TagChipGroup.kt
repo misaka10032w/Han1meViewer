@@ -3,9 +3,7 @@ package com.yenaly.han1meviewer.ui.component
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.AssistChip
@@ -27,11 +25,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.SubcomposeLayout
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
-import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.preview.fakeTagList2
 import kotlin.random.Random
 
@@ -58,8 +54,8 @@ fun TagChipGroup(
         collapsible,
         collapsedMaxLines
     ) { mutableIntStateOf(0) }
-    val collapseText = stringResource(R.string.collapse)
-    val expandText = stringResource(R.string.expand)
+//    val collapseText = stringResource(R.string.collapse)
+//    val expandText = stringResource(R.string.expand)
     val arrowRotation by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
         animationSpec = tween(durationMillis = 240),
