@@ -762,6 +762,7 @@ private fun TitleSection(video: HanimeVideo, onCopyText: (String) -> Unit) {
             text = primaryTitle,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.combinedClickable(
                 onClick = {},
                 onLongClick = { onCopyText(primaryTitle) },
@@ -916,6 +917,7 @@ private fun VideoActionButton(
         Text(
             text = label,
             style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
         )
     }
@@ -1016,6 +1018,7 @@ private fun SectionHeader(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
                 )
                 subtitle?.takeIf { it.isNotBlank() }?.let {
