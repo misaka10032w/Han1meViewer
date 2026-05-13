@@ -12,7 +12,6 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,6 +50,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -59,6 +60,7 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -66,7 +68,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.lifecycle.Observer
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -79,13 +80,18 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
-import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.Observer
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yenaly.han1meviewer.HanimeConstants
 import com.yenaly.han1meviewer.Preferences
@@ -94,16 +100,15 @@ import com.yenaly.han1meviewer.logic.model.Announcement
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HomePage
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.screen.RetryableImage
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.preview.fakeAnnouncements
 import com.yenaly.han1meviewer.ui.preview.fakeBanner
 import com.yenaly.han1meviewer.ui.preview.fakeCategories
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
+import com.yenaly.han1meviewer.ui.screen.RetryableImage
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
 import com.yenaly.yenaly_libs.utils.putSpValue
 import kotlinx.coroutines.delay
-import androidx.compose.runtime.collectAsState
 
 // ─────────────────────────────────────────────
 // CompositionLocal：搜索历史查询函数
@@ -378,6 +383,7 @@ fun SearchOverlay(
  * @param onSearchClick 点击搜索框时展开搜索覆盖层
  * @param onNavigateToPreview 点击新番按钮跳转到新番列表
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePageTopBar(
     onOpenDrawer: () -> Unit,
@@ -385,6 +391,9 @@ fun HomePageTopBar(
     onNavigateToPreview: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    val placeholders = stringArrayResource(R.array.search_placeholders)
+    val randomHint = placeholders.random()
     Surface(
         color = MaterialTheme.colorScheme.surface,
         shadowElevation = 2.dp,
@@ -410,29 +419,54 @@ fun HomePageTopBar(
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(48.dp)
-                    .clip(RoundedCornerShape(28.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                    .clickable(
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    ) { onSearchClick() }
-                    .padding(horizontal = 16.dp),
-                contentAlignment = Alignment.CenterStart
+                    .padding(horizontal = 4.dp)
+                    .semantics {
+                        isTraversalGroup = true
+                    },
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        "搜索影片...",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
+                SearchBar(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { traversalIndex = 0f },
+                    inputField = {
+                        SearchBarDefaults.InputField(
+                            query = "",
+                            onQueryChange = {},
+                            onSearch = {
+                                expanded = false
+                                onSearchClick()
+                            },
+                            expanded = expanded,
+                            onExpandedChange = { shouldExpand ->
+                                expanded = shouldExpand
+                                if (shouldExpand) {
+                                    expanded = false
+                                    onSearchClick()
+                                }
+                            },
+                            placeholder = {
+                                Text(
+                                    randomHint,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = null,
+                                )
+                            },
+                        )
+                    },
+                    expanded = expanded,
+                    onExpandedChange = { shouldExpand ->
+                        expanded = shouldExpand
+                        if (shouldExpand) {
+                            expanded = false
+                            onSearchClick()
+                        }
+                    },
+                ) {
                 }
             }
 

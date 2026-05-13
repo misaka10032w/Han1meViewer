@@ -645,4 +645,18 @@ Recommendations are as follows:\n
     <string name="disable_predictive_back_summary">When enabled, the back gesture will only trigger after releasing, preventing accidental back navigation while watching videos</string>
     <string name="play_trailer">Play Trailer</string>
     <string name="load_complete">Load complete !</string>
+    <string-array name="search_placeholders">
+        <item>Explore the secrets deep within…</item>
+        <item>Drift with the night wind, find your solace</item>
+        <item>Looking for something different tonight?</item>
+        <item>Search for what you truly love</item>
+        <item>Don\'t be shy, take a look</item>
+        <item>Trending now: Everyone is searching for…</item>
+        <item>Fasten your seatbelt, let\'s go</item>
+        <item>Can we have a private word?</item>
+        <item>Enter the word you dare not speak</item>
+        <item>Unlock your hidden desires</item>
+        <item>What\'s the keyword that makes you blush?</item>
+        <item>Midnight curiosity starts here…</item>
+    </string-array>
 </resources>

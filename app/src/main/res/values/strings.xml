@@ -684,4 +684,18 @@
     <string name="disable_predictive_back_summary">開啟後，返回手勢只有在鬆手後才會觸發返回，避免觀看影片時因誤觸返回手勢而暫停播放</string>
     <string name="play_trailer">播放預告</string>
     <string name="load_complete">載入完畢！</string>
+    <string-array name="search_placeholders">
+        <item>探索深處的秘密…</item>
+        <item>晚風輕拂，尋找那份溫柔</item>
+        <item>今晚，想看點不一樣的？</item>
+        <item>搜一搜，總有你喜歡的</item>
+        <item>別害羞，大方搜搜看</item>
+        <item>聽說最近大家都在搜這個…</item>
+        <item>開車請系好安全帶</item>
+        <item>借一步說話…</item>
+        <item>輸入你不敢說出口的那個詞</item>
+        <item>解鎖你的隱藏欲望</item>
+        <item>臉紅的關鍵詞是什麼？</item>
+        <item>深夜好奇點什麼…</item>
+    </string-array>
 </resources>

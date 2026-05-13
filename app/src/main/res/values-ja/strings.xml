@@ -650,4 +650,18 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="disable_predictive_back_summary">有効にすると、バックジェスチャーは指を離した時のみ反応し、動画視聴中の誤操作による再生停止を防ぎます</string>
     <string name="play_trailer">予告編を再生</string>
     <string name="load_complete">読み込み完了！</string>
+    <string-array name="search_placeholders">
+        <item>奥底に眠る秘密を探索…</item>
+        <item>夜風に吹かれ、癒やしを探して</item>
+        <item>今夜は、いつもと違う気分？</item>
+        <item>お気に入りが見つかるはず</item>
+        <item>恥ずかしがらずに、検索してみて</item>
+        <item>みんなが今、気になっているのは…</item>
+        <item>出発進行、シートベルトをお忘れなく</item>
+        <item>内緒の話をしましょう…</item>
+        <item>口に出せないあの言葉を入力</item>
+        <item>秘められた欲望を解き放つ</item>
+        <item>顔が赤くなるキーワードは？</item>
+        <item>真夜中の好奇心を満たす…</item>
+    </string-array>
 </resources>
