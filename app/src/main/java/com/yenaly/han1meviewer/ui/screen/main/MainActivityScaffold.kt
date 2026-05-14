@@ -155,6 +155,7 @@ private fun MainDrawerPrimaryItems(
                 selected = selectedDestination == item,
                 onClick = {
                     onDrawerItemSelected(item)
+                    Unit
                 },
                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
             )

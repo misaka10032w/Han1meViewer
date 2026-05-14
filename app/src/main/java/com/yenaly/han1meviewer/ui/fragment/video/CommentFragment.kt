@@ -21,6 +21,7 @@ import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VIDEO_COMMENT_PREFIX
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
 import com.yenaly.han1meviewer.ui.screen.video.ChildCommentScreen
 import com.yenaly.han1meviewer.ui.screen.video.CommentMessage
 import com.yenaly.han1meviewer.ui.screen.video.CommentScreen
@@ -51,7 +52,7 @@ class CommentFragment : Fragment() {
         )
         setContent {
             var childCommentId by remember { mutableStateOf<String?>(null) }
-            val childSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            val childSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
             HanimeTheme {
                 childCommentId?.let { currentCommentId ->
@@ -228,7 +229,9 @@ private fun ChildCommentBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
+        dragHandle = null
     ) {
+        BottomSheetHandler()
         ChildCommentScreen(
             commentsFlow = viewModel.videoReplyFlow,
             commentStateFlow = viewModel.videoReplyStateFlow,

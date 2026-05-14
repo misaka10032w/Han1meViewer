@@ -143,20 +143,6 @@ fun ChildCommentScreen(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center,
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(width = 48.dp, height = 4.dp)
-                        .background(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f),
-                            shape = CircleShape,
-                        )
-                )
-            }
-
             Text(
                 text = stringResource(R.string.child_comment),
                 style = MaterialTheme.typography.headlineSmall,
