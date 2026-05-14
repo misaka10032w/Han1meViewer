@@ -22,6 +22,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+data class PlaylistSheetScrollState(
+    val firstVisibleItemIndex: Int = 0,
+    val firstVisibleItemScrollOffset: Int = 0,
+)
+
 class MyPlayListViewModelV2 : ViewModel() {
 
     private val _myPlaylistsFlow = MutableStateFlow<WebsiteState<Playlists>>(WebsiteState.Loading)
@@ -40,6 +45,8 @@ class MyPlayListViewModelV2 : ViewModel() {
     val playlistFlow = _playlistFlow.asStateFlow()
     private val _currentListInfo = MutableStateFlow<Pair<String, String>?>(null)
     val currentListInfo = _currentListInfo.asStateFlow()
+    private val _playlistSheetScrollStates = MutableStateFlow<Map<String, PlaylistSheetScrollState>>(emptyMap())
+    val playlistSheetScrollStates: StateFlow<Map<String, PlaylistSheetScrollState>> = _playlistSheetScrollStates.asStateFlow()
 
 
     private val _refreshCompleted = MutableSharedFlow<Unit>()
@@ -61,6 +68,26 @@ class MyPlayListViewModelV2 : ViewModel() {
     }
     fun setListInfo(code: String, title: String) {
         _currentListInfo.value = code to title
+    }
+
+    fun updatePlaylistSheetScrollState(
+        listCode: String,
+        firstVisibleItemIndex: Int,
+        firstVisibleItemScrollOffset: Int,
+    ) {
+        if (listCode.isBlank()) return
+        _playlistSheetScrollStates.update { prev ->
+            prev + (
+                listCode to PlaylistSheetScrollState(
+                    firstVisibleItemIndex = firstVisibleItemIndex,
+                    firstVisibleItemScrollOffset = firstVisibleItemScrollOffset,
+                )
+            )
+        }
+    }
+
+    fun getPlaylistSheetScrollState(listCode: String): PlaylistSheetScrollState {
+        return _playlistSheetScrollStates.value[listCode] ?: PlaylistSheetScrollState()
     }
 
     // 加载所有playlist

@@ -40,11 +40,13 @@ import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -56,6 +58,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.Playlists
@@ -89,6 +94,8 @@ fun MyPlayListScreen(
     val selectedListCode = remember { mutableStateOf("") }
     val listTitle = remember { mutableStateOf("") }
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var temporarilyHideSheetForNavigation by rememberSaveable { mutableStateOf(false) }
 
     val onRefresh: () -> Unit = {
         isRefreshing = true
@@ -109,6 +116,18 @@ fun MyPlayListScreen(
     LaunchedEffect(Unit) {
         if (playlists.isEmpty()) {
             viewModel.loadMyPlayList()
+        }
+    }
+
+    DisposableEffect(lifecycleOwner, showSheet) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME && showSheet) {
+                temporarilyHideSheetForNavigation = false
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
     // 收集添加列表结果
@@ -271,21 +290,20 @@ fun MyPlayListScreen(
                     )
                 }
             }
-            if (showSheet) {
+            if (showSheet && !temporarilyHideSheetForNavigation) {
                 PlaylistBottomSheet(
                     listCode = selectedListCode.value,
                     onDismiss = {
+                        temporarilyHideSheetForNavigation = false
                         viewModel.setShowSheet(false)
                         viewModel.currentPage = 1
                         viewModel.clearCurrentList()
                                 },
                     playListTitle = listTitle.value,
                     onClickItem = { item ->
+                        temporarilyHideSheetForNavigation = true
                         onClickItem(item)
-//                        viewModel.setShowSheet(false)
-//                        viewModel.currentPage = 1
-//                        viewModel.clearCurrentList()
-                                  } ,
+                                   } ,
                     onLongClickItem = onLongClickItem,
                     vm = viewModel,
                     context = context

@@ -39,7 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -80,9 +80,6 @@ fun PlaylistBottomSheet(
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
-    val gridState = rememberSaveable(saver = LazyGridState.Saver) {
-        LazyGridState()
-    }
     if (listCode.isNotEmpty()){
         vm.setListInfo(listCode, playListTitle)
     }
@@ -90,6 +87,15 @@ fun PlaylistBottomSheet(
     val listInfo by vm.currentListInfo.collectAsState()
     val currentCode = listInfo?.first ?: ""
     val currentTitle = listInfo?.second ?: ""
+    val savedScrollState = remember(currentCode, vm) {
+        vm.getPlaylistSheetScrollState(currentCode)
+    }
+    val gridState = remember(currentCode) {
+        LazyGridState(
+            firstVisibleItemIndex = savedScrollState.firstVisibleItemIndex,
+            firstVisibleItemScrollOffset = savedScrollState.firstVisibleItemScrollOffset,
+        )
+    }
 
     LaunchedEffect(currentCode) {
         if (currentCode.isNotEmpty()){
@@ -98,6 +104,22 @@ fun PlaylistBottomSheet(
             }
         } else {
             showShortToast(R.string.unknown_error)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        sheetState.show()
+    }
+
+    LaunchedEffect(gridState, currentCode) {
+        snapshotFlow {
+            gridState.firstVisibleItemIndex to gridState.firstVisibleItemScrollOffset
+        }.collect { (index, offset) ->
+            vm.updatePlaylistSheetScrollState(
+                listCode = currentCode,
+                firstVisibleItemIndex = index,
+                firstVisibleItemScrollOffset = offset,
+            )
         }
     }
 
@@ -123,10 +145,10 @@ fun PlaylistBottomSheet(
                     gridState,
                     currentCode,
                     playlist,
-                    onDismiss,
+                    onDismiss = onDismiss,
                     currentTitle,
                     vm.playlistDesc,
-                    onClickItem,
+                    onClickItem = onClickItem,
                     onLongClickItem,
                     vm,
                     context
