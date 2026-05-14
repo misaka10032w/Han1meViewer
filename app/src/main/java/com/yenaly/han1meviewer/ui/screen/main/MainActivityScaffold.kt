@@ -142,7 +142,7 @@ private fun MainDrawerPrimaryItems(
         MainDrawerDestination.Settings,
         MainDrawerDestination.DailyCheckIn,
     )
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column {
         primaryItems.forEach { item ->
             NavigationDrawerItem(
                 label = { Text(stringResource(item.titleRes)) },
@@ -179,7 +179,7 @@ private fun MainDrawerSection(
             .fillMaxWidth()
             .padding(horizontal = 28.dp, vertical = 12.dp),
     )
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column {
         items.forEach { item ->
             NavigationDrawerItem(
                 label = { Text(stringResource(item.titleRes)) },
