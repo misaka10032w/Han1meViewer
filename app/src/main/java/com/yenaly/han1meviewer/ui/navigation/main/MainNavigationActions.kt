@@ -3,7 +3,7 @@ package com.yenaly.han1meviewer.ui.navigation.main
 import android.content.Intent
 import androidx.navigation.NavHostController
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.ui.navigation.settings.SettingsDestinationSpec
+import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import kotlinx.serialization.json.Json
 
 private val loginRequiredDrawerItems = setOf(
@@ -17,7 +17,6 @@ fun NavHostController.navigateDrawerDestination(
     itemId: Int,
     isLoggedIn: Boolean,
     onRequireLogin: () -> Unit,
-    onOpenSettings: (SettingsDestinationSpec) -> Unit,
 ): Boolean {
     if (itemId in loginRequiredDrawerItems && !isLoggedIn) {
         onRequireLogin()
@@ -33,7 +32,7 @@ fun NavHostController.navigateDrawerDestination(
         R.id.nv_subscription -> navigate(SubscriptionRoute)
         R.id.nv_daily_check_in -> navigate(DailyCheckInRoute)
         R.id.nv_download -> navigate(DownloadRoute)
-        R.id.nv_settings -> onOpenSettings(SettingsDestinationSpec.Home)
+        R.id.nv_settings -> navigate(HomeSettingsRoute)
     }
     return true
 }

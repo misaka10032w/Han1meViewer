@@ -4,6 +4,14 @@ import androidx.annotation.IdRes
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframeSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframesRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.MpvPlayerSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRoute
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
@@ -112,6 +120,62 @@ enum class MainDestinationSpec(
         legacyId = R.id.nv_download,
         menuItemId = R.id.nv_download,
         routeClass = DownloadRoute::class,
+        drawerEnabled = false,
+        showToolbar = false,
+    ),
+    SettingsHome(
+        legacyId = R.id.homeSettingsFragment,
+        menuItemId = R.id.nv_settings,
+        routeClass = HomeSettingsRoute::class,
+        drawerEnabled = false,
+        showToolbar = false,
+    ),
+    SettingsPlayer(
+        legacyId = R.id.playerSettingsFragment,
+        menuItemId = R.id.nv_settings,
+        routeClass = PlayerSettingsRoute::class,
+        drawerEnabled = false,
+        showToolbar = false,
+    ),
+    SettingsNetwork(
+        legacyId = R.id.networkSettingsFragment,
+        menuItemId = R.id.nv_settings,
+        routeClass = NetworkSettingsRoute::class,
+        drawerEnabled = false,
+        showToolbar = false,
+    ),
+    SettingsDownload(
+        legacyId = R.id.downloadSettingsFragment,
+        menuItemId = R.id.nv_settings,
+        routeClass = DownloadSettingsRoute::class,
+        drawerEnabled = false,
+        showToolbar = false,
+    ),
+    SettingsMpv(
+        legacyId = R.id.mpvPlayerSettings,
+        menuItemId = R.id.nv_settings,
+        routeClass = MpvPlayerSettingsRoute::class,
+        drawerEnabled = false,
+        showToolbar = false,
+    ),
+    SettingsHKeyframes(
+        legacyId = R.id.hKeyframesFragment,
+        menuItemId = R.id.nv_settings,
+        routeClass = HKeyframesRoute::class,
+        drawerEnabled = false,
+        showToolbar = false,
+    ),
+    SettingsSharedHKeyframes(
+        legacyId = R.id.sharedHKeyframesFragment,
+        menuItemId = R.id.nv_settings,
+        routeClass = SharedHKeyframesRoute::class,
+        drawerEnabled = false,
+        showToolbar = false,
+    ),
+    SettingsHKeyframeSettings(
+        legacyId = R.id.hKeyframeSettingsFragment,
+        menuItemId = R.id.nv_settings,
+        routeClass = HKeyframeSettingsRoute::class,
         drawerEnabled = false,
         showToolbar = false,
     ),

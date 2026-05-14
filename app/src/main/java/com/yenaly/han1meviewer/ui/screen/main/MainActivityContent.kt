@@ -32,7 +32,6 @@ import com.yenaly.han1meviewer.ui.navigation.main.MainNavHost
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.navigation.main.handleMainIntent
 import com.yenaly.han1meviewer.ui.navigation.main.navigateDrawerDestination
-import com.yenaly.han1meviewer.ui.navigation.settings.SettingsDestinationSpec
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
@@ -50,7 +49,6 @@ fun MainActivityContent(
     drawerOpenRequests: Flow<Unit>,
     pendingNavigationRequests: Flow<Intent>,
     showAuthGuard: Boolean,
-    onOpenSettings: (SettingsDestinationSpec) -> Unit,
     onLogoutClick: () -> Unit,
     onRequireLogin: () -> Unit,
     onSwitchSiteClick: () -> Unit,
@@ -139,7 +137,6 @@ fun MainActivityContent(
                     itemId = itemId,
                     isLoggedIn = isLoggedIn,
                     onRequireLogin = { showShortToast(R.string.login_first) },
-                    onOpenSettings = onOpenSettings,
                 )
                 if (handled) {
                     scope.launch { drawerState.close() }

@@ -106,9 +106,6 @@ class MainActivity : FrameActivity(), PermissionRequester {
                 drawerOpenRequests = drawerOpenRequests,
                 pendingNavigationRequests = pendingNavigationRequests,
                 showAuthGuard = showAuthGuard,
-                onOpenSettings = { destination ->
-                    SettingsRouter.with(this).toSettingsActivity(destination = destination)
-                },
                 onLogoutClick = { showLogoutConfirmDialog() },
                 onRequireLogin = { gotoLoginActivity() },
                 onSwitchSiteClick = { showSiteSwitchDialog() },

@@ -160,14 +160,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
-
-
-        <activity
-            android:name=".ui.activity.SettingsActivity"
-            android:configChanges="screenSize|orientation"
-            android:exported="true">
-
-        </activity>
         <activity
             android:name=".ui.activity.LoginActivity"
             android:configChanges="screenSize|orientation"

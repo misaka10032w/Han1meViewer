@@ -71,7 +71,6 @@ import com.yenaly.han1meviewer.logic.network.interceptor.SpeedLimitInterceptor
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.activity.SettingsActivity
 import com.yenaly.han1meviewer.ui.screen.settings.DelayResultUi
 import com.yenaly.han1meviewer.ui.screen.settings.DownloadSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.DownloadSettingsUiState
@@ -179,13 +178,13 @@ private const val CUSTOM_PARAMS = "mpv_custom_parameters"
 
 @Composable
 fun HomeSettingsRouteScreen(
+    activity: MainActivity,
     onNavigateToPlayerSettings: () -> Unit,
     onNavigateToHKeyframeSettings: () -> Unit,
     onNavigateToDownloadSettings: () -> Unit,
     onNavigateToNetworkSettings: () -> Unit,
 ) {
     val context = LocalContext.current
-    val activity = context.findActivity<Activity>()
     val coroutineScope = rememberCoroutineScope()
     val versionState by AppViewModel.versionFlow.collectAsStateWithLifecycle()
     var refreshKey by remember { mutableIntStateOf(0) }
@@ -316,7 +315,6 @@ fun HomeSettingsRouteScreen(
         onDisablePredictiveBackChange = {
             saveBoolean(HOME_DISABLE_PREDICTIVE_BACK, it)
             refreshKey++
-            activity.recreate()
         },
         onTabletModeChange = {
             saveBoolean(HOME_TABLET_MODE, it)
@@ -546,7 +544,9 @@ fun PlayerSettingsRouteScreen(
 }
 
 @Composable
-fun NetworkSettingsRouteScreen() {
+fun NetworkSettingsRouteScreen(
+    activity: MainActivity,
+) {
     val context = LocalContext.current
     var refreshKey by remember { mutableIntStateOf(0) }
     var currentHost by remember { mutableStateOf(Preferences.baseUrl) }
@@ -687,10 +687,9 @@ fun NetworkSettingsRouteScreen() {
 
 @Composable
 fun DownloadSettingsRouteScreen(
-    onNavigateBack: () -> Unit,
+    activity: MainActivity,
 ) {
     val context = LocalContext.current
-    val activity = context.findActivity<SettingsActivity>()
     var refreshKey by remember { mutableIntStateOf(0) }
     val dao = remember { DownloadDatabase.instance.hanimeDownloadDao }
     val uiState = remember(refreshKey, context) { buildDownloadSettingsUiState(context) }
@@ -715,7 +714,6 @@ fun DownloadSettingsRouteScreen(
         val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
         if (activity.shouldShowRequestPermissionRationale(permission)) {
             Toast.makeText(context, R.string.storage_permission_denied_toast, Toast.LENGTH_LONG).show()
-            onNavigateBack()
         } else {
             AlertDialog.Builder(context)
                 .setTitle(R.string.permission_permanently_denied_title)
@@ -726,9 +724,7 @@ fun DownloadSettingsRouteScreen(
                     }
                     context.startActivity(intent)
                 }
-                .setNegativeButton(R.string.cancel) { _, _ ->
-                    onNavigateBack()
-                }
+                .setNegativeButton(R.string.cancel, null)
                 .show()
         }
     }
@@ -859,7 +855,9 @@ fun MpvPlayerSettingsRouteScreen() {
 }
 
 @Composable
-fun HKeyframesRouteScreen() {
+fun HKeyframesRouteScreen(
+    onOpenVideo: (String) -> Unit,
+) {
     val context = LocalContext.current
     val viewModel: SettingsViewModel = viewModel()
     val items by viewModel.loadAllHKeyframes().collectAsStateWithLifecycle(initialValue = emptyList())
@@ -896,7 +894,7 @@ fun HKeyframesRouteScreen() {
 
     HKeyframesScreen(
         items = items,
-        onOpenVideo = { openVideoFromSettings(context, it) },
+        onOpenVideo = onOpenVideo,
         onDeleteEntity = { entity ->
             viewModel.deleteHKeyframes(entity)
         },
@@ -920,14 +918,15 @@ fun HKeyframesRouteScreen() {
 }
 
 @Composable
-fun SharedHKeyframesRouteScreen() {
-    val context = LocalContext.current
+fun SharedHKeyframesRouteScreen(
+    onOpenVideo: (String) -> Unit,
+) {
     val viewModel: SettingsViewModel = viewModel()
     val items by viewModel.loadAllSharedHKeyframes().collectAsStateWithLifecycle(initialValue = emptyList())
 
     SharedHKeyframesScreen(
         items = items,
-        onOpenVideo = { openVideoFromSettings(context, it) },
+        onOpenVideo = onOpenVideo,
     )
 }
 
@@ -1252,14 +1251,6 @@ private fun importDownloadedFiles(
             setPositiveButton(R.string.understood) { _, _ -> }
         }
     }
-}
-
-private fun openVideoFromSettings(context: Context, videoCode: String) {
-    val intent = Intent(context, MainActivity::class.java).apply {
-        putExtra("startVideoCode", videoCode)
-        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-    }
-    context.startActivity(intent)
 }
 
 private fun generateClearCacheSummary(context: Context, size: Long): CharSequence {

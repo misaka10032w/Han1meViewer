@@ -17,6 +17,23 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRouteScreen
+import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframeSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframeSettingsRouteScreen
+import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframesRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframesRouteScreen
+import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRouteScreen
+import com.yenaly.han1meviewer.ui.navigation.settings.MpvPlayerSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.MpvPlayerSettingsRouteScreen
+import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRouteScreen
+import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRouteScreen
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsScaffold
+import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRouteScreen
 import kotlinx.serialization.json.Json
 
 @Composable
@@ -123,6 +140,85 @@ fun MainNavHost(
                 onNavigateToVideo = { code -> navController.navigate(VideoRoute(code)) },
                 onNavigateToLocalVideo = { code, uri -> navController.navigate(VideoRoute(code, uri)) },
             )
+        }
+        composable<HomeSettingsRoute> {
+            SettingsScaffold(
+                navController = navController,
+                fallbackDestination = HomeRoute,
+            ) {
+                HomeSettingsRouteScreen(
+                    activity = activity,
+                    onNavigateToPlayerSettings = { navController.navigate(PlayerSettingsRoute) },
+                    onNavigateToHKeyframeSettings = { navController.navigate(HKeyframeSettingsRoute) },
+                    onNavigateToDownloadSettings = { navController.navigate(DownloadSettingsRoute) },
+                    onNavigateToNetworkSettings = { navController.navigate(NetworkSettingsRoute) },
+                )
+            }
+        }
+        composable<PlayerSettingsRoute> {
+            SettingsScaffold(
+                navController = navController,
+                fallbackDestination = HomeSettingsRoute,
+            ) {
+                PlayerSettingsRouteScreen(
+                    onNavigateToMpvSettings = { navController.navigate(MpvPlayerSettingsRoute) },
+                )
+            }
+        }
+        composable<NetworkSettingsRoute> {
+            SettingsScaffold(
+                navController = navController,
+                fallbackDestination = HomeSettingsRoute,
+            ) {
+                NetworkSettingsRouteScreen(activity = activity)
+            }
+        }
+        composable<DownloadSettingsRoute> {
+            SettingsScaffold(
+                navController = navController,
+                fallbackDestination = HomeSettingsRoute,
+            ) {
+                DownloadSettingsRouteScreen(activity = activity)
+            }
+        }
+        composable<MpvPlayerSettingsRoute> {
+            SettingsScaffold(
+                navController = navController,
+                fallbackDestination = PlayerSettingsRoute,
+            ) {
+                MpvPlayerSettingsRouteScreen()
+            }
+        }
+        composable<HKeyframesRoute> {
+            SettingsScaffold(
+                navController = navController,
+                fallbackDestination = HKeyframeSettingsRoute,
+            ) {
+                HKeyframesRouteScreen(
+                    onOpenVideo = { code -> navController.navigate(VideoRoute(code)) },
+                )
+            }
+        }
+        composable<SharedHKeyframesRoute> {
+            SettingsScaffold(
+                navController = navController,
+                fallbackDestination = HKeyframeSettingsRoute,
+            ) {
+                SharedHKeyframesRouteScreen(
+                    onOpenVideo = { code -> navController.navigate(VideoRoute(code)) },
+                )
+            }
+        }
+        composable<HKeyframeSettingsRoute> {
+            SettingsScaffold(
+                navController = navController,
+                fallbackDestination = HomeSettingsRoute,
+            ) {
+                HKeyframeSettingsRouteScreen(
+                    onNavigateToHKeyframes = { navController.navigate(HKeyframesRoute) },
+                    onNavigateToSharedHKeyframes = { navController.navigate(SharedHKeyframesRoute) },
+                )
+            }
         }
         composable<SearchRoute> {
             SearchRouteScreen(
