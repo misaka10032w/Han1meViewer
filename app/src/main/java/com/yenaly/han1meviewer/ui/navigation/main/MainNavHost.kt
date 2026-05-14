@@ -40,6 +40,7 @@ import kotlinx.serialization.json.Json
 fun MainNavHost(
     activity: MainActivity,
     navController: NavHostController,
+    onOpenDrawer: () -> Unit,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -86,6 +87,7 @@ fun MainNavHost(
         composable<HomeRoute> {
             HomeRouteScreen(
                 activity = activity,
+                onOpenDrawer = onOpenDrawer,
                 onNavigateToPreview = { navController.navigate(PreviewRoute) },
                 onNavigateToSearch = { query -> navController.navigate(SearchRoute(query = query)) },
                 onNavigateToSearchAdvanced = { params ->

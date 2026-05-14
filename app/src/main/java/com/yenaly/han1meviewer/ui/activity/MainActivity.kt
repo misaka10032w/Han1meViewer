@@ -65,7 +65,6 @@ class MainActivity : FrameActivity(), PermissionRequester {
 
     lateinit var navController: NavHostController
     private var showAuthGuard by mutableStateOf(true)
-    private val drawerOpenRequests = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private val pendingNavigationRequests = MutableSharedFlow<Intent>(extraBufferCapacity = 1)
     private var currentVideoRoute by mutableStateOf<VideoRoute?>(null)
 
@@ -103,7 +102,6 @@ class MainActivity : FrameActivity(), PermissionRequester {
             MainActivityContent(
                 activity = this,
                 viewModel = viewModel,
-                drawerOpenRequests = drawerOpenRequests,
                 pendingNavigationRequests = pendingNavigationRequests,
                 showAuthGuard = showAuthGuard,
                 onLogoutClick = { showLogoutConfirmDialog() },
@@ -312,10 +310,6 @@ class MainActivity : FrameActivity(), PermissionRequester {
     private fun logoutWithRefresh() {
         logout()
         viewModel.getHomePage()
-    }
-
-    fun openMainDrawer() {
-        drawerOpenRequests.tryEmit(Unit)
     }
 
     fun showVideoDetailFragment(videoCode: String, fileUri: String? = null) {

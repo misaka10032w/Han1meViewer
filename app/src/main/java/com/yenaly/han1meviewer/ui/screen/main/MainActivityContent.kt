@@ -46,7 +46,6 @@ import kotlin.time.ExperimentalTime
 fun MainActivityContent(
     activity: MainActivity,
     viewModel: MainViewModel,
-    drawerOpenRequests: Flow<Unit>,
     pendingNavigationRequests: Flow<Intent>,
     showAuthGuard: Boolean,
     onLogoutClick: () -> Unit,
@@ -86,13 +85,6 @@ fun MainActivityContent(
         }
         LaunchedEffect(currentVideoRoute) {
             onCurrentVideoRouteChanged(currentVideoRoute)
-        }
-        LaunchedEffect(Unit) {
-            drawerOpenRequests.collect {
-                if (currentMainDestination.drawerEnabled) {
-                    drawerState.open()
-                }
-            }
         }
         LaunchedEffect(Unit) {
             pendingNavigationRequests.collect { intent ->
@@ -148,6 +140,11 @@ fun MainActivityContent(
                 MainNavHost(
                     activity = activity,
                     navController = composeNavController,
+                    onOpenDrawer = {
+                        if (currentMainDestination.drawerEnabled) {
+                            scope.launch { drawerState.open() }
+                        }
+                    },
                     onDestinationChanged = { destination ->
                         currentMainDestination = destination
                     },
