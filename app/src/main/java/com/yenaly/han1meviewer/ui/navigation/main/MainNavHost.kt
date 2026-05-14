@@ -223,7 +223,6 @@ fun MainNavHost(
         }
         composable<SearchRoute> {
             SearchRouteScreen(
-                activity = activity,
                 route = it.toRoute(),
                 onBack = { navController.popBackStack() },
                 onNavigateToVideo = { code -> navController.navigate(VideoRoute(code)) },

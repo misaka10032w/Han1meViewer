@@ -59,9 +59,10 @@ import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.model.HanimePreview
-import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.bridge.videoBridgeTag
+import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
 import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.han1meviewer.ui.screen.home.DailyCheckInScreen
 import com.yenaly.han1meviewer.ui.screen.home.HomePageScreen
@@ -73,8 +74,6 @@ import com.yenaly.han1meviewer.ui.screen.home.WatchHistoryScreen
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadScreen
 import com.yenaly.han1meviewer.ui.screen.home.myplaylist.MyPlayListScreen
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewScreen
-import com.yenaly.han1meviewer.ui.bridge.videoBridgeTag
-import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
 import com.yenaly.han1meviewer.ui.screen.search.AdvancedSearchSheet
 import com.yenaly.han1meviewer.ui.screen.search.SearchScreen
 import com.yenaly.han1meviewer.ui.screen.video.ChildCommentScreen
@@ -99,7 +98,6 @@ import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import com.yenaly.yenaly_libs.utils.copyTextToClipboard
 import com.yenaly.yenaly_libs.utils.showLongToast
 import com.yenaly.yenaly_libs.utils.showShortToast
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -408,7 +406,6 @@ fun DownloadRouteScreen(
 
 @Composable
 fun SearchRouteScreen(
-    activity: MainActivity,
     route: SearchRoute,
     onBack: () -> Unit,
     onNavigateToVideo: (String) -> Unit,
