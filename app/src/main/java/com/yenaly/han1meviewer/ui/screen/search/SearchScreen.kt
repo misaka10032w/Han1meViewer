@@ -3,8 +3,10 @@ package com.yenaly.han1meviewer.ui.screen.search
 import android.util.SparseArray
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
@@ -34,11 +36,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -89,6 +91,336 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+
+// ─────────────────────────────────────────────
+// 搜索主屏幕
+// ─────────────────────────────────────────────
+
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3ExpressiveApi::class,
+    FlowPreview::class
+)
+@Composable
+fun SearchScreen(
+    modifier: Modifier = Modifier,
+    viewModel: SearchViewModel,
+    onBack: () -> Unit,
+    onOpenVideo: (String) -> Unit,
+    onLongPressCopy: (String, String) -> Unit,
+    onOpenAdvancedSearch: () -> Unit,
+    initialQuery: String? = null,
+) {
+    val searchState by viewModel.searchStateFlow.collectAsStateWithLifecycle()
+    val searchResults by viewModel.searchFlow.collectAsStateWithLifecycle()
+
+    var searchQuery by rememberSaveable(initialQuery) { mutableStateOf(initialQuery ?: "") }
+    var histories by remember { mutableStateOf<List<SearchHistoryEntity>>(emptyList()) }
+    var hasSearched by rememberSaveable(initialQuery) { mutableStateOf(false) }
+    var isRefreshing by remember { mutableStateOf(false) }
+    var filter by remember { mutableStateOf(SearchFilter()) }
+    var isSearchFocused by remember { mutableStateOf(false) }
+    var isCriteriaVisible by rememberSaveable { mutableStateOf(true) }
+
+    val refreshState = rememberPullToRefreshState()
+    val gridState = rememberLazyGridState(
+        initialFirstVisibleItemIndex = viewModel.gridFirstVisibleItemIndex,
+        initialFirstVisibleItemScrollOffset = viewModel.gridFirstVisibleItemScrollOffset,
+    )
+    val focusReq = remember { FocusRequester() }
+    val focusMgr = LocalFocusManager.current
+    val kb = LocalSoftwareKeyboardController.current
+    val scope = rememberCoroutineScope()
+
+    // 搜索执行
+    fun executeSearch() {
+        viewModel.getHanimeSearchResult(
+            viewModel.page,
+            viewModel.query,
+            viewModel.genre,
+            viewModel.sort,
+            viewModel.broad,
+            viewModel.getSearchDate(),
+            viewModel.duration,
+            tagFlatten(viewModel.tagMap),
+            brandFlatten(viewModel.brandMap)
+        )
+    }
+
+    fun doSearch(resetScroll: Boolean = false) {
+        viewModel.page = 1
+        viewModel.clearHanimeSearchResult()
+        if (resetScroll) {
+            viewModel.gridFirstVisibleItemIndex = 0
+            viewModel.gridFirstVisibleItemScrollOffset = 0
+            scope.launch {
+                gridState.scrollToItem(0)
+            }
+        }
+        executeSearch()
+    }
+
+    fun hasAdvancedFilters(): Boolean {
+        return viewModel.genre != null ||
+                viewModel.sort != null ||
+                viewModel.duration != null ||
+                viewModel.getSearchDate() != null ||
+                viewModel.tagMap.size() > 0 ||
+                viewModel.brandMap.size() > 0 ||
+                viewModel.broad
+    }
+
+    val hasSearchResults = searchResults.isNotEmpty() ||
+            ((searchState as? PageLoadingState.Success)?.info?.isNotEmpty() == true)
+
+    LaunchedEffect(
+        viewModel.genre,
+        viewModel.sort,
+        viewModel.duration,
+        viewModel.getSearchDate(),
+        viewModel.broad,
+        viewModel.tagMap.size(),
+        viewModel.brandMap.size(),
+    ) {
+        filter = SearchFilter(
+            genre = viewModel.genre,
+            sort = viewModel.sort,
+            duration = viewModel.duration,
+            releaseDate = viewModel.getSearchDate(),
+            tagCount = tagFlatten(viewModel.tagMap).size,
+            brandCount = brandFlatten(viewModel.brandMap).size,
+            broad = viewModel.broad,
+        )
+    }
+
+    // 初始 query 自动搜索
+    LaunchedEffect(initialQuery) {
+        val query = initialQuery?.trim().orEmpty()
+        if (query.isNotBlank() && !hasSearched) {
+            hasSearched = true
+            searchQuery = query
+            viewModel.query = query
+            focusMgr.clearFocus()
+            kb?.hide()
+            viewModel.insertSearchHistory(SearchHistoryEntity(query = query))
+            doSearch()
+        }
+    }
+    // 高级搜索参数（genre/sort 等）自动搜索
+    LaunchedEffect(Unit) {
+        if (!hasSearched && hasAdvancedFilters()) {
+            hasSearched = true
+            focusMgr.clearFocus()
+            kb?.hide()
+            doSearch()
+        }
+    }
+    // refreshTriggerFlow
+    LaunchedEffect(Unit) {
+        viewModel.refreshTriggerFlow.collect {
+            hasSearched = true
+            searchQuery = viewModel.query.orEmpty()
+            doSearch(resetScroll = true)
+        }
+    }
+
+    LaunchedEffect(gridState) {
+        snapshotFlow {
+            gridState.firstVisibleItemIndex to gridState.firstVisibleItemScrollOffset
+        }.distinctUntilChanged().collect { (index, offset) ->
+            viewModel.gridFirstVisibleItemIndex = index
+            viewModel.gridFirstVisibleItemScrollOffset = offset
+        }
+    }
+
+    // 历史建议防抖
+    @OptIn(FlowPreview::class)
+    LaunchedEffect(searchQuery) {
+        if (searchQuery.isNotBlank()) {
+            delay(300); viewModel.loadAllSearchHistories(searchQuery).collect { histories = it }
+        } else {
+            viewModel.loadAllSearchHistories().collect { histories = it.take(10) }
+        }
+    }
+
+    LaunchedEffect(initialQuery, hasSearchResults) {
+        if (initialQuery.isNullOrBlank() && !hasAdvancedFilters() && !hasSearchResults) {
+            focusReq.requestFocus()
+        } else {
+            focusMgr.clearFocus()
+            kb?.hide()
+        }
+    }
+    LaunchedEffect(searchState) {
+        if (searchState !is PageLoadingState.Loading) isRefreshing = false
+    }
+    LaunchedEffect(filter.isNotEmpty()) {
+        if (filter.isNotEmpty()) isCriteriaVisible = true
+    }
+    LaunchedEffect(hasSearchResults) {
+        if (!hasSearchResults) isCriteriaVisible = true
+    }
+    LaunchedEffect(gridState, hasSearchResults, filter.isNotEmpty()) {
+        if (!hasSearchResults || !filter.isNotEmpty()) return@LaunchedEffect
+
+        var previousIndex = gridState.firstVisibleItemIndex
+        var previousOffset = gridState.firstVisibleItemScrollOffset
+        snapshotFlow {
+            gridState.firstVisibleItemIndex to gridState.firstVisibleItemScrollOffset
+        }.distinctUntilChanged().collect { (index, offset) ->
+            val movedForward =
+                index > previousIndex || (index == previousIndex && offset > previousOffset)
+            val movedBackward =
+                index < previousIndex || (index == previousIndex && offset < previousOffset)
+
+            when {
+                index == 0 && offset == 0 -> isCriteriaVisible = true
+                movedForward -> isCriteriaVisible = false
+                movedBackward -> isCriteriaVisible = true
+            }
+
+            previousIndex = index
+            previousOffset = offset
+        }
+    }
+
+    fun clearSearchCriteria(
+        clearGenre: Boolean = false,
+        clearSort: Boolean = false,
+        clearDuration: Boolean = false,
+        clearTags: Boolean = false,
+        clearBrands: Boolean = false,
+        clearBroad: Boolean = false,
+    ) {
+        if (clearGenre) viewModel.genre = null
+        if (clearSort) viewModel.sort = null
+        if (clearDuration) {
+            viewModel.duration = null
+            viewModel.year = null
+            viewModel.month = null
+            viewModel.approxTime = null
+        }
+        if (clearTags) viewModel.tagMap.clear()
+        if (clearBrands) viewModel.brandMap.clear()
+        if (clearBroad) viewModel.broad = false
+        filter = SearchFilter(
+            genre = viewModel.genre,
+            sort = viewModel.sort,
+            duration = viewModel.duration,
+            releaseDate = viewModel.getSearchDate(),
+            tagCount = tagFlatten(viewModel.tagMap).size,
+            brandCount = brandFlatten(viewModel.brandMap).size,
+            broad = viewModel.broad,
+        )
+        doSearch(resetScroll = true)
+    }
+
+    // 返回键：有焦点时先关键盘
+    BackHandler(enabled = isSearchFocused) { focusMgr.clearFocus(); kb?.hide() }
+
+    Column(modifier = modifier.fillMaxSize()) {
+        SearchAppBar(searchQuery, { searchQuery = it }, onSearch = {
+            val q = searchQuery.trim()
+            val shouldSearch = q.isNotBlank() || hasAdvancedFilters()
+            if (shouldSearch) {
+                hasSearched = true; viewModel.query = q.ifBlank { null }
+                focusMgr.clearFocus(); kb?.hide()
+                if (q.isNotBlank()) {
+                    viewModel.insertSearchHistory(
+                        SearchHistoryEntity(query = q)
+                    )
+                }
+                doSearch(resetScroll = true)
+            }
+        }, onBack, onOpenAdvancedSearch, { isSearchFocused = it }, focusReq)
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        AnimatedVisibility(
+            visible = filter.isNotEmpty() && isCriteriaVisible,
+            enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
+            exit = fadeOut() + shrinkVertically(shrinkTowards = Alignment.Top),
+        ) {
+            ActiveSearchCriteria(
+                filter = filter,
+                viewModel = viewModel,
+                onClearAll = {
+                    clearSearchCriteria(
+                        clearGenre = true,
+                        clearSort = true,
+                        clearDuration = true,
+                        clearTags = true,
+                        clearBrands = true,
+                        clearBroad = true,
+                    )
+                },
+                onClearGenre = { clearSearchCriteria(clearGenre = true) },
+                onClearSort = { clearSearchCriteria(clearSort = true) },
+                onClearDuration = { clearSearchCriteria(clearDuration = true) },
+                onClearTagCount = { clearSearchCriteria(clearTags = true) },
+                onClearBrandCount = { clearSearchCriteria(clearBrands = true) },
+                onClearBroad = { clearSearchCriteria(clearBroad = true) },
+            )
+        }
+
+        Box(
+            Modifier
+                .fillMaxSize()
+                .pullToRefresh(
+                    state = refreshState,
+                    isRefreshing = isRefreshing,
+                    onRefresh = { isRefreshing = true; doSearch() })
+        ) {
+            if (hasSearched) {
+                // 已触发搜索，显示结果
+                val showResults = searchResults.ifEmpty {
+                    (searchState as? PageLoadingState.Success)?.info ?: emptyList()
+                }
+                Box(Modifier.fillMaxSize()) {
+                    SearchStateIndicator(searchState, showResults.size)
+                    if (showResults.isNotEmpty()) SearchResultsGrid(
+                        showResults,
+                        searchState,
+                        onOpenVideo,
+                        onLongPressCopy,
+                        { viewModel.page++; executeSearch() },
+                        searchState !is PageLoadingState.NoMoreData,
+                        gridState
+                    )
+                }
+            } else if (searchQuery.isBlank() && histories.isNotEmpty()) {
+                // 未搜索 + 搜索框为空 → 显示历史
+                Column(Modifier.fillMaxSize()) {
+                    Text(
+                        stringResource(R.string.recent_searches),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                    SearchHistoryList(
+                        histories,
+                        { query ->
+                            searchQuery = query; hasSearched = true; viewModel.query =
+                            query; focusMgr.clearFocus(); kb?.hide(); viewModel.insertSearchHistory(
+                            SearchHistoryEntity(query = query)
+                        ); doSearch(resetScroll = true)
+                        },
+                        { h ->
+                            viewModel.deleteSearchHistory(h); histories =
+                            histories.filter { it.id != h.id }
+                        })
+                }
+            }
+            if (isRefreshing) Box(Modifier.align(Alignment.TopCenter)) {
+                PullToRefreshDefaults.Indicator(
+                    refreshState,
+                    isRefreshing,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                )
+            }
+        }
+    }
+}
+
 
 // ─────────────────────────────────────────────
 // 搜索 App Bar
@@ -240,11 +572,11 @@ fun SearchResultsGrid(
     LaunchedEffect(gridState, videos.size) {
         snapshotFlow { gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }.map { it ?: 0 }
             .distinctUntilChanged().collect { last ->
-            if (!isLoadingMore && last >= videos.size - 6 && canLoadMore) {
-                isLoadingMore = true
-                onLoadMore()
+                if (!isLoadingMore && last >= videos.size - 6 && canLoadMore) {
+                    isLoadingMore = true
+                    onLoadMore()
+                }
             }
-        }
     }
     LaunchedEffect(state) { if (state !is PageLoadingState.Loading) isLoadingMore = false }
     Box(modifier = modifier.fillMaxSize()) {
@@ -315,6 +647,7 @@ fun SearchStateIndicator(
             ),
             picRes = R.drawable.h_chan_sad
         )
+
         is PageLoadingState.Success -> if (resultCount == 0) EmptyContent(
             hint = stringResource(R.string.search_no_results),
             picRes = R.drawable.h_chan_speechless
@@ -333,12 +666,12 @@ data class SearchFilter(
 ) {
     fun isNotEmpty() =
         genre != null ||
-            sort != null ||
-            duration != null ||
-            releaseDate != null ||
-            tagCount > 0 ||
-            brandCount > 0 ||
-            broad
+                sort != null ||
+                duration != null ||
+                releaseDate != null ||
+                tagCount > 0 ||
+                brandCount > 0 ||
+                broad
 }
 
 @Composable
@@ -369,7 +702,7 @@ private fun ActiveSearchCriteria(
                 onClick = onClearGenre,
                 label = { Text("${stringResource(R.string.type)}: $label") },
                 colors = AssistChipDefaults.assistChipColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 ),
             )
         }
@@ -378,7 +711,7 @@ private fun ActiveSearchCriteria(
                 onClick = onClearTagCount,
                 label = { Text("${stringResource(R.string.tag)} (${filter.tagCount})") },
                 colors = AssistChipDefaults.assistChipColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 ),
             )
         }
@@ -388,7 +721,7 @@ private fun ActiveSearchCriteria(
                 onClick = onClearSort,
                 label = { Text("${stringResource(R.string.sort_option)}: $label") },
                 colors = AssistChipDefaults.assistChipColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 ),
             )
         }
@@ -397,7 +730,7 @@ private fun ActiveSearchCriteria(
                 onClick = onClearDuration,
                 label = { Text("${stringResource(R.string.release_date)}: $it") },
                 colors = AssistChipDefaults.assistChipColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 ),
             )
         }
@@ -407,7 +740,7 @@ private fun ActiveSearchCriteria(
                 onClick = onClearDuration,
                 label = { Text("${stringResource(R.string.duration)}: $label") },
                 colors = AssistChipDefaults.assistChipColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 ),
             )
         }
@@ -416,7 +749,7 @@ private fun ActiveSearchCriteria(
                 onClick = onClearBrandCount,
                 label = { Text("${stringResource(R.string.brand)} (${filter.brandCount})") },
                 colors = AssistChipDefaults.assistChipColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 ),
             )
         }
@@ -425,7 +758,7 @@ private fun ActiveSearchCriteria(
                 onClick = onClearBroad,
                 label = { Text(stringResource(R.string.pair_widely)) },
                 colors = AssistChipDefaults.assistChipColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 ),
             )
         }
@@ -433,298 +766,9 @@ private fun ActiveSearchCriteria(
             onClick = onClearAll,
             label = { Text(stringResource(R.string.reset)) },
             colors = AssistChipDefaults.assistChipColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
             ),
         )
-    }
-}
-
-// ─────────────────────────────────────────────
-// 搜索主屏幕
-// ─────────────────────────────────────────────
-
-@OptIn(
-    ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3ExpressiveApi::class,
-    FlowPreview::class
-)
-@Composable
-fun SearchScreen(
-    viewModel: SearchViewModel, onBack: () -> Unit, onOpenVideo: (String) -> Unit,
-    onLongPressCopy: (String, String) -> Unit, onOpenAdvancedSearch: () -> Unit,
-    initialQuery: String? = null, modifier: Modifier = Modifier
-) {
-    val searchState by viewModel.searchStateFlow.collectAsStateWithLifecycle()
-    val searchResults by viewModel.searchFlow.collectAsStateWithLifecycle()
-
-    var searchQuery by rememberSaveable(initialQuery) { mutableStateOf(initialQuery ?: "") }
-    var histories by remember { mutableStateOf<List<SearchHistoryEntity>>(emptyList()) }
-    var hasSearched by rememberSaveable(initialQuery) { mutableStateOf(false) }
-    var isRefreshing by remember { mutableStateOf(false) }
-    var filter by remember { mutableStateOf(SearchFilter()) }
-    var isSearchFocused by remember { mutableStateOf(false) }
-
-    val refreshState = rememberPullToRefreshState()
-    val gridState = rememberLazyGridState(
-        initialFirstVisibleItemIndex = viewModel.gridFirstVisibleItemIndex,
-        initialFirstVisibleItemScrollOffset = viewModel.gridFirstVisibleItemScrollOffset,
-    )
-    val focusReq = remember { FocusRequester() }
-    val focusMgr = LocalFocusManager.current
-    val kb = LocalSoftwareKeyboardController.current
-    val scope = rememberCoroutineScope()
-
-    // 搜索执行
-    fun executeSearch() {
-        viewModel.getHanimeSearchResult(
-            viewModel.page,
-            viewModel.query,
-            viewModel.genre,
-            viewModel.sort,
-            viewModel.broad,
-            viewModel.getSearchDate(),
-            viewModel.duration,
-            tagFlatten(viewModel.tagMap),
-            brandFlatten(viewModel.brandMap)
-        )
-    }
-
-    fun doSearch(resetScroll: Boolean = false) {
-        viewModel.page = 1
-        viewModel.clearHanimeSearchResult()
-        if (resetScroll) {
-            viewModel.gridFirstVisibleItemIndex = 0
-            viewModel.gridFirstVisibleItemScrollOffset = 0
-            scope.launch {
-                gridState.scrollToItem(0)
-            }
-        }
-        executeSearch()
-    }
-
-    fun hasAdvancedFilters(): Boolean {
-        return viewModel.genre != null ||
-            viewModel.sort != null ||
-            viewModel.duration != null ||
-            viewModel.getSearchDate() != null ||
-            viewModel.tagMap.size() > 0 ||
-            viewModel.brandMap.size() > 0 ||
-            viewModel.broad
-    }
-
-    val hasSearchResults = searchResults.isNotEmpty() ||
-        ((searchState as? PageLoadingState.Success)?.info?.isNotEmpty() == true)
-
-    LaunchedEffect(
-        viewModel.genre,
-        viewModel.sort,
-        viewModel.duration,
-        viewModel.getSearchDate(),
-        viewModel.broad,
-        viewModel.tagMap.size(),
-        viewModel.brandMap.size(),
-    ) {
-        filter = SearchFilter(
-            genre = viewModel.genre,
-            sort = viewModel.sort,
-            duration = viewModel.duration,
-            releaseDate = viewModel.getSearchDate(),
-            tagCount = tagFlatten(viewModel.tagMap).size,
-            brandCount = brandFlatten(viewModel.brandMap).size,
-            broad = viewModel.broad,
-        )
-    }
-
-    // 初始 query 自动搜索
-    LaunchedEffect(initialQuery) {
-        val query = initialQuery?.trim().orEmpty()
-        if (query.isNotBlank() && !hasSearched) {
-            hasSearched = true
-            searchQuery = query
-            viewModel.query = query
-            focusMgr.clearFocus()
-            kb?.hide()
-            viewModel.insertSearchHistory(SearchHistoryEntity(query = query))
-            doSearch()
-        }
-    }
-    // 高级搜索参数（genre/sort 等）自动搜索
-    LaunchedEffect(Unit) {
-        if (!hasSearched && hasAdvancedFilters()) {
-            hasSearched = true
-            focusMgr.clearFocus()
-            kb?.hide()
-            doSearch()
-        }
-    }
-    // refreshTriggerFlow
-    LaunchedEffect(Unit) {
-        viewModel.refreshTriggerFlow.collect {
-            hasSearched = true
-            searchQuery = viewModel.query.orEmpty()
-            doSearch(resetScroll = true)
-        }
-    }
-
-    LaunchedEffect(gridState) {
-        snapshotFlow {
-            gridState.firstVisibleItemIndex to gridState.firstVisibleItemScrollOffset
-        }.distinctUntilChanged().collect { (index, offset) ->
-            viewModel.gridFirstVisibleItemIndex = index
-            viewModel.gridFirstVisibleItemScrollOffset = offset
-        }
-    }
-
-    // 历史建议防抖
-    @OptIn(FlowPreview::class)
-    LaunchedEffect(searchQuery) {
-        if (searchQuery.isNotBlank()) {
-            delay(300); viewModel.loadAllSearchHistories(searchQuery).collect { histories = it }
-        } else {
-            viewModel.loadAllSearchHistories().collect { histories = it.take(10) }
-        }
-    }
-
-    LaunchedEffect(initialQuery, hasSearchResults) {
-        if (initialQuery.isNullOrBlank() && !hasAdvancedFilters() && !hasSearchResults) {
-            focusReq.requestFocus()
-        } else {
-            focusMgr.clearFocus()
-            kb?.hide()
-        }
-    }
-    LaunchedEffect(searchState) {
-        if (searchState !is PageLoadingState.Loading) isRefreshing = false
-    }
-
-    fun clearSearchCriteria(
-        clearGenre: Boolean = false,
-        clearSort: Boolean = false,
-        clearDuration: Boolean = false,
-        clearTags: Boolean = false,
-        clearBrands: Boolean = false,
-        clearBroad: Boolean = false,
-    ) {
-        if (clearGenre) viewModel.genre = null
-        if (clearSort) viewModel.sort = null
-        if (clearDuration) {
-            viewModel.duration = null
-            viewModel.year = null
-            viewModel.month = null
-            viewModel.approxTime = null
-        }
-        if (clearTags) viewModel.tagMap.clear()
-        if (clearBrands) viewModel.brandMap.clear()
-        if (clearBroad) viewModel.broad = false
-        filter = SearchFilter(
-            genre = viewModel.genre,
-            sort = viewModel.sort,
-            duration = viewModel.duration,
-            releaseDate = viewModel.getSearchDate(),
-            tagCount = tagFlatten(viewModel.tagMap).size,
-            brandCount = brandFlatten(viewModel.brandMap).size,
-            broad = viewModel.broad,
-        )
-        doSearch(resetScroll = true)
-    }
-
-    // 返回键：有焦点时先关键盘
-    BackHandler(enabled = isSearchFocused) { focusMgr.clearFocus(); kb?.hide() }
-
-    Column(modifier = modifier.fillMaxSize()) {
-        SearchAppBar(searchQuery, { searchQuery = it }, onSearch = {
-            val q = searchQuery.trim()
-            val shouldSearch = q.isNotBlank() || hasAdvancedFilters()
-            if (shouldSearch) {
-                hasSearched = true; viewModel.query = q.ifBlank { null }
-                focusMgr.clearFocus(); kb?.hide()
-                if (q.isNotBlank()) {
-                    viewModel.insertSearchHistory(
-                    SearchHistoryEntity(query = q)
-                    )
-                }
-                doSearch(resetScroll = true)
-            }
-        }, onBack, onOpenAdvancedSearch, { isSearchFocused = it }, focusReq)
-
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        ActiveSearchCriteria(
-            filter = filter,
-            viewModel = viewModel,
-            onClearAll = {
-                clearSearchCriteria(
-                    clearGenre = true,
-                    clearSort = true,
-                    clearDuration = true,
-                    clearTags = true,
-                    clearBrands = true,
-                    clearBroad = true,
-                )
-            },
-            onClearGenre = { clearSearchCriteria(clearGenre = true) },
-            onClearSort = { clearSearchCriteria(clearSort = true) },
-            onClearDuration = { clearSearchCriteria(clearDuration = true) },
-            onClearTagCount = { clearSearchCriteria(clearTags = true) },
-            onClearBrandCount = { clearSearchCriteria(clearBrands = true) },
-            onClearBroad = { clearSearchCriteria(clearBroad = true) },
-        )
-
-        Box(
-            Modifier
-                .fillMaxSize()
-                .pullToRefresh(
-                    state = refreshState,
-                    isRefreshing = isRefreshing,
-                    onRefresh = { isRefreshing = true; doSearch() })
-        ) {
-            if (hasSearched) {
-                // 已触发搜索，显示结果
-                val showResults = searchResults.ifEmpty {
-                    (searchState as? PageLoadingState.Success)?.info ?: emptyList()
-                }
-                Box(Modifier.fillMaxSize()) {
-                    SearchStateIndicator(searchState, showResults.size)
-                    if (showResults.isNotEmpty()) SearchResultsGrid(
-                        showResults,
-                        searchState,
-                        onOpenVideo,
-                        onLongPressCopy,
-                        { viewModel.page++; executeSearch() },
-                        searchState !is PageLoadingState.NoMoreData,
-                        gridState
-                    )
-                }
-            } else if (searchQuery.isBlank() && histories.isNotEmpty()) {
-                // 未搜索 + 搜索框为空 → 显示历史
-                Column(Modifier.fillMaxSize()) {
-                    Text(
-                        stringResource(R.string.recent_searches),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
-                    SearchHistoryList(
-                        histories,
-                        { query ->
-                            searchQuery = query; hasSearched = true; viewModel.query =
-                            query; focusMgr.clearFocus(); kb?.hide(); viewModel.insertSearchHistory(
-                            SearchHistoryEntity(query = query)
-                        ); doSearch(resetScroll = true)
-                        },
-                        { h ->
-                            viewModel.deleteSearchHistory(h); histories =
-                            histories.filter { it.id != h.id }
-                        })
-                }
-            }
-            if (isRefreshing) Box(Modifier.align(Alignment.TopCenter)) {
-                PullToRefreshDefaults.Indicator(
-                    refreshState,
-                    isRefreshing,
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                )
-            }
-        }
     }
 }
 
