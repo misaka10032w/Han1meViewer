@@ -7,14 +7,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
-import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,7 +22,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
@@ -39,6 +36,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -52,12 +50,14 @@ import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.logic.model.SearchOption.Companion.flatten
 import com.yenaly.han1meviewer.logic.model.SearchOption.Companion.get
+import com.yenaly.han1meviewer.ui.component.SelectableTag
 import com.yenaly.han1meviewer.ui.component.SettingChoiceItem
+import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
+import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.model.AdvancedSearchDialogState
 import com.yenaly.han1meviewer.ui.model.SearchScopeSection
 import com.yenaly.han1meviewer.ui.viewmodel.SearchViewModel
 import kotlinx.coroutines.launch
-import kotlin.collections.toList
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -179,7 +179,11 @@ fun AdvancedSearchSheet(
                                     onCheckedChange = { broad = it },
                                 )
                             }
-                            PrimaryTabRow(selectedTabIndex = pagerState.currentPage) {
+                            PrimaryScrollableTabRow(
+                                selectedTabIndex = pagerState.currentPage,
+                                edgePadding = 16.dp,
+                                divider = {}
+                            ) {
                                 state.scopes.forEachIndexed { index, scopeSection ->
                                     Tab(
                                         selected = pagerState.currentPage == index,
@@ -188,13 +192,19 @@ fun AdvancedSearchSheet(
                                                 pagerState.animateScrollToPage(index)
                                             }
                                         },
-                                        text = { Text(stringResource(scopeSection.titleRes)) },
+                                        text = {
+                                            Text(
+                                                text = stringResource(scopeSection.titleRes),
+                                                softWrap = false
+                                            )
+                                        },
                                     )
                                 }
                             }
                             HorizontalPager(
                                 state = pagerState,
-                                modifier = Modifier.heightIn(max = 420.dp),
+                                modifier = Modifier.height(320.dp),
+                                verticalAlignment = Alignment.Top
                             ) { page ->
                                 val scopeSection = state.scopes[page]
                                 LazyVerticalGrid(
@@ -204,8 +214,8 @@ fun AdvancedSearchSheet(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
                                     items(scopeSection.options, key = { it.searchKey.orEmpty() }) { option ->
-                                        SettingChoiceItem(
-                                            title = option.value,
+                                        SelectableTag(
+                                            text = option.value,
                                             selected = option in selected,
                                             onClick = {
                                                 selected = selected.toMutableSet().also {
@@ -359,7 +369,6 @@ fun AdvancedSearchSheet(
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp, vertical = 8.dp),
             shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -453,12 +462,8 @@ fun AdvancedSearchSheet(
                                     key = "tag",
                                     titleRes = R.string.tag,
                                     scopes = listOf(
-                                        SearchScopeSection(
-                                            R.string.video_attr,
-                                            viewModel.tags[R.string.video_attr],
-                                            spanCount = 1
-                                        ),
-                                        SearchScopeSection(R.string.relationship, viewModel.tags[R.string.relationship], spanCount = 2),
+                                        SearchScopeSection(R.string.video_attr, viewModel.tags[R.string.video_attr]),
+                                        SearchScopeSection(R.string.relationship, viewModel.tags[R.string.relationship]),
                                         SearchScopeSection(R.string.characteristics, viewModel.tags[R.string.characteristics]),
                                         SearchScopeSection(R.string.appearance_and_figure, viewModel.tags[R.string.appearance_and_figure]),
                                         SearchScopeSection(R.string.story_plot, viewModel.tags[R.string.story_plot]),
@@ -550,7 +555,7 @@ fun AdvancedSearchSheet(
                 item {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         Text(

@@ -11,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,6 +37,8 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -322,45 +325,117 @@ fun SearchStateIndicator(
 data class SearchFilter(
     val genre: String? = null,
     val sort: String? = null,
-    val duration: String? = null
+    val duration: String? = null,
+    val releaseDate: String? = null,
+    val tagCount: Int = 0,
+    val brandCount: Int = 0,
+    val broad: Boolean = false,
 ) {
-    fun isNotEmpty() = genre != null || sort != null || duration != null
+    fun isNotEmpty() =
+        genre != null ||
+            sort != null ||
+            duration != null ||
+            releaseDate != null ||
+            tagCount > 0 ||
+            brandCount > 0 ||
+            broad
 }
 
 @Composable
-fun ActiveFilterChips(
+private fun ActiveSearchCriteria(
     filter: SearchFilter,
-    onClearFilter: () -> Unit,
     viewModel: SearchViewModel,
-    modifier: Modifier = Modifier
+    onClearAll: () -> Unit,
+    onClearGenre: () -> Unit,
+    onClearSort: () -> Unit,
+    onClearDuration: () -> Unit,
+    onClearTagCount: () -> Unit,
+    onClearBrandCount: () -> Unit,
+    onClearBroad: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     if (!filter.isNotEmpty()) return
-    Row(
+
+    FlowRow(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        listOfNotNull(
-            filter.genre?.let {
-                viewModel.genres.find { g -> g.searchKey == it }?.name ?: it
-            },
-            filter.sort?.let { viewModel.sortOptions.find { s -> s.searchKey == it }?.name ?: it },
-            filter.duration?.let {
-                viewModel.durations.find { d -> d.searchKey == it }?.name ?: it
-            }).forEach { label ->
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                modifier = Modifier.clickable { onClearFilter() }) {
-                Text(
-                    label,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                )
-            }
+        filter.genre?.let {
+            val label = viewModel.genres.find { option -> option.searchKey == it }?.name ?: it
+            AssistChip(
+                onClick = onClearGenre,
+                label = { Text("${stringResource(R.string.type)}: $label") },
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ),
+            )
         }
+        if (filter.tagCount > 0) {
+            AssistChip(
+                onClick = onClearTagCount,
+                label = { Text("${stringResource(R.string.tag)} (${filter.tagCount})") },
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ),
+            )
+        }
+        filter.sort?.let {
+            val label = viewModel.sortOptions.find { option -> option.searchKey == it }?.name ?: it
+            AssistChip(
+                onClick = onClearSort,
+                label = { Text("${stringResource(R.string.sort_option)}: $label") },
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ),
+            )
+        }
+        filter.releaseDate?.let {
+            AssistChip(
+                onClick = onClearDuration,
+                label = { Text("${stringResource(R.string.release_date)}: $it") },
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ),
+            )
+        }
+        filter.duration?.let {
+            val label = viewModel.durations.find { option -> option.searchKey == it }?.name ?: it
+            AssistChip(
+                onClick = onClearDuration,
+                label = { Text("${stringResource(R.string.duration)}: $label") },
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ),
+            )
+        }
+        if (filter.brandCount > 0) {
+            AssistChip(
+                onClick = onClearBrandCount,
+                label = { Text("${stringResource(R.string.brand)} (${filter.brandCount})") },
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ),
+            )
+        }
+        if (filter.broad) {
+            AssistChip(
+                onClick = onClearBroad,
+                label = { Text(stringResource(R.string.pair_widely)) },
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ),
+            )
+        }
+        AssistChip(
+            onClick = onClearAll,
+            label = { Text(stringResource(R.string.reset)) },
+            colors = AssistChipDefaults.assistChipColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ),
+        )
     }
 }
 
@@ -440,6 +515,26 @@ fun SearchScreen(
     val hasSearchResults = searchResults.isNotEmpty() ||
         ((searchState as? PageLoadingState.Success)?.info?.isNotEmpty() == true)
 
+    LaunchedEffect(
+        viewModel.genre,
+        viewModel.sort,
+        viewModel.duration,
+        viewModel.getSearchDate(),
+        viewModel.broad,
+        viewModel.tagMap.size(),
+        viewModel.brandMap.size(),
+    ) {
+        filter = SearchFilter(
+            genre = viewModel.genre,
+            sort = viewModel.sort,
+            duration = viewModel.duration,
+            releaseDate = viewModel.getSearchDate(),
+            tagCount = tagFlatten(viewModel.tagMap).size,
+            brandCount = brandFlatten(viewModel.brandMap).size,
+            broad = viewModel.broad,
+        )
+    }
+
     // 初始 query 自动搜索
     LaunchedEffect(initialQuery) {
         val query = initialQuery?.trim().orEmpty()
@@ -502,6 +597,37 @@ fun SearchScreen(
         if (searchState !is PageLoadingState.Loading) isRefreshing = false
     }
 
+    fun clearSearchCriteria(
+        clearGenre: Boolean = false,
+        clearSort: Boolean = false,
+        clearDuration: Boolean = false,
+        clearTags: Boolean = false,
+        clearBrands: Boolean = false,
+        clearBroad: Boolean = false,
+    ) {
+        if (clearGenre) viewModel.genre = null
+        if (clearSort) viewModel.sort = null
+        if (clearDuration) {
+            viewModel.duration = null
+            viewModel.year = null
+            viewModel.month = null
+            viewModel.approxTime = null
+        }
+        if (clearTags) viewModel.tagMap.clear()
+        if (clearBrands) viewModel.brandMap.clear()
+        if (clearBroad) viewModel.broad = false
+        filter = SearchFilter(
+            genre = viewModel.genre,
+            sort = viewModel.sort,
+            duration = viewModel.duration,
+            releaseDate = viewModel.getSearchDate(),
+            tagCount = tagFlatten(viewModel.tagMap).size,
+            brandCount = brandFlatten(viewModel.brandMap).size,
+            broad = viewModel.broad,
+        )
+        doSearch(resetScroll = true)
+    }
+
     // 返回键：有焦点时先关键盘
     BackHandler(enabled = isSearchFocused) { focusMgr.clearFocus(); kb?.hide() }
 
@@ -522,13 +648,25 @@ fun SearchScreen(
         }, onBack, onOpenAdvancedSearch, { isSearchFocused = it }, focusReq)
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        ActiveFilterChips(
-            filter,
-            {
-                filter = SearchFilter(); viewModel.genre = null; viewModel.sort =
-                null; viewModel.duration = null; doSearch(resetScroll = true)
+        ActiveSearchCriteria(
+            filter = filter,
+            viewModel = viewModel,
+            onClearAll = {
+                clearSearchCriteria(
+                    clearGenre = true,
+                    clearSort = true,
+                    clearDuration = true,
+                    clearTags = true,
+                    clearBrands = true,
+                    clearBroad = true,
+                )
             },
-            viewModel
+            onClearGenre = { clearSearchCriteria(clearGenre = true) },
+            onClearSort = { clearSearchCriteria(clearSort = true) },
+            onClearDuration = { clearSearchCriteria(clearDuration = true) },
+            onClearTagCount = { clearSearchCriteria(clearTags = true) },
+            onClearBrandCount = { clearSearchCriteria(clearBrands = true) },
+            onClearBroad = { clearSearchCriteria(clearBroad = true) },
         )
 
         Box(

@@ -109,7 +109,7 @@ fun LazyVerticalGrid(
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     userScrollEnabled: Boolean = true,
-    enableItemAnimation: Boolean = true,
+    enableItemAnimation: Boolean = false,
     staggerStepMillis: Int = 24,
     maxStaggerIndex: Int = 12,
     content: AnimatedLazyGridScope.() -> Unit,
