@@ -121,6 +121,7 @@ fun SearchScreen(
     var filter by remember { mutableStateOf(SearchFilter()) }
     var isSearchFocused by remember { mutableStateOf(false) }
     var isCriteriaVisible by rememberSaveable { mutableStateOf(true) }
+    var isLeavingScreen by remember { mutableStateOf(false) }
 
     val refreshState = rememberPullToRefreshState()
     val gridState = rememberLazyGridState(
@@ -315,6 +316,12 @@ fun SearchScreen(
         doSearch(resetScroll = true)
     }
 
+    fun handleBack() {
+        if (isLeavingScreen) return
+        isLeavingScreen = true
+        onBack()
+    }
+
     // 返回键：有焦点时先关键盘
     BackHandler(enabled = isSearchFocused) { focusMgr.clearFocus(); kb?.hide() }
 
@@ -332,7 +339,7 @@ fun SearchScreen(
                 }
                 doSearch(resetScroll = true)
             }
-        }, onBack, onOpenAdvancedSearch, { isSearchFocused = it }, focusReq)
+        }, ::handleBack, onOpenAdvancedSearch, { isSearchFocused = it }, focusReq)
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         AnimatedVisibility(
