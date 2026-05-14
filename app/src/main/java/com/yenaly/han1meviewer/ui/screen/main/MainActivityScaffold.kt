@@ -34,13 +34,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.ComponentPreview
+import com.yenaly.han1meviewer.ui.navigation.main.MainDrawerDestination
 import kotlinx.coroutines.launch
 
 @Composable
 fun MainActivityScaffold(
     drawerState: DrawerState,
     drawerEnabled: Boolean,
-    selectedItemId: Int?,
+    selectedDestination: MainDrawerDestination?,
     avatarUrl: String?,
     username: String?,
     isLoggedIn: Boolean,
@@ -48,7 +49,7 @@ fun MainActivityScaffold(
     currentSite: String,
     onAvatarClick: () -> Unit,
     onSwitchSiteClick: () -> Unit,
-    onDrawerItemSelected: (Int) -> Boolean,
+    onDrawerItemSelected: (MainDrawerDestination) -> Boolean,
     content: @Composable () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -75,18 +76,18 @@ fun MainActivityScaffold(
                     onSwitchSiteClick = onSwitchSiteClick,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                MainDrawerPrimaryItems(selectedItemId, onDrawerItemSelected)
+                MainDrawerPrimaryItems(selectedDestination, onDrawerItemSelected)
                 MainDrawerSection(
                     titleRes = R.string.my_list,
                     items = listOf(
-                        MainDrawerItemSpec(R.id.nv_watch_later, R.drawable.ic_baseline_watch_later_24, R.string.watch_later),
-                        MainDrawerItemSpec(R.id.nv_fav_video, R.drawable.ic_baseline_favorite_24, R.string.fav_video),
-                        MainDrawerItemSpec(R.id.nv_playlist, R.drawable.ic_baseline_list_24, R.string.play_list),
-                        MainDrawerItemSpec(R.id.nv_subscription, R.drawable.ic_subscribtion, R.string.my_subscribe),
+                        MainDrawerDestination.WatchLater,
+                        MainDrawerDestination.FavVideo,
+                        MainDrawerDestination.Playlist,
+                        MainDrawerDestination.Subscription,
                     ),
-                    selectedItemId = selectedItemId,
-                    onItemClick = { id ->
-                        if (onDrawerItemSelected(id)) {
+                    selectedDestination = selectedDestination,
+                    onItemClick = { destination ->
+                        if (onDrawerItemSelected(destination)) {
                             scope.launch { drawerState.close() }
                         }
                     },
@@ -94,12 +95,12 @@ fun MainActivityScaffold(
                 MainDrawerSection(
                     titleRes = R.string.video,
                     items = listOf(
-                        MainDrawerItemSpec(R.id.nv_watch_history, R.drawable.ic_baseline_history_24, R.string.watch_history),
-                        MainDrawerItemSpec(R.id.nv_download, R.drawable.ic_baseline_download_24, R.string.download),
+                        MainDrawerDestination.WatchHistory,
+                        MainDrawerDestination.Download,
                     ),
-                    selectedItemId = selectedItemId,
-                    onItemClick = { id ->
-                        if (onDrawerItemSelected(id)) {
+                    selectedDestination = selectedDestination,
+                    onItemClick = { destination ->
+                        if (onDrawerItemSelected(destination)) {
                             scope.launch { drawerState.close() }
                         }
                     },
@@ -133,13 +134,13 @@ fun MainActivityScaffold(
 
 @Composable
 private fun MainDrawerPrimaryItems(
-    selectedItemId: Int?,
-    onDrawerItemSelected: (Int) -> Boolean,
+    selectedDestination: MainDrawerDestination?,
+    onDrawerItemSelected: (MainDrawerDestination) -> Boolean,
 ) {
     val primaryItems = listOf(
-        MainDrawerItemSpec(R.id.nv_home_page, R.drawable.ic_baseline_home_24, R.string.home_page),
-        MainDrawerItemSpec(R.id.nv_settings, R.drawable.ic_baseline_settings_24, R.string.settings),
-        MainDrawerItemSpec(R.id.nv_daily_check_in, R.drawable.ic_baseline_thumb_up_alt_24, R.string.has_mastur),
+        MainDrawerDestination.Home,
+        MainDrawerDestination.Settings,
+        MainDrawerDestination.DailyCheckIn,
     )
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         primaryItems.forEach { item ->
@@ -151,9 +152,9 @@ private fun MainDrawerPrimaryItems(
                         contentDescription = stringResource(item.titleRes),
                     )
                 },
-                selected = selectedItemId == item.id,
+                selected = selectedDestination == item,
                 onClick = {
-                    onDrawerItemSelected(item.id)
+                    onDrawerItemSelected(item)
                 },
                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
             )
@@ -164,9 +165,9 @@ private fun MainDrawerPrimaryItems(
 @Composable
 private fun MainDrawerSection(
     titleRes: Int,
-    items: List<MainDrawerItemSpec>,
-    selectedItemId: Int?,
-    onItemClick: (Int) -> Unit,
+    items: List<MainDrawerDestination>,
+    selectedDestination: MainDrawerDestination?,
+    onItemClick: (MainDrawerDestination) -> Unit,
 ) {
     Spacer(modifier = Modifier.height(8.dp))
     HorizontalDivider()
@@ -188,19 +189,13 @@ private fun MainDrawerSection(
                         contentDescription = stringResource(item.titleRes),
                     )
                 },
-                selected = selectedItemId == item.id,
-                onClick = { onItemClick(item.id) },
+                selected = selectedDestination == item,
+                onClick = { onItemClick(item) },
                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
             )
         }
     }
 }
-
-private data class MainDrawerItemSpec(
-    val id: Int,
-    val iconRes: Int,
-    val titleRes: Int,
-)
 
 @Preview(showBackground = true, widthDp = 1280, heightDp = 800)
 @Composable
@@ -209,7 +204,7 @@ private fun MainActivityScaffoldPreview() {
         MainActivityScaffold(
             drawerState = rememberDrawerState(initialValue = DrawerValue.Open),
             drawerEnabled = true,
-            selectedItemId = R.id.nv_home_page,
+            selectedDestination = MainDrawerDestination.Home,
             avatarUrl = null,
             username = "Han1meViewer",
             isLoggedIn = true,

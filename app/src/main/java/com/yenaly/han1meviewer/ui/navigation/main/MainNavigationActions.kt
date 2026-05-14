@@ -2,37 +2,36 @@ package com.yenaly.han1meviewer.ui.navigation.main
 
 import android.content.Intent
 import androidx.navigation.NavHostController
-import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import kotlinx.serialization.json.Json
 
 private val loginRequiredDrawerItems = setOf(
-    R.id.nv_fav_video,
-    R.id.nv_watch_later,
-    R.id.nv_playlist,
-    R.id.nv_subscription,
+    MainDrawerDestination.FavVideo,
+    MainDrawerDestination.WatchLater,
+    MainDrawerDestination.Playlist,
+    MainDrawerDestination.Subscription,
 )
 
 fun NavHostController.navigateDrawerDestination(
-    itemId: Int,
+    destination: MainDrawerDestination,
     isLoggedIn: Boolean,
     onRequireLogin: () -> Unit,
 ): Boolean {
-    if (itemId in loginRequiredDrawerItems && !isLoggedIn) {
+    if (destination in loginRequiredDrawerItems && !isLoggedIn) {
         onRequireLogin()
         return false
     }
 
-    when (itemId) {
-        R.id.nv_home_page -> navigate(HomeRoute)
-        R.id.nv_watch_history -> navigate(WatchHistoryRoute)
-        R.id.nv_fav_video -> navigate(MyFavVideoRoute)
-        R.id.nv_playlist -> navigate(MyPlaylistRoute)
-        R.id.nv_watch_later -> navigate(MyWatchLaterRoute)
-        R.id.nv_subscription -> navigate(SubscriptionRoute)
-        R.id.nv_daily_check_in -> navigate(DailyCheckInRoute)
-        R.id.nv_download -> navigate(DownloadRoute)
-        R.id.nv_settings -> navigate(HomeSettingsRoute)
+    when (destination) {
+        MainDrawerDestination.Home -> navigate(HomeRoute)
+        MainDrawerDestination.Settings -> navigate(HomeSettingsRoute)
+        MainDrawerDestination.DailyCheckIn -> navigate(DailyCheckInRoute)
+        MainDrawerDestination.WatchLater -> navigate(MyWatchLaterRoute)
+        MainDrawerDestination.FavVideo -> navigate(MyFavVideoRoute)
+        MainDrawerDestination.Playlist -> navigate(MyPlaylistRoute)
+        MainDrawerDestination.Subscription -> navigate(SubscriptionRoute)
+        MainDrawerDestination.WatchHistory -> navigate(WatchHistoryRoute)
+        MainDrawerDestination.Download -> navigate(DownloadRoute)
     }
     return true
 }

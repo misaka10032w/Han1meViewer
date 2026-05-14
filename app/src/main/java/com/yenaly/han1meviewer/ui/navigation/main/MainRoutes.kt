@@ -1,9 +1,7 @@
 package com.yenaly.han1meviewer.ui.navigation.main
 
-import androidx.annotation.IdRes
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
-import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframesRoute
@@ -61,151 +59,109 @@ data class VideoRoute(
 )
 
 enum class MainDestinationSpec(
-    @param:IdRes val legacyId: Int?,
-    @param:IdRes val menuItemId: Int?,
+    val drawerDestination: MainDrawerDestination?,
     val routeClass: KClass<*>,
     val drawerEnabled: Boolean,
-    val showToolbar: Boolean,
 ) {
     Home(
-        legacyId = R.id.nv_home_page,
-        menuItemId = R.id.nv_home_page,
+        drawerDestination = MainDrawerDestination.Home,
         routeClass = HomeRoute::class,
         drawerEnabled = true,
-        showToolbar = false,
     ),
     WatchHistory(
-        legacyId = R.id.nv_watch_history,
-        menuItemId = R.id.nv_watch_history,
+        drawerDestination = MainDrawerDestination.WatchHistory,
         routeClass = WatchHistoryRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     MyFavVideo(
-        legacyId = R.id.nv_fav_video,
-        menuItemId = R.id.nv_fav_video,
+        drawerDestination = MainDrawerDestination.FavVideo,
         routeClass = MyFavVideoRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     MyWatchLater(
-        legacyId = R.id.nv_watch_later,
-        menuItemId = R.id.nv_watch_later,
+        drawerDestination = MainDrawerDestination.WatchLater,
         routeClass = MyWatchLaterRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     MyPlaylist(
-        legacyId = R.id.myPlayListFragmentV2,
-        menuItemId = R.id.nv_playlist,
+        drawerDestination = MainDrawerDestination.Playlist,
         routeClass = MyPlaylistRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     Subscription(
-        legacyId = R.id.nv_subscription,
-        menuItemId = R.id.nv_subscription,
+        drawerDestination = MainDrawerDestination.Subscription,
         routeClass = SubscriptionRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     DailyCheckIn(
-        legacyId = R.id.nv_daily_check_in,
-        menuItemId = R.id.nv_daily_check_in,
+        drawerDestination = MainDrawerDestination.DailyCheckIn,
         routeClass = DailyCheckInRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     Download(
-        legacyId = R.id.nv_download,
-        menuItemId = R.id.nv_download,
+        drawerDestination = MainDrawerDestination.Download,
         routeClass = DownloadRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     SettingsHome(
-        legacyId = R.id.homeSettingsFragment,
-        menuItemId = R.id.nv_settings,
+        drawerDestination = MainDrawerDestination.Settings,
         routeClass = HomeSettingsRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     SettingsPlayer(
-        legacyId = R.id.playerSettingsFragment,
-        menuItemId = R.id.nv_settings,
+        drawerDestination = MainDrawerDestination.Settings,
         routeClass = PlayerSettingsRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     SettingsNetwork(
-        legacyId = R.id.networkSettingsFragment,
-        menuItemId = R.id.nv_settings,
+        drawerDestination = MainDrawerDestination.Settings,
         routeClass = NetworkSettingsRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     SettingsDownload(
-        legacyId = R.id.downloadSettingsFragment,
-        menuItemId = R.id.nv_settings,
+        drawerDestination = MainDrawerDestination.Settings,
         routeClass = DownloadSettingsRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     SettingsMpv(
-        legacyId = R.id.mpvPlayerSettings,
-        menuItemId = R.id.nv_settings,
+        drawerDestination = MainDrawerDestination.Settings,
         routeClass = MpvPlayerSettingsRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     SettingsHKeyframes(
-        legacyId = R.id.hKeyframesFragment,
-        menuItemId = R.id.nv_settings,
+        drawerDestination = MainDrawerDestination.Settings,
         routeClass = HKeyframesRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     SettingsSharedHKeyframes(
-        legacyId = R.id.sharedHKeyframesFragment,
-        menuItemId = R.id.nv_settings,
+        drawerDestination = MainDrawerDestination.Settings,
         routeClass = SharedHKeyframesRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     SettingsHKeyframeSettings(
-        legacyId = R.id.hKeyframeSettingsFragment,
-        menuItemId = R.id.nv_settings,
+        drawerDestination = MainDrawerDestination.Settings,
         routeClass = HKeyframeSettingsRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     Search(
-        legacyId = R.id.searchFragment,
-        menuItemId = null,
+        drawerDestination = null,
         routeClass = SearchRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     Preview(
-        legacyId = R.id.nv_preview,
-        menuItemId = null,
+        drawerDestination = null,
         routeClass = PreviewRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     PreviewComment(
-        legacyId = R.id.nv_preview_comment,
-        menuItemId = null,
+        drawerDestination = null,
         routeClass = PreviewCommentRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     ),
     Video(
-        legacyId = R.id.videoFragment,
-        menuItemId = null,
+        drawerDestination = null,
         routeClass = VideoRoute::class,
         drawerEnabled = false,
-        showToolbar = false,
     );
 
     companion object {
@@ -213,8 +169,5 @@ enum class MainDestinationSpec(
             if (destination == null) return null
             return entries.firstOrNull { destination.hasRoute(it.routeClass) }
         }
-
-        fun fromLegacyId(@IdRes id: Int): MainDestinationSpec? =
-            entries.firstOrNull { it.legacyId == id }
     }
 }

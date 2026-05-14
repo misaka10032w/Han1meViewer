@@ -79,7 +79,7 @@ fun MainActivityContent(
             null
         }
         val headerIsLoading = isLoggedIn && homeState is WebsiteState.Loading
-        val selectedDrawerItemId = currentMainDestination.menuItemId
+        val selectedDrawerDestination = currentMainDestination.drawerDestination
 
         LaunchedEffect(composeNavController) {
             onNavigateControllerReady(composeNavController)
@@ -118,7 +118,7 @@ fun MainActivityContent(
         MainActivityScaffold(
             drawerState = drawerState,
             drawerEnabled = currentMainDestination.drawerEnabled,
-            selectedItemId = selectedDrawerItemId,
+            selectedDestination = selectedDrawerDestination,
             avatarUrl = headerAvatarUrl,
             username = headerUsername,
             isLoggedIn = isLoggedIn,
@@ -132,9 +132,9 @@ fun MainActivityContent(
                 }
             },
             onSwitchSiteClick = onSwitchSiteClick,
-            onDrawerItemSelected = { itemId ->
+            onDrawerItemSelected = { destination ->
                 val handled = composeNavController.navigateDrawerDestination(
-                    itemId = itemId,
+                    destination = destination,
                     isLoggedIn = isLoggedIn,
                     onRequireLogin = { showShortToast(R.string.login_first) },
                 )
