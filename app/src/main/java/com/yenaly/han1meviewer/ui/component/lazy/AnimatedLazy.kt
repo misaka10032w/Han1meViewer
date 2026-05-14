@@ -1,11 +1,7 @@
 package com.yenaly.han1meviewer.ui.component.lazy
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -31,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 
 /**
  * 带通用 item 动画的 LazyColumn 封装。
@@ -374,12 +371,22 @@ private fun AnimatedLazyItemContainer(
         }
         visible = true
     }
-    AnimatedVisibility(
-        visible = visible,
-        enter = fadeIn(animationSpec = tween(220)) +
-            scaleIn(initialScale = 0.985f, animationSpec = tween(220)),
-        exit = fadeOut(animationSpec = tween(120)) +
-            scaleOut(targetScale = 0.985f, animationSpec = tween(120)),
+    val animatedAlpha by animateFloatAsState(
+        targetValue = if (visible) 1f else 0f,
+        animationSpec = tween(durationMillis = 220),
+        label = "lazy-item-alpha",
+    )
+    val animatedScale by animateFloatAsState(
+        targetValue = if (visible) 1f else 0.985f,
+        animationSpec = tween(durationMillis = 220),
+        label = "lazy-item-scale",
+    )
+    Box(
+        modifier = Modifier.graphicsLayer {
+            alpha = animatedAlpha
+            scaleX = animatedScale
+            scaleY = animatedScale
+        }
     ) {
         content()
     }

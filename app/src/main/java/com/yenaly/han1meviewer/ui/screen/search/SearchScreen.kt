@@ -24,8 +24,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -52,6 +50,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -64,6 +63,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -73,16 +73,19 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.SearchHistoryEntity
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
+import com.yenaly.han1meviewer.logic.model.HanimeInfo.Companion.NORMAL
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.ui.component.EmptyContent
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
+import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.han1meviewer.ui.viewmodel.SearchViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 // ─────────────────────────────────────────────
 // 搜索 App Bar
@@ -241,30 +244,41 @@ fun SearchResultsGrid(
         }
     }
     LaunchedEffect(state) { if (state !is PageLoadingState.Loading) isLoadingMore = false }
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 164.dp),
-        state = gridState,
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(videos, key = { it.videoCode }) {
-            VideoCardItem(
-                it,
-                true,
-                onVideoClick,
-                onVideoLongClick
-            )
-        }
-        if (canLoadMore && state is PageLoadingState.Loading) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) { CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp) }
+    Box(modifier = modifier.fillMaxSize()) {
+        val normalCardWidth = dimensionResource(R.dimen.video_cover_width)
+        val simplifiedCardWidth = dimensionResource(R.dimen.video_cover_simplified_width)
+        val cardPadding = 4.dp
+        val normalMinSize = normalCardWidth + cardPadding
+        val simplifiedMinSize = simplifiedCardWidth + cardPadding
+        val useNormalGrid = videos.firstOrNull()?.itemType == NORMAL
+
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = if (useNormalGrid) normalMinSize else simplifiedMinSize),
+            state = gridState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(videos, key = { it.videoCode }) {
+                VideoCardItem(
+                    it,
+                    it.itemType == NORMAL,
+                    onVideoClick,
+                    onVideoLongClick
+                )
+            }
+            if (canLoadMore && state is PageLoadingState.Loading) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
+                    }
+                }
             }
         }
     }
@@ -376,10 +390,14 @@ fun SearchScreen(
     var isSearchFocused by remember { mutableStateOf(false) }
 
     val refreshState = rememberPullToRefreshState()
-    val gridState = rememberLazyGridState()
+    val gridState = rememberLazyGridState(
+        initialFirstVisibleItemIndex = viewModel.gridFirstVisibleItemIndex,
+        initialFirstVisibleItemScrollOffset = viewModel.gridFirstVisibleItemScrollOffset,
+    )
     val focusReq = remember { FocusRequester() }
     val focusMgr = LocalFocusManager.current
     val kb = LocalSoftwareKeyboardController.current
+    val scope = rememberCoroutineScope()
 
     // 搜索执行
     fun executeSearch() {
@@ -396,8 +414,17 @@ fun SearchScreen(
         )
     }
 
-    fun doSearch() {
-        viewModel.page = 1; viewModel.clearHanimeSearchResult(); executeSearch()
+    fun doSearch(resetScroll: Boolean = false) {
+        viewModel.page = 1
+        viewModel.clearHanimeSearchResult()
+        if (resetScroll) {
+            viewModel.gridFirstVisibleItemIndex = 0
+            viewModel.gridFirstVisibleItemScrollOffset = 0
+            scope.launch {
+                gridState.scrollToItem(0)
+            }
+        }
+        executeSearch()
     }
 
     fun hasAdvancedFilters(): Boolean {
@@ -440,7 +467,16 @@ fun SearchScreen(
         viewModel.refreshTriggerFlow.collect {
             hasSearched = true
             searchQuery = viewModel.query.orEmpty()
-            executeSearch()
+            doSearch(resetScroll = true)
+        }
+    }
+
+    LaunchedEffect(gridState) {
+        snapshotFlow {
+            gridState.firstVisibleItemIndex to gridState.firstVisibleItemScrollOffset
+        }.distinctUntilChanged().collect { (index, offset) ->
+            viewModel.gridFirstVisibleItemIndex = index
+            viewModel.gridFirstVisibleItemScrollOffset = offset
         }
     }
 
@@ -481,7 +517,7 @@ fun SearchScreen(
                     SearchHistoryEntity(query = q)
                     )
                 }
-                doSearch()
+                doSearch(resetScroll = true)
             }
         }, onBack, onOpenAdvancedSearch, { isSearchFocused = it }, focusReq)
 
@@ -490,7 +526,7 @@ fun SearchScreen(
             filter,
             {
                 filter = SearchFilter(); viewModel.genre = null; viewModel.sort =
-                null; viewModel.duration = null; doSearch()
+                null; viewModel.duration = null; doSearch(resetScroll = true)
             },
             viewModel
         )
@@ -535,7 +571,7 @@ fun SearchScreen(
                             searchQuery = query; hasSearched = true; viewModel.query =
                             query; focusMgr.clearFocus(); kb?.hide(); viewModel.insertSearchHistory(
                             SearchHistoryEntity(query = query)
-                        ); doSearch()
+                        ); doSearch(resetScroll = true)
                         },
                         { h ->
                             viewModel.deleteSearchHistory(h); histories =

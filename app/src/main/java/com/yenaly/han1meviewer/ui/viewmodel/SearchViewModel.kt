@@ -66,6 +66,18 @@ class SearchViewModel(
     var broad: Boolean = false
     var duration: String? = null
 
+    var gridFirstVisibleItemIndex: Int
+        get() = state["gridFirstVisibleItemIndex"] ?: 0
+        set(value) {
+            state["gridFirstVisibleItemIndex"] = value
+        }
+
+    var gridFirstVisibleItemScrollOffset: Int
+        get() = state["gridFirstVisibleItemScrollOffset"] ?: 0
+        set(value) {
+            state["gridFirstVisibleItemScrollOffset"] = value
+        }
+
     var tagMap = SparseArray<Set<SearchOption>>()
     var brandMap = SparseArray<Set<SearchOption>>()
 
@@ -100,7 +112,29 @@ class SearchViewModel(
     val searchFlow = _searchFlow.asStateFlow()
     var recyclerViewState: Parcelable? = null
 
-    fun clearHanimeSearchResult() = _searchStateFlow.update { PageLoadingState.Loading }
+    fun clearHanimeSearchResult() {
+        _searchFlow.value = emptyList()
+        _searchStateFlow.value = PageLoadingState.Loading
+    }
+
+    fun resetSearchUiState() {
+        page = 1
+        query = null
+        genre = null
+        sort = null
+        year = null
+        month = null
+        approxTime = null
+        broad = false
+        duration = null
+        tagMap.clear()
+        brandMap.clear()
+        recyclerViewState = null
+        gridFirstVisibleItemIndex = 0
+        gridFirstVisibleItemScrollOffset = 0
+        _searchFlow.value = emptyList()
+        _searchStateFlow.value = PageLoadingState.Loading
+    }
 
     fun getHanimeSearchResult(
         page: Int, query: String?, genre: String?,

@@ -403,7 +403,7 @@ fun SearchRouteScreen(
     onBack: () -> Unit,
     onNavigateToVideo: (String) -> Unit,
 ) {
-    val viewModel: SearchViewModel = viewModel(viewModelStoreOwner = activity)
+    val viewModel: SearchViewModel = viewModel()
     var showAdvancedSearchSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(route.advancedSearchJson) {

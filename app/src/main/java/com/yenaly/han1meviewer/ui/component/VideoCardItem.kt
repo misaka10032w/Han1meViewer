@@ -94,7 +94,7 @@ fun VideoCardItem(
                     modifier = Modifier.fillMaxSize(),
                     placeholder = painterResource(R.drawable.akarin),
                     error = painterResource(android.R.drawable.stat_notify_error),
-                    contentScale = ContentScale.Crop,
+                    contentScale = ContentScale.FillHeight,
                 )
                 Box(
                     modifier = Modifier
