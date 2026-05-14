@@ -142,7 +142,7 @@ fun HomeRouteScreen(
                         checkInViewModel.addRecord(
                             LocalDate.now(),
                             LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")),
-                            "自慰",
+                            com.yenaly.han1meviewer.logic.entity.CheckInType.MASTURBATION.storeName,
                             "",
                             "",
                         )
@@ -292,7 +292,7 @@ fun DailyCheckInRouteScreen(
         onBack = onBack,
         onAddWidget = {
             val mgr = AppWidgetManager.getInstance(activity)
-            Toast.makeText(activity, "部分rom不支持引导式添加，请手动添加小部件", Toast.LENGTH_SHORT).show()
+            Toast.makeText(activity, R.string.widget_pin_not_supported_manual_add, Toast.LENGTH_SHORT).show()
             if (mgr.isRequestPinAppWidgetSupported) {
                 mgr.requestPinAppWidget(
                     ComponentName(activity, CheckInWidgetProvider::class.java),

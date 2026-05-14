@@ -143,7 +143,7 @@ fun SubscriptionApp(
                     FilledIconButton(onClick = navigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "back button"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 },
@@ -185,7 +185,10 @@ fun SubscriptionApp(
                 is WebsiteState.Error -> {
                     if (cachedArtists.value.isEmpty()) {
                         EmptyContent(
-                            hint = "${stringResource(R.string.load_failed_retry)}: ${result.throwable.message}",
+                            hint = stringResource(
+                                R.string.load_failed_with_reason,
+                                result.throwable.message.orEmpty()
+                            ),
                             picRes = R.drawable.h_chan_sad
                         )
                     } else {
@@ -395,7 +398,7 @@ fun SubscriptionAppPreviewBody() {
                     FilledIconButton(onClick = {}) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 },

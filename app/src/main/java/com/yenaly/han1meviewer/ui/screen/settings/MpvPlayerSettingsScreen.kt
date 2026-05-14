@@ -255,7 +255,7 @@ private fun CustomParamsDialog(
             OutlinedTextField(
                 value = text.value,
                 onValueChange = { text.value = it },
-                label = { Text("key1,value1;key2,value2;...") },
+                label = { Text(stringResource(R.string.custom_parameters_example)) },
                 modifier = Modifier.fillMaxWidth(),
             )
         },

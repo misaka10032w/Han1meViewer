@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.preview
 
+import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
@@ -221,17 +222,17 @@ val fakeHomePageVideos = listOf(
 
 val fakeCategories = listOf(
     HomeCategory(
-        title = "最新裏番",
+        titleRes = R.string.latest_hanime,
         genre = "裏番",
         videos = fakeHomePageVideos,
     ),
     HomeCategory(
-        title = "最新上市",
+        titleRes = R.string.latest_release,
         sort = "最新上市",
         videos = fakeHomePageVideos.shuffled().take(4),
     ),
     HomeCategory(
-        title = "他們在看",
+        titleRes = R.string.they_watched,
         sort = "他們在看",
         videos = fakeHomePageVideos.shuffled().take(5),
     ),

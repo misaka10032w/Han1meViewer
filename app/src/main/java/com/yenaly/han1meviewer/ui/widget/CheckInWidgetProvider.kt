@@ -9,6 +9,7 @@ import android.widget.RemoteViews
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.dao.CheckInRecordDatabase
 import com.yenaly.han1meviewer.logic.entity.CheckInRecordEntity
+import com.yenaly.han1meviewer.logic.entity.CheckInType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -41,7 +42,15 @@ class CheckInWidgetProvider : AppWidgetProvider() {
                     val t = LocalDate.now().toString()
                     val curCount = dao.getCountByDate(t)
                     if (curCount < 20) {
-                        dao.insert(CheckInRecordEntity(date = t, time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")), type = "自慰", sideDishes = "", feeling = ""))
+                        dao.insert(
+                            CheckInRecordEntity(
+                                date = t,
+                                time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")),
+                                type = CheckInType.MASTURBATION.storeName,
+                                sideDishes = "",
+                                feeling = ""
+                            )
+                        )
                     }
                 }
                 refresh(context, AppWidgetManager.getInstance(context), id)

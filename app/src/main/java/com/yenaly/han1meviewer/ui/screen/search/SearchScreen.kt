@@ -64,6 +64,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -110,7 +111,7 @@ fun SearchAppBar(
             IconButton(onClick = onBack) {
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
-                    "返回",
+                    stringResource(R.string.back),
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -135,7 +136,7 @@ fun SearchAppBar(
                     decorationBox = { inner ->
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
                             if (query.isEmpty()) Text(
-                                "搜索影片...",
+                                stringResource(R.string.search_video_hint),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -147,12 +148,12 @@ fun SearchAppBar(
             if (query.isNotEmpty()) IconButton(onClick = { onQueryChange("") }) {
                 Icon(
                     Icons.Default.Close,
-                    "清除",
+                    stringResource(R.string.clear_checkin),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Text(
-                "筛选",
+                stringResource(R.string.advanced),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
@@ -286,16 +287,19 @@ fun SearchStateIndicator(
         ) { CircularProgressIndicator() }
 
         is PageLoadingState.NoMoreData -> if (resultCount == 0) EmptyContent(
-            hint = "没有搜索到结果",
+            hint = stringResource(R.string.search_no_results),
             picRes = R.drawable.h_chan_speechless
         )
 
         is PageLoadingState.Error -> EmptyContent(
-            hint = "加载失败: ${state.throwable.message}",
+            hint = stringResource(
+                R.string.search_load_failed_with_reason,
+                state.throwable.message.orEmpty()
+            ),
             picRes = R.drawable.h_chan_sad
         )
         is PageLoadingState.Success -> if (resultCount == 0) EmptyContent(
-            hint = "没有搜索到结果",
+            hint = stringResource(R.string.search_no_results),
             picRes = R.drawable.h_chan_speechless
         )
     }
@@ -364,9 +368,9 @@ fun SearchScreen(
     val searchState by viewModel.searchStateFlow.collectAsStateWithLifecycle()
     val searchResults by viewModel.searchFlow.collectAsStateWithLifecycle()
 
-    var searchQuery by rememberSaveable { mutableStateOf(initialQuery ?: "") }
+    var searchQuery by rememberSaveable(initialQuery) { mutableStateOf(initialQuery ?: "") }
     var histories by remember { mutableStateOf<List<SearchHistoryEntity>>(emptyList()) }
-    var hasSearched by rememberSaveable { mutableStateOf(initialQuery != null) }
+    var hasSearched by rememberSaveable(initialQuery) { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
     var filter by remember { mutableStateOf(SearchFilter()) }
     var isSearchFocused by remember { mutableStateOf(false) }
@@ -406,18 +410,29 @@ fun SearchScreen(
             viewModel.broad
     }
 
+    val hasSearchResults = searchResults.isNotEmpty() ||
+        ((searchState as? PageLoadingState.Success)?.info?.isNotEmpty() == true)
+
     // 初始 query 自动搜索
     LaunchedEffect(initialQuery) {
-        if (!initialQuery.isNullOrBlank() && !hasSearched) {
-            hasSearched = true; viewModel.query = initialQuery; viewModel.insertSearchHistory(
-                SearchHistoryEntity(query = initialQuery)
-            ); executeSearch()
+        val query = initialQuery?.trim().orEmpty()
+        if (query.isNotBlank() && !hasSearched) {
+            hasSearched = true
+            searchQuery = query
+            viewModel.query = query
+            focusMgr.clearFocus()
+            kb?.hide()
+            viewModel.insertSearchHistory(SearchHistoryEntity(query = query))
+            doSearch()
         }
     }
     // 高级搜索参数（genre/sort 等）自动搜索
     LaunchedEffect(Unit) {
         if (!hasSearched && hasAdvancedFilters()) {
-            hasSearched = true; doSearch()
+            hasSearched = true
+            focusMgr.clearFocus()
+            kb?.hide()
+            doSearch()
         }
     }
     // refreshTriggerFlow
@@ -439,7 +454,14 @@ fun SearchScreen(
         }
     }
 
-    LaunchedEffect(Unit) { focusReq.requestFocus() }
+    LaunchedEffect(initialQuery, hasSearchResults) {
+        if (initialQuery.isNullOrBlank() && !hasAdvancedFilters() && !hasSearchResults) {
+            focusReq.requestFocus()
+        } else {
+            focusMgr.clearFocus()
+            kb?.hide()
+        }
+    }
     LaunchedEffect(searchState) {
         if (searchState !is PageLoadingState.Loading) isRefreshing = false
     }
@@ -502,7 +524,7 @@ fun SearchScreen(
                 // 未搜索 + 搜索框为空 → 显示历史
                 Column(Modifier.fillMaxSize()) {
                     Text(
-                        "最近搜索",
+                        stringResource(R.string.recent_searches),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)

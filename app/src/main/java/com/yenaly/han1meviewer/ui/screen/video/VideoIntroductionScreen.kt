@@ -103,6 +103,7 @@ fun VideoIntroductionScreen(
     onRetry: () -> Unit,
     onOpenVideo: (HanimeInfo) -> Unit,
     onOpenArtist: (HanimeVideo.Artist) -> Unit,
+    onNavigateToSearch: (String) -> Unit,
     onToggleSubscribe: (HanimeVideo.Artist) -> Unit,
     onToggleFavorite: () -> Unit,
     onManageMyList: (List<String>, List<Boolean>) -> Unit,
@@ -139,6 +140,7 @@ fun VideoIntroductionScreen(
                 downloadPrompt = downloadPrompt,
                 onOpenVideo = onOpenVideo,
                 onOpenArtist = onOpenArtist,
+                onNavigateToSearch = onNavigateToSearch,
                 onToggleSubscribe = onToggleSubscribe,
                 onToggleFavorite = onToggleFavorite,
                 onManageMyList = onManageMyList,
@@ -188,6 +190,7 @@ private fun VideoIntroductionContent(
     downloadPrompt: DownloadPromptState?,
     onOpenVideo: (HanimeInfo) -> Unit,
     onOpenArtist: (HanimeVideo.Artist) -> Unit,
+    onNavigateToSearch: (String) -> Unit,
     onToggleSubscribe: (HanimeVideo.Artist) -> Unit,
     onToggleFavorite: () -> Unit,
     onManageMyList: (List<String>, List<Boolean>) -> Unit,
@@ -333,7 +336,10 @@ private fun VideoIntroductionContent(
 
         if (video.tags.isNotEmpty()) {
             item(key = "tags") {
-                TagsSection(tags = video.tags)
+                TagsSection(
+                    tags = video.tags,
+                    onTagClick = onNavigateToSearch,
+                )
             }
         }
 
@@ -482,7 +488,7 @@ private fun PermissionSettingsDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.settings)) },
-        text = { Text("请前往设置开启存储权限，以便保存下载内容。") },
+        text = { Text(stringResource(R.string.storage_permission_settings_message)) },
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text(stringResource(R.string.go_to_settings))
@@ -531,7 +537,7 @@ private fun QuickCheckInDialog(
                     val record = CheckInRecordEntity(
                         date = java.time.LocalDate.now().toString(),
                         time = time,
-                        type = "自慰",
+                        type = com.yenaly.han1meviewer.logic.entity.CheckInType.MASTURBATION.storeName,
                         sideDishes = "${video.title}$sep${video.playlist?.video?.firstOrNull { it.isPlaying }?.videoCode ?: ""}".removeSuffix(sep),
                         feeling = feeling,
                     )
@@ -924,12 +930,16 @@ private fun VideoActionButton(
 }
 
 @Composable
-private fun TagsSection(tags: List<String>) {
+private fun TagsSection(
+    tags: List<String>,
+    onTagClick: (String) -> Unit,
+) {
     TagChipGroup(
         tags = tags,
         collapsible = true,
         collapsedMaxLines = 2,
         modifier = Modifier.fillMaxWidth(),
+        onTagClick = onTagClick,
     )
 }
 
@@ -944,7 +954,7 @@ private fun PlaylistSection(
     SectionHeader(
         title = stringResource(R.string.series_video),
         subtitle = playlist.playlistName,
-        actionText = if (onShowAllPlaylist != null) "更多" else null,
+        actionText = if (onShowAllPlaylist != null) stringResource(R.string.more) else null,
         onActionClick = onShowAllPlaylist,
     )
     val listState = remember(playlist.video, initialIndex) {
@@ -1087,6 +1097,7 @@ private fun VideoIntroductionScreenPreview() {
             onRetry = {},
             onOpenVideo = {},
             onOpenArtist = {},
+            onNavigateToSearch = {},
             onToggleSubscribe = {},
             onToggleFavorite = {},
             onManageMyList = { _, _ -> },
@@ -1123,6 +1134,7 @@ private fun VideoIntroductionScreenLoadingPreview() {
             onRetry = {},
             onOpenVideo = {},
             onOpenArtist = {},
+            onNavigateToSearch = {},
             onToggleSubscribe = {},
             onToggleFavorite = {},
             onManageMyList = { _, _ -> },
@@ -1159,6 +1171,7 @@ private fun VideoIntroductionScreenErrorPreview() {
             onRetry = {},
             onOpenVideo = {},
             onOpenArtist = {},
+            onNavigateToSearch = {},
             onToggleSubscribe = {},
             onToggleFavorite = {},
             onManageMyList = { _, _ -> },

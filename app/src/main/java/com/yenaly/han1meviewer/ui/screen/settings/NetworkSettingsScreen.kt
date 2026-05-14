@@ -304,7 +304,7 @@ private fun DelayTestDialog(
                         ) {
                             Text(item.ip)
                             Text(
-                                text = if (item.delay >= 0) "${item.delay} ms" else "Time out",
+                                text = if (item.delay >= 0) "${item.delay} ms" else stringResource(R.string.network_timeout_text),
                                 color = when {
                                     item.delay in 0 until 100 -> Color(0xFF4CAF50)
                                     item.delay in 100..500 -> Color(0xFFFFC107)

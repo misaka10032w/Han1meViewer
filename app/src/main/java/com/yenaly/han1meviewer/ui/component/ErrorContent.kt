@@ -13,8 +13,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.yenaly.han1meviewer.R
 
 /**
  * 错误状态内容组件。
@@ -29,10 +31,11 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ErrorContent(
     modifier: Modifier = Modifier,
-    title: String = "加载失败",
+    title: String? = null,
     message: String? = null,
     onRetry: (() -> Unit)? = null,
 ) {
+    val resolvedTitle = title ?: stringResource(R.string.load_failed_retry)
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -45,7 +48,7 @@ fun ErrorContent(
             contentDescription = null,
             tint = MaterialTheme.colorScheme.error,
         )
-        Text(text = title, style = MaterialTheme.typography.titleMedium)
+        Text(text = resolvedTitle, style = MaterialTheme.typography.titleMedium)
         if (!message.isNullOrBlank()) {
             Text(
                 text = message,
@@ -55,7 +58,7 @@ fun ErrorContent(
         }
         if (onRetry != null) {
             Button(onClick = onRetry) {
-                Text("重试")
+                Text(stringResource(R.string.retry))
             }
         }
     }
@@ -65,6 +68,6 @@ fun ErrorContent(
 @Composable
 private fun ErrorContentPreview() {
     ComponentPreview {
-        ErrorContent(message = "网络连接失败", onRetry = {})
+        ErrorContent(message = "network error", onRetry = {})
     }
 }

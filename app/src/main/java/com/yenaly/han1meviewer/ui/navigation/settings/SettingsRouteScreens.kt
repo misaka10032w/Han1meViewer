@@ -269,7 +269,11 @@ fun HomeSettingsRouteScreen(
         onVideoQualityChange = { value ->
             saveString(HOME_DEFAULT_VIDEO_QUALITY, value)
             refreshKey++
-            Toast.makeText(context, "Success：$value", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context,
+                context.getString(R.string.success_value, value),
+                Toast.LENGTH_SHORT
+            ).show()
         },
         onDarkModeChange = { value ->
             if (value != Preferences.useDarkMode) {
@@ -659,7 +663,7 @@ fun NetworkSettingsRouteScreen() {
                 else -> false
             }
             if (!valid) {
-                showShortToast("Invalid IP(v4) or Port(0..65535)")
+                showShortToast(R.string.invalid_ip_or_port)
                 return@NetworkSettingsScreen
             }
             if (type == HProxySelector.TYPE_SOCKS) {
@@ -710,19 +714,19 @@ fun DownloadSettingsRouteScreen(
         if (granted) return@rememberLauncherForActivityResult
         val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
         if (activity.shouldShowRequestPermissionRationale(permission)) {
-            Toast.makeText(context, "拒绝？拒绝就不好办了喵👿", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, R.string.storage_permission_denied_toast, Toast.LENGTH_LONG).show()
             onNavigateBack()
         } else {
             AlertDialog.Builder(context)
-                .setTitle("权限被永久拒绝")
-                .setMessage("请前往设置开启存储权限，以便保存下载内容。")
-                .setPositiveButton("去设置") { _, _ ->
+                .setTitle(R.string.permission_permanently_denied_title)
+                .setMessage(R.string.storage_permission_settings_message)
+                .setPositiveButton(R.string.go_to_settings) { _, _ ->
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                         data = "package:${context.packageName}".toUri()
                     }
                     context.startActivity(intent)
                 }
-                .setNegativeButton("取消") { _, _ ->
+                .setNegativeButton(R.string.cancel) { _, _ ->
                     onNavigateBack()
                 }
                 .show()
@@ -998,11 +1002,11 @@ private fun buildHomeSettingsUiState(
     }
     val appLanguageValue = Preferences.preferenceSp.getString(HOME_APP_LANGUAGE, "system") ?: "system"
     val appLanguageLabel = when (appLanguageValue) {
-        "system" -> "跟随系统"
-        "zh-rCN" -> "简体中文"
-        "zh" -> "繁體中文"
-        "ja" -> "日本語"
-        "en" -> "English"
+        "system" -> context.getString(R.string.follow_system)
+        "zh-rCN" -> context.getString(R.string.simplified_chinese)
+        "zh" -> context.getString(R.string.traditional_chinese)
+        "ja" -> context.getString(R.string.japanese_lang)
+        "en" -> context.getString(R.string.english_lang)
         else -> appLanguageValue
     }
     return HomeSettingsUiState(
@@ -1099,7 +1103,7 @@ private fun buildDownloadSettingsUiState(context: Context): DownloadSettingsUiSt
         DocumentFile.fromTreeUri(
             context,
             uri ?: return DownloadSettingsUiState(
-                downloadPathSummary = "null",
+                downloadPathSummary = context.getString(R.string.unknown_error),
                 downloadCountLimit = Preferences.downloadCountLimit,
                 downloadCountLimitSummary = toDownloadCountLimitPrettyString(
                     context,

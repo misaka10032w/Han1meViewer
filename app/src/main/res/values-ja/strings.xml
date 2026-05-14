@@ -650,6 +650,36 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="disable_predictive_back_summary">有効にすると、バックジェスチャーは指を離した時のみ反応し、動画視聴中の誤操作による再生停止を防ぎます</string>
     <string name="play_trailer">予告編を再生</string>
     <string name="load_complete">読み込み完了！</string>
+    <string name="search_video_hint">動画を検索…</string>
+    <string name="recent_searches">最近の検索</string>
+    <string name="search_suggestions">検索候補</string>
+    <string name="no_matching_search_history">一致する検索履歴はありません</string>
+    <string name="search_enter_keywords">キーワードを入力して動画を検索</string>
+    <string name="search_no_results">検索結果が見つかりません</string>
+    <string name="search_load_failed_with_reason">読み込み失敗：%1$s</string>
+    <string name="load_failed_with_reason">読み込み失敗：%1$s</string>
+    <string name="more">もっと見る</string>
+    <string name="announcement">お知らせ</string>
+    <string name="announcement_list">お知らせ一覧</string>
+    <string name="view_all">すべて表示</string>
+    <string name="open_menu">メニューを開く</string>
+    <string name="permission_permanently_denied_title">権限が恒久的に拒否されました</string>
+    <string name="storage_permission_settings_message">ダウンロード内容を保存するには、設定でストレージ権限を有効にしてください。</string>
+    <string name="storage_permission_denied_toast">ストレージ権限がないとダウンロードを保存できません</string>
+    <string name="invalid_ip_or_port" translatable="false">Invalid IP(v4) or Port(0..65535)</string>
+    <string name="widget_pin_not_supported_manual_add">一部のROMはウィジェットのガイド付き追加に対応していません。手動で追加してください。</string>
+    <string name="cookies_label" translatable="false">Cookies</string>
+    <string name="clarity">画質</string>
+    <string name="english_lang" translatable="false">English</string>
+    <string name="success_value">成功：%1$s</string>
+    <string name="previous_year">前年</string>
+    <string name="next_year">翌年</string>
+    <string name="previous_month">前月</string>
+    <string name="next_month">翌月</string>
+    <string name="checkin_count_format" translatable="false">x%1$d</string>
+    <string name="network_timeout_text">タイムアウト</string>
+    <string name="remove">削除</string>
+    <string name="add">追加</string>
     <string-array name="search_placeholders">
         <item>奥底に眠る秘密を探索…</item>
         <item>夜風に吹かれ、癒やしを探して</item>

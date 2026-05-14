@@ -33,6 +33,7 @@ import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
+import com.yenaly.han1meviewer.ui.navigation.main.SearchRoute
 import com.yenaly.han1meviewer.ui.screen.video.DownloadPromptState
 import com.yenaly.han1meviewer.ui.screen.video.VideoIntroductionScreen
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
@@ -45,13 +46,13 @@ import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import com.yenaly.han1meviewer.worker.HanimeDownloadWorker
 import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.copyToClipboard
-import com.yenaly.yenaly_libs.utils.findActivityOrNull
 import com.yenaly.yenaly_libs.utils.shareText
 import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.unsafeLazy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
 import java.io.Serializable
 
 class VideoIntroductionFragment : Fragment() {
@@ -97,6 +98,7 @@ class VideoIntroductionFragment : Fragment() {
                     onRetry = { viewModel.getHanimeVideo(viewModel.videoCode) },
                     onOpenVideo = { item -> openVideo(item.videoCode) },
                     onOpenArtist = ::openArtistSearch,
+                    onNavigateToSearch = ::openTagSearch,
                     onToggleSubscribe = ::toggleArtistSubscription,
                     onToggleFavorite = { video?.let(::toggleFavorite) },
                     onManageMyList = { _, selectedStates ->
@@ -257,20 +259,14 @@ class VideoIntroductionFragment : Fragment() {
         val bundleMap = HashMap<String, Serializable>().apply {
             map.forEach { (key, value) -> put(key.name, value) }
         }
-        requireContext().findActivityOrNull<MainActivity>()?.let { activity ->
-            activity.startActivity(
-                Intent(activity, MainActivity::class.java).apply {
-                    putExtra("startSearchFromMap", HashMap(bundleMap))
-                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                }
-            )
-            return
-        }
-        context?.startActivity(
-            Intent(context, MainActivity::class.java).apply {
-                putExtra("startSearchFromMap", HashMap(bundleMap))
-            }
+        val routeMap = bundleMap.mapValues { it.value.toString() }
+        (activity as? MainActivity)?.navController?.navigate(
+            SearchRoute(advancedSearchJson = Json.encodeToString(routeMap))
         )
+    }
+
+    private fun openTagSearch(tag: String) {
+        (activity as? MainActivity)?.navController?.navigate(SearchRoute(query = tag))
     }
 
     private fun toggleArtistSubscription(artist: HanimeVideo.Artist) {
@@ -370,7 +366,7 @@ class VideoIntroductionFragment : Fragment() {
             onDenied = {
                 Toast.makeText(
                     requireContext(),
-                    "拒绝？拒绝就不好办了喵👿",
+                    R.string.storage_permission_denied_toast,
                     Toast.LENGTH_LONG,
                 ).show()
                 parentFragmentManager.popBackStack()
@@ -406,14 +402,14 @@ class VideoIntroductionFragment : Fragment() {
 
     private fun openDownloadPermissionSettings() {
         AlertDialog.Builder(requireContext())
-            .setTitle("权限被永久拒绝")
-            .setMessage("请前往设置开启存储权限，以便保存下载内容。")
-            .setPositiveButton("去设置") { _, _ ->
+            .setTitle(R.string.permission_permanently_denied_title)
+            .setMessage(R.string.storage_permission_settings_message)
+            .setPositiveButton(R.string.go_to_settings) { _, _ ->
                 startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                     data = "package:${requireContext().packageName}".toUri()
                 })
             }
-            .setNegativeButton("取消") { _, _ ->
+            .setNegativeButton(R.string.cancel) { _, _ ->
                 parentFragmentManager.popBackStack()
             }
             .show()

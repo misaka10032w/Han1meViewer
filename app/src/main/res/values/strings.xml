@@ -684,6 +684,36 @@
     <string name="disable_predictive_back_summary">開啟後，返回手勢只有在鬆手後才會觸發返回，避免觀看影片時因誤觸返回手勢而暫停播放</string>
     <string name="play_trailer">播放預告</string>
     <string name="load_complete">載入完畢！</string>
+    <string name="search_video_hint">搜尋影片…</string>
+    <string name="recent_searches">最近搜尋</string>
+    <string name="search_suggestions">搜尋建議</string>
+    <string name="no_matching_search_history">暫無匹配的搜尋歷史</string>
+    <string name="search_enter_keywords">輸入關鍵字搜尋影片</string>
+    <string name="search_no_results">沒有搜尋到結果</string>
+    <string name="search_load_failed_with_reason">載入失敗：%1$s</string>
+    <string name="load_failed_with_reason">載入失敗：%1$s</string>
+    <string name="more">更多</string>
+    <string name="announcement">公告</string>
+    <string name="announcement_list">公告列表</string>
+    <string name="view_all">查看全部</string>
+    <string name="open_menu">打開選單</string>
+    <string name="permission_permanently_denied_title">權限被永久拒絕</string>
+    <string name="storage_permission_settings_message">請前往設定開啟儲存權限，以便保存下載內容。</string>
+    <string name="storage_permission_denied_toast">拒絕後將無法保存下載內容</string>
+    <string name="invalid_ip_or_port" translatable="false">Invalid IP(v4) or Port(0..65535)</string>
+    <string name="widget_pin_not_supported_manual_add">部分 ROM 不支援引導式添加，請手動添加小工具</string>
+    <string name="cookies_label" translatable="false">Cookies</string>
+    <string name="clarity">畫質</string>
+    <string name="english_lang" translatable="false">English</string>
+    <string name="success_value">成功：%1$s</string>
+    <string name="previous_year">上一年</string>
+    <string name="next_year">下一年</string>
+    <string name="previous_month">上一月</string>
+    <string name="next_month">下一月</string>
+    <string name="checkin_count_format" translatable="false">x%1$d</string>
+    <string name="network_timeout_text">逾時</string>
+    <string name="remove">移除</string>
+    <string name="add">新增</string>
     <string-array name="search_placeholders">
         <item>探索深處的秘密…</item>
         <item>晚風輕拂，尋找那份溫柔</item>

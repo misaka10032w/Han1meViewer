@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.home
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
@@ -51,8 +52,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -82,9 +81,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
-import androidx.compose.ui.semantics.isTraversalGroup
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -131,7 +128,7 @@ val LocalSearchHistoryQuery = staticCompositionLocalOf<suspend (String) -> List<
 
 /** 首页视频分类行数据 */
 data class HomeCategory(
-    val title: String,
+    @param:StringRes val titleRes: Int,
     val genre: String? = null,
     val sort: String? = null,
     val tags: String? = null,
@@ -225,7 +222,7 @@ fun SearchOverlay(
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回",
+                            contentDescription = stringResource(R.string.back),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -274,7 +271,7 @@ fun SearchOverlay(
                                     Box {
                                         if (searchQuery.isEmpty()) {
                                             Text(
-                                                "搜索影片...",
+                                                stringResource(R.string.search_video_hint),
                                                 style = MaterialTheme.typography.bodyLarge,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
@@ -291,7 +288,7 @@ fun SearchOverlay(
                         IconButton(onClick = { searchQuery = "" }) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "清除",
+                                contentDescription = stringResource(R.string.clear_checkin),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -307,7 +304,7 @@ fun SearchOverlay(
                     }) {
                         Icon(
                             imageVector = Icons.Default.Search,
-                            contentDescription = "搜索",
+                            contentDescription = stringResource(R.string.search),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -319,7 +316,7 @@ fun SearchOverlay(
                 if (historySuggestions.isNotEmpty()) {
                     Column(modifier = Modifier.fillMaxSize()) {
                         Text(
-                            "搜索建议",
+                            stringResource(R.string.search_suggestions),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -361,8 +358,11 @@ fun SearchOverlay(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            if (searchQuery.isNotBlank()) "暂无匹配的搜索历史"
-                            else "输入关键词搜索影片",
+                            if (searchQuery.isNotBlank()) {
+                                stringResource(R.string.no_matching_search_history)
+                            } else {
+                                stringResource(R.string.search_enter_keywords)
+                            },
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -410,7 +410,7 @@ fun HomePageTopBar(
             IconButton(onClick = onOpenDrawer) {
                 Icon(
                     imageVector = Icons.Default.Menu,
-                    contentDescription = "打开菜单",
+                    contentDescription = stringResource(R.string.open_menu),
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -449,7 +449,7 @@ fun HomePageTopBar(
             IconButton(onClick = onNavigateToPreview) {
                 Icon(
                     painter = painterResource(R.drawable.ic_baseline_newspaper_24),
-                    contentDescription = "新番列表",
+                    contentDescription = stringResource(R.string.hanime_list),
                     tint = MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -620,7 +620,7 @@ fun CategoryRow(
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = "更多",
+                text = stringResource(R.string.more),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
@@ -666,7 +666,7 @@ fun AnnouncementListDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("公告列表", style = MaterialTheme.typography.titleLarge) },
+        title = { Text(stringResource(R.string.announcement_list), style = MaterialTheme.typography.titleLarge) },
         text = {
             LazyColumn(
                 modifier = Modifier
@@ -716,7 +716,7 @@ fun AnnouncementListDialog(
         },
         confirmButton = {
             Text(
-                "关闭",
+                stringResource(R.string.close),
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .clickable { onDismiss() }
@@ -775,7 +775,7 @@ fun AnnouncementCard(
                             .padding(end = 40.dp)
                     ) {
                         Text(
-                            text = "公告",
+                            text = stringResource(R.string.announcement),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
@@ -801,7 +801,7 @@ fun AnnouncementCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "关闭",
+                    contentDescription = stringResource(R.string.close),
                     modifier = Modifier.size(18.dp),
                     tint = MaterialTheme.colorScheme.onSecondaryContainer
                 )
@@ -846,7 +846,7 @@ fun AnnouncementCard(
 
             // "查看全部"按钮
             Text(
-                text = "查看全部",
+                text = stringResource(R.string.view_all),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
@@ -922,9 +922,9 @@ fun HomePageContent(
 
         // 各分类视频行
         categories.forEach { category ->
-            item(key = "category_${category.title}") {
+            item(key = "category_${category.titleRes}") {
                 CategoryRow(
-                    title = category.title,
+                    title = stringResource(category.titleRes),
                     videos = category.videos,
                     onMoreClick = { onMoreClick(category) },
                     onVideoClick = onVideoClick,
@@ -1098,7 +1098,10 @@ fun HomePageScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                "加载失败：${currentState.throwable.message}",
+                                stringResource(
+                                    R.string.load_failed_with_reason,
+                                    currentState.throwable.message.orEmpty()
+                                ),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.error
                             )
@@ -1142,70 +1145,70 @@ private fun buildCategoryList(homePage: HomePage): List<HomeCategory> {
 
     return listOfNotNull(
         HomeCategory(
-            title = if (isAVSite) "最新AV" else "最新裏番",
+            titleRes = if (isAVSite) R.string.latest_av else R.string.latest_hanime,
             genre = if (isAVSite) "日本AV" else "裏番",
             videos = homePage.ecchiAnime
         ),
         HomeCategory(
-            title = "最新上市",
+            titleRes = R.string.latest_release,
             sort = "最新上市",
             videos = homePage.latestRelease
         ),
         HomeCategory(
-            title = "最新上傳",
+            titleRes = R.string.latest_upload,
             sort = "最新上傳",
             videos = homePage.latestHanime
         ),
         HomeCategory(
-            title = "他們在看",
+            titleRes = R.string.they_watched,
             sort = "他們在看",
             videos = homePage.watchingNow
         ),
         HomeCategory(
-            title = if (isAVSite) "素人業餘" else "泡麵番",
+            titleRes = if (isAVSite) R.string.amateur_nomask else R.string.category_instant_noodle,
             genre = if (isAVSite) "素人業餘" else "泡麵番",
             sort = "最新上傳",
             videos = homePage.shortEpisodeAnime
         ),
         HomeCategory(
-            title = if (isAVSite) "高清無碼" else "Motion Anime",
+            titleRes = if (isAVSite) R.string.hd_uncensored else R.string.category_motion_anime,
             genre = if (isAVSite) "高清無碼" else "Motion Anime",
             sort = "最新上傳",
             videos = homePage.motionAnime
         ),
         HomeCategory(
-            title = if (isAVSite) "AI解碼" else "3DCG",
+            titleRes = if (isAVSite) R.string.ai_decensored else R.string.category_3d_animation,
             genre = if (isAVSite) "AI解碼" else "3DCG",
             sort = "最新上傳",
             videos = homePage.threeDCG
         ),
         HomeCategory(
-            title = if (isAVSite) "國產AV" else "2.5D",
+            titleRes = if (isAVSite) R.string.china_av else R.string.animation_2_5d,
             genre = if (isAVSite) "國產AV" else "2.5D",
             sort = "最新上傳",
             videos = homePage.twoPointFiveDAnime
         ),
         HomeCategory(
-            title = if (isAVSite) "國產素人" else "2D動畫",
+            titleRes = if (isAVSite) R.string.chinese_amateur else R.string.animation_2d,
             genre = if (isAVSite) "國產素人" else "2D動畫",
             sort = "最新上傳",
             videos = homePage.twoDAnime
         ),
         HomeCategory(
-            title = if (isAVSite) "中文字幕" else "AI生成",
+            titleRes = if (isAVSite) R.string.chinese_subtitle else R.string.ai_generated,
             genre = if (isAVSite) null else "AI生成",
             tags = if (isAVSite) "中文字幕" else null,
             sort = "最新上傳",
             videos = homePage.aiGenerated
         ),
         HomeCategory(
-            title = if (isAVSite) "本日排行" else "MMD",
+            titleRes = if (isAVSite) R.string.ranking_today else R.string.mmd,
             genre = if (isAVSite) null else "MMD",
             sort = if (isAVSite) "本日排行" else "最新上傳",
             videos = homePage.mmd
         ),
         HomeCategory(
-            title = if (isAVSite) "本月排行" else "Cosplay",
+            titleRes = if (isAVSite) R.string.ranking_this_month else R.string.category_cosplay,
             genre = if (isAVSite) null else "Cosplay",
             sort = if (isAVSite) "本月排行" else "最新上傳",
             videos = homePage.cosplay

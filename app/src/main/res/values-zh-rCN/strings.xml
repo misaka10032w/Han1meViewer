@@ -650,6 +650,36 @@
     <string name="disable_predictive_back_title">关闭预测性返回动画</string>
     <string name="disable_predictive_back_summary">开启后，返回手势只有在松手后才会触发返回，避免观看视频时因误触返回手势而暂停播放</string>
     <string name="play_trailer">播放预告</string>
+    <string name="search_video_hint">搜索影片…</string>
+    <string name="recent_searches">最近搜索</string>
+    <string name="search_suggestions">搜索建议</string>
+    <string name="no_matching_search_history">暂无匹配的搜索历史</string>
+    <string name="search_enter_keywords">输入关键词搜索影片</string>
+    <string name="search_no_results">没有搜索到结果</string>
+    <string name="search_load_failed_with_reason">加载失败：%1$s</string>
+    <string name="load_failed_with_reason">加载失败：%1$s</string>
+    <string name="more">更多</string>
+    <string name="announcement">公告</string>
+    <string name="announcement_list">公告列表</string>
+    <string name="view_all">查看全部</string>
+    <string name="open_menu">打开菜单</string>
+    <string name="permission_permanently_denied_title">权限被永久拒绝</string>
+    <string name="storage_permission_settings_message">请前往设置开启存储权限，以便保存下载内容。</string>
+    <string name="storage_permission_denied_toast">拒绝后将无法保存下载内容</string>
+    <string name="invalid_ip_or_port" translatable="false">Invalid IP(v4) or Port(0..65535)</string>
+    <string name="widget_pin_not_supported_manual_add">部分 ROM 不支持引导式添加，请手动添加小组件</string>
+    <string name="cookies_label" translatable="false">Cookies</string>
+    <string name="clarity">清晰度</string>
+    <string name="english_lang" translatable="false">English</string>
+    <string name="success_value">成功：%1$s</string>
+    <string name="previous_year">上一年</string>
+    <string name="next_year">下一年</string>
+    <string name="previous_month">上个月</string>
+    <string name="next_month">下个月</string>
+    <string name="checkin_count_format" translatable="false">x%1$d</string>
+    <string name="network_timeout_text">超时</string>
+    <string name="remove">移除</string>
+    <string name="add">新增</string>
     <string-array name="search_placeholders">
         <item>探索深处的秘密…</item>
         <item>晚风轻拂，寻找那份温柔</item>

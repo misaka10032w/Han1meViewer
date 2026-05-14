@@ -91,7 +91,7 @@ private fun ScanCookieContent(
             OutlinedTextField(
                 value = scannedText.value,
                 onValueChange = { scannedText.value = it },
-                label = { Text("Cookies") },
+                label = { Text(stringResource(R.string.cookies_label)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 100.dp, max = 300.dp),

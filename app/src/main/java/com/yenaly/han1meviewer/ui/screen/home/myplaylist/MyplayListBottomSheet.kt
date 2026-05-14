@@ -98,7 +98,7 @@ fun PlaylistBottomSheet(
                 vm.getPlaylistItems(1, currentCode,true)
             }
         } else {
-            showShortToast("listCode is Null")
+            showShortToast(R.string.unknown_error)
         }
     }
 

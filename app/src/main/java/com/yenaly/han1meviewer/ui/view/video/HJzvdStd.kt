@@ -1020,7 +1020,7 @@ class HJzvdStd @JvmOverloads constructor(
 
     override fun showWifiDialog() {
         jzvdContext.showAlertDialog {
-            setTitle("Warning!")
+            setTitle(R.string.warning)
             setMessage(cn.jzvd.R.string.tips_not_wifi)
             setPositiveButton(cn.jzvd.R.string.tips_not_wifi_confirm) { _, _ ->
                 WIFI_TIP_DIALOG_SHOWED = true

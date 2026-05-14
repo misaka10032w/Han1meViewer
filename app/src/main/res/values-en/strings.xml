@@ -645,6 +645,36 @@ Recommendations are as follows:\n
     <string name="disable_predictive_back_summary">When enabled, the back gesture will only trigger after releasing, preventing accidental back navigation while watching videos</string>
     <string name="play_trailer">Play Trailer</string>
     <string name="load_complete">Load complete !</string>
+    <string name="search_video_hint">Search videos…</string>
+    <string name="recent_searches">Recent Searches</string>
+    <string name="search_suggestions">Search Suggestions</string>
+    <string name="no_matching_search_history">No matching search history</string>
+    <string name="search_enter_keywords">Enter keywords to search videos</string>
+    <string name="search_no_results">No results found</string>
+    <string name="search_load_failed_with_reason">Load failed: %1$s</string>
+    <string name="load_failed_with_reason">Load failed: %1$s</string>
+    <string name="more">More</string>
+    <string name="announcement">Announcement</string>
+    <string name="announcement_list">Announcement List</string>
+    <string name="view_all">View All</string>
+    <string name="open_menu">Open menu</string>
+    <string name="permission_permanently_denied_title">Permission permanently denied</string>
+    <string name="storage_permission_settings_message">Please go to Settings and enable storage permission so downloads can be saved.</string>
+    <string name="storage_permission_denied_toast">Downloads cannot be saved without storage permission</string>
+    <string name="invalid_ip_or_port" translatable="false">Invalid IP(v4) or Port(0..65535)</string>
+    <string name="widget_pin_not_supported_manual_add">Some ROMs do not support guided widget pinning. Please add the widget manually.</string>
+    <string name="cookies_label" translatable="false">Cookies</string>
+    <string name="clarity">Clarity</string>
+    <string name="english_lang" translatable="false">English</string>
+    <string name="success_value">Success: %1$s</string>
+    <string name="previous_year">Previous year</string>
+    <string name="next_year">Next year</string>
+    <string name="previous_month">Previous month</string>
+    <string name="next_month">Next month</string>
+    <string name="checkin_count_format" translatable="false">x%1$d</string>
+    <string name="network_timeout_text">Time out</string>
+    <string name="remove">Remove</string>
+    <string name="add">Add</string>
     <string-array name="search_placeholders">
         <item>Explore the secrets deep within…</item>
         <item>Drift with the night wind, find your solace</item>

@@ -143,7 +143,7 @@ fun MyPlayListScreen(
                     FilledIconButton(onClick = navigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "back button"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 },
@@ -212,7 +212,10 @@ fun MyPlayListScreen(
                 is WebsiteState.Error -> {
                     if (playlists.isEmpty()) {
                         EmptyContent(
-                            hint = "${stringResource(R.string.load_failed_retry)}: ${result.throwable.message}",
+                            hint = stringResource(
+                                R.string.load_failed_with_reason,
+                                result.throwable.message.orEmpty()
+                            ),
                             picRes = R.drawable.h_chan_sad
                         )
                     } else {
@@ -342,7 +345,12 @@ fun AnimatedPageContent(
             is WebsiteState.Error -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("${stringResource(R.string.unknow)}: ${target.throwable.message}")
+                        Text(
+                            stringResource(
+                                R.string.load_failed_with_reason,
+                                target.throwable.message.orEmpty()
+                            )
+                        )
                         Spacer(Modifier.height(8.dp))
                         Button(onClick = onRetry) {
                             Text(stringResource(R.string.retry))

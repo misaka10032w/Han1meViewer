@@ -319,7 +319,7 @@ private fun ContributionReportDialog(
                         FilledIconButton(onClick = onDismiss) {
                             Icon(
                                 Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "close"
+                                contentDescription = stringResource(R.string.close)
                             )
                         }
                     },
@@ -511,7 +511,10 @@ private fun YearContributionView(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = { onYearChange(year - 1) }) {
-                Icon(painterResource(R.drawable.previous_double_arrow_24), "previous year")
+                Icon(
+                    painterResource(R.drawable.previous_double_arrow_24),
+                    stringResource(R.string.previous_year)
+                )
             }
             Text(
                 text = stringResource(R.string.report_year_format, year),
@@ -522,7 +525,10 @@ private fun YearContributionView(
                 onClick = { onYearChange(year + 1) },
                 enabled = year < today.year
             ) {
-                Icon(painterResource(R.drawable.next_double_arrow_24), "next year")
+                Icon(
+                    painterResource(R.drawable.next_double_arrow_24),
+                    stringResource(R.string.next_year)
+                )
             }
         }
 
@@ -621,7 +627,10 @@ private fun MonthContributionView(
                     onMonthChange(month - 1)
                 }
             }) {
-                Icon(painterResource(R.drawable.previous_double_arrow_24), "previous month")
+                Icon(
+                    painterResource(R.drawable.previous_double_arrow_24),
+                    stringResource(R.string.previous_month)
+                )
             }
             Text(
                 text = stringResource(R.string.report_year_month_format, year, month),
@@ -643,7 +652,10 @@ private fun MonthContributionView(
                 },
                 enabled = YearMonth.of(year, month).isBefore(YearMonth.now())
             ) {
-                Icon(painterResource(R.drawable.next_double_arrow_24), "next month")
+                Icon(
+                    painterResource(R.drawable.next_double_arrow_24),
+                    stringResource(R.string.next_month)
+                )
             }
         }
 
@@ -708,7 +720,7 @@ private fun MonthContributionView(
                         )
                         if (count > 0) {
                             Text(
-                                text = "x$count",
+                                text = stringResource(R.string.checkin_count_format, count),
                                 fontSize = 10.sp,
                                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                             )
@@ -1422,11 +1434,11 @@ private fun AchievementMiniCard(
 }
 
 private fun typeEmoji(type: String): String = when (type) {
-    "自慰" -> "\uD83E\uDD1C"
-    "梦遗" -> "\uD83D\uDCA4"
-    "做爱" -> "\uD83D\uDC91"
-    "口交" -> "\uD83D\uDC45"
-    "其它" -> "\u2753"
+    CheckInType.MASTURBATION.storeName -> "\uD83E\uDD1C"
+    CheckInType.WET_DREAM.storeName -> "\uD83D\uDCA4"
+    CheckInType.SEX.storeName -> "\uD83D\uDC91"
+    CheckInType.ORAL.storeName -> "\uD83D\uDC45"
+    CheckInType.OTHER.storeName -> "\u2753"
     else -> "\uD83D\uDCCA"
 }
 
@@ -1730,7 +1742,7 @@ private fun AddCheckInForm(
                         trailingIcon = {
                             Icon(
                                 Icons.Filled.Close,
-                                contentDescription = "remove",
+                                contentDescription = stringResource(R.string.remove),
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -1762,7 +1774,7 @@ private fun AddCheckInForm(
                     enabled = sideDishInput.trim().isNotEmpty() && sideDishes.size < 5,
                     modifier = Modifier.padding(start = 8.dp)
                 ) {
-                    Text("+")
+                    Text(stringResource(R.string.add))
                 }
             }
         }
@@ -1936,7 +1948,7 @@ private fun ExistingRecordItem(
                 ) {
                     Icon(
                         Icons.Filled.Close,
-                        contentDescription = "delete",
+                        contentDescription = stringResource(R.string.delete),
                         modifier = Modifier.size(16.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     )
