@@ -44,11 +44,12 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
-import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -244,8 +245,8 @@ fun SearchScreen(
         }
     }
 
-    LaunchedEffect(initialQuery, hasSearchResults) {
-        if (initialQuery.isNullOrBlank() && !hasAdvancedFilters() && !hasSearchResults) {
+    LaunchedEffect(initialQuery, hasSearchResults, isRefreshing) {
+        if (!isRefreshing && initialQuery.isNullOrBlank() && !hasAdvancedFilters() && !hasSearchResults) {
             focusReq.requestFocus()
         } else {
             focusMgr.clearFocus()
@@ -369,13 +370,22 @@ fun SearchScreen(
             )
         }
 
-        Box(
-            Modifier
-                .fillMaxSize()
-                .pullToRefresh(
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                doSearch()
+            },
+            state = refreshState,
+            modifier = Modifier.fillMaxSize(),
+            indicator = {
+                PullToRefreshDefaults.LoadingIndicator(
                     state = refreshState,
                     isRefreshing = isRefreshing,
-                    onRefresh = { isRefreshing = true; doSearch() })
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                )
+            },
         ) {
             if (hasSearched) {
                 // 已触发搜索，显示结果
@@ -383,7 +393,7 @@ fun SearchScreen(
                     (searchState as? PageLoadingState.Success)?.info ?: emptyList()
                 }
                 Box(Modifier.fillMaxSize()) {
-                    SearchStateIndicator(searchState, showResults.size)
+                    if (!isRefreshing) SearchStateIndicator(searchState, showResults.size)
                     if (showResults.isNotEmpty()) SearchResultsGrid(
                         showResults,
                         searchState,
@@ -416,13 +426,6 @@ fun SearchScreen(
                             histories.filter { it.id != h.id }
                         })
                 }
-            }
-            if (isRefreshing) Box(Modifier.align(Alignment.TopCenter)) {
-                PullToRefreshDefaults.Indicator(
-                    refreshState,
-                    isRefreshing,
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                )
             }
         }
     }
@@ -630,6 +633,7 @@ fun SearchResultsGrid(
 // 搜索状态 / 筛选标签
 // ─────────────────────────────────────────────
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SearchStateIndicator(
     state: PageLoadingState<*>,
@@ -640,7 +644,7 @@ fun SearchStateIndicator(
         is PageLoadingState.Loading -> if (resultCount == 0) Box(
             modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
-        ) { CircularProgressIndicator() }
+        ) { LoadingIndicator() }
 
         is PageLoadingState.NoMoreData -> if (resultCount == 0) EmptyContent(
             hint = stringResource(R.string.search_no_results),
