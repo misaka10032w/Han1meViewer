@@ -950,12 +950,6 @@ private fun PlaylistSection(
     onShowAllPlaylist: (() -> Unit)?,
     onPlaylistScrollChange: (Int) -> Unit,
 ) {
-    SectionHeader(
-        title = stringResource(R.string.series_video),
-        subtitle = playlist.playlistName,
-        actionText = if (onShowAllPlaylist != null) stringResource(R.string.more) else null,
-        onActionClick = onShowAllPlaylist,
-    )
     val listState = remember(playlist.video, initialIndex) {
         LazyListState(firstVisibleItemIndex = initialIndex)
     }
@@ -964,17 +958,25 @@ private fun PlaylistSection(
             .distinctUntilChanged()
             .collect(onPlaylistScrollChange)
     }
-    LazyRow(
-        state = listState,
-        contentPadding = PaddingValues(horizontal = 2.dp),
-    ) {
-        items(playlist.video, key = { it.videoCode }) { item ->
-            VideoCardItem(
-                videoItem = item,
-                isHorizontalCard = item.itemType == HanimeInfo.NORMAL,
-                onClickVideosItem = { onOpenVideo(item) },
-                onLongClickVideosItem = { _, _ -> },
-            )
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        SectionHeader(
+            title = stringResource(R.string.series_video),
+            subtitle = playlist.playlistName,
+            actionText = if (onShowAllPlaylist != null) stringResource(R.string.more) else null,
+            onActionClick = onShowAllPlaylist,
+        )
+        LazyRow(
+            state = listState,
+            contentPadding = PaddingValues(horizontal = 2.dp),
+        ) {
+            items(playlist.video, key = { it.videoCode }) { item ->
+                VideoCardItem(
+                    videoItem = item,
+                    isHorizontalCard = item.itemType == HanimeInfo.NORMAL,
+                    onClickVideosItem = { onOpenVideo(item) },
+                    onLongClickVideosItem = { _, _ -> },
+                )
+            }
         }
     }
 }
@@ -985,26 +987,28 @@ private fun RelatedVideosSection(
     videos: List<HanimeInfo>,
     onOpenVideo: (HanimeInfo) -> Unit,
 ) {
-    SectionHeader(title = stringResource(R.string.related_video))
-    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-        val cardWidth = if (videos.firstOrNull()?.itemType == HanimeInfo.NORMAL) {
-            dimensionResource(R.dimen.video_cover_width)
-        } else {
-            dimensionResource(R.dimen.video_cover_simplified_width)
-        }
-        val columns = maxOf(1, (maxWidth / cardWidth).toInt())
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            maxItemsInEachRow = columns,
-            horizontalArrangement = Arrangement.Start
-        ) {
-            videos.forEach { item ->
-                VideoCardItem(
-                    videoItem = item,
-                    isHorizontalCard = item.itemType == HanimeInfo.NORMAL,
-                    onClickVideosItem = { onOpenVideo(item) },
-                    onLongClickVideosItem = { _, _ -> },
-                )
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        SectionHeader(title = stringResource(R.string.related_video))
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            val cardWidth = if (videos.firstOrNull()?.itemType == HanimeInfo.NORMAL) {
+                dimensionResource(R.dimen.video_cover_width)
+            } else {
+                dimensionResource(R.dimen.video_cover_simplified_width)
+            }
+            val columns = maxOf(1, (maxWidth / cardWidth).toInt())
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                maxItemsInEachRow = columns,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                videos.forEach { item ->
+                    VideoCardItem(
+                        videoItem = item,
+                        isHorizontalCard = item.itemType == HanimeInfo.NORMAL,
+                        onClickVideosItem = { onOpenVideo(item) },
+                        onLongClickVideosItem = { _, _ -> },
+                    )
+                }
             }
         }
     }
