@@ -216,6 +216,7 @@ class VideoFragment : androidx.fragment.app.Fragment(), OrientationManager.Orien
             val totalScrollRange = appBar.totalScrollRange
             val offset = totalScrollRange + verticalOffset
             binding.videoVp.setPadding(0, 0, 0, offset)
+            viewModel.setAppBarExpanded(videoCode, verticalOffset == 0)
         }
 
         val behavior = (binding.appbar.layoutParams as CoordinatorLayout.LayoutParams)
@@ -236,6 +237,9 @@ class VideoFragment : androidx.fragment.app.Fragment(), OrientationManager.Orien
         setupTabletLayoutListener()
         if (isTabletMode) {
             syncTabletUi(force = true)
+        }
+        binding.appbar.post {
+            binding.appbar.setExpanded(viewModel.isAppBarExpanded(videoCode), false)
         }
     }
 
@@ -598,6 +602,20 @@ class VideoFragment : androidx.fragment.app.Fragment(), OrientationManager.Orien
         binding.videoTl.attach(binding.videoVp) { tab, position ->
             tab.setText(tabNameArray[position])
         }
+
+        binding.videoVp.post {
+            val targetIndex = viewModel.getSelectedTabIndex(videoCode)
+                .coerceIn(0, binding.videoVp.adapter!!.itemCount - 1)
+            if (binding.videoVp.currentItem != targetIndex) {
+                binding.videoVp.setCurrentItem(targetIndex, false)
+            }
+        }
+
+        binding.videoVp.registerOnPageChangeCallback(object : androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                viewModel.setSelectedTabIndex(videoCode, position)
+            }
+        })
     }
 
     private fun initHKeyframe() {

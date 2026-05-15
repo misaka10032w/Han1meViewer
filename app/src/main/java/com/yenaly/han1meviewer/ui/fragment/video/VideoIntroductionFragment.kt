@@ -85,6 +85,7 @@ class VideoIntroductionFragment : Fragment() {
             val videoShareText = video?.title?.let { title ->
                 getHanimeShareText(title, viewModel.videoCode)
             }.orEmpty()
+            val introScrollState = viewModel.getIntroScrollState(viewModel.videoCode)
 
             HanimeTheme {
                 VideoIntroductionScreen(
@@ -93,7 +94,9 @@ class VideoIntroductionFragment : Fragment() {
                     fromDownload = viewModel.fromDownload,
                     hideRelatedInIntro = viewModel.hideRelatedInIntro,
                     shareText = videoShareText,
-                    playlistInitialIndex = viewModel.horizontalScrollPositions[viewModel.videoCode] ?: 0,
+                    playlistInitialIndex = viewModel.getPlaylistFirstVisibleIndex(viewModel.videoCode) ?: 0,
+                    introFirstVisibleItemIndex = introScrollState.firstVisibleItemIndex,
+                    introFirstVisibleItemScrollOffset = introScrollState.firstVisibleItemScrollOffset,
                     downloadPrompt = pendingDownloadPrompt,
                     onRetry = { viewModel.getHanimeVideo(viewModel.videoCode) },
                     onOpenVideo = { item -> openVideo(item.videoCode) },
@@ -144,7 +147,10 @@ class VideoIntroductionFragment : Fragment() {
                         null
                     },
                     onPlaylistScrollChange = { index ->
-                        viewModel.horizontalScrollPositions[viewModel.videoCode] = index
+                        viewModel.setPlaylistFirstVisibleIndex(viewModel.videoCode, index)
+                    },
+                    onIntroductionScrollChange = { index, offset ->
+                        viewModel.setIntroScrollState(viewModel.videoCode, index, offset)
                     },
                     onIntroductionLinkClick = ::openIntroductionLink,
                 )
@@ -163,16 +169,13 @@ class VideoIntroductionFragment : Fragment() {
             repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.CREATED) {
                 launch {
                     viewModel.hanimeVideoFlow.collect { video ->
-                        viewModel.videoIntroDataMap[code] = video
-                        if (video != null) {
-                            viewModel.videoIntroRestoredSet.add(code)
-                        }
+                        viewModel.setVideoIntroCachedData(code, video)
                         viewModel.setVideoList(video?.playlist?.video.orEmpty())
-                        val savedIndex = viewModel.horizontalScrollPositions[code]
+                        val savedIndex = viewModel.getPlaylistFirstVisibleIndex(code)
                         if (savedIndex == null) {
                             val playingIndex = video?.playlist?.video?.indexOfFirst { it.isPlaying } ?: -1
                             if (playingIndex >= 0) {
-                                viewModel.horizontalScrollPositions[code] = playingIndex
+                                viewModel.setPlaylistFirstVisibleIndex(code, playingIndex)
                             }
                         }
                     }
@@ -235,8 +238,8 @@ class VideoIntroductionFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        viewModel.videoIntroDataMap[viewModel.videoCode] = viewModel.hanimeVideoFlow.value
-        viewModel.videoIntroRestoredSet.remove(viewModel.videoCode)
+        viewModel.setVideoIntroCachedData(viewModel.videoCode, viewModel.hanimeVideoFlow.value)
+        viewModel.clearVideoIntroRestoredFlag(viewModel.videoCode)
         super.onDestroyView()
     }
 

@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -526,7 +527,10 @@ fun PreviewCommentRouteScreen(
     val viewModel: CommentViewModel = viewModel(viewModelStoreOwner = activity)
     val comments = viewModel.videoCommentFlow
     val commentState = viewModel.videoCommentStateFlow
-    var childCommentId by remember { mutableStateOf<String?>(null) }
+    val commentUiState = remember(route.dateCode) {
+        viewModel.getCommentUiState(route.dateCode)
+    }
+    var childCommentId by rememberSaveable { mutableStateOf(commentUiState.childCommentId) }
     val childSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     val scope = rememberCoroutineScope()
     val prefetchedComments = PreviewCommentPrefetcher.here(viewModel)
@@ -600,6 +604,7 @@ fun PreviewCommentRouteScreen(
         ModalBottomSheet(
             onDismissRequest = {
                 childCommentId = null
+                viewModel.setChildCommentId(route.dateCode, null)
                 viewModel.clearVideoReplyList()
             },
             sheetState = childSheetState,
@@ -739,7 +744,10 @@ fun PreviewCommentRouteScreen(
                 }
             },
             onViewMoreReplies = { comment ->
-                comment.replyTargetIdOrNull?.let { childCommentId = it }
+                comment.replyTargetIdOrNull?.let {
+                    childCommentId = it
+                    viewModel.setChildCommentId(route.dateCode, it)
+                }
             },
             onSortChange = viewModel::setSortType,
             onComposeComment = { text ->
@@ -748,6 +756,11 @@ fun PreviewCommentRouteScreen(
                 } ?: scope.launch {
                     reportMessages.emit(CommentMessage(activity.getString(R.string.there_is_a_small_issue)))
                 }
+            },
+            initialFirstVisibleItemIndex = commentUiState.firstVisibleItemIndex,
+            initialFirstVisibleItemScrollOffset = commentUiState.firstVisibleItemScrollOffset,
+            onCommentScrollChange = { index, offset ->
+                viewModel.setCommentScrollState(route.dateCode, index, offset)
             },
             modifier = Modifier
                 .fillMaxSize()

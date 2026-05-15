@@ -1,7 +1,6 @@
 package com.yenaly.han1meviewer.ui.viewmodel
 
 import android.app.Application
-import android.os.Parcelable
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,13 +46,27 @@ import kotlin.math.abs
  */
 class VideoViewModel(application: Application) : YenalyViewModel(application) {
 
+    data class IntroScrollState(
+        val firstVisibleItemIndex: Int = 0,
+        val firstVisibleItemScrollOffset: Int = 0,
+    )
+
+    private data class VideoIntroUiState(
+        val playlistFirstVisibleIndex: Int? = null,
+        val cachedVideo: HanimeVideo? = null,
+        val introRestored: Boolean = false,
+        val scrollState: IntroScrollState = IntroScrollState(),
+        val selectedTabIndex: Int = 0,
+        val isAppBarExpanded: Boolean = true,
+    )
+
     companion object {
         /**
          * 最小的 HKeyframe 保存間隔，暫定 5s
          */
         const val MIN_H_KEYFRAME_SAVE_INTERVAL = 5_000 // ms
     }
-    val horizontalScrollPositions = mutableMapOf<String, Int>()
+    private val videoIntroUiStateMap = mutableMapOf<String, VideoIntroUiState>()
     var videoCode: String = EMPTY_STRING
         set(value) {
             field = value
@@ -75,14 +88,74 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
     private val _hanimeVideoFlow = MutableStateFlow<HanimeVideo?>(null)
     val hanimeVideoFlow = _hanimeVideoFlow.asStateFlow()
 
-    // 保存当前 videoCode及请求数据以及对应的滚动位置
-    val scrollPositionMap = mutableMapOf<String, Parcelable?>()
-    val videoIntroDataMap = mutableMapOf<String, HanimeVideo?>()
-    // 表示已经还原过的数据
-    val videoIntroRestoredSet = mutableSetOf<String>()
     fun setVideoList(list: List<HanimeInfo>) {
         _videoList.value = list
     }
+
+    fun getPlaylistFirstVisibleIndex(videoCode: String): Int? {
+        return videoIntroUiStateMap[videoCode]?.playlistFirstVisibleIndex
+    }
+
+    fun setPlaylistFirstVisibleIndex(videoCode: String, index: Int) {
+        updateVideoIntroUiState(videoCode) { copy(playlistFirstVisibleIndex = index) }
+    }
+
+    fun setVideoIntroCachedData(videoCode: String, video: HanimeVideo?) {
+        updateVideoIntroUiState(videoCode) {
+            copy(
+                cachedVideo = video,
+                introRestored = video != null,
+            )
+        }
+    }
+
+    fun clearVideoIntroRestoredFlag(videoCode: String) {
+        updateVideoIntroUiState(videoCode) { copy(introRestored = false) }
+    }
+
+    fun getIntroScrollState(videoCode: String): IntroScrollState {
+        return videoIntroUiStateMap[videoCode]?.scrollState ?: IntroScrollState()
+    }
+
+    fun getSelectedTabIndex(videoCode: String): Int {
+        return videoIntroUiStateMap[videoCode]?.selectedTabIndex ?: 0
+    }
+
+    fun setSelectedTabIndex(videoCode: String, selectedTabIndex: Int) {
+        updateVideoIntroUiState(videoCode) { copy(selectedTabIndex = selectedTabIndex) }
+    }
+
+    fun isAppBarExpanded(videoCode: String): Boolean {
+        return videoIntroUiStateMap[videoCode]?.isAppBarExpanded ?: true
+    }
+
+    fun setAppBarExpanded(videoCode: String, isExpanded: Boolean) {
+        updateVideoIntroUiState(videoCode) { copy(isAppBarExpanded = isExpanded) }
+    }
+
+    fun setIntroScrollState(
+        videoCode: String,
+        firstVisibleItemIndex: Int,
+        firstVisibleItemScrollOffset: Int,
+    ) {
+        updateVideoIntroUiState(videoCode) {
+            copy(
+                scrollState = IntroScrollState(
+                    firstVisibleItemIndex = firstVisibleItemIndex,
+                    firstVisibleItemScrollOffset = firstVisibleItemScrollOffset,
+                )
+            )
+        }
+    }
+
+    private inline fun updateVideoIntroUiState(
+        videoCode: String,
+        transform: VideoIntroUiState.() -> VideoIntroUiState,
+    ) {
+        val current = videoIntroUiStateMap[videoCode] ?: VideoIntroUiState()
+        videoIntroUiStateMap[videoCode] = current.transform()
+    }
+
     fun buildLocalPlayInfo(localPath: String? = null): HanimeVideo {
         val resolution = HanimeResolution()
         resolution.parseResolution(
@@ -109,7 +182,7 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
             _hanimeVideoFlow.value = buildLocalPlayInfo(localUri)
             return
         }
-        if (videoIntroRestoredSet.contains(videoCode)) return
+        if (videoIntroUiStateMap[videoCode]?.introRestored == true) return
         viewModelScope.launch {
             val flow = if (fromDownload) {
                 HCacheManager.loadHanimeVideoInfo(application,videoCode).map { hv ->
@@ -133,8 +206,8 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
     }
 
     fun restoreFromCacheIfExists(code: String): Boolean {
-        val cached = videoIntroDataMap[code] ?: return false
-        videoIntroRestoredSet.add(code) //
+        val cached = videoIntroUiStateMap[code]?.cachedVideo ?: return false
+        updateVideoIntroUiState(code) { copy(introRestored = true) }
         _hanimeVideoFlow.value = cached
         _hanimeVideoStateFlow.value = VideoLoadingState.Success(cached)
         return true

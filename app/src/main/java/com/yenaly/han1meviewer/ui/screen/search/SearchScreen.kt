@@ -119,7 +119,6 @@ fun SearchScreen(
     var histories by remember { mutableStateOf<List<SearchHistoryEntity>>(emptyList()) }
     var hasSearched by rememberSaveable(initialQuery) { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
-    var filter by remember { mutableStateOf(SearchFilter()) }
     var isSearchFocused by remember { mutableStateOf(false) }
     var isCriteriaVisible by rememberSaveable { mutableStateOf(true) }
     var isLeavingScreen by remember { mutableStateOf(false) }
@@ -174,8 +173,7 @@ fun SearchScreen(
 
     val hasSearchResults = searchResults.isNotEmpty() ||
             ((searchState as? PageLoadingState.Success)?.info?.isNotEmpty() == true)
-
-    LaunchedEffect(
+    val filter = remember(
         viewModel.genre,
         viewModel.sort,
         viewModel.duration,
@@ -184,7 +182,7 @@ fun SearchScreen(
         viewModel.tagMap.size(),
         viewModel.brandMap.size(),
     ) {
-        filter = SearchFilter(
+        SearchFilter(
             genre = viewModel.genre,
             sort = viewModel.sort,
             duration = viewModel.duration,
@@ -305,15 +303,6 @@ fun SearchScreen(
         if (clearTags) viewModel.tagMap.clear()
         if (clearBrands) viewModel.brandMap.clear()
         if (clearBroad) viewModel.broad = false
-        filter = SearchFilter(
-            genre = viewModel.genre,
-            sort = viewModel.sort,
-            duration = viewModel.duration,
-            releaseDate = viewModel.getSearchDate(),
-            tagCount = tagFlatten(viewModel.tagMap).size,
-            brandCount = brandFlatten(viewModel.brandMap).size,
-            broad = viewModel.broad,
-        )
         doSearch(resetScroll = true)
     }
 

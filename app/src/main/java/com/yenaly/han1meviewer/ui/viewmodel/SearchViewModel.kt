@@ -41,7 +41,9 @@ class SearchViewModel(
 ) : YenalyViewModel(application) {
 
     var page: Int = 1
-    var query: String? = null
+    var query: String?
+        get() = state["query"]
+        set(value) { state["query"] = value }
 
     var genre: String?
         get() = state["genre"]
@@ -63,8 +65,13 @@ class SearchViewModel(
         get() = state["approxTime"]
         set(value) { state["approxTime"] = value }
 
-    var broad: Boolean = false
-    var duration: String? = null
+    var broad: Boolean
+        get() = state["broad"] ?: false
+        set(value) { state["broad"] = value }
+
+    var duration: String?
+        get() = state["duration"]
+        set(value) { state["duration"] = value }
 
     var gridFirstVisibleItemIndex: Int
         get() = state["gridFirstVisibleItemIndex"] ?: 0

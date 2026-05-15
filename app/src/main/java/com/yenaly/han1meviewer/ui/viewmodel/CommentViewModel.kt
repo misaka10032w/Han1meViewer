@@ -31,7 +31,15 @@ import kotlinx.coroutines.launch
  */
 class CommentViewModel(application: Application) : YenalyViewModel(application) {
 
+    data class CommentUiState(
+        val firstVisibleItemIndex: Int = 0,
+        val firstVisibleItemScrollOffset: Int = 0,
+        val childCommentId: String? = null,
+    )
+
     lateinit var code: String
+
+    private val commentUiStateMap = mutableMapOf<String, CommentUiState>()
 
     var currentUserId: String? = null
     //reportMessage为点击举报按钮之后的响应及错误信息
@@ -76,6 +84,28 @@ class CommentViewModel(application: Application) : YenalyViewModel(application) 
     fun setSortType(type: CommentSortType) {
         _currentSortType.value = type
     }
+
+    fun getCommentUiState(code: String): CommentUiState {
+        return commentUiStateMap[code] ?: CommentUiState()
+    }
+
+    fun setCommentScrollState(
+        code: String,
+        firstVisibleItemIndex: Int,
+        firstVisibleItemScrollOffset: Int,
+    ) {
+        val current = commentUiStateMap[code] ?: CommentUiState()
+        commentUiStateMap[code] = current.copy(
+            firstVisibleItemIndex = firstVisibleItemIndex,
+            firstVisibleItemScrollOffset = firstVisibleItemScrollOffset,
+        )
+    }
+
+    fun setChildCommentId(code: String, childCommentId: String?) {
+        val current = commentUiStateMap[code] ?: CommentUiState()
+        commentUiStateMap[code] = current.copy(childCommentId = childCommentId)
+    }
+
     fun clearCommentData(){
         _videoCommentFlow.value = emptyList()
     }

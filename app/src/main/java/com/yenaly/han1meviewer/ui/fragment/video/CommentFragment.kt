@@ -51,7 +51,10 @@ class CommentFragment : Fragment() {
             ViewGroup.LayoutParams.MATCH_PARENT,
         )
         setContent {
-            var childCommentId by remember { mutableStateOf<String?>(null) }
+            val commentUiState = remember(viewModel.code) {
+                viewModel.getCommentUiState(viewModel.code)
+            }
+            var childCommentId by remember { mutableStateOf(commentUiState.childCommentId) }
             val childSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
             HanimeTheme {
@@ -62,6 +65,7 @@ class CommentFragment : Fragment() {
                         sheetState = childSheetState,
                         onDismiss = {
                             childCommentId = null
+                            viewModel.setChildCommentId(viewModel.code, null)
                             viewModel.clearVideoReplyList()
                         },
                     )
@@ -141,6 +145,7 @@ class CommentFragment : Fragment() {
                             return@CommentScreen
                         }
                         childCommentId = replyTargetId
+                        viewModel.setChildCommentId(viewModel.code, replyTargetId)
                     },
                     onSortChange = { viewModel.setSortType(it) },
                     onComposeComment = {
@@ -149,6 +154,11 @@ class CommentFragment : Fragment() {
                         } ?: lifecycleScope.launch {
                             reportMessages.emit(CommentMessage(getString(R.string.there_is_a_small_issue)))
                         }
+                    },
+                    initialFirstVisibleItemIndex = commentUiState.firstVisibleItemIndex,
+                    initialFirstVisibleItemScrollOffset = commentUiState.firstVisibleItemScrollOffset,
+                    onCommentScrollChange = { index, offset ->
+                        viewModel.setCommentScrollState(viewModel.code, index, offset)
                     },
                 )
             }

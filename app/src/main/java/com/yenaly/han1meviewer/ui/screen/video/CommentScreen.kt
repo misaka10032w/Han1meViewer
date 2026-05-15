@@ -42,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -88,6 +89,9 @@ fun CommentScreen(
     onViewMoreReplies: (VideoComments.VideoComment) -> Unit,
     onSortChange: (CommentSortType) -> Unit,
     onComposeComment: (String) -> Unit,
+    initialFirstVisibleItemIndex: Int = 0,
+    initialFirstVisibleItemScrollOffset: Int = 0,
+    onCommentScrollChange: (Int, Int) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
 ) {
     val comments by commentsFlow.collectAsStateWithLifecycle()
@@ -106,7 +110,10 @@ fun CommentScreen(
     var latestReportMessage by remember { mutableStateOf<String?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val refreshingState = rememberPullToRefreshState()
-    val listState = rememberLazyListState()
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = initialFirstVisibleItemIndex,
+        initialFirstVisibleItemScrollOffset = initialFirstVisibleItemScrollOffset,
+    )
     val scope = rememberCoroutineScope()
     val loginFirstText = stringResource(R.string.login_first)
     LaunchedEffect(reportMessageFlow) {
@@ -122,6 +129,14 @@ fun CommentScreen(
         sortComments(comments, sortType)
     }
     val showCommentFab by rememberCommentFabVisibility(listState)
+
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset
+        }.collect { (index, offset) ->
+            onCommentScrollChange(index, offset)
+        }
+    }
 
     if (replyingComment != null) {
         CommentInputDialog(

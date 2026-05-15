@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
@@ -98,6 +99,8 @@ fun VideoIntroductionScreen(
     hideRelatedInIntro: Boolean,
     shareText: String,
     playlistInitialIndex: Int,
+    introFirstVisibleItemIndex: Int,
+    introFirstVisibleItemScrollOffset: Int,
     downloadPrompt: DownloadPromptState?,
     onRetry: () -> Unit,
     onOpenVideo: (HanimeInfo) -> Unit,
@@ -119,6 +122,7 @@ fun VideoIntroductionScreen(
     onCopyText: (String) -> Unit,
     onShowAllPlaylist: (() -> Unit)?,
     onPlaylistScrollChange: (Int) -> Unit,
+    onIntroductionScrollChange: (Int, Int) -> Unit,
     onIntroductionLinkClick: (String) -> Unit,
 ) {
     val maxScreenWidth = LocalWindowInfo.current.containerSize.width.dp
@@ -136,6 +140,8 @@ fun VideoIntroductionScreen(
                 hideRelatedInIntro = hideRelatedInIntro,
                 shareText = shareText,
                 playlistInitialIndex = playlistInitialIndex,
+                introFirstVisibleItemIndex = introFirstVisibleItemIndex,
+                introFirstVisibleItemScrollOffset = introFirstVisibleItemScrollOffset,
                 downloadPrompt = downloadPrompt,
                 onOpenVideo = onOpenVideo,
                 onOpenArtist = onOpenArtist,
@@ -156,6 +162,7 @@ fun VideoIntroductionScreen(
                 onCopyText = onCopyText,
                 onShowAllPlaylist = onShowAllPlaylist,
                 onPlaylistScrollChange = onPlaylistScrollChange,
+                onIntroductionScrollChange = onIntroductionScrollChange,
                 onIntroductionLinkClick = onIntroductionLinkClick,
             )
 
@@ -186,6 +193,8 @@ private fun VideoIntroductionContent(
     hideRelatedInIntro: Boolean,
     shareText: String,
     playlistInitialIndex: Int,
+    introFirstVisibleItemIndex: Int,
+    introFirstVisibleItemScrollOffset: Int,
     downloadPrompt: DownloadPromptState?,
     onOpenVideo: (HanimeInfo) -> Unit,
     onOpenArtist: (HanimeVideo.Artist) -> Unit,
@@ -206,9 +215,14 @@ private fun VideoIntroductionContent(
     onCopyText: (String) -> Unit,
     onShowAllPlaylist: (() -> Unit)?,
     onPlaylistScrollChange: (Int) -> Unit,
+    onIntroductionScrollChange: (Int, Int) -> Unit,
     onIntroductionLinkClick: (String) -> Unit,
 ) {
     val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = introFirstVisibleItemIndex,
+        initialFirstVisibleItemScrollOffset = introFirstVisibleItemScrollOffset,
+    )
     var showPlaylistSheet by remember { mutableStateOf(false) }
     var showQuickCheckInDialog by remember { mutableStateOf(false) }
     var showMyListDialog by remember { mutableStateOf(false) }
@@ -286,7 +300,16 @@ private fun VideoIntroductionContent(
         )
     }
 
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset
+        }.distinctUntilChanged().collect { (index, offset) ->
+            onIntroductionScrollChange(index, offset)
+        }
+    }
+
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 6.dp, top = 12.dp, end = 6.dp, bottom = 24.dp + bottomInset),
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -1117,6 +1140,9 @@ private fun VideoIntroductionScreenPreview() {
             onCopyText = {},
             onShowAllPlaylist = {},
             onPlaylistScrollChange = {},
+            introFirstVisibleItemIndex = 0,
+            introFirstVisibleItemScrollOffset = 0,
+            onIntroductionScrollChange = { _, _ -> },
             onIntroductionLinkClick = {},
         )
     }
@@ -1154,6 +1180,9 @@ private fun VideoIntroductionScreenLoadingPreview() {
             onCopyText = {},
             onShowAllPlaylist = null,
             onPlaylistScrollChange = {},
+            introFirstVisibleItemIndex = 0,
+            introFirstVisibleItemScrollOffset = 0,
+            onIntroductionScrollChange = { _, _ -> },
             onIntroductionLinkClick = {},
         )
     }
@@ -1191,6 +1220,9 @@ private fun VideoIntroductionScreenErrorPreview() {
             onCopyText = {},
             onShowAllPlaylist = null,
             onPlaylistScrollChange = {},
+            introFirstVisibleItemIndex = 0,
+            introFirstVisibleItemScrollOffset = 0,
+            onIntroductionScrollChange = { _, _ -> },
             onIntroductionLinkClick = {},
         )
     }

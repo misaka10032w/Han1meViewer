@@ -61,6 +61,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -107,10 +108,13 @@ fun PreviewScreen(
     onOpenComment: (String, String) -> Unit,
     onOpenVideo: (String) -> Unit,
 ) {
-    var currentDateCode by rememberSaveable { mutableStateOf(currentDateCode()) }
-    var selectedIndex by rememberSaveable(currentDateCode) { mutableIntStateOf(0) }
+    var routeState by rememberSaveable(stateSaver = PreviewRouteUiState.Saver) {
+        mutableStateOf(PreviewRouteUiState())
+    }
     var imageViewerState by remember { mutableStateOf<PreviewImageViewerState?>(null) }
     var monthAnimationDirection by remember { mutableIntStateOf(1) }
+    val currentDateCode = routeState.currentDateCode
+    val selectedIndex = routeState.selectedIndex
 
     val currentDateLabel = remember(currentDateCode) { toNormalDateLabel(currentDateCode) }
     val prevDateCode = remember(currentDateCode) { shiftMonthCode(currentDateCode, -1) }
@@ -164,7 +168,7 @@ fun PreviewScreen(
 
     LaunchedEffect(currentDateCode) {
         onLoadDate(currentDateCode)
-        selectedIndex = 0
+        routeState = routeState.copy(selectedIndex = 0)
     }
 
     LaunchedEffect(selectedIndex, previewInfoList.size) {
@@ -181,7 +185,7 @@ fun PreviewScreen(
         if (previewInfoList.isEmpty()) return@LaunchedEffect
         val pagerPage = previewPagerState.currentPage.coerceIn(previewInfoList.indices)
         if (pagerPage != selectedIndex) {
-            selectedIndex = pagerPage
+            routeState = routeState.copy(selectedIndex = pagerPage)
         }
     }
 
@@ -289,11 +293,15 @@ fun PreviewScreen(
                         canNext = animatedHeaderState.canNext,
                         onPrev = {
                             monthAnimationDirection = -1
-                            currentDateCode = shiftMonthCode(animatedHeaderState.dateCode, -1)
+                            routeState = routeState.copy(
+                                currentDateCode = shiftMonthCode(animatedHeaderState.dateCode, -1),
+                            )
                         },
                         onNext = {
                             monthAnimationDirection = 1
-                            currentDateCode = shiftMonthCode(animatedHeaderState.dateCode, 1)
+                            routeState = routeState.copy(
+                                currentDateCode = shiftMonthCode(animatedHeaderState.dateCode, 1),
+                            )
                         },
                     )
                 }
@@ -364,6 +372,23 @@ fun PreviewScreen(
                 }
             }
         }
+    }
+}
+
+private data class PreviewRouteUiState(
+    val currentDateCode: String = currentDateCode(),
+    val selectedIndex: Int = 0,
+) {
+    companion object {
+        val Saver = listSaver<PreviewRouteUiState, Any>(
+            save = { listOf(it.currentDateCode, it.selectedIndex) },
+            restore = {
+                PreviewRouteUiState(
+                    currentDateCode = it[0] as String,
+                    selectedIndex = it[1] as Int,
+                )
+            },
+        )
     }
 }
 
