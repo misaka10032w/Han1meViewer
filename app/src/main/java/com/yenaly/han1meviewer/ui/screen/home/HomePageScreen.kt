@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.home
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -987,6 +988,9 @@ fun HomePageScreen(
         if (state !is WebsiteState.Loading) {
             isRefreshing = false
         }
+    }
+    BackHandler {
+        onShowExitDialog()
     }
 
     // Expressive 指示器缩放动画
