@@ -8,6 +8,7 @@ import android.widget.Toast
 import com.yenaly.han1meviewer.ui.activity.CloudflareActivity
 import okhttp3.Interceptor
 import okhttp3.Response
+import java.util.concurrent.CountDownLatch
 
 class CloudflareInterceptor(
     private val context: Context
@@ -21,15 +22,12 @@ class CloudflareInterceptor(
             response.close()
             val url = request.url.toString()
 
-            // 用同步锁等待验证完成
-            val lock = Object()
-            var finished = false
+            // 用 CountDownLatch 代替同步锁
+            val latch = CountDownLatch(1)
 
+            // 设置回调，用户验证完成后调用
             CloudflareActivity.onFinished = {
-                synchronized(lock) {
-                    finished = true
-                    lock.notifyAll()
-                }
+                latch.countDown()
             }
 
             val intent = Intent(context, CloudflareActivity::class.java)
@@ -49,11 +47,7 @@ class CloudflareInterceptor(
             }
 
             // 等待 WebView 验证完成
-            synchronized(lock) {
-                while (!finished) {
-                    lock.wait()
-                }
-            }
+            latch.await()
             return chain.proceed(request)
         }
         return response
