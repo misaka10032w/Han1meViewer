@@ -1,17 +1,24 @@
 package com.yenaly.han1meviewer.ui.component
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,53 +38,72 @@ import com.yenaly.han1meviewer.logic.model.ReportReason
  *
  * 用于输入评论内容的弹窗，包含输入框和确认/取消按钮。
  *
- * @param title 对话框标题
- * @param label 输入框标签
  * @param text 输入框当前文本状态
  * @param onTextChange 文本变化回调
- * @param onConfirm 确认回调
- * @param onDismiss 取消回调
- * @param confirmText 确认按钮文本
- * @param confirmEnabled 确认按钮是否可用，默认为 true
- * @param dismissEnabled 取消按钮是否可用，默认为 true
+ * @param onSend 发送回调
+ * @param placeholder 输入框 hint
+ * @param modifier 修饰器
+ *
  */
+
 @Composable
-internal fun CommentInputDialog(
-    title: String,
-    label: String,
+internal fun CommentReplyBar(
     text: TextFieldValue,
     onTextChange: (TextFieldValue) -> Unit,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit,
-    confirmText: String,
-    confirmEnabled: Boolean = true,
-    dismissEnabled: Boolean = true,
+    onSend: () -> Unit,
+    placeholder: String,
+    modifier: Modifier = Modifier,
 ) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            OutlinedTextField(
-                value = text,
-                onValueChange = onTextChange,
-                label = { Text(label) },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = confirmEnabled,
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirm, enabled = confirmEnabled) {
-                Text(confirmText)
+    Box(
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(8.dp)
+    ){
+        Surface(
+            modifier = modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerLowest,
+            tonalElevation = 0.dp,
+            shadowElevation = 0.dp,
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = onTextChange,
+                    placeholder = { Text(placeholder) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 14.dp),
+                    textStyle = MaterialTheme.typography.bodyLarge,
+                    minLines = 1,
+                    maxLines = 5,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    ),
+                )
+                IconButton(
+                    onClick = onSend,
+                    modifier = Modifier.size(48.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_baseline_send_24),
+                        contentDescription = stringResource(R.string.submit),
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
             }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = dismissEnabled) {
-                Text(stringResource(R.string.cancel))
-            }
-        },
-    )
+        }
+    }
 }
-
 @Composable
 internal fun CommentReportDialog(
     reportReasons: List<ReportReason>,
@@ -159,16 +185,12 @@ internal fun CommentReportDialog(
 
 @Preview
 @Composable
-fun CommentInputDialogPreview() {
-    CommentInputDialog(
-        title = "这是标题",
-        label = "这是hint",
+fun CommentReplyBarPreview() {
+    CommentReplyBar(
         text = TextFieldValue("文本"),
         onTextChange = { },
-        onConfirm = { },
-        onDismiss = { },
-        confirmText = "确认",
-        confirmEnabled = true,
-        dismissEnabled = true
+        onSend = { },
+        placeholder = "这是hint",
+        modifier = Modifier
     )
 }

@@ -90,6 +90,7 @@ import com.yenaly.han1meviewer.util.SafFileManager.scanAndImportHanimeDownloads
 import com.yenaly.han1meviewer.util.openDownloadedHanimeVideoLocally
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
+import com.yenaly.yenaly_libs.utils.application
 import com.yenaly.yenaly_libs.utils.copyTextToClipboard
 import com.yenaly.yenaly_libs.utils.showLongToast
 import com.yenaly.yenaly_libs.utils.showShortToast
@@ -371,7 +372,7 @@ fun DownloadRouteScreen(
         onDeleteDownloadedVideo = { video ->
             context.showAlertDialog {
                 setTitle(R.string.sure_to_delete)
-                setMessage(context.getString(R.string.prepare_to_delete_s, video.video.title))
+                setMessage(application.getString(R.string.prepare_to_delete_s, video.video.title))
                 setPositiveButton(R.string.confirm) { _, _ ->
                     SafFileManager.deleteDownloadVideoFolder(context, video.video.videoCode)
                     viewModel.deleteDownloadHanimeBy(video.video.videoCode, video.video.quality)
@@ -382,14 +383,14 @@ fun DownloadRouteScreen(
         onMoveVideoGroup = { video, groupId -> viewModel.updateVideoGroup(video.video.videoCode, groupId) },
         onRenameGroup = { groupId, newName ->
             viewModel.updateGroupName(groupId, newName)
-            showLongToast(context.getString(R.string.group_renamed, newName))
+            showLongToast(application.getString(R.string.group_renamed, newName))
         },
         onCreateGroup = { name ->
             if (name.isBlank()) {
                 showLongToast(groupNameEmpty)
             } else {
                 viewModel.createNewGroup(name)
-                showLongToast(context.getString(R.string.create_group_success, name))
+                showLongToast(application.getString(R.string.create_group_success, name))
             }
         },
         onDeleteGroup = { group ->
@@ -611,9 +612,9 @@ fun PreviewCommentRouteScreen(
             val mappedReportFlow = remember(viewModel.reportMessage) {
                 viewModel.reportMessage.map { message ->
                     val text = if (message.args.isNotEmpty()) {
-                        com.yenaly.yenaly_libs.utils.application.getString(message.resId, *message.args.toTypedArray())
+                        application.getString(message.resId, *message.args.toTypedArray())
                     } else {
-                        com.yenaly.yenaly_libs.utils.application.getString(message.resId)
+                        application.getString(message.resId)
                     }
                     CommentMessage(text)
                 }
@@ -656,6 +657,11 @@ fun PreviewCommentRouteScreen(
                     )
                 },
                 onCommentLikeSuccess = viewModel::handleCommentLike,
+                onReplyStateChange = { isReplying ->
+                    if (isReplying) {
+                        scope.launch { childSheetState.expand() }
+                    }
+                },
             )
         }
     }

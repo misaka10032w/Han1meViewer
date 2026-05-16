@@ -1,17 +1,18 @@
 package com.yenaly.han1meviewer.ui.screen.video
 
-import androidx.compose.foundation.background
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -26,7 +27,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -41,13 +41,14 @@ import com.yenaly.han1meviewer.logic.model.ReportReason
 import com.yenaly.han1meviewer.logic.model.VideoCommentArgs
 import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.component.CommentInputDialog
+import com.yenaly.han1meviewer.ui.component.CommentReplyBar
 import com.yenaly.han1meviewer.ui.component.CommentReportDialog
 import com.yenaly.han1meviewer.ui.component.ComponentPreview
 import com.yenaly.han1meviewer.ui.component.EmptyContent
 import com.yenaly.han1meviewer.ui.component.ErrorContent
 import com.yenaly.han1meviewer.ui.component.LoadingContent
 import com.yenaly.han1meviewer.ui.component.VideoCommentCard
+import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.preview.fakeCommentList
 import com.yenaly.han1meviewer.util.parseTimeStrToMinutes
 import com.yenaly.han1meviewer.util.safeSortedBy
@@ -73,6 +74,7 @@ fun ChildCommentScreen(
     onThumbUp: (VideoComments.VideoComment) -> Unit,
     onThumbDown: (VideoComments.VideoComment) -> Unit,
     onCommentLikeSuccess: (VideoCommentArgs) -> Unit,
+    onReplyStateChange: (Boolean) -> Unit = {},
 ) {
     val comments by commentsFlow.collectAsStateWithLifecycle()
     val state by commentStateFlow.collectAsStateWithLifecycle()
@@ -132,9 +134,46 @@ fun ChildCommentScreen(
     }
     val nestedScrollInterop = rememberNestedScrollInteropConnection()
 
+    BackHandler(enabled = replyingComment != null) {
+        replyingComment = null
+        replyText = TextFieldValue("")
+    }
+
+    LaunchedEffect(replyingComment) {
+        if (replyingComment != null) {
+            onReplyStateChange(true)
+        }
+    }
+
     Scaffold(
         modifier = Modifier.widthIn(max = maxScreenWidth),
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        bottomBar = {
+            AnimatedVisibility(
+                visible = replyingComment != null,
+                enter = slideInVertically { it } + fadeIn(),
+                exit = slideOutVertically { it } + fadeOut(),
+            ) {
+                CommentReplyBar(
+                    text = replyText,
+                    onTextChange = { replyText = it },
+                    onSend = {
+                        replyingComment?.let { target ->
+                            val prefix = "@${target.username}"
+                            val contentLength = replyText.text.trim().removePrefix(prefix).trimStart().length
+                            if (contentLength < 5) {
+                                scope.launch { snackbarHostState.showSnackbar(commentTooShortText) }
+                            } else {
+                                onReply(target, replyText.text)
+                                replyingComment = null
+                                replyText = TextFieldValue("")
+                            }
+                        }
+                    },
+                    placeholder = stringResource(R.string.reply_child_comment),
+                )
+            }
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -229,32 +268,6 @@ fun ChildCommentScreen(
                 }
             }
         }
-    }
-
-    if (replyingComment != null) {
-        CommentInputDialog(
-            title = stringResource(R.string.reply),
-            label = stringResource(R.string.reply_child_comment),
-            text = replyText,
-            onTextChange = { replyText = it },
-            onConfirm = {
-                val target = replyingComment ?: return@CommentInputDialog
-                val prefix = "@${target.username} "
-                val contentLength = replyText.text.trim().removePrefix(prefix).trimStart().length
-                if (contentLength < 5) {
-                    scope.launch { snackbarHostState.showSnackbar(commentTooShortText) }
-                } else {
-                    onReply(target, replyText.text)
-                    replyingComment = null
-                    replyText = TextFieldValue("")
-                }
-            },
-            onDismiss = {
-                replyingComment = null
-                replyText = TextFieldValue("")
-            },
-            confirmText = stringResource(R.string.submit),
-        )
     }
 
     if (reportComment != null) {

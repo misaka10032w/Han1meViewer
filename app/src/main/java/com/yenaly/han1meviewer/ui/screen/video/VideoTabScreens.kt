@@ -213,6 +213,11 @@ fun RenderVideoCommentContent(
                         )
                     },
                     onCommentLikeSuccess = viewModel::handleCommentLike,
+                    onReplyStateChange = { isReplying ->
+                        if (isReplying) {
+                            scope.launch { childSheetState.expand() }
+                        }
+                    },
                 )
             }
         }

@@ -1,11 +1,13 @@
 package com.yenaly.han1meviewer.ui.screen.video
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,8 +46,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -57,11 +60,12 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.ReportReason
 import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.component.CommentInputDialog
+import com.yenaly.han1meviewer.ui.component.CommentReplyBar
 import com.yenaly.han1meviewer.ui.component.CommentReportDialog
 import com.yenaly.han1meviewer.ui.component.EmptyContent
 import com.yenaly.han1meviewer.ui.component.ErrorContent
 import com.yenaly.han1meviewer.ui.component.VideoCommentCard
+import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.preview.fakeCommentList
 import com.yenaly.han1meviewer.util.parseTimeStrToMinutes
 import com.yenaly.han1meviewer.util.safeSortedBy
@@ -74,6 +78,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun CommentScreen(
+    modifier: Modifier = Modifier,
     commentsFlow: StateFlow<List<VideoComments.VideoComment>>,
     commentStateFlow: StateFlow<WebsiteState<VideoComments>>,
     reportMessageFlow: Flow<CommentMessage>,
@@ -92,7 +97,6 @@ fun CommentScreen(
     initialFirstVisibleItemIndex: Int = 0,
     initialFirstVisibleItemScrollOffset: Int = 0,
     onCommentScrollChange: (Int, Int) -> Unit = { _, _ -> },
-    modifier: Modifier = Modifier,
 ) {
     val comments by commentsFlow.collectAsStateWithLifecycle()
     val state by commentStateFlow.collectAsStateWithLifecycle()
@@ -116,6 +120,8 @@ fun CommentScreen(
     )
     val scope = rememberCoroutineScope()
     val loginFirstText = stringResource(R.string.login_first)
+    val commentTooShortText = stringResource(R.string.comment_too_short)
+    val nestedScrollInterop = rememberNestedScrollInteropConnection()
     LaunchedEffect(reportMessageFlow) {
         reportMessageFlow.collect {
             latestReportMessage = it.text
@@ -138,45 +144,11 @@ fun CommentScreen(
         }
     }
 
-    if (replyingComment != null) {
-        CommentInputDialog(
-            title = stringResource(R.string.reply),
-            label = stringResource(R.string.comment),
-            text = replyText,
-            onTextChange = { replyText = it },
-            onConfirm = {
-                replyingComment?.let { onReply(it, replyText.text) }
-                replyingComment = null
-                replyText = TextFieldValue("")
-            },
-            onDismiss = {
-                replyingComment = null
-                replyText = TextFieldValue("")
-            },
-            confirmText = stringResource(R.string.submit),
-        )
-    }
-
-    if (showComposeDialog) {
-        CommentInputDialog(
-            title = stringResource(R.string.comment),
-            label = stringResource(R.string.comment),
-            text = composeText,
-            onTextChange = { composeText = it },
-            onConfirm = {
-                val text = composeText.text.trim()
-                if (text.isNotBlank()) {
-                    onComposeComment(text)
-                    showComposeDialog = false
-                    composeText = TextFieldValue("")
-                }
-            },
-            onDismiss = {
-                showComposeDialog = false
-                composeText = TextFieldValue("")
-            },
-            confirmText = stringResource(R.string.submit),
-        )
+    BackHandler(enabled = replyingComment != null || showComposeDialog) {
+        replyingComment = null
+        replyText = TextFieldValue("")
+        showComposeDialog = false
+        composeText = TextFieldValue("")
     }
 
     if (showSortSheet) {
@@ -252,115 +224,175 @@ fun CommentScreen(
                     )
                 }
             }
-        }
+        },
     ) { paddingValues ->
         val layoutDirection = LocalLayoutDirection.current
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    start = paddingValues.calculateStartPadding(layoutDirection),
-                    end = paddingValues.calculateEndPadding(layoutDirection),
-                    bottom = paddingValues.calculateBottomPadding(),
-                )
-        ) {
-        PullToRefreshBox(
-            isRefreshing = state is WebsiteState.Loading && !isPreviewCommentPrefetched,
-            onRefresh = onRefresh,
-            state = refreshingState,
-            modifier = Modifier.fillMaxSize(),
-            indicator = {
-                PullToRefreshDefaults.LoadingIndicator(
-                    state = refreshingState,
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(
+                        start = paddingValues.calculateStartPadding(layoutDirection),
+                        end = paddingValues.calculateEndPadding(layoutDirection),
+                    )
+            ) {
+                PullToRefreshBox(
                     isRefreshing = state is WebsiteState.Loading && !isPreviewCommentPrefetched,
-                    modifier = Modifier.align(Alignment.TopCenter),
-                )
-            }
-        ) {
-            when {
-                state is WebsiteState.Error && sortedComments.isEmpty() -> {
-                    ErrorContent(
-                        title = stringResource(R.string.load_failed_retry),
-                        message = (state as WebsiteState.Error).throwable.message,
-                        onRetry = onRefresh,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(16.dp),
-                    )
-                }
+                    onRefresh = onRefresh,
+                    state = refreshingState,
+                    modifier = Modifier.fillMaxSize(),
+                    indicator = {
+                        PullToRefreshDefaults.LoadingIndicator(
+                            state = refreshingState,
+                            isRefreshing = state is WebsiteState.Loading && !isPreviewCommentPrefetched,
+                            modifier = Modifier.align(Alignment.TopCenter),
+                        )
+                    }
+                ) {
+                    when {
+                        state is WebsiteState.Error && sortedComments.isEmpty() -> {
+                            ErrorContent(
+                                title = stringResource(R.string.load_failed_retry),
+                                message = (state as WebsiteState.Error).throwable.message,
+                                onRetry = onRefresh,
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .padding(16.dp),
+                            )
+                        }
 
-                sortedComments.isEmpty() -> {
-                    EmptyContent(
-                        hint = stringResource(R.string.comment_not_found),
-                        subHint = latestReportMessage ?: ""
-                    )
-                }
+                        sortedComments.isEmpty() -> {
+                            EmptyContent(
+                                hint = stringResource(R.string.comment_not_found),
+                                subHint = latestReportMessage ?: ""
+                            )
+                        }
 
-                else -> {
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        if (sortedComments.size >= 3) {
-                            item {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 4.dp, vertical = 2.dp),
-                                    horizontalArrangement = Arrangement.End,
-                                ) {
-                                    FilledTonalButton(onClick = { showSortSheet = true }) {
-                                        Text(sortText(sortType))
+                        else -> {
+                            LazyColumn(
+                                state = listState,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .nestedScroll(nestedScrollInterop),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                if (sortedComments.size >= 3) {
+                                    item {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 4.dp, vertical = 2.dp),
+                                            horizontalArrangement = Arrangement.End,
+                                        ) {
+                                            FilledTonalButton(onClick = { showSortSheet = true }) {
+                                                Text(sortText(sortType))
+                                            }
+                                        }
                                     }
+                                }
+
+                                items(sortedComments, key = { it.stableKey }) { comment ->
+                                    VideoCommentCard(
+                                        comment = comment,
+                                        onReply = {
+                                            if (!isAlreadyLogin) {
+                                                scope.launch {
+                                                    snackbarHostState.showSnackbar(
+                                                        loginFirstText
+                                                    )
+                                                }
+                                            } else {
+                                                replyingComment = comment
+                                            }
+                                        },
+                                        onThumbUp = {
+                                            if (!isAlreadyLogin) {
+                                                scope.launch {
+                                                    snackbarHostState.showSnackbar(
+                                                        loginFirstText
+                                                    )
+                                                }
+                                            } else {
+                                                onThumbUp(comment)
+                                            }
+                                        },
+                                        onThumbDown = {
+                                            if (!isAlreadyLogin) {
+                                                scope.launch {
+                                                    snackbarHostState.showSnackbar(
+                                                        loginFirstText
+                                                    )
+                                                }
+                                            } else {
+                                                onThumbDown(comment)
+                                            }
+                                        },
+                                        onReport = {
+                                            if (!isAlreadyLogin) {
+                                                scope.launch {
+                                                    snackbarHostState.showSnackbar(
+                                                        loginFirstText
+                                                    )
+                                                }
+                                            } else {
+                                                reportComment = comment
+                                            }
+                                        },
+                                        onViewMoreReplies = if (comment.hasMoreReplies) {
+                                            { onViewMoreReplies(comment) }
+                                        } else {
+                                            null
+                                        },
+                                    )
                                 }
                             }
                         }
-
-                        items(sortedComments, key = { it.stableKey }) { comment ->
-                            VideoCommentCard(
-                                comment = comment,
-                                onReply = {
-                                    if (!isAlreadyLogin) {
-                                        scope.launch { snackbarHostState.showSnackbar(loginFirstText) }
-                                    } else {
-                                        replyingComment = comment
-                                    }
-                                },
-                                onThumbUp = {
-                                    if (!isAlreadyLogin) {
-                                        scope.launch { snackbarHostState.showSnackbar(loginFirstText) }
-                                    } else {
-                                        onThumbUp(comment)
-                                    }
-                                },
-                                onThumbDown = {
-                                    if (!isAlreadyLogin) {
-                                        scope.launch { snackbarHostState.showSnackbar(loginFirstText) }
-                                    } else {
-                                        onThumbDown(comment)
-                                    }
-                                },
-                                onReport = {
-                                    if (!isAlreadyLogin) {
-                                        scope.launch { snackbarHostState.showSnackbar(loginFirstText) }
-                                    } else {
-                                        reportComment = comment
-                                    }
-                                },
-                                onViewMoreReplies = if (comment.hasMoreReplies) {
-                                    { onViewMoreReplies(comment) }
-                                } else {
-                                    null
-                                },
-                            )
-                        }
                     }
                 }
-            }
-        }
 
+            }
+            AnimatedVisibility(
+                visible = replyingComment != null || showComposeDialog,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter),
+                enter = slideInVertically { it } + fadeIn(),
+                exit = slideOutVertically { it } + fadeOut(),
+            ) {
+                if (replyingComment != null) {
+                    CommentReplyBar(
+                        text = replyText,
+                        onTextChange = { replyText = it },
+                        onSend = {
+                            val text = replyText.text.trim()
+                            if (text.length < 5) {
+                                scope.launch { snackbarHostState.showSnackbar(commentTooShortText) }
+                            } else {
+                                replyingComment?.let { onReply(it, replyText.text) }
+                                replyingComment = null
+                                replyText = TextFieldValue("")
+                            }
+                        },
+                        placeholder = stringResource(R.string.comment),
+                    )
+                } else {
+                    CommentReplyBar(
+                        text = composeText,
+                        onTextChange = { composeText = it },
+                        onSend = {
+                            val text = composeText.text.trim()
+                            if (text.length < 5) {
+                                scope.launch { snackbarHostState.showSnackbar(commentTooShortText) }
+                            } else {
+                                onComposeComment(text)
+                                showComposeDialog = false
+                                composeText = TextFieldValue("")
+                            }
+                        },
+                        placeholder = stringResource(R.string.comment),
+                    )
+                }
+            }
         }
     }
 }
@@ -369,11 +401,22 @@ private fun sortComments(
     list: List<VideoComments.VideoComment>,
     type: CommentSortType,
 ): List<VideoComments.VideoComment> = when (type) {
-    CommentSortType.LATEST -> list.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = false)
-    CommentSortType.EARLIEST -> list.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = true)
+    CommentSortType.LATEST -> list.safeSortedBy(
+        { parseTimeStrToMinutes(it.date) },
+        descending = false
+    )
+
+    CommentSortType.EARLIEST -> list.safeSortedBy(
+        { parseTimeStrToMinutes(it.date) },
+        descending = true
+    )
+
     CommentSortType.MOST_REPLY -> list.safeSortedBy({ it.replyCount ?: 0 }, descending = true)
     CommentSortType.MOST_LIKES -> list.safeSortedBy({ it.realLikesCount ?: 0 }, descending = true)
-    CommentSortType.MOST_DISLIKES -> list.safeSortedBy({ it.realLikesCount ?: 0 }, descending = false)
+    CommentSortType.MOST_DISLIKES -> list.safeSortedBy(
+        { it.realLikesCount ?: 0 },
+        descending = false
+    )
 }
 
 @Composable
