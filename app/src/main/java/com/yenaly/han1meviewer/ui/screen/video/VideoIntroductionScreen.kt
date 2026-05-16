@@ -1021,7 +1021,7 @@ internal fun RelatedVideosSection(
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 maxItemsInEachRow = columns,
-                horizontalArrangement = Arrangement.Start
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 videos.forEach { item ->
                     VideoCardItem(
@@ -1043,7 +1043,10 @@ private fun SectionHeader(
     actionText: String? = null,
     onActionClick: (() -> Unit)? = null,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(
+        modifier = Modifier.padding(start = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
