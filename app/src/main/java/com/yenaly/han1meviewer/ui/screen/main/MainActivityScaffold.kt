@@ -2,7 +2,6 @@ package com.yenaly.han1meviewer.ui.screen.main
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -11,7 +10,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -20,7 +22,6 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -76,35 +77,42 @@ fun MainActivityScaffold(
                     onSwitchSiteClick = onSwitchSiteClick,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                MainDrawerPrimaryItems(selectedDestination, onDrawerItemSelected)
-                MainDrawerSection(
-                    titleRes = R.string.my_list,
-                    items = listOf(
-                        MainDrawerDestination.WatchLater,
-                        MainDrawerDestination.FavVideo,
-                        MainDrawerDestination.Playlist,
-                        MainDrawerDestination.Subscription,
-                    ),
-                    selectedDestination = selectedDestination,
-                    onItemClick = { destination ->
-                        if (onDrawerItemSelected(destination)) {
-                            scope.launch { drawerState.close() }
-                        }
-                    },
-                )
-                MainDrawerSection(
-                    titleRes = R.string.video,
-                    items = listOf(
-                        MainDrawerDestination.WatchHistory,
-                        MainDrawerDestination.Download,
-                    ),
-                    selectedDestination = selectedDestination,
-                    onItemClick = { destination ->
-                        if (onDrawerItemSelected(destination)) {
-                            scope.launch { drawerState.close() }
-                        }
-                    },
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    MainDrawerPrimaryItems(selectedDestination, onDrawerItemSelected)
+                    MainDrawerSection(
+                        titleRes = R.string.my_list,
+                        items = listOf(
+                            MainDrawerDestination.WatchLater,
+                            MainDrawerDestination.FavVideo,
+                            MainDrawerDestination.Playlist,
+                            MainDrawerDestination.Subscription,
+                        ),
+                        selectedDestination = selectedDestination,
+                        onItemClick = { destination ->
+                            if (onDrawerItemSelected(destination)) {
+                                scope.launch { drawerState.close() }
+                            }
+                        },
+                    )
+                    MainDrawerSection(
+                        titleRes = R.string.video,
+                        items = listOf(
+                            MainDrawerDestination.WatchHistory,
+                            MainDrawerDestination.Download,
+                        ),
+                        selectedDestination = selectedDestination,
+                        onItemClick = { destination ->
+                            if (onDrawerItemSelected(destination)) {
+                                scope.launch { drawerState.close() }
+                            }
+                        },
+                    )
+                }
+
             }
         },
     ) {
@@ -155,7 +163,6 @@ private fun MainDrawerPrimaryItems(
                 selected = selectedDestination == item,
                 onClick = {
                     onDrawerItemSelected(item)
-                    Unit
                 },
                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
             )
@@ -198,7 +205,7 @@ private fun MainDrawerSection(
     }
 }
 
-@Preview(showBackground = true, widthDp = 1280, heightDp = 800)
+@Preview(showBackground = true, widthDp = 800, heightDp = 600)
 @Composable
 private fun MainActivityScaffoldPreview() {
     ComponentPreview {
