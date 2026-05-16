@@ -356,7 +356,7 @@ fun DownloadRouteScreen(
             )
         },
         onOpenDownloadedVideo = { onNavigateToVideo(it.video.videoCode) },
-        onLocalPlayback = { onNavigateToLocalVideo(it.video.videoCode, null) },
+        onLocalPlayback = { onNavigateToLocalVideo(it.video.videoCode, it.video.videoUri) },
         onExternalPlayback = { video ->
             context.openDownloadedHanimeVideoLocally(video.video.videoUri) {
                 context.showAlertDialog {

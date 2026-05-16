@@ -118,7 +118,7 @@ fun VideoRouteHostScreen(
 
     commentViewModel.code = route.videoCode
     player.videoCode = route.videoCode
-    viewModel.fromDownload = route.videoCode == "-1"
+    viewModel.fromDownload = route.videoCode == "-1" || route.localUri != null
 
     var checkedQuality by remember(route.videoCode, route.localUri) { mutableStateOf<String?>(null) }
     var pendingDownloadPrompt by remember(route.videoCode, route.localUri) {

@@ -229,10 +229,21 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
                 NetworkRepo.getHanimeVideo(videoCode)
             }
             flow.collect { state ->
-                _hanimeVideoStateFlow.value = state
-                if (state is VideoLoadingState.Success) {
-                    _hanimeVideoFlow.update { state.info }
-                    csrfToken = state.info.csrfToken
+                val emitState = if (localUri != null && state is VideoLoadingState.Success) {
+                    val resolution = HanimeResolution()
+                    resolution.parseResolution(
+                        HanimeResolution.RES_1080P,
+                        resLink = localUri,
+                        type = "video/mp4"
+                    )
+                    VideoLoadingState.Success(state.info.copy(videoUrls = resolution.toResolutionLinkMap()))
+                } else {
+                    state
+                }
+                _hanimeVideoStateFlow.value = emitState
+                if (emitState is VideoLoadingState.Success) {
+                    _hanimeVideoFlow.update { emitState.info }
+                    csrfToken = emitState.info.csrfToken
                 }
             }
         }
