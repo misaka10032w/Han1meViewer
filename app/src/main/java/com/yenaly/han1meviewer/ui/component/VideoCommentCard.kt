@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.VideoComments
+import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
 /**
  * 视频评论卡片组件。

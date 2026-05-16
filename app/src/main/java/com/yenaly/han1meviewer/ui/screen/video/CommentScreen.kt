@@ -62,8 +62,8 @@ import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.CommentReplyBar
 import com.yenaly.han1meviewer.ui.component.CommentReportDialog
-import com.yenaly.han1meviewer.ui.component.EmptyContent
-import com.yenaly.han1meviewer.ui.component.ErrorContent
+import com.yenaly.han1meviewer.ui.component.content.EmptyContent
+import com.yenaly.han1meviewer.ui.component.content.ErrorContent
 import com.yenaly.han1meviewer.ui.component.VideoCommentCard
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.preview.fakeCommentList

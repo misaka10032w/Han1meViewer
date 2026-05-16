@@ -20,8 +20,8 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.logic.entity.HKeyframeHeader
 import com.yenaly.han1meviewer.logic.entity.HKeyframeType
-import com.yenaly.han1meviewer.ui.component.ComponentPreview
-import com.yenaly.han1meviewer.ui.component.EmptyContent
+import com.yenaly.han1meviewer.ui.preview.ComponentPreview
+import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 
 @Composable

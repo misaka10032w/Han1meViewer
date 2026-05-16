@@ -36,7 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.ui.component.ComponentPreview
+import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable

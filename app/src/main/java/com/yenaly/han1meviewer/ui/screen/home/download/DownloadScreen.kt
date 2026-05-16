@@ -34,7 +34,7 @@ import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.logic.model.DownloadHeaderNode
 import com.yenaly.han1meviewer.logic.model.DownloadItemNode
 import com.yenaly.han1meviewer.logic.model.DownloadedNode
-import com.yenaly.han1meviewer.ui.component.ComponentPreview
+import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -44,9 +44,9 @@ import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.state.DownloadState
-import com.yenaly.han1meviewer.ui.component.ComponentPreview
+import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
-import com.yenaly.han1meviewer.ui.component.EmptyContent
+import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
 import kotlinx.coroutines.flow.Flow

@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.component
+package com.yenaly.han1meviewer.ui.preview
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
