@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,21 +15,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -51,10 +49,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
-import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
+import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import kotlinx.coroutines.flow.Flow
 import java.text.SimpleDateFormat
@@ -205,105 +203,109 @@ private fun WatchHistoryCard(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
 ) {
+    val fixTimestamp = { ts: Long -> if (ts < 9999999999L) ts * 1000 else ts }
     val dateFormatter = remember { SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()) }
-    val watchDate = remember(history.watchDate) { dateFormatter.format(Date(history.watchDate)) }
-    val releaseDate = remember(history.releaseDate) { dateFormatter.format(Date(history.releaseDate)) }
+    val watchDate = remember(history.watchDate) { dateFormatter.format(Date(fixTimestamp(history.watchDate))) }
+    val releaseDate = remember(history.releaseDate) { dateFormatter.format(Date(fixTimestamp(history.releaseDate))) }
     val progressMinutes = remember(history.progress) { history.progress / 60_000 }
 
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
             .combinedClickable(onClick = onClick, onLongClick = onLongClick),
-        shape = RoundedCornerShape(28.dp),
+        shape = RoundedCornerShape(16.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp))
-                .padding(14.dp),
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
+                .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            AsyncImage(
-                model = history.coverUrl,
-                contentDescription = history.title,
+            Box(
                 modifier = Modifier
-                    .width(108.dp)
-                    .height(152.dp)
-                    .clip(RoundedCornerShape(22.dp)),
-                contentScale = ContentScale.Crop,
-            )
-
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                    .width(120.dp)
+                    .height(68.dp)
+                    .clip(RoundedCornerShape(8.dp))
             ) {
-                Row(verticalAlignment = Alignment.Top) {
-                    Text(
-                        text = history.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f),
-                    )
-                    BadgedBox(
-                        badge = {
-                            if (progressMinutes > 0) {
-                                Badge { Text(stringResource(R.string.watch_history_minutes_short, progressMinutes)) }
-                            }
-                        },
+                AsyncImage(
+                    model = history.coverUrl,
+                    contentDescription = history.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                )
+                if (progressMinutes > 0) {
+                    Surface(
+                        color = Color.Black.copy(alpha = 0.65f),
+                        contentColor = Color.White,
+                        shape = RoundedCornerShape(topEnd = 4.dp),
+                        modifier = Modifier.align(Alignment.BottomStart)
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_baseline_play_circle_outline_24),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(22.dp),
+                        Text(
+                            text = stringResource(R.string.watch_history_minutes_short, progressMinutes),
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                         )
                     }
                 }
+            }
 
-                AssistChip(
-                    onClick = onClick,
-                    label = { Text(stringResource(R.string.watch_history_resume_watch)) },
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_baseline_history_24),
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                        )
-                    },
-                    colors = AssistChipDefaults.assistChipColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        labelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                    ),
-                )
-
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    WatchHistoryMeta(
-                        iconRes = R.drawable.ic_baseline_access_time_24,
-                        label = stringResource(R.string.watch_history_watched_at, watchDate),
+                    Text(
+                        text = history.title,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
                     )
+                    FilledIconButton(
+                        onClick = onLongClick,
+                        modifier = Modifier.size(25.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Delete,
+                            contentDescription = stringResource(R.string.delete_history),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 }
-
-                HorizontalDivider()
-
+                WatchHistoryMeta(
+                    iconRes = R.drawable.ic_baseline_access_time_24,
+                    label = stringResource(R.string.watch_history_watched_at, watchDate),
+                )
                 WatchHistoryMeta(
                     iconRes = R.drawable.ic_baseline_play_circle_outline_24,
                     label = stringResource(R.string.watch_history_released_at, releaseDate),
                 )
-                if (history.progress > 0L) {
-                    WatchHistoryMeta(
-                        iconRes = R.drawable.ic_baseline_history_24,
-                        label = stringResource(R.string.watch_history_progress_minutes, progressMinutes),
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    AssistChip(
+                        onClick = onClick,
+                        label = { Text(stringResource(R.string.watch_history_resume_watch), style = MaterialTheme.typography.labelMedium) },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_baseline_history_24),
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                            )
+                        },
+                        colors = AssistChipDefaults.assistChipColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer, // 改用 primary 强化引导
+                            labelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        ),
+                        modifier = Modifier.height(28.dp)
                     )
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-                TextButton(onClick = onLongClick, modifier = Modifier.align(Alignment.End)) {
-                    Text(stringResource(R.string.delete_history))
                 }
             }
         }
