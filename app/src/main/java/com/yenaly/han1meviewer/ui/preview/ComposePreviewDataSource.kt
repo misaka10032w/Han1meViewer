@@ -9,12 +9,14 @@ import com.yenaly.han1meviewer.logic.model.DownloadHeaderNode
 import com.yenaly.han1meviewer.logic.model.DownloadItemNode
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimePreview
+import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.model.HomePage
 import com.yenaly.han1meviewer.logic.model.Playlists
 import com.yenaly.han1meviewer.logic.model.SubscriptionItem
 import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
 import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.ui.screen.home.HomeCategory
+import kotlinx.datetime.LocalDate
 
 
 /**
@@ -342,3 +344,37 @@ val fakeDownloadedNodes = listOf(
 const val longText = "这是一段用于预览的简介文本，包含一个链接 https://hanime1.me/watch?v=101573 ，用于验证展开和收" +
         "起功能是否正常。为了触发折叠，这里再补充一些额外内容。超长文本超长文本超长文本超长文本超长文本超长文本超长文本" +
         "超长文本超长文本超长文本超长文本超长文本超长文本超长文本超长文本超长文本超长文本超长文本超长文本超长文本"
+
+
+val fakeVideoIntroduction = HanimeVideo(
+    title = "Shishunki no Obenkyou 2",
+    coverUrl = fakeHomePageVideos.first().coverUrl,
+    chineseTitle = "思春期的性学习 第2话",
+    introduction = "思春期的性学习 2。为了拓展自己的知识，女主开始在图书馆进行一些不太适合公开讨论的研究。\nhttps://hanime1.me/watch?v=101573",
+    uploadTime = LocalDate(2024, 5, 10),
+    views = "137.6万次",
+    videoUrls = com.yenaly.han1meviewer.HanimeResolution().apply {
+        parseResolution("720P", "https://example.com/video.mp4", "video/mp4")
+    }.toResolutionLinkMap(),
+    tags = fakeTagList2,
+    playlist = HanimeVideo.Playlist(
+        playlistName = "思春期系列",
+        video = fakeHomePageVideos.take(5).mapIndexed { index, item ->
+            item.copy(isPlaying = index == 1)
+        },
+    ),
+    relatedHanimes = fakeHomePageVideos,
+    artist = HanimeVideo.Artist(
+        name = "製作社A",
+        avatarUrl = fakeHomePageVideos.first().coverUrl,
+        genre = "3D",
+        post = HanimeVideo.Artist.POST(
+            userId = "1001",
+            artistId = "2002",
+            isSubscribed = true,
+        ),
+    ),
+    isFav = true,
+    currentUserId = "10086",
+    originalComic = "https://example.com/comic",
+)

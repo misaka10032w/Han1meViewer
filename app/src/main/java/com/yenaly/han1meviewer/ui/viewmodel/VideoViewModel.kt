@@ -24,6 +24,7 @@ import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
 import com.yenaly.yenaly_libs.base.YenalyViewModel
+import com.yenaly.yenaly_libs.utils.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -51,6 +52,16 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
         val firstVisibleItemScrollOffset: Int = 0,
     )
 
+    data class VideoHostUiState(
+        val selectedTabIndex: Int = 0,
+        val isAppBarExpanded: Boolean = true,
+        val appBarBottomInsetPx: Int = 0,
+        val commentBadgeCount: Int = 0,
+        val isScrollDisabled: Boolean = false,
+        val isInPipMode: Boolean = false,
+        val playerHeightDp: Int = 250.dp,
+    )
+
     private data class VideoIntroUiState(
         val playlistFirstVisibleIndex: Int? = null,
         val cachedVideo: HanimeVideo? = null,
@@ -70,8 +81,6 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
     var videoCode: String = EMPTY_STRING
         set(value) {
             field = value
-            // 在這裏初始化所有需要videoCode的方法
-            getHanimeVideo(value)
         }
 
     var fromDownload = false
@@ -87,6 +96,8 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
 
     private val _hanimeVideoFlow = MutableStateFlow<HanimeVideo?>(null)
     val hanimeVideoFlow = _hanimeVideoFlow.asStateFlow()
+    private val _videoHostUiStateFlow = MutableStateFlow(VideoHostUiState())
+    val videoHostUiStateFlow = _videoHostUiStateFlow.asStateFlow()
 
     fun setVideoList(list: List<HanimeInfo>) {
         _videoList.value = list
@@ -118,19 +129,41 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
     }
 
     fun getSelectedTabIndex(videoCode: String): Int {
-        return videoIntroUiStateMap[videoCode]?.selectedTabIndex ?: 0
+        return _videoHostUiStateFlow.value.selectedTabIndex
     }
 
     fun setSelectedTabIndex(videoCode: String, selectedTabIndex: Int) {
+        _videoHostUiStateFlow.update { it.copy(selectedTabIndex = selectedTabIndex) }
         updateVideoIntroUiState(videoCode) { copy(selectedTabIndex = selectedTabIndex) }
     }
 
     fun isAppBarExpanded(videoCode: String): Boolean {
-        return videoIntroUiStateMap[videoCode]?.isAppBarExpanded ?: true
+        return _videoHostUiStateFlow.value.isAppBarExpanded
     }
 
     fun setAppBarExpanded(videoCode: String, isExpanded: Boolean) {
+        _videoHostUiStateFlow.update { it.copy(isAppBarExpanded = isExpanded) }
         updateVideoIntroUiState(videoCode) { copy(isAppBarExpanded = isExpanded) }
+    }
+
+    fun setAppBarBottomInsetPx(appBarBottomInsetPx: Int) {
+        _videoHostUiStateFlow.update { it.copy(appBarBottomInsetPx = appBarBottomInsetPx) }
+    }
+
+    fun setCommentBadgeCount(commentBadgeCount: Int) {
+        _videoHostUiStateFlow.update { it.copy(commentBadgeCount = commentBadgeCount) }
+    }
+
+    fun setScrollDisabled(isScrollDisabled: Boolean) {
+        _videoHostUiStateFlow.update { it.copy(isScrollDisabled = isScrollDisabled) }
+    }
+
+    fun setPipMode(isInPipMode: Boolean) {
+        _videoHostUiStateFlow.update { it.copy(isInPipMode = isInPipMode) }
+    }
+
+    fun setPlayerHeightDp(playerHeightDp: Int) {
+        _videoHostUiStateFlow.update { it.copy(playerHeightDp = playerHeightDp) }
     }
 
     fun setIntroScrollState(

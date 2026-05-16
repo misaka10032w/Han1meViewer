@@ -17,11 +17,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.exception.CloudFlareBlockedException
@@ -29,7 +26,6 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
 import com.yenaly.han1meviewer.ui.navigation.main.MainNavHost
-import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.navigation.main.handleMainIntent
 import com.yenaly.han1meviewer.ui.navigation.main.navigateDrawerDestination
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
@@ -52,17 +48,12 @@ fun MainActivityContent(
     onRequireLogin: () -> Unit,
     onSwitchSiteClick: () -> Unit,
     onNavigateControllerReady: (NavHostController) -> Unit,
-    onCurrentVideoRouteChanged: (VideoRoute?) -> Unit,
 ) {
     HanimeTheme {
         val composeNavController = rememberNavController()
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
         var currentMainDestination by remember { mutableStateOf(MainDestinationSpec.Home) }
-        val backStackEntry by composeNavController.currentBackStackEntryAsState()
-        val currentVideoRoute = backStackEntry?.takeIf {
-            it.destination.hasRoute(VideoRoute::class)
-        }?.toRoute<VideoRoute>()
 
         val homeState by viewModel.homePageFlow.collectAsStateWithLifecycle()
         val versionState by AppViewModel.versionFlow.collectAsStateWithLifecycle()
@@ -82,9 +73,6 @@ fun MainActivityContent(
 
         LaunchedEffect(composeNavController) {
             onNavigateControllerReady(composeNavController)
-        }
-        LaunchedEffect(currentVideoRoute) {
-            onCurrentVideoRouteChanged(currentVideoRoute)
         }
         LaunchedEffect(Unit) {
             pendingNavigationRequests.collect { intent ->

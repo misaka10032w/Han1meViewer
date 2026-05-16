@@ -5,7 +5,6 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.graphics.Color
-import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
@@ -39,9 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.fragment.app.FragmentContainerView
-import androidx.fragment.app.commit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.load
@@ -53,7 +49,6 @@ import com.google.android.material.imageview.ShapeableImageView
 import com.yenaly.han1meviewer.PREVIEW_COMMENT_PREFIX
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.VIDEO_CODE
 import com.yenaly.han1meviewer.getHanimeSearchShareText
 import com.yenaly.han1meviewer.getHanimeShareText
 import com.yenaly.han1meviewer.logic.DatabaseRepo
@@ -62,9 +57,7 @@ import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.model.HanimePreview
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.bridge.videoBridgeTag
 import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
-import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.han1meviewer.ui.screen.home.DailyCheckInScreen
 import com.yenaly.han1meviewer.ui.screen.home.HomePageScreen
 import com.yenaly.han1meviewer.ui.screen.home.LocalSearchHistoryQuery
@@ -80,6 +73,7 @@ import com.yenaly.han1meviewer.ui.screen.search.SearchScreen
 import com.yenaly.han1meviewer.ui.screen.video.ChildCommentScreen
 import com.yenaly.han1meviewer.ui.screen.video.CommentMessage
 import com.yenaly.han1meviewer.ui.screen.video.CommentScreen
+import com.yenaly.han1meviewer.ui.screen.video.VideoRouteHostScreen
 import com.yenaly.han1meviewer.ui.viewmodel.CheckInCalendarViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.DownloadViewModel
@@ -487,8 +481,8 @@ fun PreviewRouteScreen(
     }
 
     LaunchedEffect(previewState) {
-        when (val state = previewState) {
-            is WebsiteState.Success -> preloadImages(state.info)
+        when (previewState) {
+            is WebsiteState.Success -> preloadImages(previewState.info)
             else -> Unit
         }
     }
@@ -614,17 +608,20 @@ fun PreviewCommentRouteScreen(
                 viewModel.getCommentReply(currentCommentId)
             }
             BottomSheetHandler()
-            ChildCommentScreen(
-                commentsFlow = viewModel.videoReplyFlow,
-                commentStateFlow = viewModel.videoReplyStateFlow,
-                reportMessageFlow = viewModel.reportMessage.map { message ->
+            val mappedReportFlow = remember(viewModel.reportMessage) {
+                viewModel.reportMessage.map { message ->
                     val text = if (message.args.isNotEmpty()) {
                         com.yenaly.yenaly_libs.utils.application.getString(message.resId, *message.args.toTypedArray())
                     } else {
                         com.yenaly.yenaly_libs.utils.application.getString(message.resId)
                     }
                     CommentMessage(text)
-                },
+                }
+            }
+            ChildCommentScreen(
+                commentsFlow = viewModel.videoReplyFlow,
+                commentStateFlow = viewModel.videoReplyStateFlow,
+                reportMessageFlow = mappedReportFlow,
                 postReplyStateFlow = viewModel.postReplyFlow,
                 commentLikeStateFlow = viewModel.commentLikeFlow,
                 reportReasons = viewModel.reportReason,
@@ -774,56 +771,7 @@ fun VideoRouteScreen(
     activity: MainActivity,
     route: VideoRoute,
 ) {
-    val containerId = remember(route.videoCode, route.localUri) { View.generateViewId() }
-    val tag = remember(route.videoCode, route.localUri) {
-        videoBridgeTag(
-            route.videoCode,
-            route.localUri
-        )
-    }
-
-    DisposableEffect(activity, tag) {
-        onDispose {
-            activity.supportFragmentManager.findFragmentByTag(tag)?.let { fragment ->
-                if (!activity.supportFragmentManager.isStateSaved) {
-                    activity.supportFragmentManager.commit {
-                        setReorderingAllowed(true)
-                        remove(fragment)
-                    }
-                }
-            }
-        }
-    }
-
-    AndroidView(
-        factory = { context ->
-            FragmentContainerView(context).apply {
-                id = containerId
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                )
-            }
-        },
-        update = { container ->
-            val existing = activity.supportFragmentManager.findFragmentByTag(tag)
-            if (existing == null || existing.id != container.id) {
-                activity.supportFragmentManager.commit {
-                    setReorderingAllowed(true)
-                    replace(
-                        container.id,
-                        VideoFragment().apply {
-                            arguments = Bundle().apply {
-                                putString(VIDEO_CODE, route.videoCode)
-                                putString("LOCAL_URI", route.localUri)
-                            }
-                        },
-                        tag,
-                    )
-                }
-            }
-        },
-    )
+    VideoRouteHostScreen(activity = activity, route = route)
 }
 
 private fun shiftMonthCodeForPreview(code: String, delta: Int): String {

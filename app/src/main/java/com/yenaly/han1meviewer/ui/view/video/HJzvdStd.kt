@@ -56,7 +56,6 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.adapter.HKeyframeRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.SuperResolutionAdapter
 import com.yenaly.han1meviewer.ui.adapter.VideoSpeedAdapter
-import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.han1meviewer.util.setStateViewLayout
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.OrientationManager
@@ -423,11 +422,6 @@ class HJzvdStd @JvmOverloads constructor(
         }
 
         fullscreenButton.setOnClickListener {
-            (context as? FragmentActivity)
-                ?.supportFragmentManager
-                ?.fragments
-                ?.filterIsInstance<VideoFragment>()
-                ?.firstOrNull()
             if (screen == SCREEN_FULLSCREEN) {
                 gotoNormalScreen()
             } else {

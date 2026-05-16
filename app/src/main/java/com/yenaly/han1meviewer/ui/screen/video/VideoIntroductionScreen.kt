@@ -24,8 +24,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
@@ -78,8 +78,7 @@ import com.yenaly.han1meviewer.ui.component.TagChipGroup
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.component.lazy.LazyRow
-import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
-import com.yenaly.han1meviewer.ui.preview.fakeTagList2
+import com.yenaly.han1meviewer.ui.preview.fakeVideoIntroduction
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
@@ -1006,7 +1005,7 @@ private fun PlaylistSection(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun RelatedVideosSection(
+internal fun RelatedVideosSection(
     videos: List<HanimeInfo>,
     onOpenVideo: (HanimeInfo) -> Unit,
 ) {
@@ -1075,46 +1074,13 @@ private fun SectionHeader(
     }
 }
 
-private val previewVideoIntroduction = HanimeVideo(
-    title = "Shishunki no Obenkyou 2",
-    coverUrl = fakeHomePageVideos.first().coverUrl,
-    chineseTitle = "思春期的性学习 第2话",
-    introduction = "思春期的性学习 2。为了拓展自己的知识，女主开始在图书馆进行一些不太适合公开讨论的研究。\nhttps://hanime1.me/watch?v=101573",
-    uploadTime = LocalDate(2024, 5, 10),
-    views = "137.6万次",
-    videoUrls = com.yenaly.han1meviewer.HanimeResolution().apply {
-        parseResolution("720P", "https://example.com/video.mp4", "video/mp4")
-    }.toResolutionLinkMap(),
-    tags = fakeTagList2,
-    playlist = HanimeVideo.Playlist(
-        playlistName = "思春期系列",
-        video = fakeHomePageVideos.take(5).mapIndexed { index, item ->
-            item.copy(isPlaying = index == 1)
-        },
-    ),
-    relatedHanimes = fakeHomePageVideos,
-    artist = HanimeVideo.Artist(
-        name = "製作社A",
-        avatarUrl = fakeHomePageVideos.first().coverUrl,
-        genre = "3D",
-        post = HanimeVideo.Artist.POST(
-            userId = "1001",
-            artistId = "2002",
-            isSubscribed = true,
-        ),
-    ),
-    isFav = true,
-    currentUserId = "10086",
-    originalComic = "https://example.com/comic",
-)
-
 @Preview(showBackground = true, widthDp = 420, heightDp = 900, device = "id:pixel_tablet")
 @Composable
 private fun VideoIntroductionScreenPreview() {
     ComponentPreview {
         VideoIntroductionScreen(
-            video = previewVideoIntroduction,
-            state = VideoLoadingState.Success(previewVideoIntroduction),
+            video = fakeVideoIntroduction,
+            state = VideoLoadingState.Success(fakeVideoIntroduction),
             fromDownload = false,
             hideRelatedInIntro = false,
             shareText = "share text",

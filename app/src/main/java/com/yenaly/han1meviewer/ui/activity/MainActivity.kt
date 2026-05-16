@@ -38,9 +38,8 @@ import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logout
-import com.yenaly.han1meviewer.ui.bridge.videoBridgeTag
+import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
-import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
 import com.yenaly.han1meviewer.ui.screen.main.MainActivityContent
@@ -66,7 +65,7 @@ class MainActivity : FrameActivity(), PermissionRequester {
     lateinit var navController: NavHostController
     private var showAuthGuard by mutableStateOf(true)
     private val pendingNavigationRequests = MutableSharedFlow<Intent>(extraBufferCapacity = 1)
-    private var currentVideoRoute by mutableStateOf<VideoRoute?>(null)
+    private var currentVideoHost: VideoPageHost? = null
 
     companion object {
         private const val REQUEST_WRITE_EXTERNAL_STORAGE = 1234
@@ -93,10 +92,6 @@ class MainActivity : FrameActivity(), PermissionRequester {
         }
     }
 
-    override fun setUiStyle() {
-        enableEdgeToEdge()
-    }
-
     private fun initData() {
         setContent {
             MainActivityContent(
@@ -108,7 +103,6 @@ class MainActivity : FrameActivity(), PermissionRequester {
                 onRequireLogin = { gotoLoginActivity() },
                 onSwitchSiteClick = { showSiteSwitchDialog() },
                 onNavigateControllerReady = { controller -> navController = controller },
-                onCurrentVideoRouteChanged = { route -> currentVideoRoute = route },
             )
         }
     }
@@ -118,7 +112,8 @@ class MainActivity : FrameActivity(), PermissionRequester {
             installSplashScreen().apply {
                 setKeepOnScreenCondition { !hasAuthenticated }
             }
-        } else null
+        }
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
@@ -316,10 +311,8 @@ class MainActivity : FrameActivity(), PermissionRequester {
         navController.navigate(VideoRoute(videoCode, fileUri))
     }
 
-    private fun findCurrentVideoFragment(): VideoFragment? {
-        return supportFragmentManager.findFragmentByTag(
-            currentVideoRoute?.let { videoBridgeTag(it.videoCode, it.localUri) } ?: return null
-        ) as? VideoFragment
+    fun registerCurrentVideoHost(host: VideoPageHost?) {
+        currentVideoHost = host
     }
 
     private var onGranted: (() -> Unit)? = null
@@ -389,14 +382,14 @@ class MainActivity : FrameActivity(), PermissionRequester {
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        val currentFragment = findCurrentVideoFragment()
+        val currentFragment = currentVideoHost
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val allowPip = prefs.getBoolean("allow_pip_mode", true)
 
         Log.i("pipmode", "enter pip mode?\n$currentFragment\nallowpip:$allowPip\n")
 
-        if (currentFragment is VideoFragment && currentFragment.shouldEnterPip() && allowPip) {
+        if (currentFragment?.shouldEnterPip() == true && allowPip) {
             Log.i("pipmode", "enter pip mode")
             currentFragment.enterPipMode()
         }
@@ -408,14 +401,12 @@ class MainActivity : FrameActivity(), PermissionRequester {
     ) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
 
-        val currentFragment = findCurrentVideoFragment()
+        val currentFragment = currentVideoHost
 
-        if (currentFragment is VideoFragment) {
-            currentFragment.onPipModeChanged(isInPictureInPictureMode)
-        }
+        currentFragment?.onPipModeChanged(isInPictureInPictureMode)
     }
 
     fun togglePlayPause() {
-        findCurrentVideoFragment()?.togglePlayPause()
+        currentVideoHost?.togglePlayPause()
     }
 }
