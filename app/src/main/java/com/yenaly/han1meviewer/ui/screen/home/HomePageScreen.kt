@@ -110,10 +110,9 @@ import com.yenaly.han1meviewer.ui.screen.RetryableImage
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
 import com.yenaly.yenaly_libs.utils.putSpValue
 import kotlinx.coroutines.delay
-
-// ─────────────────────────────────────────────
-// CompositionLocal：搜索历史查询函数
-// ─────────────────────────────────────────────
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 /**
  * 通过 CompositionLocal 向下层组件提供搜索历史查询能力
@@ -122,12 +121,6 @@ import kotlinx.coroutines.delay
 val LocalSearchHistoryQuery = staticCompositionLocalOf<suspend (String) -> List<String>> {
     { emptyList() }
 }
-
-// ─────────────────────────────────────────────
-// 数据类：首页视频分类行
-// ─────────────────────────────────────────────
-// 数据类：首页视频分类行
-// ─────────────────────────────────────────────
 
 /** 首页视频分类行数据 */
 data class HomeCategory(
@@ -138,9 +131,6 @@ data class HomeCategory(
     val videos: List<HanimeInfo>
 )
 
-// ─────────────────────────────────────────────
-// 首页搜索覆盖层（从上向下展开）
-// ─────────────────────────────────────────────
 
 /**
  * 搜索覆盖层 - 点击首页搜索框后，自上向下展开的全屏搜索页
@@ -376,10 +366,6 @@ fun SearchOverlay(
     }
 }
 
-// ─────────────────────────────────────────────
-// 首页顶部搜索栏
-// ─────────────────────────────────────────────
-
 /**
  * 首页顶部搜索栏 - MD3 风格，包含汉堡菜单按钮、搜索框、新番按钮
  *
@@ -460,9 +446,6 @@ fun HomePageTopBar(
     }
 }
 
-// ─────────────────────────────────────────────
-// 轮播封面图
-// ─────────────────────────────────────────────
 
 /**
  * Banner 轮播组件 - 使用 HorizontalPager 实现封面图轮播展示
@@ -585,10 +568,6 @@ fun BannerCarousel(
     }
 }
 
-// ─────────────────────────────────────────────
-// 视频分类横向滚动行
-// ─────────────────────────────────────────────
-
 /**
  * 视频分类横向滚动行 - 显示一行视频卡片，包含标题和"更多"按钮
  *
@@ -649,10 +628,6 @@ fun CategoryRow(
         }
     }
 }
-
-// ─────────────────────────────────────────────
-// 公告卡片
-// ─────────────────────────────────────────────
 
 /**
  * 公告列表全屏弹窗 - 点击"查看全部"后弹出，支持展开/收起单条公告详情
@@ -757,7 +732,6 @@ fun AnnouncementCard(
                 .clip(RoundedCornerShape(12.dp))
                 .background(MaterialTheme.colorScheme.secondaryContainer)
         ) {
-            // 可滑动的公告内容
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
@@ -766,67 +740,53 @@ fun AnnouncementCard(
                 beyondViewportPageCount = 1
             ) { page ->
                 val item = announcements[page]
+                val time = formatTimestamp(item.timestamp)
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .combinedClickable(onClick = { onAnnouncementClick(item) })
-                        .padding(12.dp)
+                        .padding(start = 12.dp, end = 40.dp, top = 10.dp, bottom = 16.dp)
                 ) {
                     Column(
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .padding(end = 40.dp)
+                        modifier = Modifier.align(Alignment.TopStart)
                     ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = item.title,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.weight(1f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = time,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                        Spacer(Modifier.height(2.dp))
                         Text(
-                            text = stringResource(R.string.announcement),
+                            text = item.content,
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = item.title,
-                            style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            maxLines = 2,
+                            maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
             }
 
-            // 关闭按钮（始终在最上层）
-            IconButton(
-                onClick = onClose,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = stringResource(R.string.close),
-                    modifier = Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-            }
-        }
-
-        // 底部行：页面指示器 + "查看全部"按钮
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 4.dp)
-        ) {
-            // 页面指示器
-            Row(
-                modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                // 用占位保持居中，右侧按钮对齐到末尾
-            }
             if (announcements.size > 1) {
                 Row(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 6.dp), // 距离底部的距离
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     repeat(announcements.size) { index ->
@@ -847,7 +807,33 @@ fun AnnouncementCard(
                 }
             }
 
-            // "查看全部"按钮
+            IconButton(
+                onClick = onClose,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = stringResource(R.string.close),
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                // 用占位保持居中，右侧按钮对齐到末尾
+            }
+
             Text(
                 text = stringResource(R.string.view_all),
                 style = MaterialTheme.typography.labelMedium,
@@ -869,9 +855,6 @@ fun AnnouncementCard(
     }
 }
 
-// ─────────────────────────────────────────────
-// 首页主内容区
-// ─────────────────────────────────────────────
 
 /**
  * 首页可滚动内容区 - 包含 Banner 轮播、公告、各分类视频行
@@ -938,10 +921,6 @@ fun HomePageContent(
         }
     }
 }
-
-// ─────────────────────────────────────────────
-// 首页主屏幕
-// ─────────────────────────────────────────────
 
 /**
  * 首页主 Composable 屏幕 - MD3 风格首页
@@ -1142,10 +1121,6 @@ fun HomePageScreen(
     }
 }
 
-// ─────────────────────────────────────────────
-// 辅助函数
-// ─────────────────────────────────────────────
-
 /** 将 HomePage 数据转换为分类行列表 */
 private fun buildCategoryList(homePage: HomePage): List<HomeCategory> {
     val isAVSite =
@@ -1224,9 +1199,12 @@ private fun buildCategoryList(homePage: HomePage): List<HomeCategory> {
     ).filter { it.videos.isNotEmpty() }
 }
 
-// ─────────────────────────────────────────────
-// Preview（所有预览使用 MaterialTheme，假数据来自 ComposePreviewDataSource）
-// ─────────────────────────────────────────────
+fun formatTimestamp(timestamp: Long): String {
+    val instant = Instant.ofEpochSecond(timestamp)
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        .withZone(ZoneId.systemDefault())
+    return formatter.format(instant)
+}
 
 @Preview(showBackground = true, name = "搜索覆盖层")
 @Composable
