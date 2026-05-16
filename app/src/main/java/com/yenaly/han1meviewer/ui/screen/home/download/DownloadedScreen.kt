@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.screen.home.download
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,9 +13,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.rememberLazyListState
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -22,6 +25,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.sharp.Create
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.BasicAlertDialog
@@ -30,7 +35,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -44,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
@@ -63,6 +74,7 @@ import com.yenaly.han1meviewer.logic.model.DownloadItemNode
 import com.yenaly.han1meviewer.logic.model.DownloadedNode
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
+import com.yenaly.han1meviewer.ui.component.verticalScrollbar
 import com.yenaly.han1meviewer.ui.preview.fakeDownloadedGroups
 import com.yenaly.han1meviewer.ui.preview.fakeDownloadedNodes
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
@@ -94,11 +106,13 @@ fun DownloadedScreen(
 
     CreateGroupDialog(
         visible = showCreateGroupDialog,
+        groups = groups,
         onDismiss = { onCreateGroupDialogChange(false) },
         onConfirm = {
             onCreateGroup(it)
             onCreateGroupDialogChange(false)
         },
+        onDeleteGroup = onDeleteGroup,
     )
 
     GroupRenameDialog(
@@ -392,29 +406,107 @@ private fun DownloadedVideoCard(
 @Composable
 private fun CreateGroupDialog(
     visible: Boolean,
+    groups: List<DownloadGroupEntity>,
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit,
+    onDeleteGroup: (DownloadGroupEntity) -> Unit,
 ) {
     if (!visible) return
     var name by remember { mutableStateOf("") }
+    var pendingDeleteGroup by remember { mutableStateOf<DownloadGroupEntity?>(null) }
+
+    if (pendingDeleteGroup != null) {
+        AlertDialog(
+            onDismissRequest = { pendingDeleteGroup = null },
+            title = { Text(stringResource(R.string.delete_group)) },
+            text = {
+                Text(stringResource(R.string.delete_group_confirm, pendingDeleteGroup!!.name))
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    pendingDeleteGroup?.let { onDeleteGroup(it) }
+                    pendingDeleteGroup = null
+                }) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDeleteGroup = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
+    }
+
     BasicAlertDialog(onDismissRequest = onDismiss) {
         ElevatedCard(shape = RoundedCornerShape(28.dp)) {
             Column(
                 modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(stringResource(R.string.create_new_group), style = MaterialTheme.typography.titleLarge)
+                if (groups.isNotEmpty()) {
+                    val scrollState = rememberLazyListState()
+                    LazyColumn(
+                        state = scrollState,
+                        modifier = Modifier
+                            .weight(1f, fill = false)
+                            .heightIn(max = 240.dp)
+                            .verticalScrollbar(
+                                state = scrollState,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                width = 4.dp
+                            ),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        items(items = groups, key = { it.id }) { group ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    text = group.name,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                val isDefaultGroup = group.id == DownloadGroupEntity.DEFAULT_GROUP_ID
+                                FilledTonalIconButton(
+                                    onClick = { pendingDeleteGroup = group },
+                                    modifier = Modifier.size(30.dp),
+                                    enabled = !isDefaultGroup,
+                                    colors = IconButtonDefaults.filledTonalIconButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                                        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                                    )
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Delete,
+                                        contentDescription = stringResource(R.string.delete_group),
+                                        modifier = Modifier.size(18.dp),
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                }
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text(stringResource(R.string.new_group_name)) },
                     singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = {
                         val trimmed = name.trim()
                         if (trimmed.isNotBlank()) onConfirm(trimmed)
                     }),
                 )
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
@@ -509,25 +601,55 @@ private fun MoveGroupDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(
-                    stringResource(R.string.modify_video_group, video.video.title),
-                    style = MaterialTheme.typography.titleLarge,
+                    text = stringResource(R.string.modify_video_group, video.video.title),
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
-                groups.forEach { group ->
-                    TextButton(
-                        onClick = { onConfirm(video, group.id) },
-                        modifier = Modifier.fillMaxWidth(),
+                if (groups.isNotEmpty()) {
+                    val scrollState = rememberLazyListState()
+                    LazyColumn(
+                        state = scrollState,
+                        modifier = Modifier
+                            .weight(1f, fill = false)
+                            .heightIn(max = 240.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .verticalScrollbar(
+                                state = scrollState,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                width = 4.dp
+                            ),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            Icon(Icons.Outlined.Edit, contentDescription = null)
-                            Text(group.name)
+                        items(items = groups, key = { it.id }) { group ->
+                            ListItem(
+                                leadingContent = {
+                                    Icon(
+                                        imageVector = Icons.Sharp.Create,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                },
+                                headlineContent = {
+                                    Text(
+                                        text = group.name,
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                },
+                                colors = ListItemDefaults.colors(
+                                    containerColor = Color.Transparent
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onConfirm(video, group.id) }
+                            )
                         }
                     }
                 }
-                TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) {
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.align(Alignment.End)
+                ) {
                     Text(stringResource(R.string.cancel))
                 }
             }
