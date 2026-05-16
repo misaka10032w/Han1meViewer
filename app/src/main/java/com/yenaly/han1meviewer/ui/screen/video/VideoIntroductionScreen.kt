@@ -51,8 +51,10 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -307,9 +309,13 @@ private fun VideoIntroductionContent(
         }
     }
 
+    val nestedScrollInterop = rememberNestedScrollInteropConnection()
+
     LazyColumn(
         state = listState,
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .nestedScroll(nestedScrollInterop),
         contentPadding = PaddingValues(start = 6.dp, top = 12.dp, end = 6.dp, bottom = 24.dp + bottomInset),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
