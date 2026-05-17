@@ -45,6 +45,10 @@ fun MainNavHost(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val destinationSpec = MainDestinationSpec.fromDestination(backStackEntry?.destination)
 
+    val onBack: () -> Unit = { navController.popBackStack() }
+    val onNavigateToVideo: (String) -> Unit = { code -> navController.navigate(VideoRoute(code)) }
+    val onNavigateToLocalVideo: (String, String?) -> Unit = { code, uri -> navController.navigate(VideoRoute(code, uri)) }
+
     LaunchedEffect(destinationSpec) {
         destinationSpec?.let(onDestinationChanged)
     }
@@ -94,52 +98,52 @@ fun MainNavHost(
                         SearchRoute(advancedSearchJson = Json.encodeToString(params))
                     )
                 },
-                onNavigateToVideo = { code -> navController.navigate(VideoRoute(code)) },
+                onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<WatchHistoryRoute> {
             WatchHistoryRouteScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateToVideo = { code -> navController.navigate(VideoRoute(code)) },
+                onBack = onBack,
+                onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<MyFavVideoRoute> {
             MyFavVideoRouteScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateToVideo = { code -> navController.navigate(VideoRoute(code)) },
+                onBack = onBack,
+                onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<MyWatchLaterRoute> {
             MyWatchLaterRouteScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateToVideo = { code -> navController.navigate(VideoRoute(code)) },
+                onBack = onBack,
+                onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<MyPlaylistRoute> {
             MyPlaylistRouteScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateToVideo = { code -> navController.navigate(VideoRoute(code)) },
+                onBack = onBack,
+                onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<SubscriptionRoute> {
             SubscriptionRouteScreen(
-                onBack = { navController.popBackStack() },
+                onBack = onBack,
                 onNavigateToSearch = { query -> navController.navigate(SearchRoute(query = query)) },
-                onNavigateToVideo = { code -> navController.navigate(VideoRoute(code)) },
+                onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<DailyCheckInRoute> {
             DailyCheckInRouteScreen(
                 activity = activity,
-                onBack = { navController.popBackStack() },
-                onNavigateToVideo = { code -> navController.navigate(VideoRoute(code)) },
+                onBack = onBack,
+                onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<DownloadRoute> {
             DownloadRouteScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateToVideo = { code -> navController.navigate(VideoRoute(code)) },
-                onNavigateToLocalVideo = { code, uri -> navController.navigate(VideoRoute(code, uri)) },
+                onBack = onBack,
+                onNavigateToVideo = onNavigateToVideo,
+                onNavigateToLocalVideo = onNavigateToLocalVideo,
             )
         }
         composable<HomeSettingsRoute> {
@@ -196,7 +200,7 @@ fun MainNavHost(
                 fallbackDestination = HKeyframeSettingsRoute,
             ) {
                 HKeyframesRouteScreen(
-                    onOpenVideo = { code -> navController.navigate(VideoRoute(code)) },
+                    onOpenVideo = onNavigateToVideo,
                 )
             }
         }
@@ -206,7 +210,7 @@ fun MainNavHost(
                 fallbackDestination = HKeyframeSettingsRoute,
             ) {
                 SharedHKeyframesRouteScreen(
-                    onOpenVideo = { code -> navController.navigate(VideoRoute(code)) },
+                    onOpenVideo = onNavigateToVideo,
                 )
             }
         }
@@ -224,25 +228,25 @@ fun MainNavHost(
         composable<SearchRoute> {
             SearchRouteScreen(
                 route = it.toRoute(),
-                onBack = { navController.popBackStack() },
-                onNavigateToVideo = { code -> navController.navigate(VideoRoute(code)) },
+                onBack = onBack,
+                onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<PreviewRoute> {
             PreviewRouteScreen(
                 activity = activity,
-                onBack = { navController.popBackStack() },
+                onBack = onBack,
                 onNavigateToPreviewComment = { date, dateCode ->
                     navController.navigate(PreviewCommentRoute(date, dateCode))
                 },
-                onNavigateToVideo = { code -> navController.navigate(VideoRoute(code)) },
+                onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<PreviewCommentRoute> {
             PreviewCommentRouteScreen(
                 activity = activity,
                 route = it.toRoute(),
-                onBack = { navController.popBackStack() },
+                onBack = onBack,
             )
         }
         composable<VideoRoute> {
