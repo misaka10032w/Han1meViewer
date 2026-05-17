@@ -16,7 +16,6 @@ import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -89,7 +88,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -316,14 +314,13 @@ private fun ContributionReportDialog(
                             )
                         }
                         FilledIconButton(onClick = onToggleFullscreen) {
-                            Image(
+                            Icon(
                                 painter = painterResource(R.drawable.baseline_screen_rotation_24),
                                 contentDescription = if (isFullscreen)
                                     stringResource(R.string.report_portrait)
                                 else
                                     stringResource(R.string.report_landscape),
-                                modifier = Modifier.size(24.dp),
-                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+                                modifier = Modifier.size(24.dp)
                             )
                         }
                     }
