@@ -61,6 +61,7 @@ import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
+import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.view.video.ExoMediaKernel
@@ -72,7 +73,6 @@ import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.checkBadGuy
 import com.yenaly.han1meviewer.util.loadAssetAs
-import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.OrientationManager
 import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.copyToClipboard
@@ -125,6 +125,7 @@ fun VideoRouteHostScreen(
         mutableStateOf<DownloadPromptState?>(null)
     }
     var videoTitle by remember(route.videoCode, route.localUri) { mutableStateOf<String?>(null) }
+    var showAddHKeyframeDialog by remember { mutableStateOf<Pair<Long, String>?>(null) }
 
     val actions = remember(activity, scope, viewModel, genres) {
         VideoRouteActions(
@@ -377,28 +378,7 @@ fun VideoRouteHostScreen(
             val mediaInterface: JZMediaInterface? = player.mediaInterface
             if (mediaInterface != null && !mediaInterface.isPlaying) {
                 val currentPosition = player.currentPositionWhenPlaying
-                activity.showAlertDialog {
-                    setTitle(R.string.add_to_h_keyframe)
-                    setMessage(buildString {
-                        appendLine(activity.getString(R.string.sure_to_add_to_h_keyframe))
-                        append(activity.getString(R.string.current_position_d_ms, currentPosition))
-                    })
-                    setPositiveButton(R.string.confirm) { _, _ ->
-                        viewModel.appendHKeyframe(
-                            route.videoCode,
-                            videoTitle ?: "Untitled",
-                            HKeyframeEntity.Keyframe(
-                                position = currentPosition,
-                                prompt = null,
-                            ),
-                        )
-                        Firebase.analytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT) {
-                            param(FirebaseAnalytics.Param.ITEM_ID, FirebaseConstants.H_KEYFRAMES)
-                            param(FirebaseAnalytics.Param.CONTENT_TYPE, FirebaseConstants.H_KEYFRAMES)
-                        }
-                    }
-                    setNegativeButton(R.string.cancel, null)
-                }
+                showAddHKeyframeDialog = Pair(currentPosition, videoTitle ?: "Untitled")
             } else {
                 showShortToast(R.string.pause_then_long_press)
             }
@@ -550,6 +530,32 @@ fun VideoRouteHostScreen(
         },
         modifier = Modifier.fillMaxSize(),
     )
+
+    showAddHKeyframeDialog?.let { (currentPosition, title) ->
+        ConfirmDialog(
+            visible = true,
+            title = activity.getString(R.string.add_to_h_keyframe),
+            message = buildString {
+                appendLine(activity.getString(R.string.sure_to_add_to_h_keyframe))
+                append(activity.getString(R.string.current_position_d_ms, currentPosition))
+            },
+            confirmText = activity.getString(R.string.confirm),
+            dismissText = activity.getString(R.string.cancel),
+            onConfirm = {
+                viewModel.appendHKeyframe(
+                    route.videoCode,
+                    title,
+                    HKeyframeEntity.Keyframe(position = currentPosition, prompt = null),
+                )
+                Firebase.analytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT) {
+                    param(FirebaseAnalytics.Param.ITEM_ID, FirebaseConstants.H_KEYFRAMES)
+                    param(FirebaseAnalytics.Param.CONTENT_TYPE, FirebaseConstants.H_KEYFRAMES)
+                }
+                showAddHKeyframeDialog = null
+            },
+            onDismiss = { showAddHKeyframeDialog = null },
+        )
+    }
 }
 
 private fun createVideoPlayerView(activity: MainActivity): HJzvdStd {

@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
-import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,7 +38,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,9 +57,11 @@ import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
-import com.yenaly.han1meviewer.ui.component.content.EmptyContent
-import com.yenaly.han1meviewer.ui.screen.RetryableImage
+import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
+import com.yenaly.han1meviewer.ui.component.content.EmptyContent
+import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
+import com.yenaly.han1meviewer.ui.screen.RetryableImage
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.showShortToast
@@ -218,6 +221,8 @@ fun PlaylistDetailContent(
     onlyEdit: Boolean = false
 ) {
     val playlistState by vm.playlistStateFlow.collectAsState()
+    var showDeletePlaylistConfirm by remember { mutableStateOf(false) }
+    var showDeleteItemConfirm by remember { mutableStateOf<Triple<String, String, Int>?>(null) }
     Column(modifier = Modifier.fillMaxSize()) {
         // 顶部图片区域
         Box(
@@ -289,20 +294,7 @@ fun PlaylistDetailContent(
                     }
                     // 删除按钮
                     Button(
-                        onClick = {
-                            context.showAlertDialog {
-                                setTitle(R.string.delete_the_playlist)
-                                setMessage(R.string.sure_to_delete)
-                                setPositiveButton(R.string.confirm) { _, _ ->
-                                    vm.modifyPlaylist(
-                                        listCode,
-                                        playListTitle,
-                                        playlistDesc.value.orEmpty(),
-                                        true)
-                                }
-                                setNegativeButton(R.string.cancel, null)
-                            }
-                        },
+                        onClick = { showDeletePlaylistConfirm = true },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                         modifier = Modifier.size(40.dp),
                         contentPadding = PaddingValues(0.dp)
@@ -375,17 +367,8 @@ fun PlaylistDetailContent(
                         isHorizontalCard = true,
                         onClickItem,
                     ) { videoCode, _ ->
-                        context.showAlertDialog {
-                            setTitle(R.string.delete_playlist)
-                            setMessage(context.getString(R.string.sure_to_delete_s, item.title))
-                            setPositiveButton(R.string.confirm) { _, _ ->
-                                listCode.let { listCode ->
-                                    vm.deleteFromPlaylist(listCode, videoCode, index)
-                                }
-                            }
-                            setNegativeButton(R.string.cancel, null)
+                            showDeleteItemConfirm = Triple(listCode, videoCode, index)
                         }
-                    }
                 }
 
                 // 加载中占位
@@ -439,6 +422,35 @@ fun PlaylistDetailContent(
                         }
                     }
             }
+
+            showDeleteItemConfirm?.let { (code, videoCode, index) ->
+                val item = playlist.find { it.videoCode == videoCode }
+                ConfirmDialog(
+                    visible = true,
+                    title = context.getString(R.string.delete_playlist),
+                    message = context.getString(R.string.sure_to_delete_s, item?.title ?: ""),
+                    confirmText = context.getString(R.string.confirm),
+                    dismissText = context.getString(R.string.cancel),
+                    onConfirm = {
+                        vm.deleteFromPlaylist(code, videoCode, index)
+                        showDeleteItemConfirm = null
+                    },
+                    onDismiss = { showDeleteItemConfirm = null },
+                )
+            }
+
+            ConfirmDialog(
+                visible = showDeletePlaylistConfirm,
+                title = context.getString(R.string.delete_the_playlist),
+                message = context.getString(R.string.sure_to_delete),
+                confirmText = context.getString(R.string.confirm),
+                dismissText = context.getString(R.string.cancel),
+                onConfirm = {
+                    vm.modifyPlaylist(listCode, playListTitle, playlistDesc.value.orEmpty(), true)
+                    showDeletePlaylistConfirm = false
+                },
+                onDismiss = { showDeletePlaylistConfirm = false },
+            )
         }
     }
 }

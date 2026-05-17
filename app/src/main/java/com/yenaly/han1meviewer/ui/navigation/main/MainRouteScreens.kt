@@ -54,10 +54,12 @@ import com.yenaly.han1meviewer.getHanimeShareText
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
+import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.logic.model.HanimePreview
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
+import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.screen.home.DailyCheckInScreen
 import com.yenaly.han1meviewer.ui.screen.home.HomePageScreen
 import com.yenaly.han1meviewer.ui.screen.home.LocalSearchHistoryQuery
@@ -88,7 +90,6 @@ import com.yenaly.han1meviewer.ui.widget.CheckInWidgetProvider
 import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.util.SafFileManager.scanAndImportHanimeDownloads
 import com.yenaly.han1meviewer.util.openDownloadedHanimeVideoLocally
-import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import com.yenaly.yenaly_libs.utils.application
 import com.yenaly.yenaly_libs.utils.copyTextToClipboard
@@ -324,6 +325,8 @@ fun DownloadRouteScreen(
     val groupNameEmpty = stringResource(R.string.group_name_empty)
     val readSuccess = stringResource(R.string.read_success)
     val deleteSuccess = stringResource(R.string.delete_success)
+    var showVideoNotExistConfirm by remember { mutableStateOf<VideoWithCategories?>(null) }
+    var showDeleteVideoConfirm by remember { mutableStateOf<VideoWithCategories?>(null) }
     DownloadScreen(
         downloadingFlow = viewModel.loadAllDownloadingHanime(),
         downloadedFlow = viewModel.downloaded,
@@ -359,26 +362,11 @@ fun DownloadRouteScreen(
         onLocalPlayback = { onNavigateToLocalVideo(it.video.videoCode, it.video.videoUri) },
         onExternalPlayback = { video ->
             context.openDownloadedHanimeVideoLocally(video.video.videoUri) {
-                context.showAlertDialog {
-                    setTitle(R.string.video_not_exist)
-                    setMessage(R.string.video_deleted_sure_to_delete_item)
-                    setPositiveButton(R.string.delete) { _, _ ->
-                        viewModel.deleteDownloadHanimeBy(video.video.videoCode, video.video.quality)
-                    }
-                    setNegativeButton(R.string.cancel, null)
-                }
+                showVideoNotExistConfirm = video
             }
         },
         onDeleteDownloadedVideo = { video ->
-            context.showAlertDialog {
-                setTitle(R.string.sure_to_delete)
-                setMessage(application.getString(R.string.prepare_to_delete_s, video.video.title))
-                setPositiveButton(R.string.confirm) { _, _ ->
-                    SafFileManager.deleteDownloadVideoFolder(context, video.video.videoCode)
-                    viewModel.deleteDownloadHanimeBy(video.video.videoCode, video.video.quality)
-                }
-                setNegativeButton(R.string.cancel, null)
-            }
+            showDeleteVideoConfirm = video
         },
         onMoveVideoGroup = { video, groupId -> viewModel.updateVideoGroup(video.video.videoCode, groupId) },
         onRenameGroup = { groupId, newName ->
@@ -398,6 +386,37 @@ fun DownloadRouteScreen(
             showLongToast(deleteSuccess)
         },
     )
+
+    showVideoNotExistConfirm?.let { video ->
+        ConfirmDialog(
+            visible = true,
+            title = application.getString(R.string.video_not_exist),
+            message = application.getString(R.string.video_deleted_sure_to_delete_item),
+            confirmText = application.getString(R.string.delete),
+            dismissText = application.getString(R.string.cancel),
+            onConfirm = {
+                viewModel.deleteDownloadHanimeBy(video.video.videoCode, video.video.quality)
+                showVideoNotExistConfirm = null
+            },
+            onDismiss = { showVideoNotExistConfirm = null },
+        )
+    }
+
+    showDeleteVideoConfirm?.let { video ->
+        ConfirmDialog(
+            visible = true,
+            title = application.getString(R.string.sure_to_delete),
+            message = application.getString(R.string.prepare_to_delete_s, video.video.title),
+            confirmText = application.getString(R.string.confirm),
+            dismissText = application.getString(R.string.cancel),
+            onConfirm = {
+                SafFileManager.deleteDownloadVideoFolder(context, video.video.videoCode)
+                viewModel.deleteDownloadHanimeBy(video.video.videoCode, video.video.quality)
+                showDeleteVideoConfirm = null
+            },
+            onDismiss = { showDeleteVideoConfirm = null },
+        )
+    }
 }
 
 @Composable

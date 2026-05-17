@@ -71,6 +71,7 @@ import com.yenaly.han1meviewer.logic.network.interceptor.SpeedLimitInterceptor
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.screen.settings.DelayResultUi
 import com.yenaly.han1meviewer.ui.screen.settings.DownloadSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.DownloadSettingsUiState
@@ -190,6 +191,7 @@ fun HomeSettingsRouteScreen(
     val versionState by AppViewModel.versionFlow.collectAsStateWithLifecycle()
     var refreshKey by remember { mutableIntStateOf(0) }
     var cacheKey by remember { mutableIntStateOf(0) }
+    var showClearCacheConfirm by remember { mutableStateOf(false) }
 
     val launcherItems = remember(context) {
         listOf(
@@ -462,26 +464,31 @@ fun HomeSettingsRouteScreen(
                 showShortToast(R.string.cache_empty)
                 return@HomeSettingsScreen
             }
-            context.showAlertDialog {
-                setTitle(R.string.sure_to_clear)
-                setMessage(R.string.sure_to_clear_cache)
-                setPositiveButton(R.string.confirm) { _, _ ->
-                    coroutineScope.launch(Dispatchers.IO) {
-                        val success = cacheDir?.deleteRecursively() == true
-                        withContext(Dispatchers.Main) {
-                            cacheKey++
-                            refreshKey++
-                            if (success) showShortToast(R.string.clear_success) else showShortToast(
-                                R.string.clear_failed
-                            )
-                        }
-                    }
-                }
-                setNegativeButton(R.string.cancel, null)
-            }
+            showClearCacheConfirm = true
         },
         onSubmitBug = { context.browse(HA1_GITHUB_ISSUE_URL) },
         onOpenForum = { context.browse(HA1_GITHUB_FORUM_URL) },
+    )
+
+    ConfirmDialog(
+        visible = showClearCacheConfirm,
+        title = context.getString(R.string.sure_to_clear),
+        message = context.getString(R.string.sure_to_clear_cache),
+        confirmText = context.getString(R.string.confirm),
+        dismissText = context.getString(R.string.cancel),
+        onConfirm = {
+            showClearCacheConfirm = false
+            coroutineScope.launch(Dispatchers.IO) {
+                val cacheDir = context.cacheDir
+                val success = cacheDir?.deleteRecursively() == true
+                withContext(Dispatchers.Main) {
+                    cacheKey++
+                    refreshKey++
+                    if (success) showShortToast(R.string.clear_success) else showShortToast(R.string.clear_failed)
+                }
+            }
+        },
+        onDismiss = { showClearCacheConfirm = false },
     )
 }
 
