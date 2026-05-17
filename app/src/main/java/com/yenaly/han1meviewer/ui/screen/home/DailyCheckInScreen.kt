@@ -61,7 +61,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -74,8 +73,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
+import androidx.compose.material3.TopAppBarDefaults.pinnedScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -111,6 +109,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.CheckInRecordEntity
 import com.yenaly.han1meviewer.logic.entity.CheckInType
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
+import com.yenaly.han1meviewer.ui.component.HanimeScaffold
 import com.yenaly.han1meviewer.ui.viewmodel.CheckInCalendarViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MonthlyStats
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -120,7 +119,6 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DailyCheckInScreen(
     activity: Activity,
@@ -142,47 +140,25 @@ fun DailyCheckInScreen(
         }
     }
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-    Scaffold(
+    val scrollBehavior = pinnedScrollBehavior(rememberTopAppBarState())
+    HanimeScaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            TopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                ),
-                title = {
-                    Text(
-                        stringResource(R.string.has_cum),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                },
-                navigationIcon = {
-                    FilledIconButton(onClick = onBack) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_baseline_arrow_back_24),
-                            contentDescription = stringResource(R.string.back),
-                        )
-                    }
-                },
-                actions = {
-                    FilledIconButton(onClick = { showReport = true }) {
-                        Icon(
-                            imageVector = Icons.Filled.DateRange,
-                            contentDescription = stringResource(R.string.checkin_report)
-                        )
-                    }
-                    FilledIconButton(onClick = onAddWidget) {
-                        Icon(
-                            imageVector = Icons.Filled.Add,
-                            contentDescription = stringResource(R.string.add_widget)
-                        )
-                    }
-                },
-                scrollBehavior = scrollBehavior,
-            )
+        title = stringResource(R.string.has_cum),
+        onBack = onBack,
+        scrollBehavior = scrollBehavior,
+        actions = {
+            FilledIconButton(onClick = { showReport = true }) {
+                Icon(
+                    imageVector = Icons.Filled.DateRange,
+                    contentDescription = stringResource(R.string.checkin_report)
+                )
+            }
+            FilledIconButton(onClick = onAddWidget) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = stringResource(R.string.add_widget)
+                )
+            }
         },
     ) { innerPadding ->
         CalendarCheckInScreen(
@@ -288,7 +264,6 @@ private fun buildMonthLabels(year: Int, weeks: List<List<LocalDate?>>, monthForm
     return labels
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ContributionReportDialog(
     viewModel: CheckInCalendarViewModel,
@@ -732,7 +707,7 @@ private fun MonthContributionView(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ContributionLegend() {
     Row(
@@ -769,7 +744,6 @@ private fun ContributionLegend() {
 }
 
 @SuppressLint("LocalContextGetResourceValueCall")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CalendarCheckInScreen(
     paddingValues: PaddingValues,
@@ -1574,7 +1548,7 @@ private fun CalendarGrid(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CheckInDialog(
     date: LocalDate,
@@ -1682,7 +1656,7 @@ private fun CheckInDialog(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AddCheckInForm(
     date: LocalDate,

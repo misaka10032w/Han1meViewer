@@ -19,20 +19,11 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
+import androidx.compose.material3.TopAppBarDefaults.pinnedScrollBehavior
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -53,7 +44,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -65,9 +55,10 @@ import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.ArtistItem
-import com.yenaly.han1meviewer.ui.component.content.EmptyContent
+import com.yenaly.han1meviewer.ui.component.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.LoadMoreFooter
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
+import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.preview.fakeArtists
 import com.yenaly.han1meviewer.ui.preview.fakeVideos
@@ -75,7 +66,7 @@ import com.yenaly.han1meviewer.ui.viewmodel.MySubscriptionsViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SubscriptionApp(
     navigateBack: () -> Unit,
@@ -89,15 +80,15 @@ fun SubscriptionApp(
     val cachedArtists = rememberSaveable { mutableStateOf<List<SubscriptionItem>>(emptyList()) }
     val cachedVideos =
         rememberSaveable { mutableStateOf<List<SubscriptionVideosItem>>(emptyList()) }
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-    var isRefreshing by remember { mutableStateOf(false) }
-    val refreshState = rememberPullToRefreshState()
+    val scrollBehavior = pinnedScrollBehavior(rememberTopAppBarState())
     val gridState = rememberLazyGridState()
 
-    LaunchedEffect(Unit) {
-        viewModel.refreshCompleted.collect {
-            isRefreshing = false
-        }
+    val refreshState = rememberPullToRefreshState()
+    var isRefreshing by rememberSaveable { mutableStateOf(false) }
+    var expandedItem by rememberSaveable { mutableIntStateOf(-1) }
+
+    if (expandedItem == -1 && cachedVideos.value.isNotEmpty()) {
+        expandedItem = 0
     }
 
     val onRefresh: () -> Unit = {
@@ -121,34 +112,11 @@ fun SubscriptionApp(
         }
     }
 
-    Scaffold(
-        modifier = Modifier
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            TopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                ),
-                title = {
-                    Text(
-                        stringResource(R.string.my_subscribe),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                },
-                navigationIcon = {
-                    FilledIconButton(onClick = navigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
-                        )
-                    }
-                },
-                scrollBehavior = scrollBehavior,
-            )
-        },
+    HanimeScaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        title = stringResource(R.string.my_subscribe),
+        onBack = navigateBack,
+        scrollBehavior = scrollBehavior,
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -375,14 +343,13 @@ fun AnimatedPageContent(
 fun SubscriptionAppPreview() {
     MaterialTheme { SubscriptionAppPreviewBody() }
 }
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscriptionAppPreviewBody() {
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = pinnedScrollBehavior(rememberTopAppBarState())
     val isRefreshing = false
     val refreshState = rememberPullToRefreshState()
 
-    Scaffold(
+    HanimeScaffold(
         modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection)
             .pullToRefresh(
@@ -390,20 +357,9 @@ fun SubscriptionAppPreviewBody() {
                 isRefreshing = isRefreshing,
                 onRefresh = {}
             ),
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.my_subscribe)) },
-                navigationIcon = {
-                    FilledIconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
-                        )
-                    }
-                },
-                scrollBehavior = scrollBehavior,
-            )
-        }
+        title = stringResource(R.string.my_subscribe),
+        onBack = {},
+        scrollBehavior = scrollBehavior,
     ) { innerPadding ->
         Box(Modifier.padding(innerPadding)) {
             SubscriptionPageContent(

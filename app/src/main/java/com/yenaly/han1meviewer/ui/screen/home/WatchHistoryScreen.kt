@@ -20,14 +20,11 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +47,7 @@ import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
+import com.yenaly.han1meviewer.ui.component.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
@@ -77,7 +75,6 @@ fun WatchHistoryScreen(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun WatchHistoryScreen(
     histories: List<WatchHistoryEntity>,
@@ -126,42 +123,29 @@ private fun WatchHistoryScreen(
         onDismiss = { showHelpDialog = false },
     )
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(stringResource(R.string.watch_history))
-                        Text(
-                            text = stringResource(R.string.watch_history_total_count, histories.size),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                },
-                navigationIcon = {
-                    FilledIconButton(onClick = onBack) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_baseline_arrow_back_24),
-                            contentDescription = stringResource(R.string.back),
-                        )
-                    }
-                },
-                actions = {
-                    FilledIconButton(onClick = { showHelpDialog = true }) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_baseline_help_24),
-                            contentDescription = stringResource(R.string.help),
-                        )
-                    }
-                    FilledIconButton(onClick = { showDeleteAllDialog = true }, enabled = histories.isNotEmpty()) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_baseline_delete_24),
-                            contentDescription = stringResource(R.string.watch_history_clear_all),
-                        )
-                    }
-                },
+    HanimeScaffold(
+        title = stringResource(R.string.watch_history),
+        subtitle = {
+            Text(
+                text = stringResource(R.string.watch_history_total_count, histories.size),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        },
+        onBack = onBack,
+        actions = {
+            FilledIconButton(onClick = { showHelpDialog = true }) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_baseline_help_24),
+                    contentDescription = stringResource(R.string.help),
+                )
+            }
+            FilledIconButton(onClick = { showDeleteAllDialog = true }, enabled = histories.isNotEmpty()) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_baseline_delete_24),
+                    contentDescription = stringResource(R.string.watch_history_clear_all),
+                )
+            }
         },
     ) { paddingValues ->
         if (histories.isEmpty()) {

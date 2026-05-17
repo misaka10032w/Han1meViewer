@@ -9,16 +9,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -36,9 +32,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.HanimeScaffold
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LoginScreen(
     isRefreshing: Boolean,
@@ -49,20 +46,9 @@ fun LoginScreen(
     webViewFactory: () -> WebView,
 ) {
     val refreshingState = rememberPullToRefreshState()
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.login)) },
-                navigationIcon = {
-                    FilledIconButton(onClick = onBack) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_baseline_arrow_back_24),
-                            contentDescription = stringResource(R.string.back),
-                        )
-                    }
-                },
-            )
-        },
+    HanimeScaffold(
+        title = stringResource(R.string.login),
+        onBack = onBack,
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 text = { Text(stringResource(R.string.scan_for_cookies)) },
@@ -147,7 +133,6 @@ fun LoginDialog(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
@@ -166,7 +151,6 @@ fun LoginScreenPreview() {
         )
     }
 }
-
 @Preview(showBackground = true)
 @Composable
 private fun LoginDialogPreview() {

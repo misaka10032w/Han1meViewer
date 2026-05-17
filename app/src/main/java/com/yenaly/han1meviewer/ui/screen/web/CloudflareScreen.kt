@@ -7,28 +7,23 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.HanimeScaffold
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun CloudflareScreen(
     progress: Int,
@@ -36,25 +31,13 @@ fun CloudflareScreen(
     onClose: () -> Unit,
     webViewFactory: () -> WebView,
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.complete_cloudflare_verification)) },
-                navigationIcon = {
-                    FilledIconButton(onClick = onClose) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_baseline_arrow_back_24),
-                            contentDescription = stringResource(R.string.back),
-                        )
-                    }
-                },
-            )
-        },
-    ) { paddingValues ->
+    HanimeScaffold(
+        title = stringResource(R.string.complete_cloudflare_verification),
+        onBack = onClose,
+    ) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+                .fillMaxSize(),
         ) {
             AndroidView(
                 factory = { webViewFactory() },
@@ -89,7 +72,6 @@ fun CloudflareScreen(
         }
     }
 }
-@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {

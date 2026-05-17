@@ -21,20 +21,15 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
+import androidx.compose.material3.TopAppBarDefaults.pinnedScrollBehavior
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -66,16 +61,17 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.Playlists
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.component.content.EmptyContent
+import com.yenaly.han1meviewer.ui.component.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.LoadMoreFooter
 import com.yenaly.han1meviewer.ui.component.PlaylistItem
+import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.screen.getColumnCount
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.showShortToast
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MyPlayListScreen(
     viewModel: MyPlayListViewModelV2,
@@ -85,7 +81,7 @@ fun MyPlayListScreen(
 ){
     val state by viewModel.myPlaylistsFlow.collectAsState()
     val playlists by viewModel.cachedMyPlayList.collectAsState()
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val scrollBehavior = pinnedScrollBehavior(rememberTopAppBarState())
     var isRefreshing by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()
     val showSheet by viewModel.showSheet.collectAsState()
@@ -147,50 +143,35 @@ fun MyPlayListScreen(
         }
     }
 
-    Scaffold(
+    HanimeScaffold(
         modifier = Modifier
             .nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            TopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                ),
-                title = { Text(stringResource(R.string.my_list)) },
-                navigationIcon = {
-                    FilledIconButton(onClick = navigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
+        title = stringResource(R.string.my_list),
+        onBack = navigateBack,
+        scrollBehavior = scrollBehavior,
+        actions = {
+            FilledIconButton(onClick = {
+                context.showAlertDialog {
+                    setTitle(R.string.create_new_playlist)
+                    val etView = View.inflate(context, R.layout.dialog_playlist_modify_edit_text, null)
+                    val etTitle = etView.findViewById<EditText>(R.id.et_title)
+                    val etDesc = etView.findViewById<EditText>(R.id.et_desc)
+                    setView(etView)
+                    setPositiveButton(R.string.confirm) { _, _ ->
+                        viewModel.createPlaylist(
+                            etTitle.text.toString(),
+                            etDesc.text.toString()
                         )
                     }
-                },
-                scrollBehavior = scrollBehavior,
-                actions = {
-                    FilledIconButton(onClick = {
-                        context.showAlertDialog {
-                            setTitle(R.string.create_new_playlist)
-                            val etView = View.inflate(context, R.layout.dialog_playlist_modify_edit_text, null)
-                            val etTitle = etView.findViewById<EditText>(R.id.et_title)
-                            val etDesc = etView.findViewById<EditText>(R.id.et_desc)
-                            setView(etView)
-                            setPositiveButton(R.string.confirm) { _, _ ->
-                                viewModel.createPlaylist(
-                                    etTitle.text.toString(),
-                                    etDesc.text.toString()
-                                )
-                            }
-                            setNegativeButton(R.string.cancel, null)
+                    setNegativeButton(R.string.cancel, null)
 
-                        }
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = stringResource(R.string.create_new_playlist)
-                        )
-                    }
                 }
-            )
+            }) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = stringResource(R.string.create_new_playlist)
+                )
+            }
         },
     ) { innerPadding ->
         Box(

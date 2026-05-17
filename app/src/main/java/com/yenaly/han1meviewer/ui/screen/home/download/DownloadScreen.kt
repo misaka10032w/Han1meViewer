@@ -7,14 +7,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,6 +31,7 @@ import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.logic.model.DownloadHeaderNode
 import com.yenaly.han1meviewer.logic.model.DownloadItemNode
 import com.yenaly.han1meviewer.logic.model.DownloadedNode
+import com.yenaly.han1meviewer.ui.component.HanimeScaffold
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,7 +39,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DownloadScreen(
     downloadingFlow: Flow<List<HanimeDownloadEntity>>,
@@ -100,49 +98,38 @@ fun DownloadScreen(
         onLoadDownloaded()
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.download)) },
-                navigationIcon = {
-                    FilledIconButton(onClick = onBack) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_baseline_arrow_back_24),
-                            contentDescription = stringResource(R.string.back),
-                        )
-                    }
-                },
-                actions = {
-                    if (pagerState.currentPage == 0) {
-                        FilledIconButton(onClick = { onResumeAll(downloadingItems) }, enabled = downloadingItems.isNotEmpty()) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_baseline_play_arrow_24),
-                                contentDescription = stringResource(R.string.start_all),
-                            )
-                        }
-                        FilledIconButton(onClick = { onPauseAll(downloadingItems) }, enabled = downloadingItems.isNotEmpty()) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_baseline_pause_24),
-                                contentDescription = stringResource(R.string.pause_all),
-                            )
-                        }
-                    } else {
-                        FilledIconButton(onClick = { showCreateGroupDialog = true }) {
-                            Icon(
-                                painter = painterResource(R.drawable.baseline_add_24),
-                                contentDescription = stringResource(R.string.create_new_group),
-                            )
-                        }
-                        FilledIconButton(onClick = onImportDownloaded) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_baseline_download_24),
-                                contentDescription = stringResource(R.string.read_download_dir_title),
-                            )
-                        }
-                    }
-                },
-            )
-        }
+    HanimeScaffold(
+        title = stringResource(R.string.download),
+        onBack = onBack,
+        actions = {
+            if (pagerState.currentPage == 0) {
+                FilledIconButton(onClick = { onResumeAll(downloadingItems) }, enabled = downloadingItems.isNotEmpty()) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_baseline_play_arrow_24),
+                        contentDescription = stringResource(R.string.start_all),
+                    )
+                }
+                FilledIconButton(onClick = { onPauseAll(downloadingItems) }, enabled = downloadingItems.isNotEmpty()) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_baseline_pause_24),
+                        contentDescription = stringResource(R.string.pause_all),
+                    )
+                }
+            } else {
+                FilledIconButton(onClick = { showCreateGroupDialog = true }) {
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_add_24),
+                        contentDescription = stringResource(R.string.create_new_group),
+                    )
+                }
+                FilledIconButton(onClick = onImportDownloaded) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_baseline_download_24),
+                        contentDescription = stringResource(R.string.read_download_dir_title),
+                    )
+                }
+            }
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
