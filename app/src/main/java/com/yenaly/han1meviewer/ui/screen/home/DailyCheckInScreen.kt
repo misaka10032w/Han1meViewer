@@ -56,7 +56,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -109,6 +108,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.CheckInRecordEntity
 import com.yenaly.han1meviewer.logic.entity.CheckInType
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
+import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.viewmodel.CheckInCalendarViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.MonthlyStats
@@ -947,106 +947,44 @@ private fun CalendarCheckInScreen(
         Spacer(modifier = Modifier.height(24.dp))
     }
 
-    forgotDialogDate?.let { date ->
-        AlertDialog(
-            onDismissRequest = { forgotDialogDate = null },
-            title = {
-                Text(
-                    text = stringResource(R.string.forgot_title),
-                    style = MaterialTheme.typography.headlineSmall
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(
-                        R.string.forgot_message,
-                        date.format(DateTimeFormatter.ofPattern("MM月dd日"))
-                    )
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    checkInDialogDate = date
-                    forgotDialogDate = null
-                }) {
-                    Text(stringResource(R.string.forgot_confirm))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { forgotDialogDate = null }) {
-                    Text(stringResource(R.string.forgot_dismiss))
-                }
-            }
-        )
-    }
+    ConfirmDialog(
+        visible = forgotDialogDate != null,
+        title = stringResource(R.string.forgot_title),
+        message = forgotDialogDate?.let { stringResource(R.string.forgot_message, it.format(DateTimeFormatter.ofPattern("MM月dd日"))) } ?: "",
+        confirmText = stringResource(R.string.forgot_confirm),
+        dismissText = stringResource(R.string.forgot_dismiss),
+        onConfirm = {
+            forgotDialogDate?.let { checkInDialogDate = it }
+            forgotDialogDate = null
+        },
+        onDismiss = { forgotDialogDate = null },
+    )
 
-    calendarDialogDate?.let { date ->
-        AlertDialog(
-            onDismissRequest = { calendarDialogDate = null },
-            title = {
-                Text(
-                    text = stringResource(R.string.calendar_dialog_title),
-                    style = MaterialTheme.typography.headlineSmall
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(
-                        R.string.calendar_dialog_message,
-                        date.format(DateTimeFormatter.ofPattern("MM月dd日"))
-                    )
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    createCalendarEvent(context, date)
-                    calendarDialogDate = null
-                }) {
-                    Text(stringResource(R.string.calendar_dialog_confirm))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { calendarDialogDate = null }) {
-                    Text(stringResource(R.string.calendar_dialog_dismiss))
-                }
-            }
-        )
-    }
+    ConfirmDialog(
+        visible = calendarDialogDate != null,
+        title = stringResource(R.string.calendar_dialog_title),
+        message = calendarDialogDate?.let { stringResource(R.string.calendar_dialog_message, it.format(DateTimeFormatter.ofPattern("MM月dd日"))) } ?: "",
+        confirmText = stringResource(R.string.calendar_dialog_confirm),
+        dismissText = stringResource(R.string.cancel),
+        onConfirm = {
+            calendarDialogDate?.let { createCalendarEvent(context, it) }
+            calendarDialogDate = null
+        },
+        onDismiss = { calendarDialogDate = null },
+    )
 
-    suckBackDialogDate?.let { date ->
-        val count = records[date] ?: 0
-        AlertDialog(
-            onDismissRequest = { suckBackDialogDate = null },
-            title = {
-                Text(
-                    text = stringResource(R.string.suck_back_title),
-                    style = MaterialTheme.typography.headlineSmall
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(
-                        R.string.suck_back_message,
-                        date.format(DateTimeFormatter.ofPattern("MM月dd日")), count
-                    )
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.clearCheckIn(date)
-                    suckBackDialogDate = null
-                    Toast.makeText(context, R.string.suck_back_done, Toast.LENGTH_SHORT).show()
-                }) {
-                    Text(stringResource(R.string.suck_back_confirm))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { suckBackDialogDate = null }) {
-                    Text(stringResource(R.string.suck_back_dismiss))
-                }
-            }
-        )
-    }
+    ConfirmDialog(
+        visible = suckBackDialogDate != null,
+        title = stringResource(R.string.suck_back_title),
+        message = suckBackDialogDate?.let { stringResource(R.string.suck_back_message, it.format(DateTimeFormatter.ofPattern("MM月dd日")), records[it] ?: 0) } ?: "",
+        confirmText = stringResource(R.string.suck_back_confirm),
+        dismissText = stringResource(R.string.suck_back_dismiss),
+        onConfirm = {
+            suckBackDialogDate?.let { viewModel.clearCheckIn(it); Toast.makeText(context, R.string.suck_back_done, Toast.LENGTH_SHORT).show() }
+            suckBackDialogDate = null
+        },
+        onDismiss = { suckBackDialogDate = null },
+    )
 
     checkInDialogDate?.let { date ->
         CheckInDialog(

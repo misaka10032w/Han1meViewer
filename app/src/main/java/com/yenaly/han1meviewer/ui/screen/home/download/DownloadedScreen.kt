@@ -26,7 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.sharp.Create
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.BasicAlertDialog
@@ -73,6 +72,7 @@ import com.yenaly.han1meviewer.logic.model.DownloadHeaderNode
 import com.yenaly.han1meviewer.logic.model.DownloadItemNode
 import com.yenaly.han1meviewer.logic.model.DownloadedNode
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
+import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.verticalScrollbar
 import com.yenaly.han1meviewer.ui.preview.fakeDownloadedGroups
@@ -416,25 +416,17 @@ private fun CreateGroupDialog(
     var pendingDeleteGroup by remember { mutableStateOf<DownloadGroupEntity?>(null) }
 
     if (pendingDeleteGroup != null) {
-        AlertDialog(
-            onDismissRequest = { pendingDeleteGroup = null },
-            title = { Text(stringResource(R.string.delete_group)) },
-            text = {
-                Text(stringResource(R.string.delete_group_confirm, pendingDeleteGroup!!.name))
+        ConfirmDialog(
+            visible = true,
+            title = stringResource(R.string.delete_group),
+            message = stringResource(R.string.delete_group_confirm, pendingDeleteGroup!!.name),
+            confirmText = stringResource(R.string.confirm),
+            dismissText = stringResource(R.string.cancel),
+            onConfirm = {
+                pendingDeleteGroup?.let { onDeleteGroup(it) }
+                pendingDeleteGroup = null
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    pendingDeleteGroup?.let { onDeleteGroup(it) }
-                    pendingDeleteGroup = null
-                }) {
-                    Text(stringResource(R.string.confirm))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { pendingDeleteGroup = null }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
+            onDismiss = { pendingDeleteGroup = null },
         )
     }
 

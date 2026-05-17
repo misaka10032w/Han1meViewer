@@ -33,6 +33,7 @@ import cn.jzvd.JZUtils
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
+import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 
@@ -74,9 +75,12 @@ fun HKeyframesScreen(
     }
 
     selectedEntity?.takeIf { activeDialog == HKeyframeDialog.DeleteEntity }?.let { entity ->
-        ConfirmDeleteDialog(
+        ConfirmDialog(
+            visible = true,
             title = stringResource(R.string.sure_to_delete),
             message = entity.title,
+            confirmText = stringResource(R.string.confirm),
+            dismissText = stringResource(R.string.cancel),
             onDismiss = {
                 activeDialog = null
                 selectedEntity = null
@@ -120,9 +124,12 @@ fun HKeyframesScreen(
     }
 
     selectedKeyframe?.takeIf { activeDialog == HKeyframeDialog.DeleteKeyframe }?.let { (videoCode, keyframe) ->
-        ConfirmDeleteDialog(
+        ConfirmDialog(
+            visible = true,
             title = stringResource(R.string.sure_to_delete),
             message = JZUtils.stringForTime(keyframe.position),
+            confirmText = stringResource(R.string.confirm),
+            dismissText = stringResource(R.string.cancel),
             onDismiss = {
                 activeDialog = null
                 selectedKeyframe = null
@@ -388,26 +395,6 @@ private fun ShareEntityDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.cancel))
             }
-        },
-    )
-}
-
-@Composable
-private fun ConfirmDeleteDialog(
-    title: String,
-    message: String,
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = { Text(message) },
-        confirmButton = {
-            TextButton(onClick = onConfirm) { Text(stringResource(R.string.confirm)) }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         },
     )
 }
