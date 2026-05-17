@@ -18,7 +18,9 @@ import com.yenaly.yenaly_libs.base.YenalyViewModel
 import com.yenaly.yenaly_libs.utils.application
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
@@ -36,6 +38,9 @@ object AppViewModel : YenalyViewModel(application), IHCsrfToken {
 
     private val _versionFlow = MutableStateFlow<WebsiteState<Latest?>>(WebsiteState.Loading)
     val versionFlow = _versionFlow.asStateFlow()
+
+    private val _pendingUpdateDialog = MutableSharedFlow<Latest>(extraBufferCapacity = 1)
+    val pendingUpdateDialog = _pendingUpdateDialog.asSharedFlow()
 
     val runningWorkInfoCountFlow = MutableStateFlow(0)
 
@@ -72,16 +77,28 @@ object AppViewModel : YenalyViewModel(application), IHCsrfToken {
         }
     }
 
-    fun getLatestVersion(forceCheck: Boolean = true, delayMillis: Long = 0) {
-        viewModelScope.launch {
-            delay(delayMillis)
-            getLatestVersionSuspend(forceCheck)
+    fun showUpdateDialogIfAvailable() {
+        val state = _versionFlow.value
+        if (state is WebsiteState.Success) {
+            state.info?.let { latest ->
+                viewModelScope.launch { _pendingUpdateDialog.emit(latest) }
+            }
         }
     }
 
-    private suspend fun getLatestVersionSuspend(forceCheck: Boolean = true) {
+    fun getLatestVersion(forceCheck: Boolean = true, delayMillis: Long = 0, forceShow: Boolean = false) {
+        viewModelScope.launch {
+            delay(delayMillis)
+            getLatestVersionSuspend(forceCheck, forceShow)
+        }
+    }
+
+    private suspend fun getLatestVersionSuspend(forceCheck: Boolean = true, forceShow: Boolean = false) {
         NetworkRepo.getLatestVersion(forceCheck).collect {
             _versionFlow.value = it
+            if (it is WebsiteState.Success && (forceShow || Preferences.isUpdateDialogVisible)) {
+                it.info?.let { info -> _pendingUpdateDialog.emit(info) }
+            }
         }
     }
 }

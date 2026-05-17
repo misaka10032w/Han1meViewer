@@ -88,7 +88,7 @@ suspend fun Context.showUpdateDialog(latest: Latest) {
     dialog.dismiss()
 }
 
-private fun Context.getUpdateIfExists(latest: Latest): File? {
+internal fun Context.getUpdateIfExists(latest: Latest): File? {
     val nodeId = Preferences.updateNodeId
     return updateFile.takeIf { file ->
         !BuildConfig.DEBUG && file.exists() && nodeId.isNotEmpty() && nodeId == latest.nodeId

@@ -399,7 +399,14 @@ fun HomeSettingsRouteScreen(
                 activity.recreate()
             }
         },
-        onCheckUpdate = { AppViewModel.getLatestVersion() },
+        onCheckUpdate = {
+            val currentVersion = versionState
+            if (currentVersion is WebsiteState.Success && currentVersion.info != null) {
+                AppViewModel.showUpdateDialogIfAvailable()
+            } else {
+                AppViewModel.getLatestVersion(forceShow = true)
+            }
+        },
         onUpdatePopupIntervalDaysChange = {
             Preferences.preferenceSp.edit { putInt(HOME_UPDATE_POPUP_INTERVAL_DAYS, it) }
             refreshKey++
