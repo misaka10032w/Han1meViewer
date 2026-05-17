@@ -1,12 +1,8 @@
 package com.yenaly.han1meviewer.ui.screen.settings
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,12 +13,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.ui.preview.ComponentPreview
-import com.yenaly.han1meviewer.ui.component.SettingChoiceItem
+import com.yenaly.han1meviewer.ui.component.ChoiceDialog
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SettingSliderItem
 import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
+import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
 data class PlayerSettingsUiState(
     val kernel: String,
@@ -57,7 +53,7 @@ fun PlayerSettingsScreen(
 ) {
     var activeDialog by rememberSaveable { mutableStateOf<PlayerChoiceDialog?>(null) }
 
-    PlayerChoiceDialogContent(
+    ChoiceDialog(
         visible = activeDialog == PlayerChoiceDialog.Kernel,
         title = stringResource(R.string.switch_player_kernel),
         options = kernelOptions,
@@ -69,7 +65,7 @@ fun PlayerSettingsScreen(
         },
     )
 
-    PlayerChoiceDialogContent(
+    ChoiceDialog(
         visible = activeDialog == PlayerChoiceDialog.Speed,
         title = stringResource(R.string.default_playback_speed),
         options = speedOptions,
@@ -81,7 +77,7 @@ fun PlayerSettingsScreen(
         },
     )
 
-    PlayerChoiceDialogContent(
+    ChoiceDialog(
         visible = activeDialog == PlayerChoiceDialog.LongPressSpeed,
         title = stringResource(R.string.long_press_speed_multiplier),
         options = longPressSpeedOptions,
@@ -156,39 +152,6 @@ fun PlayerSettingsScreen(
             )
         }
     }
-}
-
-@Composable
-private fun PlayerChoiceDialogContent(
-    visible: Boolean,
-    title: String,
-    options: List<Pair<String, String>>,
-    selectedValue: String,
-    onDismiss: () -> Unit,
-    onSelect: (String) -> Unit,
-) {
-    if (!visible) return
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                options.forEach { (label, value) ->
-                    SettingChoiceItem(
-                        title = label,
-                        selected = selectedValue == value,
-                        onClick = { onSelect(value) },
-                    )
-                }
-            }
-        },
-        confirmButton = {},
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
-            }
-        },
-    )
 }
 
 @Preview(showBackground = true, widthDp = 420, heightDp = 760)

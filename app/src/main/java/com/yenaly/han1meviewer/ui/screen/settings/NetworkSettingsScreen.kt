@@ -29,11 +29,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.network.HProxySelector
-import com.yenaly.han1meviewer.ui.preview.ComponentPreview
-import com.yenaly.han1meviewer.ui.component.SettingChoiceItem
+import com.yenaly.han1meviewer.ui.component.ChoiceDialog
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
+import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
 data class NetworkSettingsUiState(
     val domainName: String,
@@ -162,26 +162,12 @@ private fun NetworkChoiceDialog(
     onDismiss: () -> Unit,
     onSelect: (String) -> Unit,
 ) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                options.forEach { (label, value) ->
-                    SettingChoiceItem(
-                        title = label,
-                        selected = selectedValue == value,
-                        onClick = { onSelect(value) },
-                    )
-                }
-            }
-        },
-        confirmButton = {},
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
-            }
-        },
+    ChoiceDialog(
+        title = title,
+        options = options,
+        selectedValue = selectedValue,
+        onDismiss = onDismiss,
+        onSelect = onSelect,
     )
 }
 
@@ -298,9 +284,9 @@ private fun DelayTestDialog(
                             Text(item.ip)
                             Text(
                                 text = if (item.delay >= 0) "${item.delay} ms" else stringResource(R.string.network_timeout_text),
-                                color = when {
-                                    item.delay in 0 until 100 -> Color(0xFF4CAF50)
-                                    item.delay in 100..500 -> Color(0xFFFFC107)
+                                color = when (item.delay) {
+                                    in 0 until 100 -> Color(0xFF4CAF50)
+                                    in 100..500 -> Color(0xFFFFC107)
                                     else -> Color(0xFFF44336)
                                 },
                             )
