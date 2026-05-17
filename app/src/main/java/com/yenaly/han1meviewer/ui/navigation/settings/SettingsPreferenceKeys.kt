@@ -4,7 +4,6 @@ object SettingsPreferenceKeys {
     const val VIDEO_LANGUAGE = "video_language"
     const val DEFAULT_VIDEO_QUALITY = "default_video_quality"
     const val SHOW_PLAYED_INDICATOR = "show_played_indicator"
-    const val ALLOW_PIP_MODE = "allow_pip_mode"
     const val UPDATE_POPUP_INTERVAL_DAYS = "update_popup_interval_days"
     const val USE_CI_UPDATE_CHANNEL = "use_ci_update_channel"
     const val USE_ANALYTICS = "use_analytics"
