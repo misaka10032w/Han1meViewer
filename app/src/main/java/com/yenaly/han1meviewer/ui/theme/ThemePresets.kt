@@ -33,6 +33,7 @@ enum class ThemeColorPreset(
     }
 }
 
+// ── 红色 ──────────────────────────────────────────────
 private val redLight = lightColorScheme(
     primary = Color(0xFFBC0100), onPrimary = Color(0xFFFFFFFF),
     primaryContainer = Color(0xFFEB0000), onPrimaryContainer = Color(0xFFFFFBFF),
@@ -79,7 +80,7 @@ private val redDark = darkColorScheme(
     surfaceContainerHighest = Color(0xFF472F2B),
 )
 
-// ── Blue preset ──────────────────────────────────────────────
+// ── 蓝色 ──────────────────────────────────────────────
 private val blueLight = lightColorScheme(
     primary = Color(0xFF005FAE), onPrimary = Color(0xFFFFFFFF),
     primaryContainer = Color(0xFF4D95EE), onPrimaryContainer = Color(0xFF002C57),
@@ -126,7 +127,7 @@ private val blueDark = darkColorScheme(
     surfaceContainerHighest = Color(0xFF32353B),
 )
 
-// ── Purple preset ────────────────────────────────────────────
+// ── 紫色 ────────────────────────────────────────────
 private val purpleLight = lightColorScheme(
     primary = Color(0xFF7A1994), onPrimary = Color(0xFFFFFFFF),
     primaryContainer = Color(0xFF9638AE), onPrimaryContainer = Color(0xFFFCD2FF),
@@ -173,7 +174,7 @@ private val purpleDark = darkColorScheme(
     surfaceContainerHighest = Color(0xFF3A323A),
 )
 
-// ── Orange preset ────────────────────────────────────────────
+// ── 橙色 ────────────────────────────────────────────
 private val orangeLight = lightColorScheme(
     primary = Color(0xFF984700), onPrimary = Color(0xFFFFFFFF),
     primaryContainer = Color(0xFFE57A2C), onPrimaryContainer = Color(0xFF502200),
@@ -220,7 +221,7 @@ private val orangeDark = darkColorScheme(
     surfaceContainerHighest = Color(0xFF3E322C),
 )
 
-// ── Teal preset ──────────────────────────────────────────────
+// ── 蓝绿 ──────────────────────────────────────────────
 private val tealLight = lightColorScheme(
     primary = Color(0xFF006A64), onPrimary = Color(0xFFFFFFFF),
     primaryContainer = Color(0xFF39C5BB), onPrimaryContainer = Color(0xFF004D49),
@@ -266,7 +267,7 @@ private val tealDark = darkColorScheme(
     surfaceContainerHigh = Color(0xFF252B2A),
     surfaceContainerHighest = Color(0xFF303635),
 )
-// ── Yellow preset ────────────────────────────────────────────
+// ── 黄色 ────────────────────────────────────────────
 private val yellowLight = lightColorScheme(
     primary = Color(0xFF795900), onPrimary = Color(0xFFFFFFFF),
     primaryContainer = Color(0xFFF2BC3A), onPrimaryContainer = Color(0xFF684C00),
@@ -313,6 +314,7 @@ private val yellowDark = darkColorScheme(
     surfaceContainerHighest = Color(0xFF3A342A),
 )
 
+// ── 粉色 ──────────────────────────────────────────────
 private val pinkLight = lightColorScheme(
     primary = Color(0xFF9A4152), onPrimary = Color(0xFFFFFFFF),
     primaryContainer = Color(0xFFEE8395), onPrimaryContainer = Color(0xFF6B1C2F),
@@ -359,6 +361,7 @@ private val pinkDark = darkColorScheme(
     surfaceContainerHighest = Color(0xFF3C3233),
 )
 
+// ── 浅绿 ──────────────────────────────────────────────
 private val lightGreenLight = lightColorScheme(
     primary = Color(0xFF426900), onPrimary = Color(0xFFFFFFFF),
     primaryContainer = Color(0xFF94C355), onPrimaryContainer = Color(0xFF304F00),
@@ -405,6 +408,7 @@ private val lightGreenDark = darkColorScheme(
     surfaceContainerHighest = Color(0xFF33362D),
 )
 
+// ── 高对比蓝 ──────────────────────────────────────────────
 private val highContrastBlueLight = lightColorScheme(
     primary = Color(0xFF0031A6), onPrimary = Color(0xFFFFFFFF),
     primaryContainer = Color(0xFFDCE1FF), onPrimaryContainer = Color(0xFF000729),
