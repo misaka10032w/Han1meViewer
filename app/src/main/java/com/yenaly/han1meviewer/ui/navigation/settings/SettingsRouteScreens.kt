@@ -28,6 +28,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresApi
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
@@ -51,7 +53,6 @@ import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.textview.MaterialTextView
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.analytics
-import com.mikepenz.aboutlibraries.LibsBuilder
 import com.yenaly.han1meviewer.BuildConfig
 import com.yenaly.han1meviewer.EMPTY_STRING
 import com.yenaly.han1meviewer.HA1_GITHUB_FORUM_URL
@@ -72,6 +73,7 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
+import com.yenaly.han1meviewer.ui.component.TripleButtonDialog
 import com.yenaly.han1meviewer.ui.screen.settings.DelayResultUi
 import com.yenaly.han1meviewer.ui.screen.settings.DownloadSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.DownloadSettingsUiState
@@ -80,6 +82,7 @@ import com.yenaly.han1meviewer.ui.screen.settings.HKeyframeSettingsUiState
 import com.yenaly.han1meviewer.ui.screen.settings.HKeyframesScreen
 import com.yenaly.han1meviewer.ui.screen.settings.HomeSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.HomeSettingsUiState
+import com.yenaly.han1meviewer.ui.screen.settings.LicenseDialog
 import com.yenaly.han1meviewer.ui.screen.settings.MpvChoiceDialog
 import com.yenaly.han1meviewer.ui.screen.settings.MpvPlayerSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.MpvPlayerSettingsUiState
@@ -99,8 +102,10 @@ import com.yenaly.han1meviewer.util.SafFileManager.checkSafPermissions
 import com.yenaly.han1meviewer.util.SafFileManager.migratePrivateToSaf
 import com.yenaly.han1meviewer.util.ThemeUtils
 import com.yenaly.han1meviewer.util.showAlertDialog
+import com.yenaly.han1meviewer.util.showToast
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import com.yenaly.yenaly_libs.ActivityManager
+import com.yenaly.yenaly_libs.utils.applicationContext
 import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.decodeFromStringByBase64
@@ -178,6 +183,7 @@ private const val MPV_NETWORK_TIMEOUT = "mpv_network_timeout"
 private const val ENABLE_GPU_NEXT_RENDERER = "mpv_gpu_next_render"
 private const val CUSTOM_PARAMS = "mpv_custom_parameters"
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeSettingsRouteScreen(
     activity: MainActivity,
@@ -192,26 +198,33 @@ fun HomeSettingsRouteScreen(
     var refreshKey by remember { mutableIntStateOf(0) }
     var cacheKey by remember { mutableIntStateOf(0) }
     var showClearCacheConfirm by remember { mutableStateOf(false) }
+    var showLicenseScreen by remember { mutableStateOf(false) }
+    var showRestartConfirmDialog by remember { mutableStateOf(false) }
+
+    val hanimeAppName = stringResource(R.string.hanime_app_name)
+    val fakeNameCalc = stringResource(R.string.app_name_fake_calc)
+    val fakeNameCornhub = stringResource(R.string.app_name_fake_cornhub)
+    val fakeNameXXT = stringResource(R.string.app_name_fake_xxt)
 
     val launcherItems = remember(context) {
         listOf(
             LauncherItem(
-                name = context.getString(R.string.hanime_app_name),
+                name = hanimeAppName,
                 iconRes = R.drawable.ic_launcher_new,
                 alias = "com.yenaly.han1meviewer.LauncherAliasDefault",
             ),
             LauncherItem(
-                name = context.getString(R.string.app_name_fake_calc),
+                name = fakeNameCalc,
                 iconRes = R.drawable.ic_launcher_calc,
                 alias = "com.yenaly.han1meviewer.LauncherFakeCalc",
             ),
             LauncherItem(
-                name = context.getString(R.string.app_name_fake_cornhub),
+                name = fakeNameCornhub,
                 iconRes = R.drawable.ic_launcher_cornhub,
                 alias = "com.yenaly.han1meviewer.LauncherFakeCornhub",
             ),
             LauncherItem(
-                name = context.getString(R.string.app_name_fake_xxt),
+                name = fakeNameXXT,
                 iconRes = R.drawable.ic_launcher_xxt,
                 alias = "com.yenaly.han1meviewer.LauncherFakeXxt",
             ),
@@ -225,17 +238,20 @@ fun HomeSettingsRouteScreen(
             generateClearCacheSummary(context, context.cacheDir?.folderSize ?: 0L).toString()
         }
     }
+    val checkUpdateFailed = stringResource(R.string.check_update_failed)
+    val checkingUpdate = stringResource(R.string.checking_update)
+    val alreadyLatestUpdate = stringResource(R.string.already_latest_update)
 
     val updateSummary = remember(versionState, context) {
         when (versionState) {
-            is WebsiteState.Error -> context.getString(R.string.check_update_failed)
-            is WebsiteState.Loading -> context.getString(R.string.checking_update)
+            is WebsiteState.Error -> checkUpdateFailed
+            is WebsiteState.Loading -> checkingUpdate
             is WebsiteState.Success -> {
                 val info = (versionState as WebsiteState.Success).info
                 if (info == null) {
-                    context.getString(R.string.already_latest_update)
+                    alreadyLatestUpdate
                 } else {
-                    context.getString(R.string.check_update_success, info.version)
+                    applicationContext.getString(R.string.check_update_success, info.version)
                 }
             }
         }
@@ -276,11 +292,7 @@ fun HomeSettingsRouteScreen(
         onVideoQualityChange = { value ->
             saveString(HOME_DEFAULT_VIDEO_QUALITY, value)
             refreshKey++
-            Toast.makeText(
-                context,
-                context.getString(R.string.success_value, value),
-                Toast.LENGTH_SHORT
-            ).show()
+            context.showToast(R.string.success_value,value)
         },
         onDarkModeChange = { value ->
             if (value != Preferences.useDarkMode) {
@@ -291,11 +303,7 @@ fun HomeSettingsRouteScreen(
         },
         onAllowPipModeChange = { enabled ->
             if (enabled && !isPipPermissionGranted(context)) {
-                Toast.makeText(
-                    context,
-                    context.getString(R.string.request_pip_alert),
-                    Toast.LENGTH_SHORT
-                ).show()
+                context.showToast(R.string.request_pip_alert)
                 openPipPermissionSettings(context)
                 saveBoolean(HOME_ALLOW_PIP_MODE, false)
                 refreshKey++
@@ -368,20 +376,12 @@ fun HomeSettingsRouteScreen(
         onUseLockScreenChange = { value ->
             if (value) {
                 if (!isDeviceSecureCompat(context)) {
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.not_set_sys_lock),
-                        Toast.LENGTH_LONG
-                    ).show()
+                    context.showToast(R.string.not_set_sys_lock)
                     refreshKey++
                     return@HomeSettingsScreen
                 }
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.not_compact_lock_screen),
-                        Toast.LENGTH_LONG
-                    ).show()
+                    context.showToast(R.string.not_compact_lock_screen)
                     refreshKey++
                     return@HomeSettingsScreen
                 }
@@ -442,20 +442,12 @@ fun HomeSettingsRouteScreen(
                         )
                     }
                     (context.applicationContext as? HanimeApplication)?.switchLauncher(selected.alias)
-                    showLongToast(context.getString(R.string.fake_icon_hint))
+                    context.showToast(R.string.fake_icon_hint)
                     refreshKey++
                 }
                 .show()
         },
-        onOpenOpenSourceLicense = {
-            LibsBuilder()
-                .withShowLoadingProgress(true)
-                .withSearchEnabled(false)
-                .withActivityTitle(context.getString(R.string.open_source_license))
-                .withAboutIconShown(true)
-                .withAboutVersionShown(true)
-                .start(context)
-        },
+        onOpenOpenSourceLicense = { showLicenseScreen = true },
         onOpenAbout = {},
         onClearCache = {
             val cacheDir = context.cacheDir
@@ -472,10 +464,10 @@ fun HomeSettingsRouteScreen(
 
     ConfirmDialog(
         visible = showClearCacheConfirm,
-        title = context.getString(R.string.sure_to_clear),
-        message = context.getString(R.string.sure_to_clear_cache),
-        confirmText = context.getString(R.string.confirm),
-        dismissText = context.getString(R.string.cancel),
+        title = stringResource(R.string.sure_to_clear),
+        message = stringResource(R.string.sure_to_clear_cache),
+        confirmText = stringResource(R.string.confirm),
+        dismissText = stringResource(R.string.cancel),
         onConfirm = {
             showClearCacheConfirm = false
             coroutineScope.launch(Dispatchers.IO) {
@@ -490,6 +482,12 @@ fun HomeSettingsRouteScreen(
         },
         onDismiss = { showClearCacheConfirm = false },
     )
+
+    if (showLicenseScreen) {
+        LicenseDialog(
+            onDismiss = {showLicenseScreen = false}
+        )
+    }
 }
 
 @Composable
@@ -505,21 +503,21 @@ fun PlayerSettingsRouteScreen(
         kernelOptions = HMediaKernel.Type.entries.map { it.name to it.name },
         speedOptions = HJzvdStd.speedStringArray.zip(HJzvdStd.speedArray.map { it.toString() }),
         longPressSpeedOptions = listOf(
-            context.getString(R.string.d_speed_times, 1f) to "1",
-            context.getString(R.string.d_speed_times, 1.5f) to "1.5",
-            context.getString(R.string.d_speed_times, 2f) to "2",
+            stringResource(R.string.d_speed_times, 1f) to "1",
+            stringResource(R.string.d_speed_times, 1.5f) to "1.5",
+            stringResource(R.string.d_speed_times, 2f) to "2",
             "${
-                context.getString(
+                stringResource(
                     R.string.d_speed_times,
                     2.5f
                 )
-            } (${context.getString(R.string.default_)})" to "2.5",
-            context.getString(R.string.d_speed_times, 2.8f) to "2.8",
-            context.getString(R.string.d_speed_times, 3f) to "3",
-            context.getString(R.string.d_speed_times, 3.2f) to "3.2",
-            context.getString(R.string.d_speed_times, 3.5f) to "3.5",
-            context.getString(R.string.d_speed_times, 3.8f) to "3.8",
-            context.getString(R.string.d_speed_times, 4f) to "4",
+            } (${stringResource(R.string.default_)})" to "2.5",
+            stringResource(R.string.d_speed_times, 2.8f) to "2.8",
+            stringResource(R.string.d_speed_times, 3f) to "3",
+            stringResource(R.string.d_speed_times, 3.2f) to "3.2",
+            stringResource(R.string.d_speed_times, 3.5f) to "3.5",
+            stringResource(R.string.d_speed_times, 3.8f) to "3.8",
+            stringResource(R.string.d_speed_times, 4f) to "4",
         ),
         onKernelChange = {
             saveString(PLAYER_SWITCH_PLAYER_KERNEL, it)
@@ -640,7 +638,7 @@ fun NetworkSettingsRouteScreen(
             }
         },
         onOpenDelayTest = {
-            val host = Preferences.baseUrl.toUri().host ?: context.getString(R.string.unknow)
+            val host = Preferences.baseUrl.toUri().host ?: applicationContext.getString(R.string.unknow)
             currentHost = Preferences.baseUrl
             delayResults.clear()
             isDelayTesting = true
@@ -693,6 +691,8 @@ fun DownloadSettingsRouteScreen(
 ) {
     val context = LocalContext.current
     var refreshKey by remember { mutableIntStateOf(0) }
+    var showDownloadPathDialog by remember { mutableStateOf(false) }
+    var showRestoreDefaultConfirm by remember { mutableStateOf(false) }
     val dao = remember { DownloadDatabase.instance.hanimeDownloadDao }
     val uiState = remember(refreshKey, context) { buildDownloadSettingsUiState(context) }
 
@@ -702,10 +702,10 @@ fun DownloadSettingsRouteScreen(
         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
             SafFileManager.persistUriPermission(context, result.data)
             Preferences.preferenceSp.edit { putBoolean(DOWNLOAD_USE_PRIVATE_STORAGE, false) }
-            showLongToast(context.getString(R.string.directory_saved, result.data))
+            context.showToast(R.string.directory_saved, result.data.toString())
             refreshKey++
         } else {
-            showLongToast(context.getString(R.string.no_directory_selected))
+            context.showToast(R.string.no_directory_selected)
         }
     }
 
@@ -744,33 +744,7 @@ fun DownloadSettingsRouteScreen(
         state = uiState,
         maxDownloadCountLimit = 10,
         maxDownloadSpeedLimitIndex = SpeedLimitInterceptor.SPEED_BYTES.lastIndex,
-        onOpenDownloadPath = {
-            context.showAlertDialog {
-                setTitle(context.getString(R.string.select_download_folder))
-                setMessage(context.getString(R.string.select_folder_message))
-                setPositiveButton(R.string.ok) { _, _ ->
-                    openDirectoryPicker.launch(SafFileManager.buildOpenDirectoryIntent())
-                }
-                setNegativeButton(context.getString(R.string.cancel)) { _, _ -> }
-                if (!Preferences.isUsePrivateStorage) {
-                    setNeutralButton(context.getString(R.string.restore_default_path)) { _, _ ->
-                        context.showAlertDialog {
-                            setTitle(context.getString(R.string.restore_default_path))
-                            setMessage(context.getString(R.string.restore_default_message))
-                            setPositiveButton(R.string.ok) { _, _ ->
-                                Preferences.preferenceSp.edit {
-                                    putBoolean(DOWNLOAD_USE_PRIVATE_STORAGE, true)
-                                    remove(KEY_TREE_URI)
-                                }
-                                refreshKey++
-                                showLongToast(context.getString(R.string.default_path_restored))
-                            }
-                            setNegativeButton(context.getString(R.string.cancel)) { _, _ -> }
-                        }
-                    }
-                }
-            }
-        },
+        onOpenDownloadPath = { showDownloadPathDialog = true },
         onRestoreDefaultPath = { },
         onImportDownloadedFiles = {
             importDownloadedFiles(context, activity, dao, onCompleted = { refreshKey++ })
@@ -785,6 +759,58 @@ fun DownloadSettingsRouteScreen(
             refreshKey++
         },
     )
+
+    if (!Preferences.isUsePrivateStorage) {
+        TripleButtonDialog(
+            visible = showDownloadPathDialog,
+            title = stringResource(R.string.select_download_folder),
+            message = stringResource(R.string.select_folder_message),
+            negativeText = stringResource(R.string.cancel),
+            neutralText = stringResource(R.string.restore_default_path),
+            positiveText = stringResource(R.string.ok),
+            onNegative = { showDownloadPathDialog = false },
+            onNeutral = {
+                showDownloadPathDialog = false
+                showRestoreDefaultConfirm = true
+            },
+            onPositive = {
+                showDownloadPathDialog = false
+                openDirectoryPicker.launch(SafFileManager.buildOpenDirectoryIntent())
+            },
+            onDismiss = { showDownloadPathDialog = false },
+        )
+    } else {
+        ConfirmDialog(
+            visible = showDownloadPathDialog,
+            title = stringResource(R.string.select_download_folder),
+            message = stringResource(R.string.select_folder_message),
+            confirmText = stringResource(R.string.ok),
+            dismissText = stringResource(R.string.cancel),
+            onConfirm = {
+                showDownloadPathDialog = false
+                openDirectoryPicker.launch(SafFileManager.buildOpenDirectoryIntent())
+            },
+            onDismiss = { showDownloadPathDialog = false },
+        )
+    }
+
+    ConfirmDialog(
+        visible = showRestoreDefaultConfirm,
+        title = stringResource(R.string.restore_default_path),
+        message = stringResource(R.string.restore_default_message),
+        confirmText = stringResource(R.string.ok),
+        dismissText = stringResource(R.string.cancel),
+        onConfirm = {
+            Preferences.preferenceSp.edit {
+                putBoolean(DOWNLOAD_USE_PRIVATE_STORAGE, true)
+                remove(KEY_TREE_URI)
+            }
+            refreshKey++
+            showRestoreDefaultConfirm = false
+            context.showToast(R.string.default_path_restored)
+        },
+        onDismiss = { showRestoreDefaultConfirm = false },
+    )
 }
 
 @Composable
@@ -797,16 +823,16 @@ fun MpvPlayerSettingsRouteScreen() {
     MpvPlayerSettingsScreen(
         state = uiState,
         profileOptions = listOf(
-            context.getString(R.string.profile_fast) to "fast",
-            context.getString(R.string.profile_gpu_hq) to "gpu-hq",
+            stringResource(R.string.profile_fast) to "fast",
+            stringResource(R.string.profile_gpu_hq) to "gpu-hq",
         ),
         hwdecOptions = listOf(
-            context.getString(R.string.decoding_auto) to "Auto",
-            context.getString(R.string.decoding_hw) to "HW",
-            context.getString(R.string.decoding_hw_plus) to "HW+",
-            context.getString(R.string.decoding_vulkan_copy) to "Vulkan",
-            context.getString(R.string.decoding_vulkan) to "Vulkan+",
-            context.getString(R.string.decoding_sw) to "SW",
+            stringResource(R.string.decoding_auto) to "Auto",
+            stringResource(R.string.decoding_hw) to "HW",
+            stringResource(R.string.decoding_hw_plus) to "HW+",
+            stringResource(R.string.decoding_vulkan_copy) to "Vulkan",
+            stringResource(R.string.decoding_vulkan) to "Vulkan+",
+            stringResource(R.string.decoding_sw) to "SW",
         ),
         activeDialog = activeDialog,
         onOpenProfileDialog = { activeDialog = MpvChoiceDialog.Profile },
@@ -860,10 +886,10 @@ fun MpvPlayerSettingsRouteScreen() {
 fun HKeyframesRouteScreen(
     onOpenVideo: (String) -> Unit,
 ) {
-    val context = LocalContext.current
     val viewModel: SettingsViewModel = viewModel()
     val items by viewModel.loadAllHKeyframes().collectAsStateWithLifecycle(initialValue = emptyList())
     val shareRegex = remember { Regex(">>>(.+)<<<") }
+    var sharedHKeyframeEntity by remember { mutableStateOf<HKeyframeEntity?>(null) }
 
     LaunchedEffect(Unit) {
         val text = textFromClipboard
@@ -874,21 +900,7 @@ fun HKeyframesRouteScreen(
             Json.decodeFromString<HKeyframeEntity>(toJson)
         }
         if (entity != null) {
-            context.showAlertDialog {
-                setTitle(R.string.h_keyframes_shared_by_other_detected)
-                setMessage(
-                    context.getString(
-                        R.string.shared_h_keyframe_detected_msg,
-                        entity.title,
-                        entity.videoCode,
-                        entity.keyframes.size,
-                    ).trimIndent()
-                )
-                setPositiveButton(R.string.confirm) { _, _ ->
-                    viewModel.insertHKeyframes(entity.copy(lastModifiedTime = System.currentTimeMillis()))
-                }
-                setNegativeButton(R.string.cancel, null)
-            }
+            sharedHKeyframeEntity = entity
         } else {
             showShortToast(R.string.h_keyframes_shared_by_other_not_detected)
         }
@@ -917,6 +929,26 @@ fun HKeyframesRouteScreen(
             showShortToast(R.string.copy_to_clipboard)
         },
     )
+
+    sharedHKeyframeEntity?.let { entity ->
+        ConfirmDialog(
+            visible = true,
+            title = stringResource(R.string.h_keyframes_shared_by_other_detected),
+            message = stringResource(
+                R.string.shared_h_keyframe_detected_msg,
+                entity.title,
+                entity.videoCode,
+                entity.keyframes.size,
+            ).trimIndent(),
+            confirmText = stringResource(R.string.confirm),
+            dismissText = stringResource(R.string.cancel),
+            onConfirm = {
+                viewModel.insertHKeyframes(entity.copy(lastModifiedTime = System.currentTimeMillis()))
+                sharedHKeyframeEntity = null
+            },
+            onDismiss = { sharedHKeyframeEntity = null },
+        )
+    }
 }
 
 @Composable

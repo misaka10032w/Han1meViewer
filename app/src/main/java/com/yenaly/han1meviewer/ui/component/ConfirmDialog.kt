@@ -30,11 +30,12 @@ fun ConfirmDialog(
     dismissText: String,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
+    cancelable: Boolean = true,
 ) {
     if (!visible) return
 
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = { if (cancelable) onDismiss() },
         title = { Text(text = title) },
         text = { Text(text = message) },
         confirmButton = {

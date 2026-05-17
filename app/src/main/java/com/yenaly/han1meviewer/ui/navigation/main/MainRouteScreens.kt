@@ -15,20 +15,13 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -45,7 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.load
@@ -69,6 +61,7 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
+import com.yenaly.han1meviewer.ui.component.TripleButtonDialog
 import com.yenaly.han1meviewer.ui.screen.home.DailyCheckInScreen
 import com.yenaly.han1meviewer.ui.screen.home.HomePageScreen
 import com.yenaly.han1meviewer.ui.screen.home.LocalSearchHistoryQuery
@@ -156,38 +149,24 @@ fun HomeRouteScreen(
     }
 
     if (showExitDialog) {
-        AlertDialog(
-            onDismissRequest = { showExitDialog = false },
-            title = { Text(confirmToExit) },
-            text = { Text(finishedMasturbating) },
-            confirmButton = {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = { showExitDialog = false }) {
-                        Text(doMore)
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-                    TextButton(onClick = {
-                        checkInViewModel.addRecord(
-                            LocalDate.now(),
-                            LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")),
-                            CheckInType.MASTURBATION.storeName,
-                            "", ""
-                        )
-                        activity.finish()
-                    }) {
-                        Text(checkoutExit)
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    TextButton(onClick = { activity.finish() }) {
-                        Text(exit)
-                    }
-                }
+        TripleButtonDialog(
+            visible = true,
+            title = confirmToExit,
+            message = finishedMasturbating,
+            negativeText = doMore,
+            neutralText = checkoutExit,
+            positiveText = exit,
+            onNegative = { showExitDialog = false },
+            onNeutral = {
+                checkInViewModel.addRecord(
+                    LocalDate.now(),
+                    LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")),
+                    CheckInType.MASTURBATION.storeName, "", "",
+                )
+                activity.finish()
             },
-            dismissButton = null
+            onPositive = { activity.finish() },
+            onDismiss = { showExitDialog = false },
         )
     }
 }

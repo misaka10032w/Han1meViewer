@@ -62,7 +62,6 @@ mpv = "v0.1.7"
 
 [libraries]
 # Android
-aboutlibraries = { module = "com.mikepenz:aboutlibraries", version.ref = "aboutlibraries" }
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutlibraries" }
 androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
@@ -139,6 +138,7 @@ spannable-x = { group = "com.itxca.spannablex", name = "spannablex", version.ref
 datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "datetime" }
 circular-reveal-switch = { group = "com.github.YenalyLiew", name = "CircularRevealSwitch", version.ref = "circularRevealSwitch" }
 desugar-jdk-libs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugarJdkLibs" }
+aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutlibraries" }
 
 # firebase
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
