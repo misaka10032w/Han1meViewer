@@ -1,7 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.home
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -24,7 +23,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults.pinnedScrollBehavior
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
@@ -39,14 +37,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.MySubscriptions
@@ -57,6 +53,7 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.ArtistItem
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.LoadMoreFooter
+import com.yenaly.han1meviewer.ui.component.PullRefreshOverlay
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
@@ -96,11 +93,6 @@ fun SubscriptionApp(
         viewModel.loadMySubscriptions(forceReload = true)
     }
 
-    val scaleFraction = {
-        if (isRefreshing) 1f
-        else LinearOutSlowInEasing.transform(refreshState.distanceFraction).coerceIn(0f, 1f)
-    }
-
     LaunchedEffect(state) {
         if (state is WebsiteState.Success) {
             cachedArtists.value =
@@ -109,6 +101,9 @@ fun SubscriptionApp(
                 (state as WebsiteState.Success<MySubscriptions>).info.subscriptionsVideos.toList()
         } else if (state is WebsiteState.Loading && cachedArtists.value.isEmpty()) {
             viewModel.loadMySubscriptions()
+        }
+        if (state !is WebsiteState.Loading) {
+            isRefreshing = false
         }
     }
 
@@ -190,22 +185,10 @@ fun SubscriptionApp(
                 }
             }
 
-            if (isRefreshing || scaleFraction() > 0f) {
-                Box(
-                    Modifier
-                        .align(Alignment.TopCenter)
-                        .graphicsLayer {
-                            scaleX = scaleFraction()
-                            scaleY = scaleFraction()
-                        }
-                        .zIndex(1f)
-                ) {
-                    PullToRefreshDefaults.LoadingIndicator(
-                        state = refreshState,
-                        isRefreshing = isRefreshing
-                    )
-                }
-            }
+            PullRefreshOverlay(
+                state = refreshState,
+                isRefreshing = isRefreshing,
+            )
         }
     }
 }

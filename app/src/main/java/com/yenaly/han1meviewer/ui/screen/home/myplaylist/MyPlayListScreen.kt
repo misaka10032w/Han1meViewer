@@ -3,7 +3,6 @@ package com.yenaly.han1meviewer.ui.screen.home.myplaylist
 import android.view.View
 import android.widget.EditText
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -30,7 +29,6 @@ import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults.pinnedScrollBehavior
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
@@ -46,13 +44,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -64,6 +60,7 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.LoadMoreFooter
 import com.yenaly.han1meviewer.ui.component.PlaylistItem
+import com.yenaly.han1meviewer.ui.component.PullRefreshOverlay
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.screen.getColumnCount
@@ -96,11 +93,6 @@ fun MyPlayListScreen(
     val onRefresh: () -> Unit = {
         isRefreshing = true
         viewModel.loadMyPlayList(forceReload = true)
-    }
-
-    val scaleFraction = {
-        if (isRefreshing) 1f
-        else LinearOutSlowInEasing.transform(refreshState.distanceFraction).coerceIn(0f, 1f)
     }
 
     LaunchedEffect(Unit) {
@@ -255,22 +247,10 @@ fun MyPlayListScreen(
                 }
             }
 
-            if (isRefreshing || scaleFraction() > 0f) {
-                Box(
-                    Modifier
-                        .align(Alignment.TopCenter)
-                        .graphicsLayer {
-                            scaleX = scaleFraction()
-                            scaleY = scaleFraction()
-                        }
-                        .zIndex(1f)
-                ) {
-                    PullToRefreshDefaults.LoadingIndicator(
-                        state = refreshState,
-                        isRefreshing = isRefreshing
-                    )
-                }
-            }
+            PullRefreshOverlay(
+                state = refreshState,
+                isRefreshing = isRefreshing,
+            )
             if (showSheet && !temporarilyHideSheetForNavigation) {
                 PlaylistBottomSheet(
                     listCode = selectedListCode.value,

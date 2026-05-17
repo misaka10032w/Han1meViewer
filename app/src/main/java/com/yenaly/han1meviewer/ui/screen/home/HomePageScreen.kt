@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -55,7 +54,6 @@ import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
@@ -76,7 +74,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -88,7 +85,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -101,6 +97,7 @@ import com.yenaly.han1meviewer.logic.model.HomePage
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.content.ErrorContent
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
+import com.yenaly.han1meviewer.ui.component.PullRefreshOverlay
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.component.lazy.LazyRow
 import com.yenaly.han1meviewer.ui.preview.fakeAnnouncements
@@ -993,12 +990,6 @@ fun HomePageScreen(
         onShowExitDialog()
     }
 
-    // Expressive 指示器缩放动画
-    val scaleFraction = {
-        if (isRefreshing) 1f
-        else LinearOutSlowInEasing.transform(refreshState.distanceFraction).coerceIn(0f, 1f)
-    }
-
     Box(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             // 顶部搜索栏
@@ -1101,23 +1092,11 @@ fun HomePageScreen(
                 }
 
                 // M3 Expressive 下拉刷新指示器（顶部居中，缩放动画）
-                if (isRefreshing || scaleFraction() > 0f) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .graphicsLayer {
-                                scaleX = scaleFraction()
-                                scaleY = scaleFraction()
-                            }
-                            .zIndex(1f)
-                    ) {
-                        PullToRefreshDefaults.LoadingIndicator(
-                            state = refreshState,
-                            isRefreshing = isRefreshing,
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                        )
-                    }
-                }
+                PullRefreshOverlay(
+                    state = refreshState,
+                    isRefreshing = isRefreshing,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                )
             }
         }
 
