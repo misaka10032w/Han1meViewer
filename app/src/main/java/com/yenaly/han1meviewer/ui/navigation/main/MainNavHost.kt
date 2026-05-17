@@ -175,7 +175,7 @@ fun MainNavHost(
                 navController = navController,
                 fallbackDestination = HomeSettingsRoute,
             ) {
-                NetworkSettingsRouteScreen(activity = activity)
+                NetworkSettingsRouteScreen()
             }
         }
         composable<DownloadSettingsRoute> {

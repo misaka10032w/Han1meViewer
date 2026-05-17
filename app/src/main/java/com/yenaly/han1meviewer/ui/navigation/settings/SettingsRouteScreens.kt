@@ -16,19 +16,22 @@ import android.os.Looper
 import android.os.Process
 import android.provider.Settings
 import android.util.Log
+import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresApi
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -41,6 +44,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
@@ -137,7 +141,6 @@ private const val HOME_USE_CI_UPDATE_CHANNEL = "use_ci_update_channel"
 private const val HOME_USE_ANALYTICS = "use_analytics"
 private const val HOME_FAKE_LAUNCHER_ICON = "pref_fake_launcher_icon"
 private const val HOME_USE_DARK_MODE = "use_dark_mode"
-private const val HOME_USE_DYNAMIC_COLOR = "use_dynamic_color"
 private const val HOME_ALLOW_RESUME_PLAYBACK = "allow_resume_playback"
 private const val HOME_SEARCH_ARTIST_IGNORE_VIDEO_TYPE = "search_artist_ignore_video_type"
 private const val HOME_DISABLE_MOBILE_DATA_WARNING = "disable_mobile_data_warning"
@@ -200,6 +203,7 @@ fun HomeSettingsRouteScreen(
     var showClearCacheConfirm by remember { mutableStateOf(false) }
     var showLicenseScreen by remember { mutableStateOf(false) }
     var showRestartConfirmDialog by remember { mutableStateOf(false) }
+    var showAnalyticsDialog by remember { mutableStateOf(false) }
 
     val hanimeAppName = stringResource(R.string.hanime_app_name)
     val fakeNameCalc = stringResource(R.string.app_name_fake_calc)
@@ -270,23 +274,7 @@ fun HomeSettingsRouteScreen(
         onVideoLanguageChange = { value ->
             if (value != Preferences.videoLanguage) {
                 saveString(HOME_VIDEO_LANGUAGE, value)
-                refreshKey++
-                context.showAlertDialog {
-                    setCancelable(false)
-                    setTitle(R.string.attention)
-                    setMessage(
-                        context.getString(
-                            R.string.restart_or_not_working,
-                            context.getString(R.string.video_language)
-                        )
-                    )
-                    setPositiveButton(R.string.confirm) { _, _ ->
-                        ActivityManager.restart(
-                            killProcess = true
-                        )
-                    }
-                    setNegativeButton(R.string.cancel, null)
-                }
+                showRestartConfirmDialog = true
             }
         },
         onVideoQualityChange = { value ->
@@ -356,17 +344,7 @@ fun HomeSettingsRouteScreen(
         },
         onUseAnalyticsChange = { value ->
             if (!value) {
-                context.showAlertDialog {
-                    setTitle(R.string.about_analytics)
-                    setMessage(context.getString(R.string.about_analytics_summary).parseAsHtml())
-                    setCancelable(false)
-                    setPositiveButton(R.string.ok, null)
-                    setNeutralButton(R.string.deny) { _, _ ->
-                        saveBoolean(HOME_USE_ANALYTICS, false)
-                        refreshKey++
-                        Firebase.analytics.setAnalyticsCollectionEnabled(false)
-                    }
-                }
+                showAnalyticsDialog = true
                 return@HomeSettingsScreen
             }
             saveBoolean(HOME_USE_ANALYTICS, true)
@@ -488,6 +466,54 @@ fun HomeSettingsRouteScreen(
             onDismiss = {showLicenseScreen = false}
         )
     }
+
+    if (showAnalyticsDialog) {
+        val message = stringResource(R.string.about_analytics_summary).parseAsHtml()
+        val analyticsMessage = remember { message }
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text(stringResource(R.string.about_analytics)) },
+            text = {
+                AndroidView(
+                    factory = { ctx ->
+                        TextView(ctx).apply {
+                            text = analyticsMessage
+                            movementMethod = LinkMovementMethod.getInstance()
+                            setPadding(0, 0, 0, 0)
+                        }
+                    },
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showAnalyticsDialog = false }) {
+                    Text(stringResource(R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    saveBoolean(HOME_USE_ANALYTICS, false)
+                    refreshKey++
+                    Firebase.analytics.setAnalyticsCollectionEnabled(false)
+                    showAnalyticsDialog = false
+                }) {
+                    Text(stringResource(R.string.deny))
+                }
+            },
+        )
+    }
+
+    ConfirmDialog(
+        visible = showRestartConfirmDialog,
+        title = stringResource(R.string.attention),
+        message = stringResource(R.string.restart_needed),
+        confirmText = stringResource(R.string.confirm),
+        dismissText = stringResource(R.string.cancel),
+        cancelable = false,
+        onConfirm = {
+            ActivityManager.restart(killProcess = true)
+        },
+        onDismiss = { showRestartConfirmDialog = false },
+    )
 }
 
 @Composable
@@ -544,13 +570,14 @@ fun PlayerSettingsRouteScreen(
 }
 
 @Composable
-fun NetworkSettingsRouteScreen(
-    activity: MainActivity,
-) {
+fun NetworkSettingsRouteScreen() {
     val context = LocalContext.current
     var refreshKey by remember { mutableIntStateOf(0) }
     var currentHost by remember { mutableStateOf(Preferences.baseUrl) }
     var isDelayTesting by remember { mutableStateOf(false) }
+    var showDomainRestartConfirm by remember { mutableStateOf(false) }
+    var showHostsRestartConfirm by remember { mutableStateOf(false) }
+    var pendingDomainValue by remember { mutableStateOf("") }
     val delayResults = remember { mutableStateListOf<DelayResultUi>() }
     val delayHandler = remember { Handler(Looper.getMainLooper()) }
     val executor = remember { Executors.newCachedThreadPool() }
@@ -610,32 +637,14 @@ fun NetworkSettingsRouteScreen(
         onDomainChange = { newValue ->
             val origin = Preferences.baseUrl
             if (newValue != origin) {
-                context.showAlertDialog {
-                    setCancelable(false)
-                    setTitle(R.string.attention)
-                    setMessage(context.getString(R.string.domain_change_tips).trimIndent())
-                    setPositiveButton(R.string.confirm) { _, _ ->
-                        Preferences.preferenceSp.edit(commit = true) {
-                            putString(NETWORK_DOMAIN_NAME, newValue)
-                            putString(NETWORK_SELECTED_BASE_URL, newValue)
-                        }
-                        logout()
-                        ActivityManager.restart(killProcess = true)
-                    }
-                    setNegativeButton(R.string.cancel, null)
-                }
+                pendingDomainValue = newValue
+                showDomainRestartConfirm = true
             }
         },
         onUseBuiltInHostsChange = { value ->
             Preferences.preferenceSp.edit { putBoolean(NETWORK_USE_BUILT_IN_HOSTS, value) }
             refreshKey++
-            context.showAlertDialog {
-                setCancelable(false)
-                setTitle(R.string.attention)
-                setMessage(context.getString(R.string.restart_or_not_working, EMPTY_STRING))
-                setPositiveButton(R.string.confirm) { _, _ -> ActivityManager.restart(killProcess = true) }
-                setNegativeButton(R.string.cancel, null)
-            }
+            showHostsRestartConfirm = true
         },
         onOpenDelayTest = {
             val host = Preferences.baseUrl.toUri().host ?: applicationContext.getString(R.string.unknow)
@@ -683,6 +692,35 @@ fun NetworkSettingsRouteScreen(
             refreshKey++
         },
     )
+
+    ConfirmDialog(
+        visible = showDomainRestartConfirm,
+        title = stringResource(R.string.attention),
+        message = stringResource(R.string.domain_change_tips).trimIndent(),
+        confirmText = stringResource(R.string.confirm),
+        dismissText = stringResource(R.string.cancel),
+        cancelable = false,
+        onConfirm = {
+            Preferences.preferenceSp.edit(commit = true) {
+                putString(NETWORK_DOMAIN_NAME, pendingDomainValue)
+                putString(NETWORK_SELECTED_BASE_URL, pendingDomainValue)
+            }
+            logout()
+            ActivityManager.restart(killProcess = true)
+        },
+        onDismiss = { showDomainRestartConfirm = false },
+    )
+
+    ConfirmDialog(
+        visible = showHostsRestartConfirm,
+        title = stringResource(R.string.attention),
+        message = stringResource(R.string.restart_or_not_working, EMPTY_STRING),
+        confirmText = stringResource(R.string.confirm),
+        dismissText = stringResource(R.string.cancel),
+        cancelable = false,
+        onConfirm = { ActivityManager.restart(killProcess = true) },
+        onDismiss = { showHostsRestartConfirm = false },
+    )
 }
 
 @Composable
@@ -715,7 +753,7 @@ fun DownloadSettingsRouteScreen(
         if (granted) return@rememberLauncherForActivityResult
         val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
         if (activity.shouldShowRequestPermissionRationale(permission)) {
-            Toast.makeText(context, R.string.storage_permission_denied_toast, Toast.LENGTH_LONG).show()
+            context.showToast(R.string.storage_permission_denied_toast)
         } else {
             AlertDialog.Builder(context)
                 .setTitle(R.string.permission_permanently_denied_title)
