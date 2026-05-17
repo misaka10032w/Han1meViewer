@@ -15,13 +15,20 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -38,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.load
@@ -53,6 +61,7 @@ import com.yenaly.han1meviewer.getHanimeSearchShareText
 import com.yenaly.han1meviewer.getHanimeShareText
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
+import com.yenaly.han1meviewer.logic.entity.CheckInType
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.logic.model.HanimePreview
@@ -121,6 +130,7 @@ fun HomeRouteScreen(
     val doMore = stringResource(R.string.do_more)
     val checkoutExit = stringResource(R.string.checkout_exit)
     val exit = stringResource(R.string.exit)
+    var showExitDialog by remember { mutableStateOf(false) }
     CompositionLocalProvider(
         LocalSearchHistoryQuery provides { keyword: String ->
             DatabaseRepo.SearchHistory.loadAll(keyword).first().map { it.query }
@@ -138,27 +148,46 @@ fun HomeRouteScreen(
                 copyTextToClipboard(getHanimeShareText(title, code))
                 showShortToast(R.string.copy_to_clipboard)
             },
-            onShowExitDialog = {
-                MaterialAlertDialogBuilder(context)
-                    .setTitle(confirmToExit)
-                    .setMessage(finishedMasturbating)
-                    .setNegativeButton(doMore) { d, _ -> d.dismiss() }
-                    .setNeutralButton(checkoutExit) { _, _ ->
-                        checkInViewModel.addRecord(
-                            LocalDate.now(),
-                            LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")),
-                            com.yenaly.han1meviewer.logic.entity.CheckInType.MASTURBATION.storeName,
-                            "",
-                            "",
-                        )
-                        activity.finish()
-                    }
-                    .setPositiveButton(exit) { _, _ -> activity.finish() }
-                    .show()
-            },
+            onShowExitDialog = { showExitDialog = true },
             onShowAnnouncementDialog = { title, content, imageUrl ->
                 showAnnouncementDialog(context, title, SpannableString(content), imageUrl)
             },
+        )
+    }
+
+    if (showExitDialog) {
+        AlertDialog(
+            onDismissRequest = { showExitDialog = false },
+            title = { Text(confirmToExit) },
+            text = { Text(finishedMasturbating) },
+            confirmButton = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = { showExitDialog = false }) {
+                        Text(doMore)
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TextButton(onClick = {
+                        checkInViewModel.addRecord(
+                            LocalDate.now(),
+                            LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")),
+                            CheckInType.MASTURBATION.storeName,
+                            "", ""
+                        )
+                        activity.finish()
+                    }) {
+                        Text(checkoutExit)
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TextButton(onClick = { activity.finish() }) {
+                        Text(exit)
+                    }
+                }
+            },
+            dismissButton = null
         )
     }
 }
