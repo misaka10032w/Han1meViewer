@@ -1011,10 +1011,13 @@ private fun buildHomeSettingsUiState(
         else -> appLanguageValue
     }
     return HomeSettingsUiState(
-        videoLanguage = videoLanguageLabel,
+        videoLanguage = Preferences.videoLanguage,
+        videoLanguageLabel = videoLanguageLabel,
         defaultVideoQuality = Preferences.videoQuality,
-        darkMode = darkModeLabel,
-        appLanguage = appLanguageLabel,
+        darkMode = Preferences.useDarkMode,
+        darkModeLabel = darkModeLabel,
+        appLanguage = appLanguageValue,
+        appLanguageLabel = appLanguageLabel,
         allowPipMode = Preferences.preferenceSp.getBoolean(HOME_ALLOW_PIP_MODE, false),
         allowResumePlayback = Preferences.allowResumePlayback,
         showPlayedIndicator = Preferences.showPlayedIndicator,
@@ -1054,6 +1057,7 @@ private fun buildPlayerSettingsUiState(context: Context): PlayerSettingsUiState 
     val speedDisplay = HJzvdStd.speedStringArray.getOrElse(
         HJzvdStd.speedArray.indexOfFirst { it == currentSpeed }.takeIf { it >= 0 } ?: HJzvdStd.DEF_SPEED_INDEX
     ) { HJzvdStd.speedStringArray[HJzvdStd.DEF_SPEED_INDEX] }
+    val longPressDisplay = context.getString(R.string.d_speed_times, currentLongPressSpeed)
     return PlayerSettingsUiState(
         kernel = kernel,
         kernelDisplay = kernel,
@@ -1064,8 +1068,10 @@ private fun buildPlayerSettingsUiState(context: Context): PlayerSettingsUiState 
             context.getString(R.string.mpv_settings_disabled_summary)
         },
         showBottomProgress = Preferences.showBottomProgress,
-        playerSpeed = speedDisplay,
-        longPressSpeedTimes = context.getString(R.string.d_speed_times, currentLongPressSpeed),
+        playerSpeed = currentSpeed.toString(),
+        playerSpeedLabel = speedDisplay,
+        longPressSpeedTimes = currentLongPressSpeed.toString(),
+        longPressSpeedTimesLabel = longPressDisplay,
         slideSensitivity = Preferences.slideSensitivity,
         slideSensitivitySummary = toPrettySensitivityString(context, Preferences.slideSensitivity),
     )

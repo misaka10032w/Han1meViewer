@@ -27,7 +27,9 @@ data class PlayerSettingsUiState(
     val mpvSettingsSummary: String,
     val showBottomProgress: Boolean,
     val playerSpeed: String,
+    val playerSpeedLabel: String,
     val longPressSpeedTimes: String,
+    val longPressSpeedTimesLabel: String,
     val slideSensitivity: Int,
     val slideSensitivitySummary: String,
 )
@@ -126,7 +128,7 @@ fun PlayerSettingsScreen(
         item {
             SettingNavigationItem(
                 title = stringResource(R.string.default_playback_speed),
-                valueText = state.playerSpeed,
+                valueText = state.playerSpeedLabel,
                 iconRes = R.drawable.baseline_speed2_24,
                 onClick = { activeDialog = PlayerChoiceDialog.Speed },
             )
@@ -135,7 +137,7 @@ fun PlayerSettingsScreen(
         item {
             SettingNavigationItem(
                 title = stringResource(R.string.long_press_speed_multiplier),
-                valueText = state.longPressSpeedTimes,
+                valueText = state.longPressSpeedTimesLabel,
                 iconRes = R.drawable.baseline_touch_24,
                 onClick = { activeDialog = PlayerChoiceDialog.LongPressSpeed },
             )
@@ -165,8 +167,10 @@ private fun PlayerSettingsScreenPreview() {
                 mpvSettingsEnabled = false,
                 mpvSettingsSummary = stringResource(R.string.mpv_settings_disabled_summary),
                 showBottomProgress = true,
-                playerSpeed = "1.0x",
-                longPressSpeedTimes = "2.5倍",
+                playerSpeed = "1.0",
+                playerSpeedLabel = "1.0x",
+                longPressSpeedTimes = "2.5",
+                longPressSpeedTimesLabel = "2.5倍",
                 slideSensitivity = 5,
                 slideSensitivitySummary = stringResource(R.string.current_slide_sensitivity, stringResource(R.string.moderate)),
             ),

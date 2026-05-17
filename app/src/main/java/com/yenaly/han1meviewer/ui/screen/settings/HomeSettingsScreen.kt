@@ -30,9 +30,12 @@ import com.yenaly.han1meviewer.ui.theme.ThemeColorPreset
 
 data class HomeSettingsUiState(
     val videoLanguage: String,
+    val videoLanguageLabel: String,
     val defaultVideoQuality: String,
     val darkMode: String,
+    val darkModeLabel: String,
     val appLanguage: String,
+    val appLanguageLabel: String,
     val allowPipMode: Boolean,
     val allowResumePlayback: Boolean,
     val showPlayedIndicator: Boolean,
@@ -183,7 +186,7 @@ fun HomeSettingsScreen(
         item {
             SettingNavigationItem(
                 title = stringResource(R.string.video_language),
-                valueText = state.videoLanguage,
+                valueText = state.videoLanguageLabel,
                 iconRes = R.drawable.baseline_simp_to_trad_24,
                 onClick = { activeDialog = HomeSettingsChoiceDialog.VideoLanguage },
             )
@@ -322,7 +325,7 @@ fun HomeSettingsScreen(
         item {
             SettingNavigationItem(
                 title = stringResource(R.string.dark_theme),
-                valueText = state.darkMode,
+                valueText = state.darkModeLabel,
                 iconRes = R.drawable.ic_baseline_moon_24,
                 onClick = { activeDialog = HomeSettingsChoiceDialog.DarkMode },
             )
@@ -339,7 +342,7 @@ fun HomeSettingsScreen(
             SettingNavigationItem(
                 title = stringResource(R.string.app_lang),
                 summary = stringResource(R.string.app_lang_sum),
-                valueText = state.appLanguage,
+                valueText = state.appLanguageLabel,
                 iconRes = R.drawable.ic_setting_lang,
                 onClick = { activeDialog = HomeSettingsChoiceDialog.AppLanguage },
             )
@@ -464,9 +467,12 @@ private fun HomeSettingsScreenPreview() {
         HomeSettingsScreen(
             state = HomeSettingsUiState(
                 videoLanguage = "zhs",
+                videoLanguageLabel = "简体中文",
                 defaultVideoQuality = "1080P",
                 darkMode = "follow_system",
+                darkModeLabel = "跟随系统",
                 appLanguage = "system",
+                appLanguageLabel = "跟随系统",
                 allowPipMode = true,
                 allowResumePlayback = true,
                 showPlayedIndicator = true,
