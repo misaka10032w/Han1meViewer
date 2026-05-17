@@ -15,21 +15,26 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Process
 import android.provider.Settings
-import android.util.Log
 import android.text.method.LinkMovementMethod
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.ImageView
+import android.util.Log
 import android.widget.TextView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -42,9 +47,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
@@ -204,6 +215,7 @@ fun HomeSettingsRouteScreen(
     var showLicenseScreen by remember { mutableStateOf(false) }
     var showRestartConfirmDialog by remember { mutableStateOf(false) }
     var showAnalyticsDialog by remember { mutableStateOf(false) }
+    var showLauncherPicker by remember { mutableStateOf(false) }
 
     val hanimeAppName = stringResource(R.string.hanime_app_name)
     val fakeNameCalc = stringResource(R.string.app_name_fake_calc)
@@ -398,33 +410,7 @@ fun HomeSettingsRouteScreen(
                 showApplyDeepLinksDialog(context, activity)
             }
         },
-        onOpenFakeLauncherIcon = {
-            val adapter = object : ArrayAdapter<LauncherItem>(context, 0, launcherItems) {
-                override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                    val view = convertView ?: LayoutInflater.from(context)
-                        .inflate(R.layout.item_simple_icon_with_text, parent, false)
-                    val item = getItem(position)!!
-                    view.findViewById<ImageView>(R.id.icon).setImageResource(item.iconRes)
-                    view.findViewById<TextView>(R.id.name).text = item.name
-                    return view
-                }
-            }
-            MaterialAlertDialogBuilder(context)
-                .setTitle(context.getString(R.string.fake_app_icon))
-                .setAdapter(adapter) { _, which ->
-                    val selected = launcherItems[which]
-                    Preferences.preferenceSp.edit {
-                        putString(
-                            HOME_FAKE_LAUNCHER_ICON,
-                            selected.alias
-                        )
-                    }
-                    (context.applicationContext as? HanimeApplication)?.switchLauncher(selected.alias)
-                    context.showToast(R.string.fake_icon_hint)
-                    refreshKey++
-                }
-                .show()
-        },
+        onOpenFakeLauncherIcon = { showLauncherPicker = true },
         onOpenOpenSourceLicense = { showLicenseScreen = true },
         onOpenAbout = {},
         onClearCache = {
@@ -514,6 +500,55 @@ fun HomeSettingsRouteScreen(
         },
         onDismiss = { showRestartConfirmDialog = false },
     )
+
+    if (showLauncherPicker) {
+        Dialog(
+            onDismissRequest = { showLauncherPicker = false },
+        ) {
+            Surface(
+                shape = RoundedCornerShape(28.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Text(
+                        stringResource(R.string.fake_app_icon),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                    launcherItems.forEach { item ->
+                        TextButton(
+                            onClick = {
+                                Preferences.preferenceSp.edit {
+                                    putString(HOME_FAKE_LAUNCHER_ICON, item.alias)
+                                }
+                                (context.applicationContext as? HanimeApplication)?.switchLauncher(item.alias)
+                                context.showToast(R.string.fake_icon_hint)
+                                refreshKey++
+                                showLauncherPicker = false
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                Icon(
+                                    painter = painterResource(item.iconRes),
+                                    contentDescription = null,
+                                    tint = Color.Unspecified,
+                                    modifier = Modifier.size(30.dp),
+                                )
+                                Text(item.name)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
