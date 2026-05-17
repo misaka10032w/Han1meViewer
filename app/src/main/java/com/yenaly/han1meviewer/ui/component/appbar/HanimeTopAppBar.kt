@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.component
+package com.yenaly.han1meviewer.ui.component.appbar
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.ExperimentalMaterial3Api
