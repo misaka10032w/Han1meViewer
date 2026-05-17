@@ -91,18 +91,17 @@ import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
 import com.yenaly.han1meviewer.ui.view.video.HMediaKernel
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.SettingsViewModel
-import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.util.SafFileManager.KEY_TREE_URI
 import com.yenaly.han1meviewer.util.SafFileManager.checkSafPermissions
 import com.yenaly.han1meviewer.util.SafFileManager.migratePrivateToSaf
 import com.yenaly.han1meviewer.util.ThemeUtils
 import com.yenaly.han1meviewer.util.showAlertDialog
+import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import com.yenaly.yenaly_libs.ActivityManager
 import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.decodeFromStringByBase64
-import com.yenaly.yenaly_libs.utils.findActivity
 import com.yenaly.yenaly_libs.utils.folderSize
 import com.yenaly.yenaly_libs.utils.formatBytesPerSecond
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
@@ -215,6 +214,14 @@ fun HomeSettingsRouteScreen(
         )
     }
 
+    var cacheSummary by remember { mutableStateOf("") }
+
+    LaunchedEffect(cacheKey) {
+        cacheSummary = withContext(Dispatchers.IO) {
+            generateClearCacheSummary(context, context.cacheDir?.folderSize ?: 0L).toString()
+        }
+    }
+
     val updateSummary = remember(versionState, context) {
         when (versionState) {
             is WebsiteState.Error -> context.getString(R.string.check_update_failed)
@@ -228,9 +235,6 @@ fun HomeSettingsRouteScreen(
                 }
             }
         }
-    }
-    val cacheSummary = remember(cacheKey, context) {
-        generateClearCacheSummary(context, context.cacheDir?.folderSize ?: 0L).toString()
     }
     val uiState = remember(refreshKey, updateSummary, cacheSummary, launcherItems, context) {
         buildHomeSettingsUiState(
