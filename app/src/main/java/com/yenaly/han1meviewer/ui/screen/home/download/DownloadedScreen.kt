@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
-import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -71,10 +70,11 @@ import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.logic.model.DownloadHeaderNode
 import com.yenaly.han1meviewer.logic.model.DownloadItemNode
 import com.yenaly.han1meviewer.logic.model.DownloadedNode
-import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
+import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.component.verticalScrollbar
+import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.preview.fakeDownloadedGroups
 import com.yenaly.han1meviewer.ui.preview.fakeDownloadedNodes
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
@@ -228,7 +228,9 @@ private fun DownloadGroupHeader(
                 onClick = onToggle,
                 label = {
                     Text(
-                        if (header.isExpanded) stringResource(R.string.collapse) else stringResource(R.string.expand)
+                        if (header.isExpanded) stringResource(R.string.collapse) else stringResource(
+                            R.string.expand
+                        )
                     )
                 },
                 colors = AssistChipDefaults.assistChipColors(
@@ -250,7 +252,7 @@ private fun DownloadedVideoCard(
     onDeleteVideo: () -> Unit,
     onMoveGroup: () -> Unit,
 ) {
-    val addedTime = if ( !LocalInspectionMode.current) {
+    val addedTime = if (!LocalInspectionMode.current) {
         remember(item.video.addDate) {
             Instant.fromEpochMilliseconds(item.video.addDate)
                 .toLocalDateTime(TimeZone.currentSystemDefault())
@@ -266,7 +268,7 @@ private fun DownloadedVideoCard(
             .combinedClickable(onClick = onOpenVideo, onLongClick = onMoveGroup),
         shape = RoundedCornerShape(24.dp),
     ) {
-        Column  {
+        Column {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -436,7 +438,10 @@ private fun CreateGroupDialog(
                 modifier = Modifier.padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text(stringResource(R.string.create_new_group), style = MaterialTheme.typography.titleLarge)
+                Text(
+                    stringResource(R.string.create_new_group),
+                    style = MaterialTheme.typography.titleLarge
+                )
                 if (groups.isNotEmpty()) {
                     val scrollState = rememberLazyListState()
                     LazyColumn(
@@ -465,7 +470,8 @@ private fun CreateGroupDialog(
                                     color = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.weight(1f)
                                 )
-                                val isDefaultGroup = group.id == DownloadGroupEntity.DEFAULT_GROUP_ID
+                                val isDefaultGroup =
+                                    group.id == DownloadGroupEntity.DEFAULT_GROUP_ID
                                 FilledTonalIconButton(
                                     onClick = { pendingDeleteGroup = group },
                                     modifier = Modifier.size(30.dp),
@@ -537,7 +543,10 @@ private fun GroupRenameDialog(
                 modifier = Modifier.padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Text(stringResource(R.string.rename_group), style = MaterialTheme.typography.titleLarge)
+                Text(
+                    stringResource(R.string.rename_group),
+                    style = MaterialTheme.typography.titleLarge
+                )
                 Text(
                     stringResource(R.string.current_group_name, header.groupKey),
                     style = MaterialTheme.typography.bodyMedium,

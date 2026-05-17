@@ -101,10 +101,12 @@ fun AdvancedSearchSheet(
     }
 
     val genreTitle = remember(selectionVersion, typeLabel) {
-        selectedOptionValue(viewModel.genres, viewModel.genre)?.let { "$typeLabel: $it" } ?: typeLabel
+        selectedOptionValue(viewModel.genres, viewModel.genre)?.let { "$typeLabel: $it" }
+            ?: typeLabel
     }
     val sortTitle = remember(selectionVersion, sortLabel) {
-        selectedOptionValue(viewModel.sortOptions, viewModel.sort)?.let { "$sortLabel: $it" } ?: sortLabel
+        selectedOptionValue(viewModel.sortOptions, viewModel.sort)?.let { "$sortLabel: $it" }
+            ?: sortLabel
     }
     val selectedTagKeys = remember(selectionVersion) { viewModel.tagMap.flatten() }
     val selectedTagCount = remember(selectionVersion) { selectedTagKeys.size }
@@ -210,7 +212,8 @@ fun AdvancedSearchSheet(
                                 broad = viewModel.broad,
                                 onSave = { selected, broad ->
                                     viewModel.broad = broad
-                                    viewModel.tagMap = groupSelectedTagOptions(selected, viewModel.tags)
+                                    viewModel.tagMap =
+                                        groupSelectedTagOptions(selected, viewModel.tags)
                                 },
                                 onReset = { viewModel.tagMap.clear() },
                             )
@@ -275,8 +278,10 @@ fun AdvancedSearchSheet(
                                 viewModel.broad,
                                 viewModel.getSearchDate(),
                                 viewModel.duration,
-                                viewModel.tagMap.flatten().map { SearchOption(searchKey = it) }.toSet(),
-                                viewModel.brandMap.flatten().map { SearchOption(searchKey = it) }.toSet(),
+                                viewModel.tagMap.flatten().map { SearchOption(searchKey = it) }
+                                    .toSet(),
+                                viewModel.brandMap.flatten().map { SearchOption(searchKey = it) }
+                                    .toSet(),
                             )
                             onDismiss()
                         },

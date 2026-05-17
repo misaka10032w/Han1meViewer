@@ -41,7 +41,8 @@ fun HKeyframesRouteScreen(
     onOpenVideo: (String) -> Unit,
 ) {
     val viewModel: SettingsViewModel = viewModel()
-    val items by viewModel.loadAllHKeyframes().collectAsStateWithLifecycle(initialValue = emptyList())
+    val items by viewModel.loadAllHKeyframes()
+        .collectAsStateWithLifecycle(initialValue = emptyList())
     val shareRegex = remember { Regex(">>>(.+)<<<") }
     var sharedHKeyframeEntity by remember { mutableStateOf<HKeyframeEntity?>(null) }
 
@@ -110,7 +111,8 @@ fun SharedHKeyframesRouteScreen(
     onOpenVideo: (String) -> Unit,
 ) {
     val viewModel: SettingsViewModel = viewModel()
-    val items by viewModel.loadAllSharedHKeyframes().collectAsStateWithLifecycle(initialValue = emptyList())
+    val items by viewModel.loadAllSharedHKeyframes()
+        .collectAsStateWithLifecycle(initialValue = emptyList())
 
     SharedHKeyframesScreen(
         items = items,

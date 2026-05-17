@@ -78,8 +78,8 @@ private fun ScanCookieContent(
             Button(
                 onClick = {
                     if (scannedText.value.isEmpty() || scannedText.value.length < 100) return@Button
-                        onCookieScanned(scannedText.value)
-                          },
+                    onCookieScanned(scannedText.value)
+                },
                 modifier = Modifier.align(Alignment.End),
             ) {
                 Text(stringResource(R.string.confirm))

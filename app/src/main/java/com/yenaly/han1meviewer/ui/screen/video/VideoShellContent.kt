@@ -28,14 +28,17 @@ fun VideoShellContent(
     modifier: Modifier = Modifier,
 ) {
     val configuration = LocalConfiguration.current
-    val isTabletLandscape = isTabletMode && configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val isTabletLandscape =
+        isTabletMode && configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     LaunchedEffect(isTabletLandscape) {
         onHideRelatedInIntroChange(isTabletLandscape)
     }
 
     if (isTabletLandscape) {
-        Row(modifier = modifier.fillMaxSize().statusBarsPadding()) {
+        Row(modifier = modifier
+            .fillMaxSize()
+            .statusBarsPadding()) {
             AndroidView(
                 factory = {
                     mainHostFactory().also { view ->

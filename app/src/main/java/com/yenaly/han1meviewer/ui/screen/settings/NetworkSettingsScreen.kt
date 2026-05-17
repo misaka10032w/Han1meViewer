@@ -181,7 +181,8 @@ private fun ProxyDialog(
 ) {
     var selectedType by rememberSaveable(initialType) {
         mutableStateOf(
-            ProxyTypeOption.entries.firstOrNull { it.value == initialType } ?: ProxyTypeOption.System
+            ProxyTypeOption.entries.firstOrNull { it.value == initialType }
+                ?: ProxyTypeOption.System
         )
     }
     var ip by rememberSaveable(initialIp) { mutableStateOf(initialIp) }
@@ -220,7 +221,8 @@ private fun ProxyDialog(
                         )
                     }
                 }
-                val editable = selectedType == ProxyTypeOption.Http || selectedType == ProxyTypeOption.Socks
+                val editable =
+                    selectedType == ProxyTypeOption.Http || selectedType == ProxyTypeOption.Socks
                 OutlinedTextField(
                     value = ip,
                     onValueChange = { ip = it },
@@ -351,6 +353,7 @@ private fun NetworkSettingsScreenPreview() {
         )
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun DelayTestDialogPreview() {
@@ -366,6 +369,7 @@ fun DelayTestDialogPreview() {
         )
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun ProxyDialogPreview() {
@@ -375,6 +379,6 @@ fun ProxyDialogPreview() {
             initialIp = "1.1.1.1",
             initialPort = 8080,
             onDismiss = { }
-        ){_, _, _ -> }
+        ) { _, _, _ -> }
     }
 }

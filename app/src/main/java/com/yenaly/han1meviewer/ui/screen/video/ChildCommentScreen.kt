@@ -44,12 +44,12 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.CommentReplyBar
 import com.yenaly.han1meviewer.ui.component.CommentReportDialog
 import com.yenaly.han1meviewer.ui.component.PageContent
-import com.yenaly.han1meviewer.ui.preview.ComponentPreview
+import com.yenaly.han1meviewer.ui.component.VideoCommentCard
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.content.ErrorContent
 import com.yenaly.han1meviewer.ui.component.content.LoadingContent
-import com.yenaly.han1meviewer.ui.component.VideoCommentCard
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
+import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.preview.fakeCommentList
 import com.yenaly.han1meviewer.util.parseTimeStrToMinutes
 import com.yenaly.han1meviewer.util.safeSortedBy
@@ -161,7 +161,8 @@ fun ChildCommentScreen(
                     onSend = {
                         replyingComment?.let { target ->
                             val prefix = "@${target.username}"
-                            val contentLength = replyText.text.trim().removePrefix(prefix).trimStart().length
+                            val contentLength =
+                                replyText.text.trim().removePrefix(prefix).trimStart().length
                             if (contentLength < 5) {
                                 scope.launch { snackbarHostState.showSnackbar(commentTooShortText) }
                             } else {
@@ -207,7 +208,9 @@ fun ChildCommentScreen(
                 onRetry = onRefresh,
                 loading = {
                     LoadingContent(
-                        modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 24.dp),
                         message = stringResource(R.string.loading),
                     )
                 },
@@ -216,58 +219,60 @@ fun ChildCommentScreen(
                         title = stringResource(R.string.load_reply_failed),
                         message = (state as WebsiteState.Error).throwable.message,
                         onRetry = onRefresh,
-                        modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 24.dp),
                     )
                 },
                 empty = {
                     EmptyContent(hint = stringResource(R.string.comment_not_found))
                 },
             ) {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .nestedScroll(nestedScrollInterop),
-                        contentPadding = PaddingValues(bottom = 24.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        items(sortedComments, key = { it.stableKey }) { comment ->
-                            VideoCommentCard(
-                                comment = comment,
-                                onReply = {
-                                    if (!isAlreadyLogin) {
-                                        scope.launch { snackbarHostState.showSnackbar(loginFirstText) }
-                                    } else {
-                                        replyingComment = comment
-                                        replyText = TextFieldValue("@${comment.username} ")
-                                    }
-                                },
-                                onThumbUp = {
-                                    if (!isAlreadyLogin) {
-                                        scope.launch { snackbarHostState.showSnackbar(loginFirstText) }
-                                    } else {
-                                        onThumbUp(comment)
-                                    }
-                                },
-                                onThumbDown = {
-                                    if (!isAlreadyLogin) {
-                                        scope.launch { snackbarHostState.showSnackbar(loginFirstText) }
-                                    } else {
-                                        onThumbDown(comment)
-                                    }
-                                },
-                                onReport = {
-                                    if (!isAlreadyLogin) {
-                                        scope.launch { snackbarHostState.showSnackbar(loginFirstText) }
-                                    } else {
-                                        reportComment = comment
-                                    }
-                                },
-                            )
-                        }
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .nestedScroll(nestedScrollInterop),
+                    contentPadding = PaddingValues(bottom = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(sortedComments, key = { it.stableKey }) { comment ->
+                        VideoCommentCard(
+                            comment = comment,
+                            onReply = {
+                                if (!isAlreadyLogin) {
+                                    scope.launch { snackbarHostState.showSnackbar(loginFirstText) }
+                                } else {
+                                    replyingComment = comment
+                                    replyText = TextFieldValue("@${comment.username} ")
+                                }
+                            },
+                            onThumbUp = {
+                                if (!isAlreadyLogin) {
+                                    scope.launch { snackbarHostState.showSnackbar(loginFirstText) }
+                                } else {
+                                    onThumbUp(comment)
+                                }
+                            },
+                            onThumbDown = {
+                                if (!isAlreadyLogin) {
+                                    scope.launch { snackbarHostState.showSnackbar(loginFirstText) }
+                                } else {
+                                    onThumbDown(comment)
+                                }
+                            },
+                            onReport = {
+                                if (!isAlreadyLogin) {
+                                    scope.launch { snackbarHostState.showSnackbar(loginFirstText) }
+                                } else {
+                                    reportComment = comment
+                                }
+                            },
+                        )
                     }
                 }
             }
         }
+    }
 
     if (reportComment != null) {
         CommentReportDialog(

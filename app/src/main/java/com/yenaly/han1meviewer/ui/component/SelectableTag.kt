@@ -52,7 +52,7 @@ fun SelectableTag(
 
 @Preview
 @Composable
-fun SelectableTagPreview(){
+fun SelectableTagPreview() {
     ComponentPreview {
         Column {
             SelectableTag(

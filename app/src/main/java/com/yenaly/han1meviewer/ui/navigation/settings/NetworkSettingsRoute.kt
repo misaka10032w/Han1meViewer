@@ -119,7 +119,8 @@ fun NetworkSettingsRouteScreen() {
             showHostsRestartConfirm = true
         },
         onOpenDelayTest = {
-            val host = Preferences.baseUrl.toUri().host ?: applicationContext.getString(R.string.unknow)
+            val host =
+                Preferences.baseUrl.toUri().host ?: applicationContext.getString(R.string.unknow)
             currentHost = Preferences.baseUrl
             delayResults.clear()
             isDelayTesting = true

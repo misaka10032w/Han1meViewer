@@ -48,7 +48,7 @@ fun VideoRouteContent(
 ) {
     val hostUiState by videoViewModel.videoHostUiStateFlow.collectAsStateWithLifecycle()
     val disableComments = remember {
-        PreferenceManager.getDefaultSharedPreferences(com.yenaly.yenaly_libs.utils.application)
+        PreferenceManager.getDefaultSharedPreferences(application)
             .getBoolean("disable_comments", false)
     }
     val tabs = remember(disableComments, hostUiState.commentBadgeCount, fromDownload) {

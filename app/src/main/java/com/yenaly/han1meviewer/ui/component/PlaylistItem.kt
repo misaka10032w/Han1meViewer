@@ -27,8 +27,8 @@ import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.Playlists
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
-import com.yenaly.han1meviewer.ui.screen.RetryableImage
 import com.yenaly.han1meviewer.ui.preview.fakePlaylists
+import com.yenaly.han1meviewer.ui.screen.RetryableImage
 
 /**
  * 播放列表项组件。
@@ -66,7 +66,10 @@ fun PlaylistItem(
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f), shape = RoundedCornerShape(topStart = 8.dp))
+                        .background(
+                            MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(topStart = 8.dp)
+                        )
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                 ) {
                     Text(

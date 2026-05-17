@@ -195,11 +195,11 @@ private fun Activity.updateReportWindowMode(isFullscreen: Boolean) {
         run {
             window.decorView.systemUiVisibility = if (isFullscreen) {
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                    View.SYSTEM_UI_FLAG_FULLSCREEN
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_FULLSCREEN
             } else {
                 View.SYSTEM_UI_FLAG_VISIBLE
             }
@@ -250,7 +250,11 @@ private fun buildYearWeeks(year: Int): List<List<LocalDate?>> {
     return weeks
 }
 
-private fun buildMonthLabels(year: Int, weeks: List<List<LocalDate?>>, monthFormat: String): List<Pair<String, Int>> {
+private fun buildMonthLabels(
+    year: Int,
+    weeks: List<List<LocalDate?>>,
+    monthFormat: String
+): List<Pair<String, Int>> {
     val labels = mutableListOf<Pair<String, Int>>()
     for (month in 1..12) {
         val firstDay = LocalDate.of(year, month, 1)
@@ -413,7 +417,8 @@ private fun ContributionReportDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                val stats = if (viewMode == "year") viewModel.yearStats.value else viewModel.monthlyStats.value
+                val stats =
+                    if (viewMode == "year") viewModel.yearStats.value else viewModel.monthlyStats.value
                 if (stats.typeCounts.isNotEmpty()) {
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Row(
@@ -809,9 +814,11 @@ private fun CalendarCheckInScreen(
             date.isAfter(today) -> {
                 calendarDialogDate = date
             }
+
             date.isBefore(today) && (records[date] ?: 0) == 0 -> {
                 forgotDialogDate = date
             }
+
             else -> {
                 checkInDialogDate = date
             }
@@ -947,7 +954,12 @@ private fun CalendarCheckInScreen(
     ConfirmDialog(
         visible = forgotDialogDate != null,
         title = stringResource(R.string.forgot_title),
-        message = forgotDialogDate?.let { stringResource(R.string.forgot_message, it.format(DateTimeFormatter.ofPattern("MM月dd日"))) } ?: "",
+        message = forgotDialogDate?.let {
+            stringResource(
+                R.string.forgot_message,
+                it.format(DateTimeFormatter.ofPattern("MM月dd日"))
+            )
+        } ?: "",
         confirmText = stringResource(R.string.forgot_confirm),
         dismissText = stringResource(R.string.forgot_dismiss),
         onConfirm = {
@@ -960,7 +972,12 @@ private fun CalendarCheckInScreen(
     ConfirmDialog(
         visible = calendarDialogDate != null,
         title = stringResource(R.string.calendar_dialog_title),
-        message = calendarDialogDate?.let { stringResource(R.string.calendar_dialog_message, it.format(DateTimeFormatter.ofPattern("MM月dd日"))) } ?: "",
+        message = calendarDialogDate?.let {
+            stringResource(
+                R.string.calendar_dialog_message,
+                it.format(DateTimeFormatter.ofPattern("MM月dd日"))
+            )
+        } ?: "",
         confirmText = stringResource(R.string.calendar_dialog_confirm),
         dismissText = stringResource(R.string.cancel),
         onConfirm = {
@@ -973,11 +990,23 @@ private fun CalendarCheckInScreen(
     ConfirmDialog(
         visible = suckBackDialogDate != null,
         title = stringResource(R.string.suck_back_title),
-        message = suckBackDialogDate?.let { stringResource(R.string.suck_back_message, it.format(DateTimeFormatter.ofPattern("MM月dd日")), records[it] ?: 0) } ?: "",
+        message = suckBackDialogDate?.let {
+            stringResource(
+                R.string.suck_back_message,
+                it.format(DateTimeFormatter.ofPattern("MM月dd日")),
+                records[it] ?: 0
+            )
+        } ?: "",
         confirmText = stringResource(R.string.suck_back_confirm),
         dismissText = stringResource(R.string.suck_back_dismiss),
         onConfirm = {
-            suckBackDialogDate?.let { viewModel.clearCheckIn(it); Toast.makeText(context, R.string.suck_back_done, Toast.LENGTH_SHORT).show() }
+            suckBackDialogDate?.let {
+                viewModel.clearCheckIn(it); Toast.makeText(
+                context,
+                R.string.suck_back_done,
+                Toast.LENGTH_SHORT
+            ).show()
+            }
             suckBackDialogDate = null
         },
         onDismiss = { suckBackDialogDate = null },
@@ -1006,16 +1035,23 @@ private fun CalendarCheckInScreen(
 private fun createCalendarEvent(context: android.content.Context, date: LocalDate) {
     val intent = Intent(Intent.ACTION_INSERT).apply {
         setDataAndType(CalendarContract.Events.CONTENT_URI, "vnd.android.cursor.dir/event")
-        putExtra(CalendarContract.Events.TITLE, context.getString(R.string.calendar_title, date.monthValue, date.dayOfMonth))
+        putExtra(
+            CalendarContract.Events.TITLE,
+            context.getString(R.string.calendar_title, date.monthValue, date.dayOfMonth)
+        )
         putExtra(CalendarContract.Events.DESCRIPTION, context.getString(R.string.calendar_desc))
-        putExtra(CalendarContract.Events.EVENT_LOCATION, context.getString(R.string.calendar_location))
+        putExtra(
+            CalendarContract.Events.EVENT_LOCATION,
+            context.getString(R.string.calendar_location)
+        )
         putExtra(
             CalendarContract.EXTRA_EVENT_BEGIN_TIME,
             date.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
         )
         putExtra(
             CalendarContract.EXTRA_EVENT_END_TIME,
-            date.plusDays(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+            date.plusDays(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant()
+                .toEpochMilli()
         )
         putExtra(CalendarContract.Events.ALL_DAY, true)
         putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_FREE)
@@ -1065,7 +1101,11 @@ private fun TodayCheckInCard(
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    text = if (count > 0) "${stringResource(R.string.today_checked)} $count/$maxCount ${stringResource(R.string.times)}"
+                    text = if (count > 0) "${stringResource(R.string.today_checked)} $count/$maxCount ${
+                        stringResource(
+                            R.string.times
+                        )
+                    }"
                     else stringResource(R.string.not_checked_yet),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
@@ -1203,34 +1243,42 @@ private fun AchievementSection(
                             "\uD83E\uDD34", stringResource(R.string.legend_title),
                             stringResource(R.string.egg_god, monthlyTotal)
                         )
+
                         monthlyTotal >= 100 -> Triple(
                             "\uD83D\uDC51", stringResource(R.string.champion_title),
                             stringResource(R.string.achievement_desc_top, monthlyTotal)
                         )
+
                         monthlyTotal >= 69 -> Triple(
                             "\uD83D\uDE0F", stringResource(R.string.nice_title),
                             stringResource(R.string.egg_nice, monthlyTotal)
                         )
+
                         monthlyTotal >= 50 -> Triple(
                             "\uD83C\uDFC6", stringResource(R.string.champion_title),
                             stringResource(R.string.achievement_desc_top, monthlyTotal)
                         )
+
                         checkedDays >= 25 -> Triple(
                             "\uD83D\uDD25", stringResource(R.string.on_fire_title),
                             stringResource(R.string.achievement_desc_days, checkedDays)
                         )
+
                         checkedDays >= 15 -> Triple(
                             "\uD83D\uDE80", stringResource(R.string.great_title),
                             stringResource(R.string.achievement_desc_days, checkedDays)
                         )
+
                         bestStreak >= 7 -> Triple(
                             "\u2B50", stringResource(R.string.week_streak_title),
                             stringResource(R.string.achievement_desc_streak, bestStreak)
                         )
+
                         bestStreak >= 3 -> Triple(
                             "\uD83D\uDCAA", stringResource(R.string.streak_title),
                             stringResource(R.string.egg_streak, bestStreak)
                         )
+
                         else -> Triple(
                             "\uD83D\uDC4D", stringResource(R.string.keep_going_title),
                             stringResource(R.string.achievement_desc_keep)
@@ -1280,12 +1328,48 @@ private fun AchievementSection(
             }
 
             val extraAchievements = buildList {
-                if (stats.uniqueDishes >= 3) add(Triple("\uD83C\uDF7D\uFE0F", stringResource(R.string.ach_dish_variety), "${stats.uniqueDishes}种"))
-                if (stats.topDishCount >= 3) add(Triple("\uD83C\uDFAF", stats.topDish, "${stringResource(R.string.ach_top_dish)}·${stats.topDishCount}次"))
-                if (stats.maxDailyTypes >= 3) add(Triple("\uD83C\uDF08", stringResource(R.string.ach_multi_type), "${stats.maxDailyTypes}种"))
-                if (stats.dominantPeriod == "22~02") add(Triple("\uD83E\uDD71", stringResource(R.string.ach_night_owl), "22~02時"))
-                if (stats.dominantPeriod == "05~10") add(Triple("\uD83C\uDF05", stringResource(R.string.ach_morning), "05~10時"))
-                if (stats.totalFeelingChars >= 100) add(Triple("\uD83D\uDCDD", stringResource(R.string.ach_scholar), stats.scholarDate))
+                if (stats.uniqueDishes >= 3) add(
+                    Triple(
+                        "\uD83C\uDF7D\uFE0F",
+                        stringResource(R.string.ach_dish_variety),
+                        "${stats.uniqueDishes}种"
+                    )
+                )
+                if (stats.topDishCount >= 3) add(
+                    Triple(
+                        "\uD83C\uDFAF",
+                        stats.topDish,
+                        "${stringResource(R.string.ach_top_dish)}·${stats.topDishCount}次"
+                    )
+                )
+                if (stats.maxDailyTypes >= 3) add(
+                    Triple(
+                        "\uD83C\uDF08",
+                        stringResource(R.string.ach_multi_type),
+                        "${stats.maxDailyTypes}种"
+                    )
+                )
+                if (stats.dominantPeriod == "22~02") add(
+                    Triple(
+                        "\uD83E\uDD71",
+                        stringResource(R.string.ach_night_owl),
+                        "22~02時"
+                    )
+                )
+                if (stats.dominantPeriod == "05~10") add(
+                    Triple(
+                        "\uD83C\uDF05",
+                        stringResource(R.string.ach_morning),
+                        "05~10時"
+                    )
+                )
+                if (stats.totalFeelingChars >= 100) add(
+                    Triple(
+                        "\uD83D\uDCDD",
+                        stringResource(R.string.ach_scholar),
+                        stats.scholarDate
+                    )
+                )
             }
             if (extraAchievements.isNotEmpty()) {
                 Row(
@@ -1566,7 +1650,12 @@ private fun CheckInDialog(
                             }
                         )
                     }
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                    HorizontalDivider(
+                        modifier = Modifier.padding(
+                            horizontal = 16.dp,
+                            vertical = 8.dp
+                        )
+                    )
                 }
 
                 if (canAddMore) {
@@ -1746,7 +1835,13 @@ private fun AddCheckInForm(
                 onClick = {
                     val dishes = sideDishes.joinToString(",")
                     val now = LocalTime.now()
-                    viewModel.addRecord(date, now.format(DateTimeFormatter.ofPattern("HH:mm")), selectedType.storeName, dishes, feeling)
+                    viewModel.addRecord(
+                        date,
+                        now.format(DateTimeFormatter.ofPattern("HH:mm")),
+                        selectedType.storeName,
+                        dishes,
+                        feeling
+                    )
 
                     viewModel.getCountByDate(date) { newCount ->
                         when {
@@ -1875,7 +1970,9 @@ private fun ExistingRecordItem(
                         if (coverUrl != null) {
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.weight(1f).widthIn(max = 140.dp)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .widthIn(max = 140.dp)
                             ) {
                                 Card(
                                     shape = RoundedCornerShape(8.dp),

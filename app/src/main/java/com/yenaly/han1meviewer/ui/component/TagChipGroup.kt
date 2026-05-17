@@ -183,7 +183,8 @@ fun TagChipGroup(
                 var bestLayout: FlowLayoutResult? = null
 
                 while (visibleChipCount >= 0) {
-                    val candidatePlaceables = chipPlaceables.take(visibleChipCount) + togglePlaceable
+                    val candidatePlaceables =
+                        chipPlaceables.take(visibleChipCount) + togglePlaceable
                     val candidateLayout = calculateFlowLayout(candidatePlaceables)
                     if (candidateLayout.lineCount <= collapsedMaxLines) {
                         bestPlaceables = candidatePlaceables

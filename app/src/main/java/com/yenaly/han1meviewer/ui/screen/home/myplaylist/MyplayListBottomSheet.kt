@@ -83,7 +83,7 @@ fun PlaylistBottomSheet(
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
-    if (listCode.isNotEmpty()){
+    if (listCode.isNotEmpty()) {
         vm.setListInfo(listCode, playListTitle)
     }
 
@@ -101,9 +101,9 @@ fun PlaylistBottomSheet(
     }
 
     LaunchedEffect(currentCode) {
-        if (currentCode.isNotEmpty()){
-            if (playlist.isEmpty()){
-                vm.getPlaylistItems(1, currentCode,true)
+        if (currentCode.isNotEmpty()) {
+            if (playlist.isEmpty()) {
+                vm.getPlaylistItems(1, currentCode, true)
             }
         } else {
             showShortToast(R.string.unknown_error)
@@ -136,7 +136,12 @@ fun PlaylistBottomSheet(
                 CircularProgressIndicator()
             }
         } else if (playlist.isEmpty() && playlistState is PageLoadingState.Error) {
-            Box(modifier = Modifier.fillMaxSize().height(200.dp), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .height(200.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(stringResource(R.string.load_failed_retry))
             }
         } else {
@@ -172,7 +177,7 @@ fun PlaylistBottomSheet(
                 is WebsiteState.Error -> showShortToast(R.string.modify_failed)
                 WebsiteState.Loading -> {}
                 is WebsiteState.Success -> {
-                    if (result.info.isDeleted){
+                    if (result.info.isDeleted) {
                         sheetState.hide()
                         onDismiss()
                         showShortToast(R.string.delete_success)
@@ -180,7 +185,7 @@ fun PlaylistBottomSheet(
                         return@collect
                     }
                     showShortToast(R.string.modify_success)
-                    vm.getPlaylistItems(1, currentCode,true)
+                    vm.getPlaylistItems(1, currentCode, true)
                     vm.loadMyPlayList()
                 }
             }
@@ -205,6 +210,7 @@ fun PlaylistBottomSheet(
         }
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaylistDetailContent(
@@ -321,7 +327,10 @@ fun PlaylistDetailContent(
                                 etDesc.setText(playlistDesc.value)
                                 setView(etView)
                                 setPositiveButton(R.string.confirm) { _, _ ->
-                                    Log.i("modify_playlist","${listCode},${etTitle.text},${etDesc.text}")
+                                    Log.i(
+                                        "modify_playlist",
+                                        "${listCode},${etTitle.text},${etDesc.text}"
+                                    )
                                     vm.modifyPlaylist(
                                         listCode,
                                         etTitle.text.toString(),
@@ -367,8 +376,8 @@ fun PlaylistDetailContent(
                         isHorizontalCard = true,
                         onClickItem,
                     ) { videoCode, _ ->
-                            showDeleteItemConfirm = Triple(listCode, videoCode, index)
-                        }
+                        showDeleteItemConfirm = Triple(listCode, videoCode, index)
+                    }
                 }
 
                 // 加载中占位
@@ -395,7 +404,10 @@ fun PlaylistDetailContent(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = stringResource(R.string.load_complete_with_pages,vm.currentPage - 1),
+                                text = stringResource(
+                                    R.string.load_complete_with_pages,
+                                    vm.currentPage - 1
+                                ),
                                 style = MaterialTheme.typography.bodySmall.copy(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )

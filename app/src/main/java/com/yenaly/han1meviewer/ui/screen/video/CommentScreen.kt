@@ -63,9 +63,9 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.CommentReplyBar
 import com.yenaly.han1meviewer.ui.component.CommentReportDialog
 import com.yenaly.han1meviewer.ui.component.PageContent
+import com.yenaly.han1meviewer.ui.component.VideoCommentCard
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.content.ErrorContent
-import com.yenaly.han1meviewer.ui.component.VideoCommentCard
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.preview.fakeCommentList
 import com.yenaly.han1meviewer.util.parseTimeStrToMinutes
@@ -262,7 +262,9 @@ fun CommentScreen(
                                 title = stringResource(R.string.load_failed_retry),
                                 message = (state as WebsiteState.Error).throwable.message,
                                 onRetry = onRefresh,
-                                modifier = Modifier.align(Alignment.Center).padding(16.dp),
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .padding(16.dp),
                             )
                         },
                         empty = {
@@ -278,81 +280,81 @@ fun CommentScreen(
                                 .fillMaxSize()
                                 .nestedScroll(nestedScrollInterop),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                if (sortedComments.size >= 3) {
-                                    item {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(horizontal = 4.dp, vertical = 2.dp),
-                                            horizontalArrangement = Arrangement.End,
-                                        ) {
-                                            FilledTonalButton(onClick = { showSortSheet = true }) {
-                                                Text(sortText(sortType))
-                                            }
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            if (sortedComments.size >= 3) {
+                                item {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 4.dp, vertical = 2.dp),
+                                        horizontalArrangement = Arrangement.End,
+                                    ) {
+                                        FilledTonalButton(onClick = { showSortSheet = true }) {
+                                            Text(sortText(sortType))
                                         }
                                     }
                                 }
+                            }
 
-                                items(sortedComments, key = { it.stableKey }) { comment ->
-                                    VideoCommentCard(
-                                        comment = comment,
-                                        onReply = {
-                                            if (!isAlreadyLogin) {
-                                                scope.launch {
-                                                    snackbarHostState.showSnackbar(
-                                                        loginFirstText
-                                                    )
-                                                }
-                                            } else {
-                                                replyingComment = comment
+                            items(sortedComments, key = { it.stableKey }) { comment ->
+                                VideoCommentCard(
+                                    comment = comment,
+                                    onReply = {
+                                        if (!isAlreadyLogin) {
+                                            scope.launch {
+                                                snackbarHostState.showSnackbar(
+                                                    loginFirstText
+                                                )
                                             }
-                                        },
-                                        onThumbUp = {
-                                            if (!isAlreadyLogin) {
-                                                scope.launch {
-                                                    snackbarHostState.showSnackbar(
-                                                        loginFirstText
-                                                    )
-                                                }
-                                            } else {
-                                                onThumbUp(comment)
-                                            }
-                                        },
-                                        onThumbDown = {
-                                            if (!isAlreadyLogin) {
-                                                scope.launch {
-                                                    snackbarHostState.showSnackbar(
-                                                        loginFirstText
-                                                    )
-                                                }
-                                            } else {
-                                                onThumbDown(comment)
-                                            }
-                                        },
-                                        onReport = {
-                                            if (!isAlreadyLogin) {
-                                                scope.launch {
-                                                    snackbarHostState.showSnackbar(
-                                                        loginFirstText
-                                                    )
-                                                }
-                                            } else {
-                                                reportComment = comment
-                                            }
-                                        },
-                                        onViewMoreReplies = if (comment.hasMoreReplies) {
-                                            { onViewMoreReplies(comment) }
                                         } else {
-                                            null
-                                        },
-                                    )
-                                }
+                                            replyingComment = comment
+                                        }
+                                    },
+                                    onThumbUp = {
+                                        if (!isAlreadyLogin) {
+                                            scope.launch {
+                                                snackbarHostState.showSnackbar(
+                                                    loginFirstText
+                                                )
+                                            }
+                                        } else {
+                                            onThumbUp(comment)
+                                        }
+                                    },
+                                    onThumbDown = {
+                                        if (!isAlreadyLogin) {
+                                            scope.launch {
+                                                snackbarHostState.showSnackbar(
+                                                    loginFirstText
+                                                )
+                                            }
+                                        } else {
+                                            onThumbDown(comment)
+                                        }
+                                    },
+                                    onReport = {
+                                        if (!isAlreadyLogin) {
+                                            scope.launch {
+                                                snackbarHostState.showSnackbar(
+                                                    loginFirstText
+                                                )
+                                            }
+                                        } else {
+                                            reportComment = comment
+                                        }
+                                    },
+                                    onViewMoreReplies = if (comment.hasMoreReplies) {
+                                        { onViewMoreReplies(comment) }
+                                    } else {
+                                        null
+                                    },
+                                )
                             }
                         }
                     }
                 }
+            }
             AnimatedVisibility(
                 visible = replyingComment != null || showComposeDialog,
                 modifier = Modifier

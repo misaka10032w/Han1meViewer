@@ -31,9 +31,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import com.yenaly.han1meviewer.ui.component.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -88,11 +86,13 @@ import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimePreview
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.pienization
-import com.yenaly.han1meviewer.ui.preview.ComponentPreview
+import com.yenaly.han1meviewer.ui.component.TagChipGroup
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.content.ErrorContent
 import com.yenaly.han1meviewer.ui.component.content.LoadingContent
-import com.yenaly.han1meviewer.ui.component.TagChipGroup
+import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
+import com.yenaly.han1meviewer.ui.component.lazy.LazyRow
+import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.han1meviewer.ui.preview.fakeNewHanimeInfo
 import kotlinx.coroutines.launch
@@ -536,9 +536,11 @@ private fun PreviewInfoCard(
         shape = RoundedCornerShape(28.dp),
     ) {
         Column {
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .height(220.dp)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp)
+            ) {
                 AsyncImage(
                     model = previewInfo.coverUrl,
                     contentDescription = previewInfo.videoTitle,
@@ -648,7 +650,9 @@ private fun PreviewImageViewerDialog(
     initialPage: Int,
     onDismiss: () -> Unit,
 ) {
-    val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { imageUrls.size.coerceAtLeast(1) })
+    val pagerState = rememberPagerState(
+        initialPage = initialPage,
+        pageCount = { imageUrls.size.coerceAtLeast(1) })
     var isCurrentImageZoomed by remember { mutableStateOf(false) }
 
     Dialog(
@@ -725,7 +729,10 @@ private fun PreviewImageViewerDialog(
                         .align(Alignment.TopStart)
                         .statusBarsPadding()
                         .padding(16.dp)
-                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.72f), CircleShape),
+                        .background(
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.72f),
+                            CircleShape
+                        ),
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_baseline_arrow_back_24),
@@ -740,7 +747,10 @@ private fun PreviewImageViewerDialog(
                             .align(Alignment.BottomCenter)
                             .navigationBarsPadding()
                             .padding(bottom = 24.dp)
-                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.72f), RoundedCornerShape(999.dp))
+                            .background(
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.72f),
+                                RoundedCornerShape(999.dp)
+                            )
                             .padding(horizontal = 14.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -751,7 +761,9 @@ private fun PreviewImageViewerDialog(
                                 modifier = Modifier
                                     .size(if (selected) 8.dp else 6.dp)
                                     .background(
-                                        color = if (selected) Color.White else Color.White.copy(alpha = 0.45f),
+                                        color = if (selected) Color.White else Color.White.copy(
+                                            alpha = 0.45f
+                                        ),
                                         shape = CircleShape,
                                     )
                             )

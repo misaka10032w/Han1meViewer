@@ -90,7 +90,8 @@ class CloudflareActivity : AppCompatActivity() {
                     .replace("\\\"", "\"")
                     .replace("\\\\", "\\")
                 val chromePattern = "Chrome/(\\d+\\.\\d+\\.\\d+\\.\\d+)".toRegex()
-                val versionCode = chromePattern.find(userAgent)?.groupValues?.getOrNull(1) ?: userAgent
+                val versionCode =
+                    chromePattern.find(userAgent)?.groupValues?.getOrNull(1) ?: userAgent
                 runOnUiThread {
                     var t = getString(R.string.complete_cloudflare_verification_with_warning)
                     t += getString(R.string.current_webview_version, versionCode)

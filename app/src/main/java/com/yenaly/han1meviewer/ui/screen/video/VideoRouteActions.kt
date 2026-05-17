@@ -5,8 +5,8 @@ import android.content.Intent
 import android.provider.Settings
 import android.widget.Toast
 import androidx.core.net.toUri
-import com.yenaly.han1meviewer.HCacheManager
 import com.yenaly.han1meviewer.HAdvancedSearch
+import com.yenaly.han1meviewer.HCacheManager
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.getHanimeVideoDownloadLink
@@ -23,8 +23,8 @@ import com.yenaly.han1meviewer.worker.HanimeDownloadWorker
 import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.showShortToast
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -50,8 +50,8 @@ class VideoRouteActions(
         val searchKey = genres.firstOrNull { option ->
             option.lang?.let { lang ->
                 artist.genre == lang.zhrCN ||
-                    artist.genre == lang.zhrTW ||
-                    artist.genre == lang.en
+                        artist.genre == lang.zhrTW ||
+                        artist.genre == lang.en
             } == true
         }?.searchKey ?: ""
         val map = buildMap<HAdvancedSearch, Serializable> {
@@ -139,7 +139,8 @@ class VideoRouteActions(
         try {
             context.startActivity(Intent(Intent.ACTION_VIEW, comicLink.toUri()))
         } catch (_: Exception) {
-            Toast.makeText(context, context.getString(R.string.fault_prompt), Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.fault_prompt), Toast.LENGTH_SHORT)
+                .show()
         }
     }
 
@@ -172,7 +173,10 @@ class VideoRouteActions(
         )
     }
 
-    fun confirmPendingDownload(videoData: HanimeVideo, pendingDownloadPrompt: DownloadPromptState?) {
+    fun confirmPendingDownload(
+        videoData: HanimeVideo,
+        pendingDownloadPrompt: DownloadPromptState?
+    ) {
         val redownload = pendingDownloadPrompt?.oldQuality != null
         onPendingDownloadPromptChange(null)
         scope.launch {

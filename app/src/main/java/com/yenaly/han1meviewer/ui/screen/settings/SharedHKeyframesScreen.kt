@@ -20,9 +20,9 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.logic.entity.HKeyframeHeader
 import com.yenaly.han1meviewer.logic.entity.HKeyframeType
-import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
+import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
 @Composable
 fun SharedHKeyframesScreen(
@@ -41,7 +41,9 @@ fun SharedHKeyframesScreen(
         items(items) { item ->
             when (item) {
                 is HKeyframeHeader -> SharedHeader(item)
-                is HKeyframeEntity -> SharedEntityCard(item, onOpenVideo = { onOpenVideo(item.videoCode) })
+                is HKeyframeEntity -> SharedEntityCard(
+                    item,
+                    onOpenVideo = { onOpenVideo(item.videoCode) })
             }
         }
     }
@@ -70,7 +72,11 @@ private fun SharedEntityCard(
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(entity.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(
+                entity.title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
             Text(
                 text = stringResource(R.string.h_keyframe_title_prefix) + entity.videoCode,
                 color = MaterialTheme.colorScheme.primary,

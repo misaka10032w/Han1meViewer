@@ -181,7 +181,7 @@ fun HomeSettingsRouteScreen(
         onVideoQualityChange = { value ->
             saveString(HOME_DEFAULT_VIDEO_QUALITY, value)
             refreshKey++
-            context.showToast(R.string.success_value,value)
+            context.showToast(R.string.success_value, value)
         },
         onDarkModeChange = { value ->
             if (value != Preferences.useDarkMode) {
@@ -338,7 +338,7 @@ fun HomeSettingsRouteScreen(
 
     if (showLicenseScreen) {
         LicenseDialog(
-            onDismiss = {showLicenseScreen = false}
+            onDismiss = { showLicenseScreen = false }
         )
     }
 
@@ -412,7 +412,9 @@ fun HomeSettingsRouteScreen(
                                 Preferences.preferenceSp.edit {
                                     putString(HOME_FAKE_LAUNCHER_ICON, item.alias)
                                 }
-                                (context.applicationContext as? HanimeApplication)?.switchLauncher(item.alias)
+                                (context.applicationContext as? HanimeApplication)?.switchLauncher(
+                                    item.alias
+                                )
                                 context.showToast(R.string.fake_icon_hint)
                                 refreshKey++
                                 showLauncherPicker = false
@@ -465,7 +467,8 @@ private fun buildHomeSettingsUiState(
         "always_on" -> context.getString(R.string.always_on)
         else -> Preferences.useDarkMode
     }
-    val appLanguageValue = Preferences.preferenceSp.getString(HOME_APP_LANGUAGE, "system") ?: "system"
+    val appLanguageValue =
+        Preferences.preferenceSp.getString(HOME_APP_LANGUAGE, "system") ?: "system"
     val appLanguageLabel = when (appLanguageValue) {
         "system" -> context.getString(R.string.follow_system)
         "zh-rCN" -> context.getString(R.string.simplified_chinese)

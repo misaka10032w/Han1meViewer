@@ -172,9 +172,16 @@ private fun PlayerSettingsScreenPreview() {
                 longPressSpeedTimes = "2.5",
                 longPressSpeedTimesLabel = "2.5倍",
                 slideSensitivity = 5,
-                slideSensitivitySummary = stringResource(R.string.current_slide_sensitivity, stringResource(R.string.moderate)),
+                slideSensitivitySummary = stringResource(
+                    R.string.current_slide_sensitivity,
+                    stringResource(R.string.moderate)
+                ),
             ),
-            kernelOptions = listOf("MediaPlayer" to "MediaPlayer", "ExoPlayer" to "ExoPlayer", "MpvPlayer" to "MpvPlayer"),
+            kernelOptions = listOf(
+                "MediaPlayer" to "MediaPlayer",
+                "ExoPlayer" to "ExoPlayer",
+                "MpvPlayer" to "MpvPlayer"
+            ),
             speedOptions = listOf("1.0x" to "1.0", "1.25x" to "1.25", "1.5x" to "1.5"),
             longPressSpeedOptions = listOf("2.0倍" to "2", "2.5倍" to "2.5", "3.0倍" to "3"),
             onKernelChange = {},

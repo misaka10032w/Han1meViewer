@@ -22,9 +22,9 @@ enum class ThemeColorPreset(
     LIGHT_GREEN(R.string.theme_color_light_green, "light_green"),
     PURPLE(R.string.theme_color_purple, "purple"),
     PINK(R.string.theme_color_pink, "pink"),
-    ORANGE(R.string.theme_color_orange,"orange"),
-    TEAL(R.string.theme_color_teal,"teal"),
-    YELLOW(R.string.theme_color_yellow,"yellow"),
+    ORANGE(R.string.theme_color_orange, "orange"),
+    TEAL(R.string.theme_color_teal, "teal"),
+    YELLOW(R.string.theme_color_yellow, "yellow"),
     HIGH_CONTRAST(R.string.theme_color_high_contrast, "high_contrast");
 
     companion object {
@@ -267,6 +267,7 @@ private val tealDark = darkColorScheme(
     surfaceContainerHigh = Color(0xFF252B2A),
     surfaceContainerHighest = Color(0xFF303635),
 )
+
 // ── 黄色 ────────────────────────────────────────────
 private val yellowLight = lightColorScheme(
     primary = Color(0xFF795900), onPrimary = Color(0xFFFFFFFF),

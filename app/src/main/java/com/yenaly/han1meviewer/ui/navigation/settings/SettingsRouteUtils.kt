@@ -68,10 +68,12 @@ internal fun importDownloadedFiles(
             .setTitle(context.getString(R.string.confirm_import))
             .setMessage(context.getString(R.string.import_warning))
             .setPositiveButton(R.string.ok) { _, _ ->
-                val dialogView = activity.layoutInflater.inflate(R.layout.layout_dialog_progress, null, false)
+                val dialogView =
+                    activity.layoutInflater.inflate(R.layout.layout_dialog_progress, null, false)
                 val titleTv = dialogView.findViewById<MaterialTextView>(R.id.progress_title)
                 val percentTv = dialogView.findViewById<MaterialTextView>(R.id.progress_value)
-                val progressBar = dialogView.findViewById<LinearProgressIndicator>(R.id.progress_bar)
+                val progressBar =
+                    dialogView.findViewById<LinearProgressIndicator>(R.id.progress_bar)
 
                 val progressDialog = MaterialAlertDialogBuilder(context)
                     .setTitle(context.getString(R.string.import_progress))
@@ -98,7 +100,8 @@ internal fun importDownloadedFiles(
                     titleTv.text = context.getString(R.string.importing)
                     progressBar.max = 100
                     progressBar.progress = percent
-                    percentTv.text = context.getString(R.string.import_progress_format).format(migrated, total, percent)
+                    percentTv.text = context.getString(R.string.import_progress_format)
+                        .format(migrated, total, percent)
 
                     if (migrated == total) {
                         progressDialog.dismiss()
@@ -141,7 +144,10 @@ internal fun toIntervalDaysPrettyString(context: Context, value: Int): String {
     } + "\n" + msg
 }
 
-internal fun toPrettySensitivityString(context: Context, @IntRange(from = 1, to = 9) value: Int): String {
+internal fun toPrettySensitivityString(
+    context: Context,
+    @IntRange(from = 1, to = 9) value: Int
+): String {
     val pretty = when (value) {
         1, 2 -> context.getString(R.string.high)
         3, 4 -> context.getString(R.string.moderately_high)
@@ -155,7 +161,10 @@ internal fun toPrettySensitivityString(context: Context, @IntRange(from = 1, to 
     return context.getString(R.string.current_slide_sensitivity, pretty)
 }
 
-internal fun toPrettyCountdownRemindString(context: Context, @IntRange(from = 5, to = 30) value: Int): String {
+internal fun toPrettyCountdownRemindString(
+    context: Context,
+    @IntRange(from = 5, to = 30) value: Int
+): String {
     return buildString {
         append(context.getString(R.string.will_remind_before_d_seconds, value))
         if (value == HJzvdStd.DEF_COUNTDOWN_SEC) append(" (${context.getString(R.string.default_)})")
@@ -213,7 +222,8 @@ internal fun showApplyDeepLinksDialog(context: Context, activity: Activity) {
                     action = Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS
                     addCategory(Intent.CATEGORY_DEFAULT)
                     data = "package:${context.packageName}".toUri()
-                    flags = Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+                    flags =
+                        Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
                 }
                 activity.startActivity(intent)
             } catch (e: Exception) {

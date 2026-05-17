@@ -111,7 +111,8 @@ fun VideoRouteHostScreen(
     val shell = remember(route.videoCode, route.localUri) {
         VideoRouteShell(activity, player)
     }
-    val relatedItems = viewModel.hanimeVideoFlow.collectAsStateWithLifecycle().value?.relatedHanimes.orEmpty()
+    val relatedItems =
+        viewModel.hanimeVideoFlow.collectAsStateWithLifecycle().value?.relatedHanimes.orEmpty()
     val stringLongPressShare = remember(activity) {
         activity.getString(R.string.long_press_share_to_copy)
     }
@@ -120,7 +121,10 @@ fun VideoRouteHostScreen(
     player.videoCode = route.videoCode
     viewModel.fromDownload = route.videoCode == "-1" || route.localUri != null
 
-    var checkedQuality by remember(route.videoCode, route.localUri) { mutableStateOf<String?>(null) }
+    var checkedQuality by remember(
+        route.videoCode,
+        route.localUri
+    ) { mutableStateOf<String?>(null) }
     var pendingDownloadPrompt by remember(route.videoCode, route.localUri) {
         mutableStateOf<DownloadPromptState?>(null)
     }
@@ -218,7 +222,8 @@ fun VideoRouteHostScreen(
                     Intent(MainActivity.ACTION_TOGGLE_PLAY).setPackage(activity.packageName),
                     PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
                 )
-                val icon = Icon.createWithResource(activity, R.drawable.ic_baseline_pause_24_tintwhite)
+                val icon =
+                    Icon.createWithResource(activity, R.drawable.ic_baseline_pause_24_tintwhite)
                 val action = RemoteAction(
                     icon,
                     activity.getString(R.string.play_pause),
@@ -266,7 +271,15 @@ fun VideoRouteHostScreen(
         }
     }
 
-    DisposableEffect(activity, shell, player, pageHost, stringLongPressShare, route.videoCode, route.localUri) {
+    DisposableEffect(
+        activity,
+        shell,
+        player,
+        pageHost,
+        stringLongPressShare,
+        route.videoCode,
+        route.localUri
+    ) {
         activity.registerCurrentVideoHost(pageHost)
         shell.setTabsHostContent {
             val videoState by viewModel.hanimeVideoStateFlow.collectAsStateWithLifecycle()
@@ -292,7 +305,8 @@ fun VideoRouteHostScreen(
                         record.copy(sideDishes = "${record.sideDishes}\u001E${route.videoCode}")
                     }
                     scope.launch(Dispatchers.IO) {
-                        CheckInRecordDatabase.getDatabase(activity).checkInDao().insert(normalizedRecord)
+                        CheckInRecordDatabase.getDatabase(activity).checkInDao()
+                            .insert(normalizedRecord)
                         withContext(Dispatchers.Main) {
                             Toast.makeText(activity, R.string.checkin, Toast.LENGTH_SHORT).show()
                         }
@@ -356,6 +370,7 @@ fun VideoRouteHostScreen(
                         DatabaseRepo.WatchHistory.updateProgress(route.videoCode, progress)
                     }
                 }
+
                 Lifecycle.Event.ON_STOP -> Jzvd.goOnPlayOnPause()
                 else -> Unit
             }
@@ -597,7 +612,7 @@ private class VideoRouteShell(
             WRAP_CONTENT,
         ).apply {
             scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or
-                AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
+                    AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
         }
     }
 

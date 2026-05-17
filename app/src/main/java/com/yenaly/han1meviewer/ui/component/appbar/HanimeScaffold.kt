@@ -49,19 +49,20 @@ fun HanimeScaffold(
 
 @Preview
 @Composable
-private fun HanimeScaffoldPreview(){
+private fun HanimeScaffoldPreview() {
     ComponentPreview {
         HanimeScaffold(
             title = "组件标题",
             subtitle = {
                 Text(
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                text = "副标题"
-            ) },
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = "副标题"
+                )
+            },
             onBack = {},
             actions = {
-                FilledIconButton(onClick = {  }, enabled = true) {
+                FilledIconButton(onClick = { }, enabled = true) {
                     Icon(
                         painter = painterResource(R.drawable.ic_baseline_play_arrow_24),
                         contentDescription = stringResource(R.string.start_all),

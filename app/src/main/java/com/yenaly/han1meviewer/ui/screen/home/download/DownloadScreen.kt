@@ -79,20 +79,26 @@ fun DownloadScreen(
         }
     }
 
-    val downloadedNodes = remember(downloadedItems, displayGroups, collapseDownloadedGroup, downloadedHeaderNodes) {
-        val groupIdToNameMap = displayGroups.associate { it.id to it.name }
-        if (downloadedItems.isEmpty()) {
-            downloadedHeaderNodes = emptyList()
-            emptyList()
-        } else {
-            val newHeaders = downloadedItems.toNodeList(groupIdToNameMap, collapseDownloadedGroup)
-            val oldExpandedByKey = downloadedHeaderNodes.associate { it.groupKey to it.isExpanded }
-            downloadedHeaderNodes = newHeaders.map { newHeader ->
-                newHeader.copy(isExpanded = oldExpandedByKey[newHeader.groupKey] ?: !collapseDownloadedGroup)
+    val downloadedNodes =
+        remember(downloadedItems, displayGroups, collapseDownloadedGroup, downloadedHeaderNodes) {
+            val groupIdToNameMap = displayGroups.associate { it.id to it.name }
+            if (downloadedItems.isEmpty()) {
+                downloadedHeaderNodes = emptyList()
+                emptyList()
+            } else {
+                val newHeaders =
+                    downloadedItems.toNodeList(groupIdToNameMap, collapseDownloadedGroup)
+                val oldExpandedByKey =
+                    downloadedHeaderNodes.associate { it.groupKey to it.isExpanded }
+                downloadedHeaderNodes = newHeaders.map { newHeader ->
+                    newHeader.copy(
+                        isExpanded = oldExpandedByKey[newHeader.groupKey]
+                            ?: !collapseDownloadedGroup
+                    )
+                }
+                downloadedHeaderNodes.toFlatNodeList()
             }
-            downloadedHeaderNodes.toFlatNodeList()
         }
-    }
 
     LaunchedEffect(Unit) {
         onLoadDownloaded()
@@ -103,13 +109,19 @@ fun DownloadScreen(
         onBack = onBack,
         actions = {
             if (pagerState.currentPage == 0) {
-                FilledIconButton(onClick = { onResumeAll(downloadingItems) }, enabled = downloadingItems.isNotEmpty()) {
+                FilledIconButton(
+                    onClick = { onResumeAll(downloadingItems) },
+                    enabled = downloadingItems.isNotEmpty()
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_baseline_play_arrow_24),
                         contentDescription = stringResource(R.string.start_all),
                     )
                 }
-                FilledIconButton(onClick = { onPauseAll(downloadingItems) }, enabled = downloadingItems.isNotEmpty()) {
+                FilledIconButton(
+                    onClick = { onPauseAll(downloadingItems) },
+                    enabled = downloadingItems.isNotEmpty()
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_baseline_pause_24),
                         contentDescription = stringResource(R.string.pause_all),

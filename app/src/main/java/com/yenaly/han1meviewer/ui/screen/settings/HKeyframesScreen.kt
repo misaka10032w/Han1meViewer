@@ -32,10 +32,10 @@ import androidx.compose.ui.unit.dp
 import cn.jzvd.JZUtils
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
-import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
+import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
 private enum class HKeyframeDialog {
     EditEntity,
@@ -108,39 +108,41 @@ fun HKeyframesScreen(
         )
     }
 
-    selectedKeyframe?.takeIf { activeDialog == HKeyframeDialog.EditKeyframe }?.let { (videoCode, keyframe) ->
-        EditKeyframeDialog(
-            keyframe = keyframe,
-            onDismiss = {
-                activeDialog = null
-                selectedKeyframe = null
-            },
-            onConfirm = { newKeyframe ->
-                onUpdateKeyframe(videoCode, keyframe, newKeyframe)
-                activeDialog = null
-                selectedKeyframe = null
-            },
-        )
-    }
+    selectedKeyframe?.takeIf { activeDialog == HKeyframeDialog.EditKeyframe }
+        ?.let { (videoCode, keyframe) ->
+            EditKeyframeDialog(
+                keyframe = keyframe,
+                onDismiss = {
+                    activeDialog = null
+                    selectedKeyframe = null
+                },
+                onConfirm = { newKeyframe ->
+                    onUpdateKeyframe(videoCode, keyframe, newKeyframe)
+                    activeDialog = null
+                    selectedKeyframe = null
+                },
+            )
+        }
 
-    selectedKeyframe?.takeIf { activeDialog == HKeyframeDialog.DeleteKeyframe }?.let { (videoCode, keyframe) ->
-        ConfirmDialog(
-            visible = true,
-            title = stringResource(R.string.sure_to_delete),
-            message = JZUtils.stringForTime(keyframe.position),
-            confirmText = stringResource(R.string.confirm),
-            dismissText = stringResource(R.string.cancel),
-            onDismiss = {
-                activeDialog = null
-                selectedKeyframe = null
-            },
-            onConfirm = {
-                onDeleteKeyframe(videoCode, keyframe)
-                activeDialog = null
-                selectedKeyframe = null
-            },
-        )
-    }
+    selectedKeyframe?.takeIf { activeDialog == HKeyframeDialog.DeleteKeyframe }
+        ?.let { (videoCode, keyframe) ->
+            ConfirmDialog(
+                visible = true,
+                title = stringResource(R.string.sure_to_delete),
+                message = JZUtils.stringForTime(keyframe.position),
+                confirmText = stringResource(R.string.confirm),
+                dismissText = stringResource(R.string.cancel),
+                onDismiss = {
+                    activeDialog = null
+                    selectedKeyframe = null
+                },
+                onConfirm = {
+                    onDeleteKeyframe(videoCode, keyframe)
+                    activeDialog = null
+                    selectedKeyframe = null
+                },
+            )
+        }
 
     if (items.isEmpty()) {
         EmptyContent(hint = stringResource(R.string.here_is_empty))

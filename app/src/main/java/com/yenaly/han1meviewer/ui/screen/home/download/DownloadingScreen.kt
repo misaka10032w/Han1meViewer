@@ -231,6 +231,7 @@ private fun DownloadingItemCard(
                                 )
                             }
                         }
+
                         DownloadState.Paused,
                         DownloadState.Queued,
                         DownloadState.Unknown -> {
@@ -245,6 +246,7 @@ private fun DownloadingItemCard(
                                 )
                             }
                         }
+
                         DownloadState.Failed -> {
                             FilledTonalIconButton(
                                 onClick = onResume,
@@ -257,6 +259,7 @@ private fun DownloadingItemCard(
                                 )
                             }
                         }
+
                         DownloadState.Finished -> Unit
                     }
                 }

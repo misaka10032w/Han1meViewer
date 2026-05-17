@@ -72,6 +72,7 @@ fun CloudflareScreen(
         }
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {

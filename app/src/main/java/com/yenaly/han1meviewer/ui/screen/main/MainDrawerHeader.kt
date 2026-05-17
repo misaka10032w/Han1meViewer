@@ -86,7 +86,9 @@ fun MainDrawerHeader(
                 Text(
                     text = when {
                         isLoading -> stringResource(R.string.loading)
-                        isLoggedIn -> username ?: stringResource(R.string.refresh_page_or_login_expired)
+                        isLoggedIn -> username
+                            ?: stringResource(R.string.refresh_page_or_login_expired)
+
                         else -> stringResource(R.string.not_logged_in)
                     },
                     style = MaterialTheme.typography.titleLarge,
@@ -139,7 +141,7 @@ fun MainDrawerHeader(
 
 @Preview(showBackground = true)
 @Composable
-fun MainDrawerHeaderPreview(){
+fun MainDrawerHeaderPreview() {
     ComponentPreview {
         MainDrawerHeader(
             avatarUrl = "https://www.baidu.com",

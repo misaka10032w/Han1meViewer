@@ -16,11 +16,11 @@ import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VIDEO_COMMENT_PREFIX
 import com.yenaly.han1meviewer.getHanimeShareText
-import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.logic.entity.CheckInRecordEntity
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
@@ -168,7 +168,10 @@ fun RenderVideoCommentContent(
                 val childReportFlow = remember(viewModel.reportMessage) {
                     viewModel.reportMessage.map { message ->
                         val text = if (message.args.isNotEmpty()) {
-                            com.yenaly.yenaly_libs.utils.application.getString(message.resId, *message.args.toTypedArray())
+                            com.yenaly.yenaly_libs.utils.application.getString(
+                                message.resId,
+                                *message.args.toTypedArray()
+                            )
                         } else {
                             com.yenaly.yenaly_libs.utils.application.getString(message.resId)
                         }

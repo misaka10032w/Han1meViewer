@@ -51,12 +51,12 @@ fun RetryableImage(
                 currentModel = "$model?retry=$retryCount"
             }
         },
-        contentScale = contentScale?: ContentScale.Fit
+        contentScale = contentScale ?: ContentScale.Fit
     )
 }
 
 @Composable
-fun getColumnCount(itemWidth: Int): Int{
+fun getColumnCount(itemWidth: Int): Int {
     val density = LocalDensity.current
     val windowInfo = LocalWindowInfo.current
     val screenWidthPx = windowInfo.containerSize.width

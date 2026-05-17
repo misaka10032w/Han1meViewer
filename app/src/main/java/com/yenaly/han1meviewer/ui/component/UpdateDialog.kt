@@ -29,7 +29,8 @@ import androidx.compose.ui.unit.sp
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.github.Latest
 
-private val urlPattern = Regex("(https?://[\\w-]+(\\.[\\w-]+)+([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?)")
+private val urlPattern =
+    Regex("(https?://[\\w-]+(\\.[\\w-]+)+([\\w.,@?^=%&:/~+#-]*[\\w@?^=%&/~+#-])?)")
 
 private fun cleanUrl(url: String): String {
     var cleaned = url

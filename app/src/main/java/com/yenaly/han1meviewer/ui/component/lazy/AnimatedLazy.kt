@@ -5,20 +5,17 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.lazy.LazyColumn as FoundationLazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.LazyRow as FoundationLazyRow
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridItemSpanScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid as FoundationLazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,6 +25,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.foundation.lazy.LazyColumn as FoundationLazyColumn
+import androidx.compose.foundation.lazy.LazyRow as FoundationLazyRow
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid as FoundationLazyVerticalGrid
 
 /**
  * 带通用 item 动画的 LazyColumn 封装。
@@ -297,7 +297,15 @@ class AnimatedLazyGridScope internal constructor(
         scope.items(
             count = items.size,
             key = key?.let { itemKey -> { index -> itemKey(index, items[index]) } },
-            span = span?.let { itemSpan -> { index -> itemSpan.invoke(this, index, items[index]) } },
+            span = span?.let { itemSpan ->
+                { index ->
+                    itemSpan.invoke(
+                        this,
+                        index,
+                        items[index]
+                    )
+                }
+            },
             contentType = { index -> contentType?.invoke(index, items[index]) },
         ) { index ->
             AnimatedGridItem(

@@ -50,7 +50,7 @@ class LoginActivity : FrameActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val cameraPermissionLauncher = registerForActivityResult(
+        registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted ->
             if (isGranted) {

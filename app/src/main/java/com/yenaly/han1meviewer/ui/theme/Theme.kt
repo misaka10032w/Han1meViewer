@@ -17,6 +17,7 @@ fun HanimeTheme(
     val colorScheme = when {
         preset == ThemeColorPreset.SYSTEM && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
             dynamicColorScheme(darkTheme)
+
         else -> preset.colorScheme(darkTheme)
     }
 

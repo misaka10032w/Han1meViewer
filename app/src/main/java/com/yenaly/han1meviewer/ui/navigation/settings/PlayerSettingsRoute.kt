@@ -1,7 +1,6 @@
 package com.yenaly.han1meviewer.ui.navigation.settings
 
 import android.content.Context
-import androidx.core.content.edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -9,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.core.content.edit
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.screen.settings.PlayerSettingsScreen
@@ -81,7 +81,8 @@ private fun buildPlayerSettingsUiState(context: Context): PlayerSettingsUiState 
     val currentSpeed = Preferences.playerSpeed
     val currentLongPressSpeed = Preferences.longPressSpeedTime
     val speedDisplay = HJzvdStd.speedStringArray.getOrElse(
-        HJzvdStd.speedArray.indexOfFirst { it == currentSpeed }.takeIf { it >= 0 } ?: HJzvdStd.DEF_SPEED_INDEX
+        HJzvdStd.speedArray.indexOfFirst { it == currentSpeed }.takeIf { it >= 0 }
+            ?: HJzvdStd.DEF_SPEED_INDEX
     ) { HJzvdStd.speedStringArray[HJzvdStd.DEF_SPEED_INDEX] }
     val longPressDisplay = context.getString(R.string.d_speed_times, currentLongPressSpeed)
     return PlayerSettingsUiState(

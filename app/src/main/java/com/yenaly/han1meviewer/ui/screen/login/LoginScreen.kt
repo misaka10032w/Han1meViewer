@@ -151,6 +151,7 @@ fun LoginScreenPreview() {
         )
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 private fun LoginDialogPreview() {

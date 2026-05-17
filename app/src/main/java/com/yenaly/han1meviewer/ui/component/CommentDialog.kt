@@ -58,7 +58,7 @@ internal fun CommentReplyBar(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .padding(8.dp)
-    ){
+    ) {
         Surface(
             modifier = modifier.fillMaxWidth(),
             shape = RoundedCornerShape(28.dp),
@@ -104,6 +104,7 @@ internal fun CommentReplyBar(
         }
     }
 }
+
 @Composable
 internal fun CommentReportDialog(
     reportReasons: List<ReportReason>,

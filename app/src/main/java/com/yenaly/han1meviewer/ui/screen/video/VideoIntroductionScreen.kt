@@ -71,15 +71,15 @@ import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
-import com.yenaly.han1meviewer.ui.preview.ComponentPreview
-import com.yenaly.han1meviewer.ui.component.content.EmptyContent
-import com.yenaly.han1meviewer.ui.component.content.ErrorContent
 import com.yenaly.han1meviewer.ui.component.ExpandableRichText
-import com.yenaly.han1meviewer.ui.component.content.LoadingContent
 import com.yenaly.han1meviewer.ui.component.TagChipGroup
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
+import com.yenaly.han1meviewer.ui.component.content.EmptyContent
+import com.yenaly.han1meviewer.ui.component.content.ErrorContent
+import com.yenaly.han1meviewer.ui.component.content.LoadingContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.component.lazy.LazyRow
+import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.preview.fakeVideoIntroduction
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.datetime.LocalDate
@@ -316,7 +316,12 @@ private fun VideoIntroductionContent(
         modifier = Modifier
             .fillMaxSize()
             .nestedScroll(nestedScrollInterop),
-        contentPadding = PaddingValues(start = 6.dp, top = 12.dp, end = 6.dp, bottom = 24.dp + bottomInset),
+        contentPadding = PaddingValues(
+            start = 6.dp,
+            top = 12.dp,
+            end = 6.dp,
+            bottom = 24.dp + bottomInset
+        ),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         video.artist?.let { artist ->
@@ -559,13 +564,16 @@ private fun QuickCheckInDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    val time = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                    val time = java.time.LocalTime.now()
+                        .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
                     val sep = "\u001E"
                     val record = CheckInRecordEntity(
                         date = java.time.LocalDate.now().toString(),
                         time = time,
                         type = com.yenaly.han1meviewer.logic.entity.CheckInType.MASTURBATION.storeName,
-                        sideDishes = "${video.title}$sep${video.playlist?.video?.firstOrNull { it.isPlaying }?.videoCode ?: ""}".removeSuffix(sep),
+                        sideDishes = "${video.title}$sep${video.playlist?.video?.firstOrNull { it.isPlaying }?.videoCode ?: ""}".removeSuffix(
+                            sep
+                        ),
                         feeling = feeling,
                     )
                     onConfirm(record)
@@ -608,7 +616,8 @@ private fun MyListDialog(
                             .toggleable(
                                 value = selectedStates[index],
                                 onValueChange = { checked ->
-                                    selectedStates = selectedStates.toMutableList().also { it[index] = checked }
+                                    selectedStates =
+                                        selectedStates.toMutableList().also { it[index] = checked }
                                 },
                             )
                             .padding(vertical = 4.dp),

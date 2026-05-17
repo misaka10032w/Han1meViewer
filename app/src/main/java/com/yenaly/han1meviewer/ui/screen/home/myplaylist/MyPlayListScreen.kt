@@ -57,10 +57,10 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.Playlists
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.LoadMoreFooter
 import com.yenaly.han1meviewer.ui.component.PlaylistItem
 import com.yenaly.han1meviewer.ui.component.PullRefreshOverlay
+import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.screen.getColumnCount
@@ -75,7 +75,7 @@ fun MyPlayListScreen(
     navigateBack: () -> Unit,
     onClickItem: (String) -> Unit,
     onLongClickItem: (String, String) -> Unit,
-){
+) {
     val state by viewModel.myPlaylistsFlow.collectAsState()
     val playlists by viewModel.cachedMyPlayList.collectAsState()
     val scrollBehavior = pinnedScrollBehavior(rememberTopAppBarState())
@@ -145,7 +145,8 @@ fun MyPlayListScreen(
             FilledIconButton(onClick = {
                 context.showAlertDialog {
                     setTitle(R.string.create_new_playlist)
-                    val etView = View.inflate(context, R.layout.dialog_playlist_modify_edit_text, null)
+                    val etView =
+                        View.inflate(context, R.layout.dialog_playlist_modify_edit_text, null)
                     val etTitle = etView.findViewById<EditText>(R.id.et_title)
                     val etDesc = etView.findViewById<EditText>(R.id.et_desc)
                     setView(etView)
@@ -192,7 +193,7 @@ fun MyPlayListScreen(
                             onLoadNextPage = {
                                 viewModel.loadMyPlayList(viewModel.playlistPage + 1)
                             }
-                        ){ listCode, playListTitle ->
+                        ) { listCode, playListTitle ->
                             selectedListCode.value = listCode
                             viewModel.setShowSheet(true)
                             listTitle.value = playListTitle
@@ -220,7 +221,7 @@ fun MyPlayListScreen(
                             onLoadNextPage = {
                                 viewModel.loadMyPlayList(viewModel.playlistPage + 1)
                             }
-                        ){ listCode, playListTitle ->
+                        ) { listCode, playListTitle ->
                             selectedListCode.value = listCode
                             viewModel.setShowSheet(true)
                             listTitle.value = playListTitle
@@ -259,12 +260,12 @@ fun MyPlayListScreen(
                         viewModel.setShowSheet(false)
                         viewModel.currentPage = 1
                         viewModel.clearCurrentList()
-                                },
+                    },
                     playListTitle = listTitle.value,
                     onClickItem = { item ->
                         temporarilyHideSheetForNavigation = true
                         onClickItem(item)
-                                   } ,
+                    },
                     onLongClickItem = onLongClickItem,
                     vm = viewModel,
                     context = context
@@ -299,11 +300,11 @@ fun AnimatedPageContent(
                 noMorePlaylists
             )
         }
-        .collect { (shouldLoad, loading, noMore) ->
-            if (shouldLoad && !loading && !noMore) {
-                onLoadNextPage()
+            .collect { (shouldLoad, loading, noMore) ->
+                if (shouldLoad && !loading && !noMore) {
+                    onLoadNextPage()
+                }
             }
-        }
     }
 
     AnimatedContent(
@@ -338,7 +339,7 @@ fun AnimatedPageContent(
             }
 
             is WebsiteState.Success -> {
-                if (target.info.playlists.isEmpty() && playlists.isEmpty()){
+                if (target.info.playlists.isEmpty() && playlists.isEmpty()) {
                     EmptyContent(stringResource(R.string.empty_content))
                     return@AnimatedContent
                 }
@@ -358,14 +359,14 @@ fun AnimatedPageContent(
                             onPlaylistClick(playlist.listCode, playlist.title)
                         }
                     }
-                    if (playlists.isNotEmpty()){
-                        item(span = { GridItemSpan(maxLineSpan) }){
+                    if (playlists.isNotEmpty()) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
                             LoadMoreFooter(
                                 state = when (state) {
                                     is WebsiteState.Loading -> PageLoadingState.Loading
                                     is WebsiteState.Error -> PageLoadingState.Error(state.throwable)
                                     is WebsiteState.Success<Playlists> -> {
-                                        if (state.info.playlists.isEmpty()){
+                                        if (state.info.playlists.isEmpty()) {
                                             PageLoadingState.NoMoreData
                                         } else {
                                             PageLoadingState.Success(Unit)
@@ -385,11 +386,11 @@ fun AnimatedPageContent(
 
 @Preview
 @Composable
-fun MyPlaylistScreenPreview(){
+fun MyPlaylistScreenPreview() {
     MyPlayListScreen(
         viewModel = viewModel(),
         onClickItem = {},
-        onLongClickItem = {_,_->
+        onLongClickItem = { _, _ ->
         },
         navigateBack = {}
     )

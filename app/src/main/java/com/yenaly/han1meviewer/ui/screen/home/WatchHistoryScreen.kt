@@ -140,7 +140,10 @@ private fun WatchHistoryScreen(
                     contentDescription = stringResource(R.string.help),
                 )
             }
-            FilledIconButton(onClick = { showDeleteAllDialog = true }, enabled = histories.isNotEmpty()) {
+            FilledIconButton(
+                onClick = { showDeleteAllDialog = true },
+                enabled = histories.isNotEmpty()
+            ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_baseline_delete_24),
                     contentDescription = stringResource(R.string.watch_history_clear_all),
@@ -189,8 +192,10 @@ private fun WatchHistoryCard(
 ) {
     val fixTimestamp = { ts: Long -> if (ts < 9999999999L) ts * 1000 else ts }
     val dateFormatter = remember { SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()) }
-    val watchDate = remember(history.watchDate) { dateFormatter.format(Date(fixTimestamp(history.watchDate))) }
-    val releaseDate = remember(history.releaseDate) { dateFormatter.format(Date(fixTimestamp(history.releaseDate))) }
+    val watchDate =
+        remember(history.watchDate) { dateFormatter.format(Date(fixTimestamp(history.watchDate))) }
+    val releaseDate =
+        remember(history.releaseDate) { dateFormatter.format(Date(fixTimestamp(history.releaseDate))) }
     val progressMinutes = remember(history.progress) { history.progress / 60_000 }
 
     ElevatedCard(
@@ -226,7 +231,10 @@ private fun WatchHistoryCard(
                         modifier = Modifier.align(Alignment.BottomStart)
                     ) {
                         Text(
-                            text = stringResource(R.string.watch_history_minutes_short, progressMinutes),
+                            text = stringResource(
+                                R.string.watch_history_minutes_short,
+                                progressMinutes
+                            ),
                             style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                         )
@@ -271,12 +279,19 @@ private fun WatchHistoryCard(
                     label = stringResource(R.string.watch_history_released_at, releaseDate),
                 )
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
                     horizontalArrangement = Arrangement.End
                 ) {
                     AssistChip(
                         onClick = onClick,
-                        label = { Text(stringResource(R.string.watch_history_resume_watch), style = MaterialTheme.typography.labelMedium) },
+                        label = {
+                            Text(
+                                stringResource(R.string.watch_history_resume_watch),
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        },
                         leadingIcon = {
                             Icon(
                                 painter = painterResource(R.drawable.ic_baseline_history_24),

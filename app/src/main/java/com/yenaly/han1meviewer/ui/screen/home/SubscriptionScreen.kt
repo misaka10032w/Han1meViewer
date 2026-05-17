@@ -51,10 +51,10 @@ import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.ArtistItem
-import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.LoadMoreFooter
 import com.yenaly.han1meviewer.ui.component.PullRefreshOverlay
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
+import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.preview.fakeArtists
@@ -192,6 +192,7 @@ fun SubscriptionApp(
         }
     }
 }
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SubscriptionPageContent(
@@ -279,10 +280,20 @@ fun SubscriptionPageContent(
                 onLongClickVideosItem = onLongClickVideosItem
             )
         }
-        if (videos.isNotEmpty()){
-            item(span = { GridItemSpan(maxLineSpan) }){
-                var loadState by remember { mutableStateOf<PageLoadingState<*>>(PageLoadingState.Success(emptyList<String>())) }
-                LoadMoreFooter(state = loadState, isLoadingMore = canLoadMore, loadedPage = currentPage)
+        if (videos.isNotEmpty()) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                var loadState by remember {
+                    mutableStateOf<PageLoadingState<*>>(
+                        PageLoadingState.Success(
+                            emptyList<String>()
+                        )
+                    )
+                }
+                LoadMoreFooter(
+                    state = loadState,
+                    isLoadingMore = canLoadMore,
+                    loadedPage = currentPage
+                )
             }
         }
     }
@@ -326,6 +337,7 @@ fun AnimatedPageContent(
 fun SubscriptionAppPreview() {
     MaterialTheme { SubscriptionAppPreviewBody() }
 }
+
 @Composable
 fun SubscriptionAppPreviewBody() {
     val scrollBehavior = pinnedScrollBehavior(rememberTopAppBarState())
@@ -353,8 +365,8 @@ fun SubscriptionAppPreviewBody() {
                 canLoadMore = false,
                 artists = fakeArtists,
                 onClickArtist = {},
-                onLongClickVideosItem = {_,_->},
-                onLongClickArtist = {_->}
+                onLongClickVideosItem = { _, _ -> },
+                onLongClickArtist = { _ -> }
             )
         }
     }

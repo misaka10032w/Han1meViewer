@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
+import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import kotlinx.coroutines.delay
 
 /**
@@ -77,7 +77,7 @@ fun LoadMoreFooter(
                 )
             }
 
-            state is PageLoadingState.Success<*> -> { }
+            state is PageLoadingState.Success<*> -> {}
 
             state is PageLoadingState.Error -> {
                 Text(
