@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -315,7 +316,11 @@ fun SearchScreen(
     // 返回键：有焦点时先关键盘
     BackHandler(enabled = isSearchFocused) { focusMgr.clearFocus(); kb?.hide() }
 
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         SearchAppBar(searchQuery, { searchQuery = it }, onSearch = {
             val q = searchQuery.trim()
             val shouldSearch = q.isNotBlank() || hasAdvancedFilters()
@@ -517,7 +522,10 @@ fun SearchHistoryList(
         visible = histories.isNotEmpty(),
         enter = fadeIn() + slideInVertically { -it / 2 },
         exit = fadeOut() + slideOutVertically { -it / 2 }) {
-        Column(modifier = modifier) {
+        Column(
+            modifier = modifier
+            .background(MaterialTheme.colorScheme.background
+            )) {
             histories.forEach { h ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
