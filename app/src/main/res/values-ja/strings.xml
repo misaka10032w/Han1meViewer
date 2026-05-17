@@ -689,4 +689,15 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
         <item>顔が赤くなるキーワードは？</item>
         <item>真夜中の好奇心を満たす…</item>
     </string-array>
+    <string name="theme_color">テーマカラー</string>
+    <string name="theme_color_system">システムに従う</string>
+    <string name="theme_color_default">クリムゾンレッド</string>
+    <string name="theme_color_blue">アズールブルー</string>
+    <string name="theme_color_light_green">エメラルドグリーン</string>
+    <string name="theme_color_purple">ロイヤルパープル</string>
+    <string name="theme_color_pink">ブロッサムピンク</string>
+    <string name="theme_color_orange">サンセットオレンジ</string>
+    <string name="theme_color_teal">ミントティール</string>
+    <string name="theme_color_yellow">ゴールデンイエロー</string>
+    <string name="theme_color_high_contrast">ハイコントラスト</string>
 </resources>

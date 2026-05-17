@@ -87,6 +87,7 @@ import com.yenaly.han1meviewer.ui.screen.settings.NetworkSettingsUiState
 import com.yenaly.han1meviewer.ui.screen.settings.PlayerSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.PlayerSettingsUiState
 import com.yenaly.han1meviewer.ui.screen.settings.SharedHKeyframesScreen
+import com.yenaly.han1meviewer.ui.theme.ThemeColorPreset
 import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
 import com.yenaly.han1meviewer.ui.view.video.HMediaKernel
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
@@ -140,6 +141,7 @@ private const val HOME_TABLET_MODE = "tablet_mode"
 private const val HOME_DISABLE_COMMENTS = "disable_comments"
 private const val HOME_USE_LOCK_SCREEN = "use_lock_screen"
 private const val HOME_APP_LANGUAGE = "app_language"
+private const val HOME_THEME_COLOR = "theme_color"
 
 private const val PLAYER_SWITCH_PLAYER_KERNEL = "switch_player_kernel"
 private const val PLAYER_SHOW_BOTTOM_PROGRESS = "show_bottom_progress"
@@ -332,28 +334,10 @@ fun HomeSettingsRouteScreen(
             saveBoolean(HOME_COLLAPSE_DOWNLOADED_GROUP, it)
             refreshKey++
         },
-        onUseDynamicColorChange = { value ->
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return@HomeSettingsScreen
-            if (value != Preferences.useDynamicColor) {
-                saveBoolean(HOME_USE_DYNAMIC_COLOR, value)
-                refreshKey++
-                context.showAlertDialog {
-                    setCancelable(false)
-                    setTitle(R.string.attention)
-                    setMessage(
-                        context.getString(
-                            R.string.restart_or_not_working,
-                            context.getString(R.string.dynamic_color_title)
-                        )
-                    )
-                    setPositiveButton(R.string.confirm) { _, _ ->
-                        ActivityManager.restart(
-                            killProcess = true
-                        )
-                    }
-                    setNegativeButton(R.string.cancel, null)
-                }
-            }
+        onThemeColorChange = { key ->
+            saveString(HOME_THEME_COLOR, key)
+            refreshKey++
+            activity.recreate()
         },
         onUseCIUpdateChannelChange = { value ->
             saveBoolean(HOME_USE_CI_UPDATE_CHANNEL, value)
@@ -1043,6 +1027,8 @@ private fun buildHomeSettingsUiState(
         ),
         updatePopupIntervalDays = Preferences.updatePopupIntervalDays,
         dynamicColorEnabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
+        themeColorKey = Preferences.themeColor ?: ThemeColorPreset.DEFAULT.key,
+        themeColorName = context.getString(ThemeColorPreset.fromKey(Preferences.themeColor).displayNameRes),
     )
 }
 

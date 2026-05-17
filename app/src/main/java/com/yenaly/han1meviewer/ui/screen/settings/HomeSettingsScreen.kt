@@ -26,6 +26,7 @@ import com.yenaly.han1meviewer.ui.component.SettingSliderItem
 import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
+import com.yenaly.han1meviewer.ui.theme.ThemeColorPreset
 
 data class HomeSettingsUiState(
     val videoLanguage: String,
@@ -52,6 +53,8 @@ data class HomeSettingsUiState(
     val updatePopupIntervalSummary: String,
     val updatePopupIntervalDays: Int,
     val dynamicColorEnabled: Boolean,
+    val themeColorKey: String,
+    val themeColorName: String,
 )
 
 private enum class HomeSettingsChoiceDialog {
@@ -59,6 +62,7 @@ private enum class HomeSettingsChoiceDialog {
     VideoQuality,
     DarkMode,
     AppLanguage,
+    ThemeColor,
 }
 
 @Composable
@@ -76,10 +80,10 @@ fun HomeSettingsScreen(
     onTabletModeChange: (Boolean) -> Unit,
     onDisableCommentsChange: (Boolean) -> Unit,
     onCollapseDownloadedGroupChange: (Boolean) -> Unit,
-    onUseDynamicColorChange: (Boolean) -> Unit,
     onUseCIUpdateChannelChange: (Boolean) -> Unit,
     onUseAnalyticsChange: (Boolean) -> Unit,
     onUseLockScreenChange: (Boolean) -> Unit,
+    onThemeColorChange: (String) -> Unit,
     onOpenPlayerSettings: () -> Unit,
     onOpenHKeyframeSettings: () -> Unit,
     onOpenDownloadSettings: () -> Unit,
@@ -155,6 +159,18 @@ fun HomeSettingsScreen(
         onSelect = {
             activeDialog = null
             onOpenAppLanguageSettings(it)
+        },
+    )
+
+    ChoiceDialog(
+        visible = activeDialog == HomeSettingsChoiceDialog.ThemeColor,
+        title = stringResource(R.string.theme_color),
+        options = ThemeColorPreset.entries.map { stringResource(it.displayNameRes) to it.key },
+        selectedValue = state.themeColorKey,
+        onDismiss = { activeDialog = null },
+        onSelect = {
+            activeDialog = null
+            onThemeColorChange(it)
         },
     )
 
@@ -312,13 +328,11 @@ fun HomeSettingsScreen(
             )
         }
         item {
-            SettingSwitchItem(
-                title = stringResource(R.string.dynamic_color_title),
-                summary = stringResource(R.string.dynamic_color_summary),
-                checked = state.useDynamicColor,
+            SettingNavigationItem(
+                title = stringResource(R.string.theme_color),
+                valueText = state.themeColorName,
                 iconRes = R.drawable.ic_baseline_theme_24,
-                onCheckedChange = onUseDynamicColorChange,
-                modifier = Modifier,
+                onClick = { activeDialog = HomeSettingsChoiceDialog.ThemeColor },
             )
         }
         item {
@@ -473,6 +487,8 @@ private fun HomeSettingsScreenPreview() {
                 updatePopupIntervalSummary = "7天\n最近還沒跳出過更新視窗哦",
                 updatePopupIntervalDays = 7,
                 dynamicColorEnabled = true,
+                themeColorKey = "default",
+                themeColorName = "預設（暖紅）",
             ),
             onVideoLanguageChange = {},
             onVideoQualityChange = {},
@@ -486,10 +502,10 @@ private fun HomeSettingsScreenPreview() {
             onTabletModeChange = {},
             onDisableCommentsChange = {},
             onCollapseDownloadedGroupChange = {},
-            onUseDynamicColorChange = {},
             onUseCIUpdateChannelChange = {},
             onUseAnalyticsChange = {},
             onUseLockScreenChange = {},
+            onThemeColorChange = {},
             onOpenPlayerSettings = {},
             onOpenHKeyframeSettings = {},
             onOpenDownloadSettings = {},

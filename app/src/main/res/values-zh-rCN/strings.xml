@@ -689,4 +689,15 @@
         <item>脸红的关键词是什么？</item>
         <item>深夜好奇点什么…</item>
     </string-array>
+    <string name="theme_color">主题色</string>
+    <string name="theme_color_system">跟随系统</string>
+    <string name="theme_color_default">姨妈红</string>
+    <string name="theme_color_blue">胖次蓝</string>
+    <string name="theme_color_light_green">早苗绿</string>
+    <string name="theme_color_purple">基佬紫</string>
+    <string name="theme_color_pink">少女粉</string>
+    <string name="theme_color_orange">橙留香</string>
+    <string name="theme_color_teal">初音蓝(绿)</string>
+    <string name="theme_color_yellow">咸蛋黄</string>
+    <string name="theme_color_high_contrast">高对比</string>
 </resources>

@@ -729,4 +729,16 @@
         <item>臉紅的關鍵詞是什麼？</item>
         <item>深夜好奇點什麼…</item>
     </string-array>
+
+    <string name="theme_color">主題色</string>
+    <string name="theme_color_system">跟隨系統</string>
+    <string name="theme_color_default">（預設）姨媽紅</string>
+    <string name="theme_color_blue">胖次藍</string>
+    <string name="theme_color_light_green">早苗綠</string>
+    <string name="theme_color_purple">基佬紫</string>
+    <string name="theme_color_pink">少女粉</string>
+    <string name="theme_color_orange">橙留香</string>
+    <string name="theme_color_teal">初音藍(綠)</string>
+    <string name="theme_color_yellow">鹹蛋黃</string>
+    <string name="theme_color_high_contrast">高對比</string>
 </resources>

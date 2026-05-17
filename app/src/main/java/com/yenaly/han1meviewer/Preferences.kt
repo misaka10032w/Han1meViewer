@@ -220,6 +220,8 @@ object Preferences {
         get() = preferenceSp.getString(SettingsPreferenceKeys.USE_DARK_MODE,"always_off") ?: "always_off"
     val useDynamicColor: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.USE_DYNAMIC_COLOR,false)
+    val themeColor: String?
+        get() = preferenceSp.getString(SettingsPreferenceKeys.THEME_COLOR, null)
     val allowResumePlayback: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.ALLOW_RESUME_PLAYBACK,true)
 

@@ -66,7 +66,7 @@ fun PlaylistItem(
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .background(Color.Black.copy(alpha = 0.5f), shape = RoundedCornerShape(topStart = 8.dp))
+                        .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f), shape = RoundedCornerShape(topStart = 8.dp))
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                 ) {
                     Text(

@@ -684,4 +684,15 @@ Recommendations are as follows:\n
         <item>What\'s the keyword that makes you blush?</item>
         <item>Midnight curiosity starts here…</item>
     </string-array>
+    <string name="theme_color">Theme Color</string>
+    <string name="theme_color_system">Follow System</string>
+    <string name="theme_color_default">Crimson Red</string>
+    <string name="theme_color_blue">Azure Blue</string>
+    <string name="theme_color_light_green">Emerald Green</string>
+    <string name="theme_color_purple">Royal Purple</string>
+    <string name="theme_color_pink">Blossom Pink</string>
+    <string name="theme_color_orange">Sunset Orange</string>
+    <string name="theme_color_teal">Mint Teal</string>
+    <string name="theme_color_yellow">Golden Yellow</string>
+    <string name="theme_color_high_contrast">High Contrast</string>
 </resources>

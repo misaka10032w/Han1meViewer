@@ -3,6 +3,7 @@ package com.yenaly.han1meviewer.ui.component
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -19,10 +20,13 @@ import kotlinx.coroutines.delay
 fun Modifier.verticalScrollbar(
     state: LazyListState,
     width: Dp = 4.dp,
-    color: Color = Color.Gray.copy(alpha = 0.5f),
+    color: Color = Color.Unspecified,
     fadeDelayMillis: Long = 1500,
     fadeOutDurationMillis: Int = 500
 ): Modifier = composed {
+    val resolvedColor = if (color == Color.Unspecified)
+        LocalContentColor.current.copy(alpha = 0.4f)
+    else color
     val alpha = remember { Animatable(0f) }
 
     LaunchedEffect(state.isScrollInProgress) {
@@ -51,7 +55,7 @@ fun Modifier.verticalScrollbar(
             val scrollbarHeight = visibleItemsInfo.size * elementHeight
 
             drawRoundRect(
-                color = color.copy(alpha = color.alpha * alpha.value),
+                color = resolvedColor.copy(alpha = resolvedColor.alpha * alpha.value),
                 topLeft = Offset(size.width - width.toPx(), scrollbarOffsetY),
                 size = Size(width.toPx(), scrollbarHeight),
                 cornerRadius = CornerRadius(width.toPx() / 2)
