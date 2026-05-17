@@ -38,6 +38,7 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.LoadMoreFooter
+import com.yenaly.han1meviewer.ui.component.PageContent
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.content.ErrorContent
@@ -169,21 +170,29 @@ internal fun MyListVideoGridScreen(
                 )
             }
         ) {
-            when {
-                isError -> ErrorContent(
-                    title = stringResource(R.string.load_failed_retry),
-                    onRetry = {
-                        pendingRefresh = true
-                        onRefresh()
-                    },
-                    modifier = Modifier.align(Alignment.Center),
-                )
-
-                isEmpty -> EmptyContent(
-                    hint = stringResource(R.string.empty_content),
-                )
-
-                else -> MyListVideoGrid(
+            PageContent(
+                isLoading = false,
+                isError = isError,
+                isEmpty = isEmpty,
+                onRetry = {
+                    pendingRefresh = true
+                    onRefresh()
+                },
+                error = {
+                    ErrorContent(
+                        title = stringResource(R.string.load_failed_retry),
+                        onRetry = {
+                            pendingRefresh = true
+                            onRefresh()
+                        },
+                        modifier = Modifier.align(Alignment.Center),
+                    )
+                },
+                empty = {
+                    EmptyContent(hint = stringResource(R.string.empty_content))
+                },
+            ) {
+                MyListVideoGrid(
                     items = items,
                     gridState = gridState,
                     loadedPageCount = loadedPageCount,

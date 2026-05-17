@@ -43,6 +43,7 @@ import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.CommentReplyBar
 import com.yenaly.han1meviewer.ui.component.CommentReportDialog
+import com.yenaly.han1meviewer.ui.component.PageContent
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.content.ErrorContent
@@ -195,34 +196,33 @@ fun ChildCommentScreen(
                 )
             }
 
-            when {
-                state is WebsiteState.Loading && sortedComments.isEmpty() -> {
+            val initialLoading = state is WebsiteState.Loading && sortedComments.isEmpty()
+            val initialError = state is WebsiteState.Error && sortedComments.isEmpty()
+
+            PageContent(
+                isLoading = initialLoading,
+                isError = initialError,
+                isEmpty = sortedComments.isEmpty(),
+                errorMessage = (state as? WebsiteState.Error)?.throwable?.message ?: "",
+                onRetry = onRefresh,
+                loading = {
                     LoadingContent(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 24.dp),
+                        modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
                         message = stringResource(R.string.loading),
                     )
-                }
-
-                state is WebsiteState.Error && sortedComments.isEmpty() -> {
+                },
+                error = {
                     ErrorContent(
                         title = stringResource(R.string.load_reply_failed),
                         message = (state as WebsiteState.Error).throwable.message,
                         onRetry = onRefresh,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 24.dp),
+                        modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
                     )
-                }
-
-                sortedComments.isEmpty() -> {
-                    EmptyContent(
-                        hint = stringResource(R.string.comment_not_found)
-                    )
-                }
-
-                else -> {
+                },
+                empty = {
+                    EmptyContent(hint = stringResource(R.string.comment_not_found))
+                },
+            ) {
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
@@ -268,7 +268,6 @@ fun ChildCommentScreen(
                 }
             }
         }
-    }
 
     if (reportComment != null) {
         CommentReportDialog(

@@ -62,6 +62,7 @@ import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.CommentReplyBar
 import com.yenaly.han1meviewer.ui.component.CommentReportDialog
+import com.yenaly.han1meviewer.ui.component.PageContent
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.content.ErrorContent
 import com.yenaly.han1meviewer.ui.component.VideoCommentCard
@@ -249,32 +250,34 @@ fun CommentScreen(
                         )
                     }
                 ) {
-                    when {
-                        state is WebsiteState.Error && sortedComments.isEmpty() -> {
+                    val loadError = state is WebsiteState.Error && sortedComments.isEmpty()
+                    PageContent(
+                        isLoading = false,
+                        isError = loadError,
+                        isEmpty = sortedComments.isEmpty(),
+                        errorMessage = (state as? WebsiteState.Error)?.throwable?.message ?: "",
+                        onRetry = onRefresh,
+                        error = {
                             ErrorContent(
                                 title = stringResource(R.string.load_failed_retry),
                                 message = (state as WebsiteState.Error).throwable.message,
                                 onRetry = onRefresh,
-                                modifier = Modifier
-                                    .align(Alignment.Center)
-                                    .padding(16.dp),
+                                modifier = Modifier.align(Alignment.Center).padding(16.dp),
                             )
-                        }
-
-                        sortedComments.isEmpty() -> {
+                        },
+                        empty = {
                             EmptyContent(
                                 hint = stringResource(R.string.comment_not_found),
                                 subHint = latestReportMessage ?: ""
                             )
-                        }
-
-                        else -> {
-                            LazyColumn(
-                                state = listState,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .nestedScroll(nestedScrollInterop),
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+                        },
+                    ) {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .nestedScroll(nestedScrollInterop),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
                                 if (sortedComments.size >= 3) {
@@ -350,8 +353,6 @@ fun CommentScreen(
                         }
                     }
                 }
-
-            }
             AnimatedVisibility(
                 visible = replyingComment != null || showComposeDialog,
                 modifier = Modifier
