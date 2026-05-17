@@ -47,7 +47,8 @@ fun MainNavHost(
 
     val onBack: () -> Unit = { navController.popBackStack() }
     val onNavigateToVideo: (String) -> Unit = { code -> navController.navigate(VideoRoute(code)) }
-    val onNavigateToLocalVideo: (String, String?) -> Unit = { code, uri -> navController.navigate(VideoRoute(code, uri)) }
+    val onNavigateToLocalVideo: (String, String?) -> Unit =
+        { code, uri -> navController.navigate(VideoRoute(code, uri)) }
 
     LaunchedEffect(destinationSpec) {
         destinationSpec?.let(onDestinationChanged)
