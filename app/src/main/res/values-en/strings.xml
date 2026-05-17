@@ -223,7 +223,6 @@
     <string name="watch_history_empty_title">No watch history yet</string>
     <string name="watch_history_empty_description">Your records will appear here after you start watching videos.</string>
     <string name="watch_history_resume_watch">Resume watching</string>
-    <string name="watch_history_minutes_short" translatable="false">%1$dm</string>
     <string name="watch_history_watched_at">Watched at %1$s</string>
     <string name="watch_history_released_at">Released at %1$s</string>
     <string name="watch_history_progress_minutes">Watched for about %1$d minute(s)</string>
@@ -546,7 +545,6 @@ Recommendations are as follows:\n
     <string name="advanced_search_combination">Advanced Search Combination</string>
     <string name="app_tampered">This app has been maliciously tampered with! Please pay attention to information security!</string>
     <string name="download_complete">Download Complete</string>
-    <string name="download_progress_percent" translatable="false">%1$d%%</string>
     <string name="download_progress_size">%1$s / %2$s</string>
     <string name="click_to_install_update">Click to Install Update</string>
     <string name="install">Install</string>
@@ -661,20 +659,17 @@ Recommendations are as follows:\n
     <string name="permission_permanently_denied_title">Permission permanently denied</string>
     <string name="storage_permission_settings_message">Please go to Settings and enable storage permission so downloads can be saved.</string>
     <string name="storage_permission_denied_toast">Downloads cannot be saved without storage permission</string>
-    <string name="invalid_ip_or_port" translatable="false">Invalid IP(v4) or Port(0..65535)</string>
     <string name="widget_pin_not_supported_manual_add">Some ROMs do not support guided widget pinning. Please add the widget manually.</string>
-    <string name="cookies_label" translatable="false">Cookies</string>
     <string name="clarity">Clarity</string>
-    <string name="english_lang" translatable="false">English</string>
     <string name="success_value">Success: %1$s</string>
     <string name="previous_year">Previous year</string>
     <string name="next_year">Next year</string>
     <string name="previous_month">Previous month</string>
     <string name="next_month">Next month</string>
-    <string name="checkin_count_format" translatable="false">x%1$d</string>
     <string name="network_timeout_text">Time out</string>
     <string name="remove">Remove</string>
     <string name="add">Add</string>
+    <string name="paused">Suspended</string>
     <string-array name="search_placeholders">
         <item>Explore the secrets deep within…</item>
         <item>Drift with the night wind, find your solace</item>

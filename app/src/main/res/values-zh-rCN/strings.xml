@@ -223,7 +223,6 @@
     <string name="watch_history_empty_title">暂无观看历史</string>
     <string name="watch_history_empty_description">开始播放影片后，记录会出现在这里。</string>
     <string name="watch_history_resume_watch">继续观看</string>
-    <string name="watch_history_minutes_short" translatable="false">%1$dm</string>
     <string name="watch_history_watched_at">观看于 %1$s</string>
     <string name="watch_history_released_at">发布于 %1$s</string>
     <string name="watch_history_progress_minutes">已观看约 %1$d 分钟</string>
@@ -551,7 +550,6 @@
     <string name="advanced_search_combination">高级搜索组合</string>
     <string name="app_tampered">本应用已被恶意篡改！请注意信息安全！</string>
     <string name="download_complete">下载完成</string>
-    <string name="download_progress_percent" translatable="false">%1$d%%</string>
     <string name="download_progress_size">%1$s / %2$s</string>
     <string name="click_to_install_update">点击安装更新</string>
     <string name="install">安装</string>
@@ -666,20 +664,17 @@
     <string name="permission_permanently_denied_title">权限被永久拒绝</string>
     <string name="storage_permission_settings_message">请前往设置开启存储权限，以便保存下载内容。</string>
     <string name="storage_permission_denied_toast">拒绝后将无法保存下载内容</string>
-    <string name="invalid_ip_or_port" translatable="false">Invalid IP(v4) or Port(0..65535)</string>
     <string name="widget_pin_not_supported_manual_add">部分 ROM 不支持引导式添加，请手动添加小组件</string>
-    <string name="cookies_label" translatable="false">Cookies</string>
     <string name="clarity">清晰度</string>
-    <string name="english_lang" translatable="false">English</string>
     <string name="success_value">成功：%1$s</string>
     <string name="previous_year">上一年</string>
     <string name="next_year">下一年</string>
     <string name="previous_month">上个月</string>
     <string name="next_month">下个月</string>
-    <string name="checkin_count_format" translatable="false">x%1$d</string>
     <string name="network_timeout_text">超时</string>
     <string name="remove">移除</string>
     <string name="add">新增</string>
+    <string name="paused">已暂停</string>
     <string-array name="search_placeholders">
         <item>探索深处的秘密…</item>
         <item>晚风轻拂，寻找那份温柔</item>

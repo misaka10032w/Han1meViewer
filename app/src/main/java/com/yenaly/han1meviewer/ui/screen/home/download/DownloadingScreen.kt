@@ -2,29 +2,34 @@ package com.yenaly.han1meviewer.ui.screen.home.download
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -39,32 +45,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.state.DownloadState
-import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
+import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
+import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
-import kotlinx.coroutines.flow.Flow
-@Composable
-fun DownloadingScreen(
-    downloadingFlow: Flow<List<HanimeDownloadEntity>>,
-    onPauseItem: (HanimeDownloadEntity) -> Unit,
-    onResumeItem: (HanimeDownloadEntity) -> Unit,
-    onDeleteItem: (HanimeDownloadEntity) -> Unit,
-) {
-    val items by downloadingFlow.collectAsStateWithLifecycle(initialValue = emptyList())
-    DownloadingScreen(
-        items = items,
-        onPauseItem = onPauseItem,
-        onResumeItem = onResumeItem,
-        onDeleteItem = onDeleteItem,
-    )
-}
 
 @Composable
 internal fun DownloadingScreen(
@@ -122,9 +112,10 @@ private fun DownloadingItemCard(
     onPause: () -> Unit,
     onResume: () -> Unit,
     onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     ElevatedCard(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .combinedClickable(onClick = {}, onLongClick = onDelete),
         shape = RoundedCornerShape(24.dp),
@@ -132,54 +123,73 @@ private fun DownloadingItemCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 AsyncImage(
                     model = item.coverUri ?: item.coverUrl,
                     contentDescription = item.title,
-                    modifier = Modifier.size(width = 146.dp, height = 104.dp),
+                    modifier = Modifier
+                        .width(136.dp)
+                        .aspectRatio(16f / 9f)
+                        .clip(RoundedCornerShape(12.dp)),
                     contentScale = ContentScale.Crop,
                 )
 
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Text(
                         text = item.title,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
 
-                    Text(
-                        text = item.quality,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = item.quality,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
 
-                    AssistChip(
-                        onClick = {},
-                        label = { Text(itemStateText(item.state, item.progress)) },
-                        leadingIcon = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier
+                                .background(
+                                    MaterialTheme.colorScheme.secondaryContainer,
+                                    RoundedCornerShape(6.dp)
+                                )
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
                             if (item.state == DownloadState.Downloading) {
-                                LoadingIndicator(modifier = Modifier.size(25.dp))
+                                LoadingIndicator(modifier = Modifier.size(12.dp))
                             } else {
                                 Icon(
                                     painter = painterResource(itemStateIcon(item.state)),
                                     contentDescription = null,
-                                    modifier = Modifier.size(16.dp),
+                                    modifier = Modifier.size(12.dp),
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             }
-                        },
-                        colors = AssistChipDefaults.assistChipColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            labelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                        ),
-                    )
+                            Text(
+                                text = itemStateText(item.state, item.progress),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                    }
 
                     Text(
                         text = stringResource(
@@ -191,7 +201,67 @@ private fun DownloadingItemCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = stringResource(R.string.cancel_download),
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.outline
+                        )
+                    }
+
+                    when (item.state) {
+                        DownloadState.Downloading -> {
+                            FilledTonalIconButton(
+                                onClick = onPause,
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_baseline_pause_24),
+                                    contentDescription = stringResource(R.string.pause_all),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        DownloadState.Paused,
+                        DownloadState.Queued,
+                        DownloadState.Unknown -> {
+                            FilledTonalIconButton(
+                                onClick = onResume,
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.PlayArrow,
+                                    contentDescription = stringResource(R.string.continues),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        DownloadState.Failed -> {
+                            FilledTonalIconButton(
+                                onClick = onResume,
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = stringResource(R.string.retry),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        DownloadState.Finished -> Unit
+                    }
+                }
             }
+
             val animatedProgress by animateFloatAsState(
                 targetValue = item.progress / 100f,
                 animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
@@ -200,38 +270,6 @@ private fun DownloadingItemCard(
                 progress = { animatedProgress },
                 modifier = Modifier.fillMaxWidth(),
             )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End),
-            ) {
-                TextButton(onClick = onDelete) {
-                    Text(stringResource(R.string.cancel_download))
-                }
-                when (item.state) {
-                    DownloadState.Downloading -> {
-                        TextButton(onClick = onPause) {
-                            Text(stringResource(R.string.pause_all))
-                        }
-                    }
-
-                    DownloadState.Paused,
-                    DownloadState.Queued,
-                    DownloadState.Failed,
-                    DownloadState.Unknown -> {
-                        TextButton(onClick = onResume) {
-                            Text(
-                                when (item.state) {
-                                    DownloadState.Failed -> stringResource(R.string.retry)
-                                    else -> stringResource(R.string.continues)
-                                }
-                            )
-                        }
-                    }
-
-                    DownloadState.Finished -> Unit
-                }
-            }
         }
     }
 }
@@ -241,7 +279,7 @@ private fun itemStateText(state: DownloadState, progress: Int): String {
     return when (state) {
         DownloadState.Queued -> stringResource(R.string.already_in_queue)
         DownloadState.Downloading -> stringResource(R.string.download_progress_percent, progress)
-        DownloadState.Paused -> stringResource(R.string.continues)
+        DownloadState.Paused -> stringResource(R.string.paused)
         DownloadState.Failed -> stringResource(R.string.retry)
         DownloadState.Finished -> stringResource(R.string.download_complete)
         DownloadState.Unknown -> stringResource(R.string.loading)

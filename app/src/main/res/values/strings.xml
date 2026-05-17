@@ -714,6 +714,7 @@
     <string name="network_timeout_text">逾時</string>
     <string name="remove">移除</string>
     <string name="add">新增</string>
+    <string name="paused">已暫停</string>
     <string-array name="search_placeholders">
         <item>探索深處的秘密…</item>
         <item>晚風輕拂，尋找那份溫柔</item>
