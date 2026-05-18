@@ -61,7 +61,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -639,7 +638,7 @@ fun AnnouncementListDialog(
     announcements: List<Announcement>,
     onDismiss: () -> Unit
 ) {
-    var expandedIndex by remember { mutableIntStateOf(-1) }
+    var selectedAnnouncement by remember { mutableStateOf<Announcement?>(null) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -657,13 +656,9 @@ fun AnnouncementListDialog(
             ) {
                 items(announcements.size) { index ->
                     val item = announcements[index]
-                    val isExpanded = expandedIndex == index
-
                     Surface(
-                        color = if (isExpanded) MaterialTheme.colorScheme.surfaceContainerHigh
-                        else MaterialTheme.colorScheme.surface,
+                        color = MaterialTheme.colorScheme.surface,
                         shape = RoundedCornerShape(8.dp),
-                        tonalElevation = if (isExpanded) 2.dp else 0.dp,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 2.dp)
@@ -671,26 +666,14 @@ fun AnnouncementListDialog(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable {
-                                    expandedIndex = if (isExpanded) -1 else index
-                                }
+                                .clickable { selectedAnnouncement = item }
                                 .padding(12.dp)
                         ) {
                             Text(
                                 text = item.title,
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Medium,
-                                maxLines = if (isExpanded) Int.MAX_VALUE else 1,
-                                overflow = TextOverflow.Ellipsis
                             )
-                            if (isExpanded) {
-                                Spacer(Modifier.height(8.dp))
-                                Text(
-                                    text = item.content,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
                         }
                     }
                 }
@@ -706,6 +689,13 @@ fun AnnouncementListDialog(
             )
         }
     )
+
+    selectedAnnouncement?.let { announcement ->
+        AnnouncementDialog(
+            announcementData = announcement,
+            onDismiss = { selectedAnnouncement = null },
+        )
+    }
 }
 
 /**
