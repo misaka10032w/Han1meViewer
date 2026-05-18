@@ -95,6 +95,7 @@ import com.yenaly.han1meviewer.logic.model.Announcement
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HomePage
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.ui.component.AnnouncementDialog
 import com.yenaly.han1meviewer.ui.component.PullRefreshOverlay
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.component.content.ErrorContent
@@ -957,7 +958,7 @@ fun HomePageScreen(
     onOpenVideo: (String) -> Unit,
     onLongPressVideoCopy: (String, String) -> Unit,
     onShowExitDialog: () -> Unit,
-    onShowAnnouncementDialog: (String, String, String?) -> Unit,
+    onShowAnnouncementDialog: (Announcement) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.homePageFlow.collectAsStateWithLifecycle()
@@ -1050,11 +1051,7 @@ fun HomePageScreen(
                                     videoCode?.let { onOpenVideo(it) }
                                 },
                                 onAnnouncementClick = { announcement ->
-                                    onShowAnnouncementDialog(
-                                        announcement.title,
-                                        announcement.content,
-                                        announcement.imageUrl
-                                    )
+                                    onShowAnnouncementDialog(announcement)
                                 },
                                 onCloseAnnouncement = {
                                     putSpValue(
