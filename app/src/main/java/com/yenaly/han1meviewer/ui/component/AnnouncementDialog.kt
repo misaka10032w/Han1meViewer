@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.component
 
 import android.content.ContentValues
+import android.content.Context
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Environment
@@ -41,6 +42,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -52,6 +54,8 @@ import coil3.request.crossfade
 import coil3.toBitmap
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.Announcement
+import com.yenaly.han1meviewer.ui.preview.ComponentPreview
+import com.yenaly.han1meviewer.ui.preview.fakeAnnouncements
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -205,7 +209,7 @@ fun AnnouncementDialog(
     }
 }
 
-private suspend fun saveImageToGallery(context: android.content.Context, imageUrl: String) {
+private suspend fun saveImageToGallery(context: Context, imageUrl: String) {
     val loader = SingletonImageLoader.get(context)
     val request = ImageRequest.Builder(context)
         .data(imageUrl)
@@ -234,5 +238,16 @@ private suspend fun saveImageToGallery(context: android.content.Context, imageUr
     fos?.use { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }
     withContext(Dispatchers.Main) {
         Toast.makeText(context, context.getString(R.string.saved), Toast.LENGTH_SHORT).show()
+    }
+}
+
+@Preview
+@Composable
+private fun AnnouncementDialogPreview(){
+    ComponentPreview {
+        AnnouncementDialog(
+            announcementData = fakeAnnouncements[1],
+            onDismiss = { }
+        )
     }
 }
