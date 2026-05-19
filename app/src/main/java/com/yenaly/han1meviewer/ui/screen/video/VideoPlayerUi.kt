@@ -303,6 +303,9 @@ fun VideoPlayerUi(
                     /**
                      * Small Status Chips
                      */
+                    CompactChip("H关键帧")
+
+                    Spacer(modifier = Modifier.width(6.dp))
                     CompactChip("1.5x")
 
                     Spacer(modifier = Modifier.width(6.dp))
