@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.com.android.library)
-    alias(libs.plugins.org.jetbrains.kotlin.android)
     alias(libs.plugins.com.google.devtools.ksp)
 }
 
@@ -33,23 +32,23 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlin {
-        compilerOptions {
-            jvmTarget.value(JvmTarget.JVM_21)
-            freeCompilerArgs.addAll(
-                "-opt-in=kotlin.RequiresOptIn",
-                "-Xskip-prerelease-check",
-                "-opt-in=kotlin.ExperimentalStdlibApi"
-            )
-        }
-    }
+
     buildFeatures {
         buildConfig = true
     }
     resourcePrefix = "yenaly_"
     namespace = "com.yenaly.yenaly_libs"
 }
-
+kotlin {
+    compilerOptions {
+        jvmTarget.value(JvmTarget.JVM_21)
+        freeCompilerArgs.addAll(
+            "-opt-in=kotlin.RequiresOptIn",
+            "-Xskip-prerelease-check",
+            "-opt-in=kotlin.ExperimentalStdlibApi"
+        )
+    }
+}
 dependencies {
 
     implementation(libs.recyclerview)

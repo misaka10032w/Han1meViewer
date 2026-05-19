@@ -217,6 +217,15 @@
     <string name="delete_history">履歴削除</string>
     <string name="sure_to_delete_all_histories">すべての視聴履歴を削除しますか🤔</string>
     <string name="long_press_to_delete_all_histories">長押しで履歴削除、右上の削除ボタンは全履歴削除用！</string>
+    <string name="watch_history_total_count">全 %1$d 件</string>
+    <string name="watch_history_delete_all_title">視聴履歴をすべて削除</string>
+    <string name="watch_history_clear_all">すべて削除</string>
+    <string name="watch_history_empty_title">視聴履歴はまだありません</string>
+    <string name="watch_history_empty_description">動画を再生すると、ここに履歴が表示されます。</string>
+    <string name="watch_history_resume_watch">続けて視聴</string>
+    <string name="watch_history_watched_at">視聴日時 %1$s</string>
+    <string name="watch_history_released_at">公開日時 %1$s</string>
+    <string name="watch_history_progress_minutes">約 %1$d 分視聴しました</string>
     <string name="speed">再生速度</string>
     <string name="cancel_thumb_up_success">高評価解除成功！</string>
     <string name="thumb_up_success">高評価成功！</string>
@@ -541,6 +550,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="advanced_search_combination">高度な検索組み合わせ</string>
     <string name="app_tampered">本アプリは悪意を持って改ざんされました！情報セキュリティにご注意ください！</string>
     <string name="download_complete">ダウンロード完了</string>
+    <string name="download_progress_size">%1$s / %2$s</string>
     <string name="click_to_install_update">クリックして更新をインストール</string>
     <string name="install">インストール</string>
     <string name="empty_content">ここには何もありません</string>
@@ -593,6 +603,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="video_group_error">動画グループ取得エラー：</string>
     <string name="video_group_empty">動画グループが空です</string>
     <string name="default_group_rename_not_allowed">デフォルトグループ（%s）は名前変更できません！</string>
+    <string name="default_group_delete_not_allowed">デフォルトグループ（%s）は削除できません！</string>
     <string name="new_group_name">新しいグループ名</string>
     <string name="rename_group">グループ名を変更</string>
     <string name="current_group_name">現在のグループ名：%s</string>
@@ -635,4 +646,59 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="webview_exception">システムWebViewコンポーネントが異常です。Cloudflare認証ページの読み込みに失敗しました！</string>
     <string name="disable_predictive_back_title">予測型バックアニメーションを無効化</string>
     <string name="disable_predictive_back_summary">有効にすると、バックジェスチャーは指を離した時のみ反応し、動画視聴中の誤操作による再生停止を防ぎます</string>
+    <string name="play_trailer">予告編を再生</string>
+    <string name="load_complete">読み込み完了！</string>
+    <string name="search_video_hint">動画を検索…</string>
+    <string name="recent_searches">最近の検索</string>
+    <string name="search_suggestions">検索候補</string>
+    <string name="no_matching_search_history">一致する検索履歴はありません</string>
+    <string name="search_enter_keywords">キーワードを入力して動画を検索</string>
+    <string name="search_no_results">検索結果が見つかりません</string>
+    <string name="search_load_failed_with_reason">読み込み失敗：%1$s</string>
+    <string name="load_failed_with_reason">読み込み失敗：%1$s</string>
+    <string name="more">もっと見る</string>
+    <string name="announcement">お知らせ</string>
+    <string name="announcement_list">お知らせ一覧</string>
+    <string name="view_all">すべて表示</string>
+    <string name="open_menu">メニューを開く</string>
+    <string name="permission_permanently_denied_title">権限が恒久的に拒否されました</string>
+    <string name="storage_permission_settings_message">ダウンロード内容を保存するには、設定でストレージ権限を有効にしてください。</string>
+    <string name="storage_permission_denied_toast">ストレージ権限がないとダウンロードを保存できません</string>
+    <string name="widget_pin_not_supported_manual_add">一部のROMはウィジェットのガイド付き追加に対応していません。手動で追加してください。</string>
+    <string name="clarity">画質</string>
+    <string name="success_value">成功：%1$s</string>
+    <string name="previous_year">前年</string>
+    <string name="next_year">翌年</string>
+    <string name="previous_month">前月</string>
+    <string name="next_month">翌月</string>
+    <string name="network_timeout_text">タイムアウト</string>
+    <string name="remove">削除</string>
+    <string name="add">追加</string>
+    <string name="paused">一時停止中</string>
+    <string-array name="search_placeholders">
+        <item>奥底に眠る秘密を探索…</item>
+        <item>夜風に吹かれ、癒やしを探して</item>
+        <item>今夜は、いつもと違う気分？</item>
+        <item>お気に入りが見つかるはず</item>
+        <item>恥ずかしがらずに、検索してみて</item>
+        <item>みんなが今、気になっているのは…</item>
+        <item>出発進行、シートベルトをお忘れなく</item>
+        <item>内緒の話をしましょう…</item>
+        <item>口に出せないあの言葉を入力</item>
+        <item>秘められた欲望を解き放つ</item>
+        <item>顔が赤くなるキーワードは？</item>
+        <item>真夜中の好奇心を満たす…</item>
+    </string-array>
+    <string name="theme_color">テーマカラー</string>
+    <string name="theme_color_system">システムに従う</string>
+    <string name="theme_color_default">クリムゾンレッド</string>
+    <string name="theme_color_blue">アズールブルー</string>
+    <string name="theme_color_light_green">エメラルドグリーン</string>
+    <string name="theme_color_purple">ロイヤルパープル</string>
+    <string name="theme_color_pink">ブロッサムピンク</string>
+    <string name="theme_color_orange">サンセットオレンジ</string>
+    <string name="theme_color_teal">ミントティール</string>
+    <string name="theme_color_yellow">ゴールデンイエロー</string>
+    <string name="theme_color_high_contrast">ハイコントラスト</string>
+    <string name="restart_needed">プログラムを再起動する必要があります。そうしないと動作しません！</string>
 </resources>

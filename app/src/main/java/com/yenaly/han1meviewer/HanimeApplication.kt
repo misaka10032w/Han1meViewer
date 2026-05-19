@@ -13,9 +13,6 @@ import com.google.firebase.crashlytics.setCustomKeys
 import com.google.firebase.database.database
 import com.google.firebase.remoteconfig.remoteConfig
 import com.google.firebase.remoteconfig.remoteConfigSettings
-import com.scwang.smart.refresh.footer.ClassicsFooter
-import com.scwang.smart.refresh.header.MaterialHeader
-import com.scwang.smart.refresh.layout.SmartRefreshLayout
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.util.AnimeShaders
@@ -34,15 +31,6 @@ class HanimeApplication : YenalyApplication() {
 
     companion object {
         const val TAG = "HanimeApplication"
-
-        init {
-            SmartRefreshLayout.setDefaultRefreshHeaderCreator { context, _ ->
-                return@setDefaultRefreshHeaderCreator MaterialHeader(context)
-            }
-            SmartRefreshLayout.setDefaultRefreshFooterCreator { context, _ ->
-                return@setDefaultRefreshFooterCreator ClassicsFooter(context)
-            }
-        }
     }
 
     /**

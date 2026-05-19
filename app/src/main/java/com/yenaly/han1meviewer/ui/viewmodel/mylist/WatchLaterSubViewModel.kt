@@ -1,7 +1,6 @@
 package com.yenaly.han1meviewer.ui.viewmodel.mylist
 
 import android.app.Application
-import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
@@ -10,64 +9,50 @@ import com.yenaly.han1meviewer.logic.model.MyListType
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
-import com.yenaly.yenaly_libs.base.YenalyViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.getAndUpdate
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
-class WatchLaterSubViewModel(application: Application) : YenalyViewModel(application) {
+class WatchLaterSubViewModel(application: Application) : MyListSubViewModel(application) {
 
     var watchLaterPage = 1
 
-    private val _watchLaterStateFlow: MutableStateFlow<PageLoadingState<MyListItems<HanimeInfo>>> =
-        MutableStateFlow(PageLoadingState.Loading)
-    val watchLaterStateFlow = _watchLaterStateFlow.asStateFlow()
-
-    private val _watchLaterFlow = MutableStateFlow(emptyList<HanimeInfo>())
-    val watchLaterFlow = _watchLaterFlow.asStateFlow()
+    val watchLaterStateFlow: StateFlow<PageLoadingState<MyListItems<HanimeInfo>>> = itemsStateFlow.asStateFlow()
+    val watchLaterFlow: StateFlow<List<HanimeInfo>> = itemsFlow.asStateFlow()
 
     fun getMyWatchLaterItems(page: Int) {
-        val userId = Preferences.savedUserId
-        viewModelScope.launch {
-            NetworkRepo.getMyListItems(userId, MyListType.WATCH_LATER, page).collect { state ->
-                val prev = _watchLaterStateFlow.getAndUpdate { state }
-                if (prev is PageLoadingState.Loading) _watchLaterFlow.value = emptyList()
-                _watchLaterFlow.update { prevList ->
-                    when (state) {
-                        is PageLoadingState.Success -> prevList + state.info.hanimeInfo
-                        is PageLoadingState.Loading -> emptyList()
-                        else -> prevList
-                    }
-                }
-            }
-        }
+        loadItems(MyListType.WATCH_LATER, Preferences.savedUserId, page)
     }
 
-    private val _deleteMyWatchLaterFlow =
-        MutableSharedFlow<WebsiteState<Int>>()
+    private val _deleteMyWatchLaterFlow = MutableSharedFlow<WebsiteState<Boolean>>()
     val deleteMyWatchLaterFlow = _deleteMyWatchLaterFlow.asSharedFlow()
 
     fun deleteMyWatchLater(videoCode: String, position: Int) {
-        viewModelScope.launch {
-            NetworkRepo.deleteMyListItems(
-                MyListType.WATCH_LATER, videoCode,
-                position, csrfToken
-            ).collect {
-                _deleteMyWatchLaterFlow.emit(it)
-                _watchLaterFlow.update { list ->
-                    if (it is WebsiteState.Success) {
-                        list.toMutableList().apply { removeAt(position) }
-                    } else list
+        deleteItem(
+            deleteCall = {
+                NetworkRepo.addToMyList(
+                    listCode = "save",
+                    videoCode = videoCode,
+                    isChecked = false,
+                    position = position,
+                    csrfToken = csrfToken,
+                )
+            },
+            emitTo = _deleteMyWatchLaterFlow,
+            position = position,
+            mapState = { state ->
+                when (state) {
+                    is WebsiteState.Error -> WebsiteState.Error(state.throwable)
+                    WebsiteState.Loading -> WebsiteState.Loading
+                    is WebsiteState.Success -> WebsiteState.Success(true)
                 }
-            }
-        }
+            },
+        )
     }
 
-    fun clearMyListItems() {
-        _watchLaterStateFlow.value = PageLoadingState.Loading
+    override fun clearMyListItems() {
+        super.clearMyListItems()
+        watchLaterPage = 1
     }
 }

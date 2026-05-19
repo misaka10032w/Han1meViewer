@@ -222,6 +222,16 @@
     <string name="delete_history">刪除歷史記錄</string>
     <string name="sure_to_delete_all_histories">是否將影片觀看歷史記錄全部刪除🤔</string>
     <string name="long_press_to_delete_all_histories">長按可以刪除歷史記錄哦，右上角的刪除按鈕是負責刪除全部歷史記錄的！</string>
+    <string name="watch_history_total_count">共 %1$d 條記錄</string>
+    <string name="watch_history_delete_all_title">清空歷史記錄</string>
+    <string name="watch_history_clear_all">清空</string>
+    <string name="watch_history_empty_title">暫無觀看歷史</string>
+    <string name="watch_history_empty_description">開始播放影片後，記錄會出現在這裡。</string>
+    <string name="watch_history_resume_watch">繼續觀看</string>
+    <string name="watch_history_minutes_short" translatable="false">%1$dm</string>
+    <string name="watch_history_watched_at">觀看於 %1$s</string>
+    <string name="watch_history_released_at">發佈於 %1$s</string>
+    <string name="watch_history_progress_minutes">已觀看約 %1$d 分鐘</string>
     <string name="speed">倍速</string>
     <string name="cancel_thumb_up_success">取消點讚成功！</string>
     <string name="thumb_up_success">點讚成功！</string>
@@ -571,6 +581,8 @@
     <string name="advanced_search_combination">進階搜尋組合</string>
     <string name="app_tampered">本應用已被惡意篡改！請注意資訊安全！</string>
     <string name="download_complete">下載完成</string>
+    <string name="download_progress_percent" translatable="false">%1$d%%</string>
+    <string name="download_progress_size">%1$s / %2$s</string>
     <string name="click_to_install_update">點擊安裝更新</string>
     <string name="install">安裝</string>
     <string name="empty_content">這裡什麼都沒有哦</string>
@@ -623,6 +635,7 @@
     <string name="video_group_error">取得影片群組錯誤：</string>
     <string name="video_group_empty">影片群組為空</string>
     <string name="default_group_rename_not_allowed">預設群組（%s）不允許重新命名！</string>
+    <string name="default_group_delete_not_allowed">預設群組（%s）不允許刪除！</string>
     <string name="new_group_name">新群組名稱</string>
     <string name="rename_group">重新命名群組</string>
     <string name="current_group_name">目前群組名稱：%s</string>
@@ -669,4 +682,64 @@
     <string name="webview_exception">系統 WebView 元件異常，Cloudflare驗證頁面載入失敗！</string>
     <string name="disable_predictive_back_title">關閉預測性返回動畫</string>
     <string name="disable_predictive_back_summary">開啟後，返回手勢只有在鬆手後才會觸發返回，避免觀看影片時因誤觸返回手勢而暫停播放</string>
+    <string name="play_trailer">播放預告</string>
+    <string name="load_complete">載入完畢！</string>
+    <string name="search_video_hint">搜尋影片…</string>
+    <string name="recent_searches">最近搜尋</string>
+    <string name="search_suggestions">搜尋建議</string>
+    <string name="no_matching_search_history">暫無匹配的搜尋歷史</string>
+    <string name="search_enter_keywords">輸入關鍵字搜尋影片</string>
+    <string name="search_no_results">沒有搜尋到結果</string>
+    <string name="search_load_failed_with_reason">載入失敗：%1$s</string>
+    <string name="load_failed_with_reason">載入失敗：%1$s</string>
+    <string name="more">更多</string>
+    <string name="announcement">公告</string>
+    <string name="announcement_list">公告列表</string>
+    <string name="view_all">查看全部</string>
+    <string name="open_menu">打開選單</string>
+    <string name="permission_permanently_denied_title">權限被永久拒絕</string>
+    <string name="storage_permission_settings_message">請前往設定開啟儲存權限，以便保存下載內容。</string>
+    <string name="storage_permission_denied_toast">拒絕後將無法保存下載內容</string>
+    <string name="invalid_ip_or_port" translatable="false">Invalid IP(v4) or Port(0..65535)</string>
+    <string name="widget_pin_not_supported_manual_add">部分 ROM 不支援引導式添加，請手動添加小工具</string>
+    <string name="cookies_label" translatable="false">Cookies</string>
+    <string name="clarity">畫質</string>
+    <string name="english_lang" translatable="false">English</string>
+    <string name="success_value">成功：%1$s</string>
+    <string name="previous_year">上一年</string>
+    <string name="next_year">下一年</string>
+    <string name="previous_month">上一月</string>
+    <string name="next_month">下一月</string>
+    <string name="checkin_count_format" translatable="false">x%1$d</string>
+    <string name="network_timeout_text">逾時</string>
+    <string name="remove">移除</string>
+    <string name="add">新增</string>
+    <string name="paused">已暫停</string>
+    <string-array name="search_placeholders">
+        <item>探索深處的秘密…</item>
+        <item>晚風輕拂，尋找那份溫柔</item>
+        <item>今晚，想看點不一樣的？</item>
+        <item>搜一搜，總有你喜歡的</item>
+        <item>別害羞，大方搜搜看</item>
+        <item>聽說最近大家都在搜這個…</item>
+        <item>開車請系好安全帶</item>
+        <item>借一步說話…</item>
+        <item>輸入你不敢說出口的那個詞</item>
+        <item>解鎖你的隱藏欲望</item>
+        <item>臉紅的關鍵詞是什麼？</item>
+        <item>深夜好奇點什麼…</item>
+    </string-array>
+
+    <string name="theme_color">主題色</string>
+    <string name="theme_color_system">跟隨系統</string>
+    <string name="theme_color_default">（預設）姨媽紅</string>
+    <string name="theme_color_blue">胖次藍</string>
+    <string name="theme_color_light_green">早苗綠</string>
+    <string name="theme_color_purple">基佬紫</string>
+    <string name="theme_color_pink">少女粉</string>
+    <string name="theme_color_orange">橙留香</string>
+    <string name="theme_color_teal">初音藍(綠)</string>
+    <string name="theme_color_yellow">鹹蛋黃</string>
+    <string name="theme_color_high_contrast">高對比</string>
+    <string name="restart_needed">需要重啟程序，否則不起作用！</string>
 </resources>

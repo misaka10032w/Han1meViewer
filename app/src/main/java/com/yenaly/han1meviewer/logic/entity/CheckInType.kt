@@ -3,7 +3,7 @@ package com.yenaly.han1meviewer.logic.entity
 import androidx.annotation.StringRes
 import com.yenaly.han1meviewer.R
 
-enum class CheckInType(@StringRes val displayNameRes: Int, val storeName: String) {
+enum class CheckInType(@param:StringRes val displayNameRes: Int, val storeName: String) {
     MASTURBATION(R.string.checkin_type_masturbation, "自慰"),
     WET_DREAM(R.string.checkin_type_wet_dream, "梦遗"),
     SEX(R.string.checkin_type_sex, "做爱"),

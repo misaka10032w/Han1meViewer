@@ -1,0 +1,397 @@
+package com.yenaly.han1meviewer.ui.screen.home.myplaylist
+
+import android.view.View
+import android.widget.EditText
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults.pinnedScrollBehavior
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.logic.model.Playlists
+import com.yenaly.han1meviewer.logic.state.PageLoadingState
+import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.ui.component.LoadMoreFooter
+import com.yenaly.han1meviewer.ui.component.PlaylistItem
+import com.yenaly.han1meviewer.ui.component.PullRefreshOverlay
+import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
+import com.yenaly.han1meviewer.ui.component.content.EmptyContent
+import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
+import com.yenaly.han1meviewer.ui.screen.getColumnCount
+import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
+import com.yenaly.han1meviewer.util.showAlertDialog
+import com.yenaly.yenaly_libs.utils.showShortToast
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun MyPlayListScreen(
+    viewModel: MyPlayListViewModelV2,
+    navigateBack: () -> Unit,
+    onClickItem: (String) -> Unit,
+    onLongClickItem: (String, String) -> Unit,
+) {
+    val state by viewModel.myPlaylistsFlow.collectAsState()
+    val playlists by viewModel.cachedMyPlayList.collectAsState()
+    val scrollBehavior = pinnedScrollBehavior(rememberTopAppBarState())
+    var isRefreshing by remember { mutableStateOf(false) }
+    val refreshState = rememberPullToRefreshState()
+    val showSheet by viewModel.showSheet.collectAsState()
+    val isLoadingMorePlaylists by viewModel.isLoadingMorePlaylists.collectAsState()
+    val noMorePlaylists by viewModel.noMorePlaylists.collectAsState()
+    val selectedListCode = remember { mutableStateOf("") }
+    val listTitle = remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var temporarilyHideSheetForNavigation by rememberSaveable { mutableStateOf(false) }
+
+    val onRefresh: () -> Unit = {
+        isRefreshing = true
+        viewModel.loadMyPlayList(forceReload = true)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.refreshCompleted.collect {
+            isRefreshing = false
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (playlists.isEmpty()) {
+            viewModel.loadMyPlayList()
+        }
+    }
+
+    DisposableEffect(lifecycleOwner, showSheet) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME && showSheet) {
+                temporarilyHideSheetForNavigation = false
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+    // 收集添加列表结果
+    LaunchedEffect(Unit) {
+        viewModel.createPlaylistFlow.collect { result ->
+            when (result) {
+                is WebsiteState.Error -> {
+                    showShortToast(R.string.add_failed)
+                }
+
+                is WebsiteState.Loading -> Unit
+                is WebsiteState.Success -> {
+                    showShortToast(R.string.add_success)
+                    viewModel.loadMyPlayList()
+                }
+            }
+        }
+    }
+
+    HanimeScaffold(
+        modifier = Modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        title = stringResource(R.string.my_list),
+        onBack = navigateBack,
+        scrollBehavior = scrollBehavior,
+        actions = {
+            FilledIconButton(onClick = {
+                context.showAlertDialog {
+                    setTitle(R.string.create_new_playlist)
+                    val etView =
+                        View.inflate(context, R.layout.dialog_playlist_modify_edit_text, null)
+                    val etTitle = etView.findViewById<EditText>(R.id.et_title)
+                    val etDesc = etView.findViewById<EditText>(R.id.et_desc)
+                    setView(etView)
+                    setPositiveButton(R.string.confirm) { _, _ ->
+                        viewModel.createPlaylist(
+                            etTitle.text.toString(),
+                            etDesc.text.toString()
+                        )
+                    }
+                    setNegativeButton(R.string.cancel, null)
+
+                }
+            }) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = stringResource(R.string.create_new_playlist)
+                )
+            }
+        },
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .pullToRefresh(
+                    state = refreshState,
+                    isRefreshing = isRefreshing,
+                    onRefresh = onRefresh
+                )
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            when (val result = state) {
+                is WebsiteState.Loading -> {
+                    if (playlists.isEmpty()) {
+                        LoadingIndicator(Modifier.align(Alignment.Center))
+                    } else {
+                        // 显示旧数据，刷新中不替换内容
+                        AnimatedPageContent(
+                            state,
+                            playlists = playlists,
+                            playlistPage = viewModel.playlistPage,
+                            isLoadingMore = isLoadingMorePlaylists,
+                            noMorePlaylists = noMorePlaylists,
+                            onLoadNextPage = {
+                                viewModel.loadMyPlayList(viewModel.playlistPage + 1)
+                            }
+                        ) { listCode, playListTitle ->
+                            selectedListCode.value = listCode
+                            viewModel.setShowSheet(true)
+                            listTitle.value = playListTitle
+                        }
+                    }
+                }
+
+                is WebsiteState.Error -> {
+                    if (playlists.isEmpty()) {
+                        EmptyContent(
+                            hint = stringResource(
+                                R.string.load_failed_with_reason,
+                                result.throwable.message.orEmpty()
+                            ),
+                            picRes = R.drawable.h_chan_sad
+                        )
+                    } else {
+                        // 显示旧缓存内容（保持体验）
+                        AnimatedPageContent(
+                            state,
+                            playlists = playlists,
+                            playlistPage = viewModel.playlistPage,
+                            isLoadingMore = isLoadingMorePlaylists,
+                            noMorePlaylists = noMorePlaylists,
+                            onLoadNextPage = {
+                                viewModel.loadMyPlayList(viewModel.playlistPage + 1)
+                            }
+                        ) { listCode, playListTitle ->
+                            selectedListCode.value = listCode
+                            viewModel.setShowSheet(true)
+                            listTitle.value = playListTitle
+                        }
+                    }
+                }
+
+                else -> {
+                    // 统一渲染缓存（成功后缓存已更新）
+                    AnimatedPageContent(
+                        state,
+                        playlists = playlists,
+                        playlistPage = viewModel.playlistPage,
+                        isLoadingMore = isLoadingMorePlaylists,
+                        noMorePlaylists = noMorePlaylists,
+                        onLoadNextPage = {
+                            viewModel.loadMyPlayList(viewModel.playlistPage + 1)
+                        }
+                    ) { listCode, playListTitle ->
+                        selectedListCode.value = listCode
+                        viewModel.setShowSheet(true)
+                        listTitle.value = playListTitle
+                    }
+                }
+            }
+
+            PullRefreshOverlay(
+                state = refreshState,
+                isRefreshing = isRefreshing,
+            )
+            if (showSheet && !temporarilyHideSheetForNavigation) {
+                PlaylistBottomSheet(
+                    listCode = selectedListCode.value,
+                    onDismiss = {
+                        temporarilyHideSheetForNavigation = false
+                        viewModel.setShowSheet(false)
+                        viewModel.currentPage = 1
+                        viewModel.clearCurrentList()
+                    },
+                    playListTitle = listTitle.value,
+                    onClickItem = { item ->
+                        temporarilyHideSheetForNavigation = true
+                        onClickItem(item)
+                    },
+                    onLongClickItem = onLongClickItem,
+                    vm = viewModel,
+                    context = context
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun AnimatedPageContent(
+    state: WebsiteState<Playlists>,
+    playlists: List<Playlists.Playlist>,
+    isLoadingMore: Boolean = false,
+    noMorePlaylists: Boolean = false,
+    playlistPage: Int = 1,
+    onLoadNextPage: () -> Unit = {},
+    onRetry: () -> Unit = {},
+    onPlaylistClick: (listCode: String, playListTitle: String) -> Unit
+) {
+    val gridState = rememberLazyGridState()
+
+    LaunchedEffect(gridState) {
+        snapshotFlow {
+            val layoutInfo = gridState.layoutInfo
+            val totalItems = layoutInfo.totalItemsCount
+            val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            Triple(
+                lastVisibleItem >= totalItems - 3 && playlists.isNotEmpty(),
+                isLoadingMore,
+                noMorePlaylists
+            )
+        }
+            .collect { (shouldLoad, loading, noMore) ->
+                if (shouldLoad && !loading && !noMore) {
+                    onLoadNextPage()
+                }
+            }
+    }
+
+    AnimatedContent(
+        targetState = state,
+        label = "my-playlist-content-animation",
+        transitionSpec = {
+            fadeIn(tween(300)) togetherWith fadeOut(tween(200))
+        }
+    ) { target ->
+        when (target) {
+            is WebsiteState.Loading -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    LoadingIndicator()
+                }
+            }
+
+            is WebsiteState.Error -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            stringResource(
+                                R.string.load_failed_with_reason,
+                                target.throwable.message.orEmpty()
+                            )
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Button(onClick = onRetry) {
+                            Text(stringResource(R.string.retry))
+                        }
+                    }
+                }
+            }
+
+            is WebsiteState.Success -> {
+                if (target.info.playlists.isEmpty() && playlists.isEmpty()) {
+                    EmptyContent(stringResource(R.string.empty_content))
+                    return@AnimatedContent
+                }
+                LazyVerticalGrid(
+                    state = gridState,
+                    columns = GridCells.Fixed(getColumnCount(180)),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(playlists) { playlist ->
+                        // 播放清单卡片
+                        PlaylistItem(
+                            playlist = playlist,
+                            modifier = Modifier.height(140.dp)
+                        ) {
+                            onPlaylistClick(playlist.listCode, playlist.title)
+                        }
+                    }
+                    if (playlists.isNotEmpty()) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            LoadMoreFooter(
+                                state = when (state) {
+                                    is WebsiteState.Loading -> PageLoadingState.Loading
+                                    is WebsiteState.Error -> PageLoadingState.Error(state.throwable)
+                                    is WebsiteState.Success<Playlists> -> {
+                                        if (state.info.playlists.isEmpty()) {
+                                            PageLoadingState.NoMoreData
+                                        } else {
+                                            PageLoadingState.Success(Unit)
+                                        }
+                                    }
+                                },
+                                loadedPage = playlistPage - 1,
+                                isLoadingMore = isLoadingMore
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun MyPlaylistScreenPreview() {
+    MyPlayListScreen(
+        viewModel = viewModel(),
+        onClickItem = {},
+        onLongClickItem = { _, _ ->
+        },
+        navigateBack = {}
+    )
+}

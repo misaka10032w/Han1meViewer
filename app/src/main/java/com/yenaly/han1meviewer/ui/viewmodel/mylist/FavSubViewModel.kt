@@ -1,78 +1,51 @@
 package com.yenaly.han1meviewer.ui.viewmodel.mylist
 
 import android.app.Application
-import android.util.Log
-import androidx.lifecycle.viewModelScope
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.MyListItems
 import com.yenaly.han1meviewer.logic.model.MyListType
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
-import com.yenaly.yenaly_libs.base.YenalyViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.getAndUpdate
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
-class FavSubViewModel(application: Application) : YenalyViewModel(application) {
+class FavSubViewModel(application: Application) : MyListSubViewModel(application) {
 
     var favVideoPage = 1
+    private var csrfToken: String? = null
 
-    private val _favVideoStateFlow: MutableStateFlow<PageLoadingState<MyListItems<HanimeInfo>>> =
-        MutableStateFlow(PageLoadingState.Loading)
-    val favVideoStateFlow = _favVideoStateFlow.asStateFlow()
-
-    private val _favVideoFlow = MutableStateFlow(emptyList<HanimeInfo>())
-    val favVideoFlow = _favVideoFlow.asStateFlow()
+    val favVideoStateFlow: StateFlow<PageLoadingState<MyListItems<HanimeInfo>>> = itemsStateFlow.asStateFlow()
+    val favVideoFlow: StateFlow<List<HanimeInfo>> = itemsFlow.asStateFlow()
 
     fun getMyFavVideoItems(userId: String, page: Int) {
-        viewModelScope.launch {
-            NetworkRepo.getMyListItems(userId, MyListType.FAV_VIDEO, page).collect { state ->
-                val prev = _favVideoStateFlow.getAndUpdate { state }
-                if (prev is PageLoadingState.Loading) _favVideoFlow.value = emptyList()
-                _favVideoFlow.update { prevList ->
-                    when (state) {
-                        is PageLoadingState.Success ->{
-                            if (state.info.hanimeInfo.isEmpty()){
-                                _favVideoStateFlow.update { PageLoadingState.NoMoreData }
-                            }
-                            prevList + state.info.hanimeInfo
-                        }
-
-                        is PageLoadingState.Loading -> emptyList()
-                        else -> prevList
-                    }
-                }
-            }
-        }
+        loadItems(MyListType.FAV_VIDEO, userId, page) { csrfToken = it.csrfToken }
     }
 
-    private val _deleteMyFavVideoFlow =
-        MutableSharedFlow<WebsiteState<Int>>()
+    private val _deleteMyFavVideoFlow = MutableSharedFlow<WebsiteState<Boolean>>()
     val deleteMyFavVideoFlow = _deleteMyFavVideoFlow.asSharedFlow()
 
     fun deleteMyFavVideo(videoCode: String, position: Int) {
-        viewModelScope.launch {
-            NetworkRepo.deleteMyListItems(
-                MyListType.FAV_VIDEO, videoCode,
-                position, csrfToken
-            ).collect {
-                _deleteMyFavVideoFlow.emit(it)
-                _favVideoFlow.update { list ->
-                    if (it is WebsiteState.Success) {
-                        list.toMutableList().apply { removeAt(position) }
-                    } else list
-                }
-            }
-        }
+        deleteItem(
+            deleteCall = {
+                NetworkRepo.addToMyFavVideo(
+                    videoCode = videoCode,
+                    likeStatus = true,
+                    currentUserId = Preferences.savedUserId,
+                    token = csrfToken,
+                )
+            },
+            emitTo = _deleteMyFavVideoFlow,
+            position = position,
+            mapState = { it },
+        )
     }
 
-    fun clearMyListItems() {
-        _favVideoStateFlow.value = PageLoadingState.Loading
+    override fun clearMyListItems() {
+        super.clearMyListItems()
+        favVideoPage = 1
     }
 }

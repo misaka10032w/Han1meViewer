@@ -5,8 +5,7 @@ import androidx.annotation.IntDef
 import com.yenaly.han1meviewer.logic.model.VideoComments
 
 /**
- * 连通 [com.yenaly.han1meviewer.ui.fragment.home.preview.PreviewFragment] 和
- * [com.yenaly.han1meviewer.ui.fragment.home.preview.PreviewCommentFragment] 的预取器
+ * 连通预览页与预览评论页的评论预取器。
  */
 class PreviewCommentPrefetcher private constructor(
     private val commentViewModel: CommentViewModel

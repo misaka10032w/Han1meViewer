@@ -38,7 +38,6 @@ import androidx.core.view.isVisible
 import androidx.core.view.size
 import androidx.core.view.updatePadding
 import androidx.fragment.app.FragmentActivity
-import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -57,11 +56,11 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.adapter.HKeyframeRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.SuperResolutionAdapter
 import com.yenaly.han1meviewer.ui.adapter.VideoSpeedAdapter
-import com.yenaly.han1meviewer.ui.fragment.video.VideoFragment
 import com.yenaly.han1meviewer.util.setStateViewLayout
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.OrientationManager
 import com.yenaly.yenaly_libs.utils.appScreenWidth
+import com.yenaly.yenaly_libs.utils.findActivityOrNull
 import com.yenaly.yenaly_libs.utils.navBarHeight
 import com.yenaly.yenaly_libs.utils.statusBarHeight
 import com.yenaly.yenaly_libs.utils.unsafeLazy
@@ -423,11 +422,6 @@ class HJzvdStd @JvmOverloads constructor(
         }
 
         fullscreenButton.setOnClickListener {
-            (context as? FragmentActivity)
-                ?.supportFragmentManager
-                ?.fragments
-                ?.filterIsInstance<VideoFragment>()
-                ?.firstOrNull()
             if (screen == SCREEN_FULLSCREEN) {
                 gotoNormalScreen()
             } else {
@@ -651,7 +645,9 @@ class HJzvdStd @JvmOverloads constructor(
                 CURRENT_JZVD.clearFloatScreen()
             }
             else -> {
-                findNavController().navigateUp()
+                context.findActivityOrNull<FragmentActivity>()
+                    ?.onBackPressedDispatcher
+                    ?.onBackPressed()
             }
         }
     }
@@ -713,11 +709,10 @@ class HJzvdStd @JvmOverloads constructor(
             R.id.super_resolution -> clickSuperResolution()
             R.id.go_home -> {
                 if (screen != SCREEN_FULLSCREEN) {
-                    findNavController().navigate(
-                        R.id.nv_home_page,
-                        null,
-                        NavOptions.Builder().setPopUpTo(R.id.nav_main, true).build()
-                    )
+                    context.findActivityOrNull<MainActivity>()?.let { activity ->
+                        activity.finish()
+                        return
+                    }
                 } else {
                     onGoHomeClickListener?.invoke(v)
                 }
@@ -1019,7 +1014,7 @@ class HJzvdStd @JvmOverloads constructor(
 
     override fun showWifiDialog() {
         jzvdContext.showAlertDialog {
-            setTitle("Warning!")
+            setTitle(R.string.warning)
             setMessage(cn.jzvd.R.string.tips_not_wifi)
             setPositiveButton(cn.jzvd.R.string.tips_not_wifi_confirm) { _, _ ->
                 WIFI_TIP_DIALOG_SHOWED = true

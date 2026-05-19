@@ -19,6 +19,18 @@ class SettingsViewModel(application: Application) : YenalyViewModel(application)
     fun loadAllHKeyframes(keyword: String? = null) =
         DatabaseRepo.HKeyframe.loadAll(keyword).flowOn(Dispatchers.IO)
 
+    fun deleteHKeyframes(entity: HKeyframeEntity) {
+        viewModelScope.launch(Dispatchers.IO) {
+            DatabaseRepo.HKeyframe.delete(entity)
+        }
+    }
+
+    fun updateHKeyframes(entity: HKeyframeEntity) {
+        viewModelScope.launch(Dispatchers.IO) {
+            DatabaseRepo.HKeyframe.update(entity)
+        }
+    }
+
     fun removeHKeyframe(videoCode: String, keyframe: HKeyframeEntity.Keyframe) {
         viewModelScope.launch(Dispatchers.IO) {
             DatabaseRepo.HKeyframe.removeKeyframe(videoCode, keyframe)

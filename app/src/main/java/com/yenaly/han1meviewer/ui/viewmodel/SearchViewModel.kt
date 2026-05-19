@@ -41,9 +41,10 @@ class SearchViewModel(
 ) : YenalyViewModel(application) {
 
     var page: Int = 1
-    var query: String? = null
+    var query: String?
+        get() = state["query"]
+        set(value) { state["query"] = value }
 
-    // START: Use in [ChildCommentPopupFragment.kt]
     var genre: String?
         get() = state["genre"]
         set(value) { state["genre"] = value }
@@ -64,15 +65,28 @@ class SearchViewModel(
         get() = state["approxTime"]
         set(value) { state["approxTime"] = value }
 
-    var broad: Boolean = false
-    var duration: String? = null
+    var broad: Boolean
+        get() = state["broad"] ?: false
+        set(value) { state["broad"] = value }
+
+    var duration: String?
+        get() = state["duration"]
+        set(value) { state["duration"] = value }
+
+    var gridFirstVisibleItemIndex: Int
+        get() = state["gridFirstVisibleItemIndex"] ?: 0
+        set(value) {
+            state["gridFirstVisibleItemIndex"] = value
+        }
+
+    var gridFirstVisibleItemScrollOffset: Int
+        get() = state["gridFirstVisibleItemScrollOffset"] ?: 0
+        set(value) {
+            state["gridFirstVisibleItemScrollOffset"] = value
+        }
 
     var tagMap = SparseArray<Set<SearchOption>>()
     var brandMap = SparseArray<Set<SearchOption>>()
-
-    // END: Use in [ChildCommentPopupFragment.kt]
-
-    // START: Use in [SearchOptionsPopupFragment.kt]
 
     val genres by unsafeLazy {
         loadAssetAs<List<SearchOption>>(if (Preferences.baseUrl == HANIME_URL[3]) "search_options/genre_av.json" else "search_options/genre.json").orEmpty()
@@ -97,8 +111,6 @@ class SearchViewModel(
         loadAssetAs<List<SearchOption>>("search_options/release_date.json").orEmpty()
     }
 
-    // END: Use in [SearchOptionsPopupFragment.kt]
-
     private val _searchStateFlow =
         MutableStateFlow<PageLoadingState<List<HanimeInfo>>>(PageLoadingState.Loading)
     val searchStateFlow = _searchStateFlow.asStateFlow()
@@ -107,7 +119,29 @@ class SearchViewModel(
     val searchFlow = _searchFlow.asStateFlow()
     var recyclerViewState: Parcelable? = null
 
-    fun clearHanimeSearchResult() = _searchStateFlow.update { PageLoadingState.Loading }
+    fun clearHanimeSearchResult() {
+        _searchFlow.value = emptyList()
+        _searchStateFlow.value = PageLoadingState.Loading
+    }
+
+    fun resetSearchUiState() {
+        page = 1
+        query = null
+        genre = null
+        sort = null
+        year = null
+        month = null
+        approxTime = null
+        broad = false
+        duration = null
+        tagMap.clear()
+        brandMap.clear()
+        recyclerViewState = null
+        gridFirstVisibleItemIndex = 0
+        gridFirstVisibleItemScrollOffset = 0
+        _searchFlow.value = emptyList()
+        _searchStateFlow.value = PageLoadingState.Loading
+    }
 
     fun getHanimeSearchResult(
         page: Int, query: String?, genre: String?,

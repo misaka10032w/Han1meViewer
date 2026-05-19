@@ -217,6 +217,15 @@
     <string name="delete_history">删除历史记录</string>
     <string name="sure_to_delete_all_histories">是否将影片观看历史记录全部删除🤔</string>
     <string name="long_press_to_delete_all_histories">长按可以删除历史记录哦，右上角的删除按钮是负责删除全部历史记录的！</string>
+    <string name="watch_history_total_count">共 %1$d 条记录</string>
+    <string name="watch_history_delete_all_title">清空历史记录</string>
+    <string name="watch_history_clear_all">清空</string>
+    <string name="watch_history_empty_title">暂无观看历史</string>
+    <string name="watch_history_empty_description">开始播放影片后，记录会出现在这里。</string>
+    <string name="watch_history_resume_watch">继续观看</string>
+    <string name="watch_history_watched_at">观看于 %1$s</string>
+    <string name="watch_history_released_at">发布于 %1$s</string>
+    <string name="watch_history_progress_minutes">已观看约 %1$d 分钟</string>
     <string name="speed">倍速</string>
     <string name="cancel_thumb_up_success">取消点赞成功！</string>
     <string name="thumb_up_success">点赞成功！</string>
@@ -243,6 +252,7 @@
     <string name="quality_with_colon">画质：</string>
     <string name="after_download_tips">下载完毕后可以在「下载」界面找到下载后的影片，「设置」界面里有详细存储路径</string>
     <string name="restart_or_not_working">修改%s需要重启程序，否则不起作用！</string>
+    <string name="restart_needed">需要重启程序，否则不起作用！</string>
     <string name="sure_to_clear">确定要清除吗？</string>
     <string name="sure_to_clear_cache">确定要清除缓存吗？</string>
     <string name="clear_success">清除成功</string>
@@ -541,12 +551,14 @@
     <string name="advanced_search_combination">高级搜索组合</string>
     <string name="app_tampered">本应用已被恶意篡改！请注意信息安全！</string>
     <string name="download_complete">下载完成</string>
+    <string name="download_progress_size">%1$s / %2$s</string>
     <string name="click_to_install_update">点击安装更新</string>
     <string name="install">安装</string>
     <string name="empty_content">这里什么都没有哦</string>
     <string name="load_failed_retry">加载失败，请重试</string>
     <string name="video_count">%d部影片</string>
     <string name="load_complete_with_pages">加载完毕，共%d页</string>
+    <string name="load_complete">加载完毕！</string>
     <string name="mpv_advanced_settings">MPV 播放内核设置</string>
     <string name="mpv_settings_disabled_summary">仅当播放内核为 MPV 播放器时可配置</string>
     <string name="mpv_advanced_settings_summary">配置画质、性能与网络缓存等高级选项</string>
@@ -593,6 +605,7 @@
     <string name="video_group_error">获取视频分组错误：</string>
     <string name="video_group_empty">视频分组为空</string>
     <string name="default_group_rename_not_allowed">默认分组（%s）不允许重命名！</string>
+    <string name="default_group_delete_not_allowed">默认分组（%s）不允许删除！</string>
     <string name="new_group_name">新分组名称</string>
     <string name="rename_group">重命名分组</string>
     <string name="current_group_name">当前分组名称：%s</string>
@@ -635,4 +648,57 @@
     <string name="webview_exception">系统 WebView 组件异常，Cloudflare验证页面加载失败！</string>
     <string name="disable_predictive_back_title">关闭预测性返回动画</string>
     <string name="disable_predictive_back_summary">开启后，返回手势只有在松手后才会触发返回，避免观看视频时因误触返回手势而暂停播放</string>
+    <string name="play_trailer">播放预告</string>
+    <string name="search_video_hint">搜索影片…</string>
+    <string name="recent_searches">最近搜索</string>
+    <string name="search_suggestions">搜索建议</string>
+    <string name="no_matching_search_history">暂无匹配的搜索历史</string>
+    <string name="search_enter_keywords">输入关键词搜索影片</string>
+    <string name="search_no_results">没有搜索到结果</string>
+    <string name="search_load_failed_with_reason">加载失败：%1$s</string>
+    <string name="load_failed_with_reason">加载失败：%1$s</string>
+    <string name="more">更多</string>
+    <string name="announcement">公告</string>
+    <string name="announcement_list">公告列表</string>
+    <string name="view_all">查看全部</string>
+    <string name="open_menu">打开菜单</string>
+    <string name="permission_permanently_denied_title">权限被永久拒绝</string>
+    <string name="storage_permission_settings_message">请前往设置开启存储权限，以便保存下载内容。</string>
+    <string name="storage_permission_denied_toast">拒绝后将无法保存下载内容</string>
+    <string name="widget_pin_not_supported_manual_add">部分 ROM 不支持引导式添加，请手动添加小组件</string>
+    <string name="clarity">清晰度</string>
+    <string name="success_value">成功：%1$s</string>
+    <string name="previous_year">上一年</string>
+    <string name="next_year">下一年</string>
+    <string name="previous_month">上个月</string>
+    <string name="next_month">下个月</string>
+    <string name="network_timeout_text">超时</string>
+    <string name="remove">移除</string>
+    <string name="add">新增</string>
+    <string name="paused">已暂停</string>
+    <string-array name="search_placeholders">
+        <item>探索深处的秘密…</item>
+        <item>晚风轻拂，寻找那份温柔</item>
+        <item>今晚，想看点不一样的？</item>
+        <item>搜一搜，总有你喜欢的</item>
+        <item>别害羞，大方搜搜看</item>
+        <item>听说最近大家都在搜这个…</item>
+        <item>开车请系好安全带</item>
+        <item>借一步说话…</item>
+        <item>输入你不敢说出口的那个词</item>
+        <item>解锁你的隐藏欲望</item>
+        <item>脸红的关键词是什么？</item>
+        <item>深夜好奇点什么…</item>
+    </string-array>
+    <string name="theme_color">主题色</string>
+    <string name="theme_color_system">跟随系统</string>
+    <string name="theme_color_default">姨妈红</string>
+    <string name="theme_color_blue">胖次蓝</string>
+    <string name="theme_color_light_green">早苗绿</string>
+    <string name="theme_color_purple">基佬紫</string>
+    <string name="theme_color_pink">少女粉</string>
+    <string name="theme_color_orange">橙留香</string>
+    <string name="theme_color_teal">初音蓝(绿)</string>
+    <string name="theme_color_yellow">咸蛋黄</string>
+    <string name="theme_color_high_contrast">高对比</string>
 </resources>

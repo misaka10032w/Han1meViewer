@@ -10,7 +10,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.core.net.toUri
 
@@ -23,10 +22,10 @@ import androidx.core.net.toUri
  *  @param extra  附带的bundle (optional)
  */
 inline fun <reified Ava : Activity> Activity.startActivity(
-    vararg values: Pair<String, Any?>,
     flag: Int? = null,
     extra: Bundle? = null,
-) = startActivity(getIntent<Ava>(flag, extra, *values))
+    crossinline block: Bundle.() -> Unit = {},
+) = startActivity(getIntent<Ava>(flag, extra, block))
 
 /**
  *  快捷启动Activity
@@ -52,10 +51,10 @@ inline fun <reified Ava : Activity> Activity.startActivity(
  *  @param values 需要传过去的值
  */
 inline fun <reified S : Service> Activity.startService(
-    vararg values: Pair<String, Any?>,
     flag: Int? = null,
     extra: Bundle? = null,
-) = startService(getIntent<S>(flag, extra, *values))
+    crossinline block: Bundle.() -> Unit = {},
+) = startActivity(getIntent<S>(flag, extra, block))
 
 /**
  *  快捷启动Service
@@ -81,11 +80,11 @@ inline fun <reified S : Service> Activity.startService(
  *  @param values 需要传过去的值
  */
 inline fun <reified Bella : Activity> Fragment.startActivity(
-    vararg values: Pair<String, Any?>,
     flag: Int? = null,
     extra: Bundle? = null,
+    crossinline block: Bundle.() -> Unit = {},
 ) = activity?.let {
-    startActivity(it.getIntent<Bella>(flag, extra, *values))
+    startActivity(it.getIntent<Bella>(flag, extra, block))
 }
 
 /**
@@ -114,11 +113,11 @@ inline fun <reified Bella : Activity> Fragment.startActivity(
  *  @param values 需要传过去的值
  */
 inline fun <reified S : Service> Fragment.startService(
-    vararg values: Pair<String, Any?>,
     flag: Int? = null,
     extra: Bundle? = null,
+    crossinline block: Bundle.() -> Unit = {},
 ) = activity?.let {
-    it.startService(it.getIntent<S>(flag, extra, *values))
+    it.startService(it.getIntent<S>(flag, extra, block))
 }
 
 /**
@@ -149,8 +148,8 @@ inline fun <reified S : Service> Fragment.startService(
 inline fun <reified Carol : Activity> Context.startActivity(
     flag: Int? = null,
     extra: Bundle? = null,
-    vararg values: Pair<String, Any?>,
-) = startActivity(getIntent<Carol>(flag, extra, *values))
+    crossinline block: Bundle.() -> Unit = {},
+) = startActivity(getIntent<Carol>(flag, extra, block))
 
 /**
  *  快捷启动Activity
@@ -179,8 +178,8 @@ inline fun <reified Carol : Activity> Context.startActivity(
 inline fun <reified S : Service> Context.startService(
     flag: Int? = null,
     extra: Bundle? = null,
-    vararg values: Pair<String, Any?>,
-) = startService(getIntent<S>(flag, extra, *values))
+    crossinline block: Bundle.() -> Unit = {},
+) = startService(getIntent<S>(flag, extra, block))
 
 /**
  *  快捷启动Service
@@ -204,17 +203,17 @@ inline fun <reified S : Service> Context.startService(
  * @param Diana  泛型，继承于Activity
  * @param flag   flag (optional)
  * @param extra  附带的bundle (optional)
- * @param pairs  需要传过去的值
  */
 inline fun <reified Diana : Context> Context.getIntent(
     flag: Int? = null,
     extra: Bundle? = null,
-    vararg pairs: Pair<String, Any?>,
+    crossinline block: Bundle.() -> Unit = {},
 ): Intent = Intent(this, Diana::class.java).apply {
     flag?.let { flags = it }
     extra?.let { putExtras(it) }
-    if (pairs.isNotEmpty()) {
-        putExtras(bundleOf(*pairs))
+    val bundle = Bundle().apply(block)
+    if (!bundle.isEmpty) {
+        putExtras(bundle)
     }
 }
 
@@ -362,13 +361,18 @@ infix fun Context.browse(uri: String) {
 /**
  * 快捷给Fragment传值
  *
- * @param params 需要传过去的值
+ * @param block 需要传过去的值
  *
  * @return 带值的本身
  */
-fun <F : Fragment> F.makeBundle(vararg params: Pair<String, Any?>): F {
+fun <F : Fragment> F.makeBundle(
+    block: Bundle.() -> Unit
+): F {
     return this.apply {
-        arguments = bundleOf(*params)
+        // 如果 arguments 已经存在，则在原有基础上追加；如果不存在，则创建新的
+        val args = arguments ?: Bundle()
+        args.apply(block)
+        arguments = args
     }
 }
 

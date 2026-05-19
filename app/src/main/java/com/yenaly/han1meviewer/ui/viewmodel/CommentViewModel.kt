@@ -11,7 +11,7 @@ import com.yenaly.han1meviewer.logic.model.ReportReason
 import com.yenaly.han1meviewer.logic.model.VideoCommentArgs
 import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.fragment.video.CommentFragment
+import com.yenaly.han1meviewer.ui.screen.video.CommentSortType
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
 import com.yenaly.han1meviewer.util.loadAssetAs
 import com.yenaly.yenaly_libs.base.YenalyViewModel
@@ -31,7 +31,15 @@ import kotlinx.coroutines.launch
  */
 class CommentViewModel(application: Application) : YenalyViewModel(application) {
 
+    data class CommentUiState(
+        val firstVisibleItemIndex: Int = 0,
+        val firstVisibleItemScrollOffset: Int = 0,
+        val childCommentId: String? = null,
+    )
+
     lateinit var code: String
+
+    private val commentUiStateMap = mutableMapOf<String, CommentUiState>()
 
     var currentUserId: String? = null
     //reportMessage为点击举报按钮之后的响应及错误信息
@@ -71,11 +79,33 @@ class CommentViewModel(application: Application) : YenalyViewModel(application) 
         loadAssetAs<List<ReportReason>>("report_reason.json").orEmpty()
     }
 
-    var currentSortType = CommentFragment.SortType.LATEST
-        private set
-    fun setSortType(type: CommentFragment.SortType) {
-        currentSortType = type
+    private val _currentSortType = MutableStateFlow(CommentSortType.LATEST)
+    val currentSortType = _currentSortType.asStateFlow()
+    fun setSortType(type: CommentSortType) {
+        _currentSortType.value = type
     }
+
+    fun getCommentUiState(code: String): CommentUiState {
+        return commentUiStateMap[code] ?: CommentUiState()
+    }
+
+    fun setCommentScrollState(
+        code: String,
+        firstVisibleItemIndex: Int,
+        firstVisibleItemScrollOffset: Int,
+    ) {
+        val current = commentUiStateMap[code] ?: CommentUiState()
+        commentUiStateMap[code] = current.copy(
+            firstVisibleItemIndex = firstVisibleItemIndex,
+            firstVisibleItemScrollOffset = firstVisibleItemScrollOffset,
+        )
+    }
+
+    fun setChildCommentId(code: String, childCommentId: String?) {
+        val current = commentUiStateMap[code] ?: CommentUiState()
+        commentUiStateMap[code] = current.copy(childCommentId = childCommentId)
+    }
+
     fun clearCommentData(){
         _videoCommentFlow.value = emptyList()
     }

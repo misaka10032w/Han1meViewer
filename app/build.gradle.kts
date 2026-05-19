@@ -4,12 +4,12 @@ import Config.Version.createVersion
 import Config.Version.source
 import Config.isRelease
 import Config.lastCommitSha
+import com.android.build.api.variant.impl.VariantOutputImpl
 import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.com.android.application)
-    alias(libs.plugins.org.jetbrains.kotlin.android)
     alias(libs.plugins.org.jetbrains.kotlin.plugin.parcelize)
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
     alias(libs.plugins.com.google.devtools.ksp)
@@ -18,8 +18,8 @@ plugins {
     alias(libs.plugins.com.google.firebase.firebase.pref)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.navigation.safeargs)
-    id("com.mikepenz.aboutlibraries.plugin") version "12.2.4"
-    id("com.github.ben-manes.versions") version "0.52.0"
+    id("com.mikepenz.aboutlibraries.plugin") version "14.2.0"
+    id("com.github.ben-manes.versions") version "0.54.0"
 }
 
 android {
@@ -73,20 +73,14 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
-            manifestPlaceholders.put("appIcon", "@mipmap/ic_launcher_new")
+            manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_new"
 
-            applicationVariants.all variant@{
-                this@variant.outputs.all output@{
-                    val output = this@output as BaseVariantOutputImpl
-                    val versionName = defaultConfig.versionName
-                    output.outputFileName = "Han1meViewer-v${versionName}.apk"
-                }
-            }
         }
 
         debug {
@@ -95,7 +89,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
             applicationIdSuffix = ".debug"
-            manifestPlaceholders.put("appIcon", "@mipmap/ic_launcher_debug")
+            manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_debug"
         }
     }
     buildFeatures {
@@ -110,19 +104,32 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlin {
-        compilerOptions {
-            jvmTarget.value(JvmTarget.JVM_21)
-            freeCompilerArgs.addAll(
-                "-opt-in=kotlin.RequiresOptIn",
-                "-Xjvm-default=all-compatibility"
-            )
-        }
-    }
     lint {
         disable += setOf("EnsureInitializerMetadata")
     }
     namespace = "com.yenaly.han1meviewer"
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.value(JvmTarget.JVM_21)
+        freeCompilerArgs.addAll(
+            "-opt-in=kotlin.RequiresOptIn",
+            "-jvm-default=enable"
+        )
+    }
+}
+
+
+androidComponents {
+    onVariants { variant ->
+        variant.outputs.forEach { output ->
+
+            //  val apkName = "你的应用名_V${output.versionName.get()}_Build${output.versionCode.get()}_${variant.buildType}.apk"
+            val apkName = "Han1meViewer-v${output.versionName.get()}.apk"
+            (output as VariantOutputImpl).outputFileName = apkName
+        }
+    }
 }
 
 dependencies {
@@ -131,10 +138,10 @@ dependencies {
     implementation(libs.androidx.window.java)
     implementation(project(":yenaly_libs"))
     implementation(libs.aboutlibraries.core)
-    implementation(libs.aboutlibraries)
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.swiperefreshlayout)
+    implementation(libs.androidx.material.icons.extended)
     // android related
 
     implementation(libs.bundles.android.base)
@@ -155,7 +162,7 @@ dependencies {
     implementation(libs.androidx.material.icons.core)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
-
+    implementation(libs.aboutlibraries.compose.m3)
     // datetime
 
     implementation(libs.datetime)
@@ -174,14 +181,6 @@ dependencies {
 
     implementation(libs.coil)
 
-    // popup
-
-    implementation(libs.xpopup){
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-android-extensions-runtime")
-    }
-    implementation(libs.xpopup.ext){
-        exclude(group = "org.jetbrains.kotlin", module = "kotlin-android-extensions-runtime")
-    }
 
     // video
 
@@ -192,15 +191,11 @@ dependencies {
 
     // view
 
-    implementation(libs.refresh.layout.kernel)
-    implementation(libs.refresh.header.material)
-    implementation(libs.refresh.footer.classics)
     implementation(libs.multitype)
     implementation(libs.base.recyclerview.adapter.helper4)
     implementation(libs.expandable.textview)
     implementation(libs.spannable.x)
     implementation(libs.about)
-    implementation(libs.statelayout)
     implementation(libs.circular.reveal.switch)
     implementation(libs.drawerlayout)
 

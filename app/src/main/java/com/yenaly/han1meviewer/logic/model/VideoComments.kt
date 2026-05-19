@@ -37,7 +37,16 @@ data class VideoComments(
         val reportableType: String? = null
     ) {
 
-        val realReplyId get() = post.foreignId ?: checkNotNull(id)
+        val replyTargetIdOrNull get() = post.foreignId ?: id
+        val stableKey get() = replyTargetIdOrNull
+            ?: reportableId
+            ?: buildString {
+                append(username)
+                append('|')
+                append(date)
+                append('|')
+                append(content.hashCode())
+            }
         val realLikesCount get() = thumbUp
         fun incLikesCount(cancel: Boolean = false): VideoComment {
             return thumbUp?.let {
