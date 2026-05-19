@@ -611,11 +611,13 @@ fun CategoryRow(
         }
 
         // 横向视频列表
+        // B网站架构不知道是什么狗屎，会出现重复视频元素，这里去重
+        val uniqueVideos = videos.distinctBy { it.videoCode }
         LazyRow(
             contentPadding = PaddingValues(horizontal = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(0.dp)
         ) {
-            items(videos, key = { it.videoCode }) { video ->
+            items(uniqueVideos, key = { it.videoCode }) { video ->
                 VideoCardItem(
                     videoItem = video,
                     isHorizontalCard = true,
