@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -55,6 +56,7 @@ fun VideoCardItem(
     videoItem: VideoItemType,
     isHorizontalCard: Boolean = true,
     isWatched: Boolean = false,
+    isPlaying: Boolean = false,
     onClickVideosItem: (String) -> Unit,
     onLongClickVideosItem: (String, String) -> Unit,
 ) {
@@ -65,6 +67,7 @@ fun VideoCardItem(
         modifier = modifier
             .fillMaxWidth()
             .combinedClickable(
+                enabled = !isPlaying,
                 onClick = { onClickVideosItem(videoItem.videoCode) },
                 onLongClick = { onLongClickVideosItem(videoItem.videoCode, videoItem.title) },
             ),
@@ -160,6 +163,40 @@ fun VideoCardItem(
                         )
                     }
                 }
+                if (isPlaying) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(Color.Black.copy(alpha = 0.5f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .background(
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.85f),
+                                    shape = RoundedCornerShape(20.dp)
+                                )
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_baseline_play_circle_outline_24),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = stringResource(R.string.now_playing),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+                    }
+                }
             }
 
             Text(
@@ -229,7 +266,8 @@ private fun VideoCardItemPreview() {
             videoItem = fakeVideosItem,
             onClickVideosItem = {},
             onLongClickVideosItem = { _, _ -> },
-            isWatched = true
+            isWatched = true,
+            isPlaying = true
         )
     }
 }
