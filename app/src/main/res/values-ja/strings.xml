@@ -99,6 +99,13 @@
     <string name="player_settings">プレイヤー設定</string>
     <string name="tablet_mode">タブレットモード</string>
     <string name="tablet_mode_summary">有効にすると動画ページがタブレットレイアウトで表示され、より広い視聴エリアを提供します</string>
+    <string name="search_grid_columns_title">ビデオグリッド列数</string>
+    <string name="search_grid_columns_summary">タブレットモードのみ有効。画面幅に応じて検索、後で見る、お気に入り動画、チャンネル登録ページの列数を調整します</string>
+    <string name="search_grid_columns_dialog_hint">画面幅に応じてビデオグリッドの列数を設定</string>
+    <string name="search_grid_columns_current_width_hint">現在のデバイス幅参考：縦向き約 %1$ddp、横向き約 %2$ddp</string>
+    <string name="search_grid_columns_current_bucket_hint">現在のヒットバケット：縦向き %1$s = %2$d 列、横向き %3$s = %4$d 列</string>
+    <string name="search_grid_columns_current_portrait">現在の縦向き</string>
+    <string name="search_grid_columns_current_landscape">現在の横向き</string>
     <string name="current_slide_sensitivity">現在の感度：%s</string>
     <string name="network">ネットワーク</string>
     <string name="proxy">プロキシ</string>
@@ -600,6 +607,11 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="search_artist_ignore_video_type_summary">有効にすると、詳細ページのアバターをクリックしてアーティストを検索する際、動画タイプが含まれなくなります。</string>
     <string name="show_played_indicator">再生状態マークを表示</string>
     <string name="show_played_indicator_summary">有効にすると、検索結果ページの動画カバー右上に再生済みマークが表示されます</string>
+    <string name="horizontal_card_count_title">横スクロール一覧の表示カード数</string>
+    <string name="horizontal_card_count_summary">ホームや関連動画など、横スクロール一覧で一度に見えるカード数を調整します</string>
+    <string name="horizontal_card_count_dialog_hint">画面幅ごとに、横スクロール一覧で一度に見えるカード数を設定します</string>
+    <string name="horizontal_card_count_current_width_hint">現在のコンテナ幅の目安：約 %1$ddp</string>
+    <string name="horizontal_card_count_current_bucket_hint">現在の適用範囲：%1$s = %2$.1f 枚</string>
     <string name="video_group_error">動画グループ取得エラー：</string>
     <string name="video_group_empty">動画グループが空です</string>
     <string name="default_group_rename_not_allowed">デフォルトグループ（%s）は名前変更できません！</string>

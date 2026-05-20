@@ -47,6 +47,10 @@ internal fun saveString(key: String, value: String) {
     Preferences.preferenceSp.edit { putString(key, value) }
 }
 
+internal fun saveInt(key: String, value: Int) {
+    Preferences.preferenceSp.edit { putInt(key, value) }
+}
+
 internal fun buildDomainOptions(context: Context): List<Pair<String, String>> = listOf(
     "${HANIME_HOSTNAME[0]} (${context.getString(R.string.default_)})" to HANIME_URL[0],
     "${HANIME_HOSTNAME[1]} (${context.getString(R.string.alternative)})" to HANIME_URL[1],

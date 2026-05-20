@@ -99,6 +99,13 @@
     <string name="player_settings">Player Settings</string>
     <string name="tablet_mode">Tablet Mode</string>
     <string name="tablet_mode_summary">Enable tablet layout for the video page, providing a larger viewing area</string>
+    <string name="search_grid_columns_title">Video Grid Columns</string>
+    <string name="search_grid_columns_summary">Only effective in tablet mode, adjust the number of columns on search, watch later, liked videos and subscription pages based on screen width</string>
+    <string name="search_grid_columns_dialog_hint">Set the number of video grid columns for different screen widths</string>
+    <string name="search_grid_columns_current_width_hint">Current device width reference: portrait ~%1$ddp, landscape ~%2$ddp</string>
+    <string name="search_grid_columns_current_bucket_hint">Current hit bucket: portrait %1$s = %2$d columns, landscape %3$s = %4$d columns</string>
+    <string name="search_grid_columns_current_portrait">Current Portrait</string>
+    <string name="search_grid_columns_current_landscape">Current Landscape</string>
     <string name="current_slide_sensitivity">Current Sensitivity: %s</string>
     <string name="network">Network</string>
     <string name="proxy">Proxy</string>
@@ -595,6 +602,11 @@ Recommendations are as follows:\n
     <string name="search_artist_ignore_video_type_summary">When enabled, clicking avatar on details page to search artist will not include video type.</string>
     <string name="show_played_indicator">Show Played Status Indicator</string>
     <string name="show_played_indicator_summary">When enabled, shows played indicator at top-right corner of video covers on search results page</string>
+    <string name="horizontal_card_count_title">Visible Cards In Horizontal Lists</string>
+    <string name="horizontal_card_count_summary">Adjust how many cards are visible at once in horizontal lists such as Home and related videos</string>
+    <string name="horizontal_card_count_dialog_hint">Set how many cards should be visible at once for different screen widths</string>
+    <string name="horizontal_card_count_current_width_hint">Current container width reference: about %1$ddp</string>
+    <string name="horizontal_card_count_current_bucket_hint">Current bucket: %1$s = %2$.1f cards</string>
     <string name="video_group_error">Get video group error:</string>
     <string name="video_group_empty">Video group is empty</string>
     <string name="default_group_rename_not_allowed">Default group (%s) cannot be renamed!</string>

@@ -1,24 +1,40 @@
 package com.yenaly.han1meviewer.ui.screen.settings
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.yenaly.han1meviewer.HorizontalCardCountConfig
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.SearchGridColumnsConfig
 import com.yenaly.han1meviewer.ui.component.ChoiceDialog
 import com.yenaly.han1meviewer.ui.component.SettingInfoItem
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
@@ -27,6 +43,8 @@ import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.theme.ThemeColorPreset
+import kotlin.math.max
+import kotlin.math.min
 
 data class HomeSettingsUiState(
     val videoLanguage: String,
@@ -58,6 +76,10 @@ data class HomeSettingsUiState(
     val dynamicColorEnabled: Boolean,
     val themeColorKey: String,
     val themeColorName: String,
+    val searchGridColumnsSummary: String,
+    val searchGridColumnsConfig: SearchGridColumnsConfig,
+    val horizontalCardCountSummary: String,
+    val horizontalCardCountConfig: HorizontalCardCountConfig,
 )
 
 private enum class HomeSettingsChoiceDialog {
@@ -83,6 +105,8 @@ fun HomeSettingsScreen(
     onTabletModeChange: (Boolean) -> Unit,
     onDisableCommentsChange: (Boolean) -> Unit,
     onCollapseDownloadedGroupChange: (Boolean) -> Unit,
+    onSearchGridColumnsConfigChange: (SearchGridColumnsConfig) -> Unit,
+    onHorizontalCardCountConfigChange: (HorizontalCardCountConfig) -> Unit,
     onUseCIUpdateChannelChange: (Boolean) -> Unit,
     onUseAnalyticsChange: (Boolean) -> Unit,
     onUseLockScreenChange: (Boolean) -> Unit,
@@ -103,6 +127,8 @@ fun HomeSettingsScreen(
     onOpenForum: () -> Unit,
 ) {
     var activeDialog by rememberSaveable { mutableStateOf<HomeSettingsChoiceDialog?>(null) }
+    var showSearchGridColumnsDialog by rememberSaveable { mutableStateOf(false) }
+    var showHorizontalCardCountDialog by rememberSaveable { mutableStateOf(false) }
 
     ChoiceDialog(
         visible = activeDialog == HomeSettingsChoiceDialog.VideoLanguage,
@@ -177,6 +203,28 @@ fun HomeSettingsScreen(
         },
     )
 
+    if (showSearchGridColumnsDialog) {
+        SearchGridColumnsDialog(
+            initialConfig = state.searchGridColumnsConfig,
+            onDismiss = { showSearchGridColumnsDialog = false },
+            onConfirm = {
+                showSearchGridColumnsDialog = false
+                onSearchGridColumnsConfigChange(it)
+            },
+        )
+    }
+
+    if (showHorizontalCardCountDialog) {
+        HorizontalCardCountDialog(
+            initialConfig = state.horizontalCardCountConfig,
+            onDismiss = { showHorizontalCardCountDialog = false },
+            onConfirm = {
+                showHorizontalCardCountDialog = false
+                onHorizontalCardCountConfigChange(it)
+            },
+        )
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = 8.dp),
@@ -227,6 +275,15 @@ fun HomeSettingsScreen(
             )
         }
         item {
+            SettingNavigationItem(
+                title = stringResource(R.string.horizontal_card_count_title),
+                summary = stringResource(R.string.horizontal_card_count_summary),
+                valueText = state.horizontalCardCountSummary,
+                iconRes = R.drawable.baseline_row_24,
+                onClick = { showHorizontalCardCountDialog = true },
+            )
+        }
+        item {
             SettingSwitchItem(
                 title = stringResource(R.string.search_artist_ignore_video_type),
                 summary = stringResource(R.string.search_artist_ignore_video_type_summary),
@@ -262,6 +319,17 @@ fun HomeSettingsScreen(
                 iconRes = R.drawable.ic_baseline_tablet_24,
                 onCheckedChange = onTabletModeChange,
             )
+        }
+        if (state.tabletMode) {
+            item {
+                SettingNavigationItem(
+                    title = stringResource(R.string.search_grid_columns_title),
+                    summary = stringResource(R.string.search_grid_columns_summary),
+                    valueText = state.searchGridColumnsSummary,
+                    iconRes = R.drawable.baseline_grid_24,
+                    onClick = { showSearchGridColumnsDialog = true },
+                )
+            }
         }
         item {
             SettingNavigationItem(
@@ -496,6 +564,10 @@ private fun HomeSettingsScreenPreview() {
                 dynamicColorEnabled = true,
                 themeColorKey = "default",
                 themeColorName = "預設（暖紅）",
+                searchGridColumnsSummary = "2 / 3 / 4 / 5",
+                searchGridColumnsConfig = SearchGridColumnsConfig(),
+                horizontalCardCountSummary = "1.5 / 2.1 / 4.1 / 5.1",
+                horizontalCardCountConfig = HorizontalCardCountConfig(),
             ),
             onVideoLanguageChange = {},
             onVideoQualityChange = {},
@@ -509,6 +581,8 @@ private fun HomeSettingsScreenPreview() {
             onTabletModeChange = {},
             onDisableCommentsChange = {},
             onCollapseDownloadedGroupChange = {},
+            onSearchGridColumnsConfigChange = {},
+            onHorizontalCardCountConfigChange = {},
             onUseCIUpdateChannelChange = {},
             onUseAnalyticsChange = {},
             onUseLockScreenChange = {},
@@ -528,5 +602,393 @@ private fun HomeSettingsScreenPreview() {
             onSubmitBug = {},
             onOpenForum = {},
         )
+    }
+}
+
+@Composable
+private fun HorizontalCardCountDialog(
+    initialConfig: HorizontalCardCountConfig,
+    onDismiss: () -> Unit,
+    onConfirm: (HorizontalCardCountConfig) -> Unit,
+) {
+    val density = LocalDensity.current
+    val containerSize = LocalWindowInfo.current.containerSize
+    val currentWidthDp = with(density) { containerSize.width.toDp().value.toInt() }
+    var narrowCountText by remember(initialConfig) { mutableStateOf(initialConfig.narrowCount.toString()) }
+    var compactCountText by remember(initialConfig) { mutableStateOf(initialConfig.compactCount.toString()) }
+    var mediumCountText by remember(initialConfig) { mutableStateOf(initialConfig.mediumCount.toString()) }
+    var expandedCountText by remember(initialConfig) { mutableStateOf(initialConfig.expandedCount.toString()) }
+    val narrowCount = narrowCountText.toHorizontalCardCountOrNull()
+    val compactCount = compactCountText.toHorizontalCardCountOrNull()
+    val mediumCount = mediumCountText.toHorizontalCardCountOrNull()
+    val expandedCount = expandedCountText.toHorizontalCardCountOrNull()
+    val currentConfig = HorizontalCardCountConfig(
+        narrowCount = narrowCount ?: initialConfig.narrowCount,
+        compactCount = compactCount ?: initialConfig.compactCount,
+        mediumCount = mediumCount ?: initialConfig.mediumCount,
+        expandedCount = expandedCount ?: initialConfig.expandedCount,
+    )
+    val canConfirm = narrowCount != null && compactCount != null && mediumCount != null && expandedCount != null
+    val currentBucketLabel = horizontalCardCountBucketLabel(currentWidthDp)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.horizontal_card_count_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = stringResource(R.string.horizontal_card_count_dialog_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = stringResource(R.string.horizontal_card_count_current_width_hint, currentWidthDp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = stringResource(
+                        R.string.horizontal_card_count_current_bucket_hint,
+                        currentBucketLabel,
+                        currentConfig.countForWidthDp(currentWidthDp),
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                HorizontalCardCountInputRow(
+                    label = stringResource(R.string.horizontal_card_count_range_narrow),
+                    value = narrowCountText,
+                    onValueChange = { narrowCountText = it },
+                    isError = narrowCount == null,
+                    isHighlighted = currentWidthDp < 350,
+                )
+                HorizontalCardCountInputRow(
+                    label = stringResource(R.string.horizontal_card_count_range_compact),
+                    value = compactCountText,
+                    onValueChange = { compactCountText = it },
+                    isError = compactCount == null,
+                    isHighlighted = currentWidthDp in 350..599,
+                )
+                HorizontalCardCountInputRow(
+                    label = stringResource(R.string.horizontal_card_count_range_medium),
+                    value = mediumCountText,
+                    onValueChange = { mediumCountText = it },
+                    isError = mediumCount == null,
+                    isHighlighted = currentWidthDp in 600..839,
+                )
+                HorizontalCardCountInputRow(
+                    label = stringResource(R.string.horizontal_card_count_range_expanded),
+                    value = expandedCountText,
+                    onValueChange = { expandedCountText = it },
+                    isError = expandedCount == null,
+                    isHighlighted = currentWidthDp >= 840,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(currentConfig) }, enabled = canConfirm) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        dismissButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(
+                    onClick = {
+                        narrowCountText = HorizontalCardCountConfig.DEFAULT_NARROW_COUNT.toString()
+                        compactCountText = HorizontalCardCountConfig.DEFAULT_COMPACT_COUNT.toString()
+                        mediumCountText = HorizontalCardCountConfig.DEFAULT_MEDIUM_COUNT.toString()
+                        expandedCountText = HorizontalCardCountConfig.DEFAULT_EXPANDED_COUNT.toString()
+                    },
+                ) {
+                    Text(stringResource(R.string.reset))
+                }
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        },
+    )
+}
+
+@Composable
+private fun HorizontalCardCountInputRow(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    isError: Boolean,
+    isHighlighted: Boolean,
+) {
+    val containerColor = if (isHighlighted) {
+        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f)
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(containerColor, RoundedCornerShape(16.dp))
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f),
+        )
+        OutlinedTextField(
+            value = value,
+            onValueChange = {
+                if (it.isEmpty() || it.matches(Regex("^\\d*(\\.\\d*)?$"))) {
+                    onValueChange(it)
+                }
+            },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(0.32f),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            isError = isError,
+        )
+    }
+}
+
+@Composable
+private fun horizontalCardCountBucketLabel(widthDp: Int): String {
+    return when {
+        widthDp < 350 -> stringResource(R.string.horizontal_card_count_range_narrow)
+        widthDp < 600 -> stringResource(R.string.horizontal_card_count_range_compact)
+        widthDp < 840 -> stringResource(R.string.horizontal_card_count_range_medium)
+        else -> stringResource(R.string.horizontal_card_count_range_expanded)
+    }
+}
+
+@Composable
+private fun SearchGridColumnsDialog(
+    initialConfig: SearchGridColumnsConfig,
+    onDismiss: () -> Unit,
+    onConfirm: (SearchGridColumnsConfig) -> Unit,
+) {
+    val density = LocalDensity.current
+    val containerSize = LocalWindowInfo.current.containerSize
+    val currentWidthDp = with(density) { containerSize.width.toDp().value.toInt() }
+    val currentHeightDp = with(density) { containerSize.height.toDp().value.toInt() }
+    val portraitWidthDp = min(currentWidthDp, currentHeightDp)
+    val landscapeWidthDp = max(currentWidthDp, currentHeightDp)
+    var compactColumnsText by remember(initialConfig) {
+        mutableStateOf(initialConfig.compactColumns.toString())
+    }
+    var mediumColumnsText by remember(initialConfig) {
+        mutableStateOf(initialConfig.mediumColumns.toString())
+    }
+    var expandedColumnsText by remember(initialConfig) {
+        mutableStateOf(initialConfig.expandedColumns.toString())
+    }
+    var largeColumnsText by remember(initialConfig) {
+        mutableStateOf(initialConfig.largeColumns.toString())
+    }
+    val compactColumns = compactColumnsText.toSearchGridColumnsOrNull()
+    val mediumColumns = mediumColumnsText.toSearchGridColumnsOrNull()
+    val expandedColumns = expandedColumnsText.toSearchGridColumnsOrNull()
+    val largeColumns = largeColumnsText.toSearchGridColumnsOrNull()
+    val currentConfig = SearchGridColumnsConfig(
+        compactColumns = compactColumns ?: initialConfig.compactColumns,
+        mediumColumns = mediumColumns ?: initialConfig.mediumColumns,
+        expandedColumns = expandedColumns ?: initialConfig.expandedColumns,
+        largeColumns = largeColumns ?: initialConfig.largeColumns,
+    )
+    val canConfirm = compactColumns != null &&
+        mediumColumns != null &&
+        expandedColumns != null &&
+        largeColumns != null
+    val portraitBucketLabel = searchGridColumnsBucketLabel(portraitWidthDp)
+    val landscapeBucketLabel = searchGridColumnsBucketLabel(landscapeWidthDp)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.search_grid_columns_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = stringResource(R.string.search_grid_columns_dialog_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = stringResource(
+                        R.string.search_grid_columns_current_width_hint,
+                        portraitWidthDp,
+                        landscapeWidthDp,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = stringResource(
+                        R.string.search_grid_columns_current_bucket_hint,
+                        portraitBucketLabel,
+                        currentConfig.columnsForWidthDp(portraitWidthDp),
+                        landscapeBucketLabel,
+                        currentConfig.columnsForWidthDp(landscapeWidthDp),
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                SearchGridColumnsInputRow(
+                    label = stringResource(R.string.search_grid_columns_range_compact),
+                    value = compactColumnsText,
+                    onValueChange = { compactColumnsText = it },
+                    isError = compactColumns == null,
+                    isHighlighted = portraitWidthDp <= 600 || landscapeWidthDp <= 600,
+                    highlightLabels = buildList {
+                        if (portraitWidthDp <= 600) add(stringResource(R.string.search_grid_columns_current_portrait))
+                        if (landscapeWidthDp <= 600) add(stringResource(R.string.search_grid_columns_current_landscape))
+                    },
+                )
+                SearchGridColumnsInputRow(
+                    label = stringResource(R.string.search_grid_columns_range_medium),
+                    value = mediumColumnsText,
+                    onValueChange = { mediumColumnsText = it },
+                    isError = mediumColumns == null,
+                    isHighlighted = (portraitWidthDp in 601..900) || (landscapeWidthDp in 601..900),
+                    highlightLabels = buildList {
+                        if (portraitWidthDp in 601..900) add(stringResource(R.string.search_grid_columns_current_portrait))
+                        if (landscapeWidthDp in 601..900) add(stringResource(R.string.search_grid_columns_current_landscape))
+                    },
+                )
+                SearchGridColumnsInputRow(
+                    label = stringResource(R.string.search_grid_columns_range_expanded),
+                    value = expandedColumnsText,
+                    onValueChange = { expandedColumnsText = it },
+                    isError = expandedColumns == null,
+                    isHighlighted = (portraitWidthDp in 901..1200) || (landscapeWidthDp in 901..1200),
+                    highlightLabels = buildList {
+                        if (portraitWidthDp in 901..1200) add(stringResource(R.string.search_grid_columns_current_portrait))
+                        if (landscapeWidthDp in 901..1200) add(stringResource(R.string.search_grid_columns_current_landscape))
+                    },
+                )
+                SearchGridColumnsInputRow(
+                    label = stringResource(R.string.search_grid_columns_range_large),
+                    value = largeColumnsText,
+                    onValueChange = { largeColumnsText = it },
+                    isError = largeColumns == null,
+                    isHighlighted = portraitWidthDp >= 1201 || landscapeWidthDp >= 1201,
+                    highlightLabels = buildList {
+                        if (portraitWidthDp >= 1201) add(stringResource(R.string.search_grid_columns_current_portrait))
+                        if (landscapeWidthDp >= 1201) add(stringResource(R.string.search_grid_columns_current_landscape))
+                    },
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirm(
+                        currentConfig,
+                    )
+                },
+                enabled = canConfirm,
+            ) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        dismissButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(
+                    onClick = {
+                        compactColumnsText = SearchGridColumnsConfig.DEFAULT_COMPACT_COLUMNS.toString()
+                        mediumColumnsText = SearchGridColumnsConfig.DEFAULT_MEDIUM_COLUMNS.toString()
+                        expandedColumnsText = SearchGridColumnsConfig.DEFAULT_EXPANDED_COLUMNS.toString()
+                        largeColumnsText = SearchGridColumnsConfig.DEFAULT_LARGE_COLUMNS.toString()
+                    },
+                ) {
+                    Text(stringResource(R.string.reset))
+                }
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        },
+    )
+}
+
+@Composable
+private fun SearchGridColumnsInputRow(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    isError: Boolean,
+    isHighlighted: Boolean,
+    highlightLabels: List<String>,
+) {
+    val containerColor = if (isHighlighted) {
+        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f)
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(containerColor, RoundedCornerShape(16.dp))
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.weight(1f),
+            )
+            OutlinedTextField(
+                value = value,
+                onValueChange = {
+                    if (it.isEmpty() || it.all(Char::isDigit)) {
+                        onValueChange(it)
+                    }
+                },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(0.32f),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                isError = isError,
+            )
+        }
+        if (highlightLabels.isNotEmpty()) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                highlightLabels.forEach { highlightLabel ->
+                    AssistChip(
+                        onClick = {},
+                        enabled = false,
+                        label = { Text(highlightLabel) },
+                        colors = AssistChipDefaults.assistChipColors(
+                            disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.14f),
+                            disabledLabelColor = MaterialTheme.colorScheme.primary,
+                        ),
+                    )
+                }
+            }
+        }
+    }
+}
+
+private fun String.toSearchGridColumnsOrNull(): Int? {
+    val parsed = toIntOrNull() ?: return null
+    return parsed.takeIf { it in 1..12 }
+}
+
+private fun String.toHorizontalCardCountOrNull(): Float? {
+    val parsed = toFloatOrNull() ?: return null
+    return parsed.takeIf { it in 1f..12f }
+}
+
+@Composable
+private fun searchGridColumnsBucketLabel(widthDp: Int): String {
+    return when {
+        widthDp <= 600 -> stringResource(R.string.search_grid_columns_range_compact)
+        widthDp <= 900 -> stringResource(R.string.search_grid_columns_range_medium)
+        widthDp <= 1200 -> stringResource(R.string.search_grid_columns_range_expanded)
+        else -> stringResource(R.string.search_grid_columns_range_large)
     }
 }

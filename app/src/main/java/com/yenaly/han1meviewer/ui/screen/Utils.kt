@@ -18,8 +18,10 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.ui.theme.SpacingLarge
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
+import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
 
 @Composable
 fun RetryableImage(
@@ -75,13 +77,24 @@ fun rememberCardResponsiveWidth(
     val containerWidth = LocalWindowInfo.current.containerSize.width
     val density = LocalDensity.current
     val currentWidthDp = with(density) { containerWidth.toDp() }
-    val itemsToShow = when {
-        currentWidthDp < 600.dp -> 2.1f
-        currentWidthDp < 840.dp -> 4.1f
-        else -> 6.1f
-    }
+    val itemsToShow = Preferences.horizontalCardCountConfig
+        .countForWidthDp(currentWidthDp.value.toInt())
 
     val cardWidth = (currentWidthDp - (horizontalPadding * 2) - (itemSpacing * itemsToShow.toInt())) / itemsToShow
 
     return Pair(cardWidth, itemsToShow)
+}
+
+@Composable
+fun rememberVideoGridColumns(): Int {
+    val density = LocalDensity.current
+    val windowInfo = LocalWindowInfo.current
+    val screenWidthPx = windowInfo.containerSize.width
+    val screenWidthDp = with(density) { screenWidthPx.toDp() }
+
+    return if (Preferences.tabletMode) {
+        Preferences.searchGridColumnsConfig.columnsForWidthDp(screenWidthDp.value.toInt())
+    } else {
+        maxOf(2, ((screenWidthDp + SpacingNormal) / (VideoNormalCardMinWidth + SpacingNormal)).toInt())
+    }
 }

@@ -1,0 +1,20 @@
+<!--
+  ~ Copyright (C) 2026 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:height="24dp" android:viewportHeight="1024" android:viewportWidth="1024" android:width="24dp">
+      
+    <path android:fillColor="?attr/colorPrimary" android:pathData="M640,96v149.3a53.4,53.4 0,0 1,-53.3 53.3L437.3,298.7a53.4,53.4 0,0 1,-53.3 -53.3L384,96a53.4,53.4 0,0 1,53.3 -53.3h149.3a53.4,53.4 0,0 1,53.3 53.3zM245.3,42.7L96,42.7a53.4,53.4 0,0 0,-53.3 53.3v149.3a53.4,53.4 0,0 0,53.3 53.3h149.3a53.4,53.4 0,0 0,53.3 -53.3L298.7,96a53.4,53.4 0,0 0,-53.3 -53.3zM928,42.7h-149.3a53.4,53.4 0,0 0,-53.3 53.3v149.3a53.4,53.4 0,0 0,53.3 53.3h149.3a53.4,53.4 0,0 0,53.3 -53.3L981.3,96a53.4,53.4 0,0 0,-53.3 -53.3zM928,384h-149.3a53.4,53.4 0,0 0,-53.3 53.3v149.3a53.4,53.4 0,0 0,53.3 53.3h149.3a53.4,53.4 0,0 0,53.3 -53.3L981.3,437.3a53.4,53.4 0,0 0,-53.3 -53.3zM245.3,384L96,384a53.4,53.4 0,0 0,-53.3 53.3v149.3a53.4,53.4 0,0 0,53.3 53.3h149.3a53.4,53.4 0,0 0,53.3 -53.3L298.7,437.3a53.4,53.4 0,0 0,-53.3 -53.3zM586.7,384L437.3,384a53.4,53.4 0,0 0,-53.3 53.3v149.3a53.4,53.4 0,0 0,53.3 53.3h149.3a53.4,53.4 0,0 0,53.3 -53.3L640,437.3a53.4,53.4 0,0 0,-53.3 -53.3zM245.3,725.3L96,725.3a53.4,53.4 0,0 0,-53.3 53.3v149.3a53.4,53.4 0,0 0,53.3 53.3h149.3a53.4,53.4 0,0 0,53.3 -53.3v-149.3a53.4,53.4 0,0 0,-53.3 -53.3zM586.7,725.3L437.3,725.3a53.4,53.4 0,0 0,-53.3 53.3v149.3a53.4,53.4 0,0 0,53.3 53.3h149.3a53.4,53.4 0,0 0,53.3 -53.3v-149.3a53.4,53.4 0,0 0,-53.3 -53.3zM928,725.3h-149.3a53.4,53.4 0,0 0,-53.3 53.3v149.3a53.4,53.4 0,0 0,53.3 53.3h149.3a53.4,53.4 0,0 0,53.3 -53.3v-149.3a53.4,53.4 0,0 0,-53.3 -53.3z"/>
+    
+</vector>
