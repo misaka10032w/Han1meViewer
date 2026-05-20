@@ -161,12 +161,16 @@ class SearchViewModel(
 //                        is PageLoadingState.Success -> prevList + state.info
                         is PageLoadingState.Success -> {
                             val list = state.info
-                            val codes = list.map { it.videoCode }
-                            val watchedCodes= withContext(Dispatchers.IO) {
-                                DatabaseRepo.WatchHistory.getWatched(codes).toSet()
-                            }
-                            val updatedList = list.map { item ->
-                                item.copy(watched = watchedCodes.contains(item.videoCode))
+                            val updatedList = if (Preferences.showPlayedIndicator) {
+                                val codes = list.map { it.videoCode }
+                                val watchedCodes = withContext(Dispatchers.IO) {
+                                    DatabaseRepo.WatchHistory.getWatched(codes).toSet()
+                                }
+                                list.map { item ->
+                                    item.copy(watched = watchedCodes.contains(item.videoCode))
+                                }
+                            } else {
+                                list
                             }
                             prevList + updatedList
                         }

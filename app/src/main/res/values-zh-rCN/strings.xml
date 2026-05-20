@@ -701,4 +701,5 @@
     <string name="theme_color_teal">初音蓝(绿)</string>
     <string name="theme_color_yellow">咸蛋黄</string>
     <string name="theme_color_high_contrast">高对比</string>
+    <string name="played">已观看</string>
 </resources>

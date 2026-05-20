@@ -76,6 +76,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.SearchHistoryEntity
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
@@ -135,6 +136,7 @@ fun SearchScreen(
     val focusMgr = LocalFocusManager.current
     val kb = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
+    val showPlayedIndicator = Preferences.showPlayedIndicator
 
     // 搜索执行
     fun executeSearch() {
@@ -393,6 +395,7 @@ fun SearchScreen(
                     if (showResults.isNotEmpty()) SearchResultsGrid(
                         showResults,
                         searchState,
+                        showPlayedIndicator,
                         onOpenVideo,
                         onLongPressCopy,
                         { viewModel.page++; executeSearch() },
@@ -576,7 +579,8 @@ fun SearchHistoryList(
 
 @Composable
 fun SearchResultsGrid(
-    videos: List<HanimeInfo>, state: PageLoadingState<*>, onVideoClick: (String) -> Unit,
+    videos: List<HanimeInfo>, state: PageLoadingState<*>, showPlayedIndicator: Boolean,
+    onVideoClick: (String) -> Unit,
     onVideoLongClick: (String, String) -> Unit, onLoadMore: () -> Unit,
     canLoadMore: Boolean, gridState: LazyGridState, modifier: Modifier = Modifier
 ) {
@@ -609,6 +613,7 @@ fun SearchResultsGrid(
                     modifier = Modifier,
                     videoItem = it,
                     isHorizontalCard = it.itemType == NORMAL,
+                    isWatched = showPlayedIndicator && it.watched == true,
                     onClickVideosItem =  onVideoClick,
                     onLongClickVideosItem = {_, _ ->}
                 )
@@ -816,6 +821,7 @@ private fun SearchResultsGridPreview() {
         SearchResultsGrid(
             fakeHomePageVideos,
             PageLoadingState.Success(fakeHomePageVideos),
+            true,
             {},
             { _, _ -> },
             {},

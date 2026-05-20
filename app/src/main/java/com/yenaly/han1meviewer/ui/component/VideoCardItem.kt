@@ -25,6 +25,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -52,6 +54,7 @@ fun VideoCardItem(
     modifier: Modifier = Modifier,
     videoItem: VideoItemType,
     isHorizontalCard: Boolean = true,
+    isWatched: Boolean = false,
     onClickVideosItem: (String) -> Unit,
     onLongClickVideosItem: (String, String) -> Unit,
 ) {
@@ -89,6 +92,28 @@ fun VideoCardItem(
                     contentScale = ContentScale.FillWidth,
                 )
 
+                if (isWatched) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(top = 6.dp, end = 6.dp)
+                            .background(
+                                color = Color.Black.copy(alpha = 0.65f),
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.played),
+                            color = Color.White,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                }
+
+                // 底部半透明遮罩（播放量和时长）
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -135,7 +160,6 @@ fun VideoCardItem(
                         )
                     }
                 }
-
             }
 
             Text(
@@ -205,6 +229,7 @@ private fun VideoCardItemPreview() {
             videoItem = fakeVideosItem,
             onClickVideosItem = {},
             onLongClickVideosItem = { _, _ -> },
+            isWatched = true
         )
     }
 }
