@@ -70,7 +70,6 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -87,6 +86,9 @@ import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
+import com.yenaly.han1meviewer.ui.theme.SpacingNormal
+import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
+import com.yenaly.han1meviewer.ui.theme.VideoSimplifiedCardMinWidth
 import com.yenaly.han1meviewer.ui.viewmodel.SearchViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
@@ -590,27 +592,25 @@ fun SearchResultsGrid(
     }
     LaunchedEffect(state) { if (state !is PageLoadingState.Loading) isLoadingMore = false }
     Box(modifier = modifier.fillMaxSize()) {
-        val normalCardWidth = dimensionResource(R.dimen.video_cover_width)
-        val simplifiedCardWidth = dimensionResource(R.dimen.video_cover_simplified_width)
-        val cardPadding = 4.dp
-        val normalMinSize = normalCardWidth + cardPadding
-        val simplifiedMinSize = simplifiedCardWidth + cardPadding
+        val normalCardWidth = VideoNormalCardMinWidth
+        val simplifiedCardWidth = VideoSimplifiedCardMinWidth
         val useNormalGrid = videos.firstOrNull()?.itemType == NORMAL
 
         LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = if (useNormalGrid) normalMinSize else simplifiedMinSize),
+            columns = GridCells.Adaptive(minSize = if (useNormalGrid) normalCardWidth else simplifiedCardWidth),
             state = gridState,
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            contentPadding = PaddingValues(SpacingNormal),
+            horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
+            verticalArrangement = Arrangement.spacedBy(SpacingNormal)
         ) {
             items(videos, key = { it.videoCode }) {
                 VideoCardItem(
-                    it,
-                    it.itemType == NORMAL,
-                    onVideoClick,
-                    onVideoLongClick
+                    modifier = Modifier,
+                    videoItem = it,
+                    isHorizontalCard = it.itemType == NORMAL,
+                    onClickVideosItem =  onVideoClick,
+                    onLongClickVideosItem = {_, _ ->}
                 )
             }
             if (canLoadMore && state is PageLoadingState.Loading) {

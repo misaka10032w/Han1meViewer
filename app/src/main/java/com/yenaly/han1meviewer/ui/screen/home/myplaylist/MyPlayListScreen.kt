@@ -346,9 +346,9 @@ fun AnimatedPageContent(
                 LazyVerticalGrid(
                     state = gridState,
                     columns = GridCells.Fixed(getColumnCount(180)),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    contentPadding = PaddingValues(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(playlists) { playlist ->
                         // 播放清单卡片

@@ -62,6 +62,8 @@ import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.screen.RetryableImage
+import com.yenaly.han1meviewer.ui.theme.SpacingNormal
+import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.showShortToast
@@ -360,21 +362,21 @@ fun PlaylistDetailContent(
         // 视频列表
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             val sheetWidth = maxWidth
-            val cardWidth = dimensionResource(id = R.dimen.video_cover_width)
+            val cardWidth = VideoNormalCardMinWidth
             val columns = maxOf(2, (sheetWidth / cardWidth).toInt())
 
             LazyVerticalGrid(
                 state = gridState,
-                columns = GridCells.Fixed(columns),
-                contentPadding = PaddingValues(4.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                columns = GridCells.Adaptive(minSize = VideoNormalCardMinWidth),
+                contentPadding = PaddingValues(SpacingNormal),
+                horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
+                verticalArrangement = Arrangement.spacedBy(SpacingNormal)
             ) {
                 itemsIndexed(playlist) { index, item ->
                     VideoCardItem(
-                        item,
+                        videoItem = item,
                         isHorizontalCard = true,
-                        onClickItem,
+                        onClickVideosItem =  onClickItem,
                     ) { videoCode, _ ->
                         showDeleteItemConfirm = Triple(listCode, videoCode, index)
                     }
