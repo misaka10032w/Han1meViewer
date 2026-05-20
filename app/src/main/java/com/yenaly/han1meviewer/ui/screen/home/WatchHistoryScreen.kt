@@ -185,7 +185,7 @@ fun WatchHistoryTabScreen(
                 Tab(
                     selected = pagerState.currentPage == 0,
                     onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
-                    text = { Text(stringResource(R.string.local_playback)) },
+                    text = { Text(stringResource(R.string.local)) },
                 )
                 Tab(
                     selected = pagerState.currentPage == 1,
