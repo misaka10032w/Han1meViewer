@@ -45,8 +45,8 @@ fun LazyColumn(
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     userScrollEnabled: Boolean = true,
     enableItemAnimation: Boolean = true,
-    staggerStepMillis: Int = 24,
-    maxStaggerIndex: Int = 12,
+    staggerStepMillis: Int = 12,
+    maxStaggerIndex: Int = 6,
     content: AnimatedLazyListScope.() -> Unit,
 ) {
     FoundationLazyColumn(
@@ -77,8 +77,8 @@ fun LazyRow(
     verticalAlignment: Alignment.Vertical = Alignment.Top,
     userScrollEnabled: Boolean = true,
     enableItemAnimation: Boolean = true,
-    staggerStepMillis: Int = 24,
-    maxStaggerIndex: Int = 12,
+    staggerStepMillis: Int = 12,
+    maxStaggerIndex: Int = 6,
     content: AnimatedLazyListScope.() -> Unit,
 ) {
     FoundationLazyRow(
@@ -110,8 +110,8 @@ fun LazyVerticalGrid(
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     userScrollEnabled: Boolean = true,
     enableItemAnimation: Boolean = true,
-    staggerStepMillis: Int = 24,
-    maxStaggerIndex: Int = 12,
+    staggerStepMillis: Int = 12,
+    maxStaggerIndex: Int = 6,
     content: AnimatedLazyGridScope.() -> Unit,
 ) {
     FoundationLazyVerticalGrid(
@@ -381,12 +381,12 @@ private fun AnimatedLazyItemContainer(
     }
     val animatedAlpha by animateFloatAsState(
         targetValue = if (visible) 1f else 0f,
-        animationSpec = tween(durationMillis = 120),
+        animationSpec = tween(durationMillis = 100),
         label = "lazy-item-alpha",
     )
     val animatedScale by animateFloatAsState(
         targetValue = if (visible) 1f else 0.985f,
-        animationSpec = tween(durationMillis = 220),
+        animationSpec = tween(durationMillis = 180),
         label = "lazy-item-scale",
     )
     Box(
