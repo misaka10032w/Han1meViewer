@@ -111,6 +111,7 @@ fun VideoRouteHostScreen(
     val shell = remember(route.videoCode, route.localUri) {
         VideoRouteShell(activity, player)
     }
+    val hostUiState by viewModel.videoHostUiStateFlow.collectAsStateWithLifecycle()
     val relatedItems =
         viewModel.hanimeVideoFlow.collectAsStateWithLifecycle().value?.relatedHanimes.orEmpty()
     val stringLongPressShare = remember(activity) {
@@ -171,9 +172,9 @@ fun VideoRouteHostScreen(
         if (!activity.isInPictureInPictureMode) return
         val isPlaying = (Jzvd.CURRENT_JZVD?.mediaInterface as? ExoMediaKernel)?.isPlaying == true
         val icon = if (isPlaying) {
-            Icon.createWithResource(activity, R.drawable.ic_baseline_pause_24_tintwhite)
+            Icon.createWithResource(activity, R.drawable.ic_pip_pause_24)
         } else {
-            Icon.createWithResource(activity, R.drawable.ic_baseline_play_arrow_24_tintwhite)
+            Icon.createWithResource(activity, R.drawable.ic_pip_play_arrow_24)
         }
         val title = if (isPlaying) "Pause Video" else "Play Video"
         val intent = PendingIntent.getBroadcast(
@@ -223,7 +224,7 @@ fun VideoRouteHostScreen(
                     PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
                 )
                 val icon =
-                    Icon.createWithResource(activity, R.drawable.ic_baseline_pause_24_tintwhite)
+                    Icon.createWithResource(activity, R.drawable.ic_pip_pause_24)
                 val action = RemoteAction(
                     icon,
                     activity.getString(R.string.play_pause),
@@ -535,6 +536,7 @@ fun VideoRouteHostScreen(
 
     VideoShellContent(
         isTabletMode = Preferences.tabletMode,
+        isInPipMode = hostUiState.isInPipMode,
         relatedItems = relatedItems,
         onHideRelatedInIntroChange = { viewModel.hideRelatedInIntro = it },
         onOpenVideo = { item -> activity.showVideoDetailFragment(item.videoCode) },
