@@ -99,6 +99,13 @@
     <string name="player_settings">播放器设置</string>
     <string name="tablet_mode">平板模式</string>
     <string name="tablet_mode_summary">开启后影片页面将以平板布局显示，提供更大观看区域</string>
+    <string name="search_grid_columns_title">影片网格列数</string>
+    <string name="search_grid_columns_summary">仅在平板模式下生效，可依屏幕宽度调整搜索、稍后观看、喜欢影片与订阅页的列数</string>
+    <string name="search_grid_columns_dialog_hint">依不同屏幕宽度设置影片网格的列数</string>
+    <string name="search_grid_columns_current_width_hint">当前设备宽度参考：竖屏约 %1$ddp，横屏约 %2$ddp</string>
+    <string name="search_grid_columns_current_bucket_hint">当前命中档位：竖屏 %1$s = %2$d 列，横屏 %3$s = %4$d 列</string>
+    <string name="search_grid_columns_current_portrait">当前竖屏</string>
+    <string name="search_grid_columns_current_landscape">当前横屏</string>
     <string name="current_slide_sensitivity">当前灵敏度：%s</string>
     <string name="network">网络</string>
     <string name="proxy">代理</string>

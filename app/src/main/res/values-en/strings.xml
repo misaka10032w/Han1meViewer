@@ -99,6 +99,13 @@
     <string name="player_settings">Player Settings</string>
     <string name="tablet_mode">Tablet Mode</string>
     <string name="tablet_mode_summary">Enable tablet layout for the video page, providing a larger viewing area</string>
+    <string name="search_grid_columns_title">Video Grid Columns</string>
+    <string name="search_grid_columns_summary">Only effective in tablet mode, adjust the number of columns on search, watch later, liked videos and subscription pages based on screen width</string>
+    <string name="search_grid_columns_dialog_hint">Set the number of video grid columns for different screen widths</string>
+    <string name="search_grid_columns_current_width_hint">Current device width reference: portrait ~%1$ddp, landscape ~%2$ddp</string>
+    <string name="search_grid_columns_current_bucket_hint">Current hit bucket: portrait %1$s = %2$d columns, landscape %3$s = %4$d columns</string>
+    <string name="search_grid_columns_current_portrait">Current Portrait</string>
+    <string name="search_grid_columns_current_landscape">Current Landscape</string>
     <string name="current_slide_sensitivity">Current Sensitivity: %s</string>
     <string name="network">Network</string>
     <string name="proxy">Proxy</string>

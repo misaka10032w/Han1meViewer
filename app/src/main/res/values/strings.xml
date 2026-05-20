@@ -100,6 +100,17 @@
     <string name="player_settings">播放器設定</string>
     <string name="tablet_mode">平板模式</string>
     <string name="tablet_mode_summary">開啟後影片頁面將以平板佈局顯示，提供更大觀看區域</string>
+    <string name="search_grid_columns_title">影片網格列數</string>
+    <string name="search_grid_columns_summary">僅在平板模式下生效，可依螢幕寬度調整搜尋、稍後觀看、喜歡影片與訂閱頁的列數</string>
+    <string name="search_grid_columns_dialog_hint">依不同螢幕寬度設定影片網格的列數</string>
+    <string name="search_grid_columns_current_width_hint">目前裝置寬度參考：直向約 %1$ddp，橫向約 %2$ddp</string>
+    <string name="search_grid_columns_current_bucket_hint">目前命中檔位：直向 %1$s = %2$d 欄，橫向 %3$s = %4$d 欄</string>
+    <string name="search_grid_columns_current_portrait">目前直向</string>
+    <string name="search_grid_columns_current_landscape">目前橫向</string>
+    <string name="search_grid_columns_range_compact" translatable="false">≤600dp</string>
+    <string name="search_grid_columns_range_medium" translatable="false">601-900dp</string>
+    <string name="search_grid_columns_range_expanded" translatable="false">901-1200dp</string>
+    <string name="search_grid_columns_range_large" translatable="false">≥1201dp</string>
     <string name="current_slide_sensitivity">當前靈敏度：%s</string>
     <string name="network">網路</string>
     <string name="proxy">代理</string>

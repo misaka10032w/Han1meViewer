@@ -59,9 +59,9 @@ import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.preview.fakeArtists
 import com.yenaly.han1meviewer.ui.preview.fakeVideos
+import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
 import com.yenaly.han1meviewer.ui.theme.ArtistIconSize
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
-import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
 import com.yenaly.han1meviewer.ui.viewmodel.MySubscriptionsViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -213,7 +213,7 @@ fun SubscriptionPageContent(
     val windowInfo = LocalWindowInfo.current
     val screenWidthPx = windowInfo.containerSize.width
     val screenWidthDp = with(density) { screenWidthPx.toDp() }
-    val videoColumns = maxOf(2, ((screenWidthDp + SpacingNormal) / (VideoNormalCardMinWidth + SpacingNormal)).toInt())
+    val videoColumns = rememberVideoGridColumns()
     val artistColumns = maxOf(3, ((screenWidthDp + SpacingNormal) / (ArtistIconSize + SpacingNormal)).toInt())
     var currentPage by remember { mutableIntStateOf(1) }
     val pageSize = 60

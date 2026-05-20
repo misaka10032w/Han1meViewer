@@ -133,6 +133,26 @@ object Preferences {
     val showPlayedIndicator: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.SHOW_PLAYED_INDICATOR,true)
 
+    val searchGridColumnsConfig: SearchGridColumnsConfig
+        get() = SearchGridColumnsConfig(
+            compactColumns = preferenceSp.getInt(
+                SettingsPreferenceKeys.SEARCH_GRID_COLUMNS_COMPACT,
+                SearchGridColumnsConfig.DEFAULT_COMPACT_COLUMNS,
+            ),
+            mediumColumns = preferenceSp.getInt(
+                SettingsPreferenceKeys.SEARCH_GRID_COLUMNS_MEDIUM,
+                SearchGridColumnsConfig.DEFAULT_MEDIUM_COLUMNS,
+            ),
+            expandedColumns = preferenceSp.getInt(
+                SettingsPreferenceKeys.SEARCH_GRID_COLUMNS_EXPANDED,
+                SearchGridColumnsConfig.DEFAULT_EXPANDED_COLUMNS,
+            ),
+            largeColumns = preferenceSp.getInt(
+                SettingsPreferenceKeys.SEARCH_GRID_COLUMNS_LARGE,
+                SearchGridColumnsConfig.DEFAULT_LARGE_COLUMNS,
+            ),
+        )
+
     val fakeLauncherIcon: String
         get() = preferenceSp.getString(
             SettingsPreferenceKeys.FAKE_LAUNCHER_ICON,

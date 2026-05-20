@@ -44,9 +44,9 @@ import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.content.ErrorContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
+import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
-import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -219,8 +219,9 @@ private fun MyListVideoGrid(
     state: PageLoadingState<*>,
     loadingMore: Boolean,
 ) {
+    val videoColumns = rememberVideoGridColumns()
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = VideoNormalCardMinWidth),
+        columns = GridCells.Fixed(videoColumns),
         state = gridState,
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(SpacingNormal),

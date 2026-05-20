@@ -85,6 +85,10 @@ private const val HOME_DISABLE_COMMENTS = "disable_comments"
 private const val HOME_USE_LOCK_SCREEN = "use_lock_screen"
 private const val HOME_APP_LANGUAGE = "app_language"
 private const val HOME_THEME_COLOR = "theme_color"
+private const val HOME_SEARCH_GRID_COLUMNS_COMPACT = "search_grid_columns_compact"
+private const val HOME_SEARCH_GRID_COLUMNS_MEDIUM = "search_grid_columns_medium"
+private const val HOME_SEARCH_GRID_COLUMNS_EXPANDED = "search_grid_columns_expanded"
+private const val HOME_SEARCH_GRID_COLUMNS_LARGE = "search_grid_columns_large"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -231,6 +235,13 @@ fun HomeSettingsRouteScreen(
         },
         onCollapseDownloadedGroupChange = {
             saveBoolean(HOME_COLLAPSE_DOWNLOADED_GROUP, it)
+            refreshKey++
+        },
+        onSearchGridColumnsConfigChange = { config ->
+            saveInt(HOME_SEARCH_GRID_COLUMNS_COMPACT, config.compactColumns)
+            saveInt(HOME_SEARCH_GRID_COLUMNS_MEDIUM, config.mediumColumns)
+            saveInt(HOME_SEARCH_GRID_COLUMNS_EXPANDED, config.expandedColumns)
+            saveInt(HOME_SEARCH_GRID_COLUMNS_LARGE, config.largeColumns)
             refreshKey++
         },
         onThemeColorChange = { key ->
@@ -477,6 +488,7 @@ private fun buildHomeSettingsUiState(
         "en" -> context.getString(R.string.english_lang)
         else -> appLanguageValue
     }
+    val searchGridColumnsConfig = Preferences.searchGridColumnsConfig
     return HomeSettingsUiState(
         videoLanguage = Preferences.videoLanguage,
         videoLanguageLabel = videoLanguageLabel,
@@ -513,5 +525,12 @@ private fun buildHomeSettingsUiState(
         dynamicColorEnabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
         themeColorKey = Preferences.themeColor ?: ThemeColorPreset.DEFAULT.key,
         themeColorName = context.getString(ThemeColorPreset.fromKey(Preferences.themeColor).displayNameRes),
+        searchGridColumnsSummary = listOf(
+            searchGridColumnsConfig.compactColumns,
+            searchGridColumnsConfig.mediumColumns,
+            searchGridColumnsConfig.expandedColumns,
+            searchGridColumnsConfig.largeColumns,
+        ).joinToString(" / "),
+        searchGridColumnsConfig = searchGridColumnsConfig,
     )
 }
