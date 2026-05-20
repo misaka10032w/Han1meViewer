@@ -7,6 +7,7 @@ import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.HTTP
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -26,6 +27,21 @@ interface HanimeMyListService {
         @Path("userid") userId: String,
         @Path("type") listType: String,
         @Query("page") page: Int
+    ): Response<ResponseBody>
+
+    @GET("user/{userid}/histories")
+    suspend fun getOnlineWatchHistories(
+        @Path("userid") userId: String,
+        @Query("sort") sort: String,
+        @Query("page") page: Int,
+    ): Response<ResponseBody>
+
+    @FormUrlEncoded
+    @HTTP(method = "DELETE", path = "user/tab-item/{id}", hasBody = true)
+    suspend fun deleteOnlineWatchHistory(
+        @Path("id") videoCode: String,
+        @Field("tab") tab: String = "histories",
+        @Header("X-CSRF-TOKEN") csrfToken: String?,
     ): Response<ResponseBody>
 
     @GET("playlist")

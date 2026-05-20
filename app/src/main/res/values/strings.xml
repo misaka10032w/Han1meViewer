@@ -243,6 +243,9 @@
     <string name="watch_history_watched_at">觀看於 %1$s</string>
     <string name="watch_history_released_at">發佈於 %1$s</string>
     <string name="watch_history_progress_minutes">已觀看約 %1$d 分鐘</string>
+    <string name="online">在線</string>
+    <string name="popular">熱門</string>
+    <string name="watch_history_online_help">下拉重新整理，滑到底部自動載入更多。</string>
     <string name="speed">倍速</string>
     <string name="cancel_thumb_up_success">取消點讚成功！</string>
     <string name="thumb_up_success">點讚成功！</string>
@@ -763,4 +766,5 @@
     <string name="theme_color_high_contrast">高對比</string>
     <string name="restart_needed">需要重啟程序，否則不起作用！</string>
     <string name="played">已觀看</string>
+    <string name="local">本地</string>
 </resources>

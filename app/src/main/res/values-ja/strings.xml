@@ -233,6 +233,9 @@
     <string name="watch_history_watched_at">視聴日時 %1$s</string>
     <string name="watch_history_released_at">公開日時 %1$s</string>
     <string name="watch_history_progress_minutes">約 %1$d 分視聴しました</string>
+    <string name="online">オンライン</string>
+    <string name="popular">人気</string>
+    <string name="watch_history_online_help">下に引いて更新し、下端までスクロールすると続きを読み込みます。</string>
     <string name="speed">再生速度</string>
     <string name="cancel_thumb_up_success">高評価解除成功！</string>
     <string name="thumb_up_success">高評価成功！</string>
@@ -714,4 +717,5 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="theme_color_high_contrast">ハイコントラスト</string>
     <string name="restart_needed">プログラムを再起動する必要があります。そうしないと動作しません！</string>
     <string name="played">閲覧済み</string>
+    <string name="local">ローカル</string>
 </resources>

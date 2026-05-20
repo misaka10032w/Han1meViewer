@@ -11,6 +11,7 @@ import com.yenaly.han1meviewer.logic.exception.ParseException
 import com.yenaly.han1meviewer.logic.model.CommentPlace
 import com.yenaly.han1meviewer.logic.model.ModifiedPlaylistArgs
 import com.yenaly.han1meviewer.logic.model.MyListType
+import com.yenaly.han1meviewer.logic.model.OnlineWatchHistorySort
 import com.yenaly.han1meviewer.logic.model.VideoCommentArgs
 import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.network.HUpdater
@@ -99,6 +100,38 @@ object NetworkRepo {
         },
         action = Parser::myPlayListItems
     )
+
+    fun getOnlineWatchHistories(
+        userId: String,
+        sort: OnlineWatchHistorySort,
+        page: Int,
+    ) = pageIOFlow(
+        request = {
+            HanimeNetwork.myListService.getOnlineWatchHistories(userId, sort.value, page)
+        },
+        action = Parser::onlineWatchHistoryItems,
+    )
+
+    fun deleteOnlineWatchHistory(
+        videoCode: String,
+        position: Int,
+        csrfToken: String?,
+    ) = websiteIOFlow(
+        request = {
+            HanimeNetwork.myListService.deleteOnlineWatchHistory(
+                videoCode = videoCode,
+                csrfToken = csrfToken,
+            )
+        },
+    ) {
+        val jsonObject = JSONObject(it)
+        val success = jsonObject.optBoolean("success", false)
+        if (success) {
+            WebsiteState.Success(position)
+        } else {
+            WebsiteState.Error(IllegalStateException("cannot delete it ?!"))
+        }
+    }
 
     fun deleteMyListItems(
         typeOrCode: Any,

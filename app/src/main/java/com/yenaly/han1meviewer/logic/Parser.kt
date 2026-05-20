@@ -672,6 +672,18 @@ object Parser {
         )
     }
 
+    fun onlineWatchHistoryItems(body: String): PageLoadingState<MyListItems<HanimeInfo>> {
+        val parseBody = Jsoup.parse(body).body()
+        val csrfToken = parseBody.selectFirst("input[name=_token]")?.attr("value")
+        val allHanimeClass = parseBody.getElementsByClass("horizontal-row").firstOrNull()
+        val items = allHanimeClass.extractHanimeInfo("div[class^=user-tab-item-wrapper]")
+        return if (items.isEmpty()) {
+            PageLoadingState.NoMoreData
+        } else {
+            PageLoadingState.Success(MyListItems(items, csrfToken = csrfToken))
+        }
+    }
+
 
     fun playlists(body: String): WebsiteState<Playlists> {
         val parseBody = Jsoup.parse(body).body()

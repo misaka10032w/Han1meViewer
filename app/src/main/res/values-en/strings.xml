@@ -233,6 +233,9 @@
     <string name="watch_history_watched_at">Watched at %1$s</string>
     <string name="watch_history_released_at">Released at %1$s</string>
     <string name="watch_history_progress_minutes">Watched for about %1$d minute(s)</string>
+    <string name="online">Online</string>
+    <string name="popular">Popular</string>
+    <string name="watch_history_online_help">Pull to refresh and scroll to the bottom to load more.</string>
     <string name="speed">Speed</string>
     <string name="cancel_thumb_up_success">Thumb Up Cancelled Successfully!</string>
     <string name="thumb_up_success">Thumb Up Successful!</string>
@@ -709,4 +712,5 @@ Recommendations are as follows:\n
     <string name="theme_color_high_contrast">High Contrast</string>
     <string name="restart_needed">You need to restart the program, otherwise it won\'t work!</string>
     <string name="played">Watched</string>
+    <string name="local">Local</string>
 </resources>
