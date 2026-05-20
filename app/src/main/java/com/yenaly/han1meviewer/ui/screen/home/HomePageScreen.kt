@@ -948,6 +948,7 @@ fun HomePageContent(
 @Composable
 fun HomePageScreen(
     viewModel: MainViewModel,
+    isDrawerOpen: Boolean,
     onOpenDrawer: () -> Unit,
     onNavigateToPreview: () -> Unit,
     onNavigateToSearch: (String) -> Unit,
@@ -990,7 +991,7 @@ fun HomePageScreen(
             isRefreshing = false
         }
     }
-    BackHandler {
+    BackHandler(enabled = !isDrawerOpen) {
         onShowExitDialog()
     }
 

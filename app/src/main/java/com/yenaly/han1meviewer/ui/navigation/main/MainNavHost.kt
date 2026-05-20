@@ -39,6 +39,7 @@ import kotlinx.serialization.json.Json
 fun MainNavHost(
     activity: MainActivity,
     navController: NavHostController,
+    isDrawerOpen: Boolean,
     onOpenDrawer: () -> Unit,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
 ) {
@@ -91,6 +92,7 @@ fun MainNavHost(
         composable<HomeRoute> {
             HomeRouteScreen(
                 activity = activity,
+                isDrawerOpen = isDrawerOpen,
                 onOpenDrawer = onOpenDrawer,
                 onNavigateToPreview = { navController.navigate(PreviewRoute) },
                 onNavigateToSearch = { query -> navController.navigate(SearchRoute(query = query)) },

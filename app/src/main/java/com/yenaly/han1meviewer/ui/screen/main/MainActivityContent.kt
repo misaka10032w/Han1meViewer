@@ -60,6 +60,8 @@ fun MainActivityContent(
         val scope = rememberCoroutineScope()
         var currentMainDestination by remember { mutableStateOf(MainDestinationSpec.Home) }
         var pendingUpdate by remember { mutableStateOf<Latest?>(null) }
+        val isDrawerOpen =
+            drawerState.currentValue == DrawerValue.Open || drawerState.targetValue == DrawerValue.Open
 
         val homeState by viewModel.homePageFlow.collectAsStateWithLifecycle()
         val isLoggedIn by Preferences.loginStateFlow.collectAsStateWithLifecycle()
@@ -131,6 +133,7 @@ fun MainActivityContent(
                 MainNavHost(
                     activity = activity,
                     navController = composeNavController,
+                    isDrawerOpen = isDrawerOpen,
                     onOpenDrawer = {
                         if (currentMainDestination.drawerEnabled) {
                             scope.launch { drawerState.open() }
