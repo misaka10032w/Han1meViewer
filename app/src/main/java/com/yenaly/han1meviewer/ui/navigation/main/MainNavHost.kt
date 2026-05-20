@@ -10,6 +10,10 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -17,6 +21,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
+import com.yenaly.han1meviewer.ui.screen.account.AvatarCropScreen
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframeSettingsRoute
@@ -34,6 +39,8 @@ import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsScaffold
 import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRouteScreen
+import com.yenaly.han1meviewer.ui.screen.account.AccountScreen
+import com.yenaly.han1meviewer.ui.viewmodel.UserAccountViewModel
 import kotlinx.serialization.json.Json
 
 @Composable
@@ -46,6 +53,7 @@ fun MainNavHost(
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val destinationSpec = MainDestinationSpec.fromDestination(backStackEntry?.destination)
+    var pendingAvatarCropResult by remember { mutableStateOf<String?>(null) }
 
     val onBack: () -> Unit = { navController.popBackStack() }
     val onNavigateToVideo: (String) -> Unit = { code -> navController.navigateSafely(VideoRoute(code)) }
@@ -148,6 +156,30 @@ fun MainNavHost(
                 onBack = onBack,
                 onNavigateToVideo = onNavigateToVideo,
                 onNavigateToLocalVideo = onNavigateToLocalVideo,
+            )
+        }
+        composable<AccountRoute> {
+            val accountViewModel: UserAccountViewModel = viewModel()
+            AccountScreen(
+                viewModel = accountViewModel,
+                onBack = onBack,
+                onOpenAvatarCrop = { sourceUri ->
+                    navController.navigateSafely(AvatarCropRoute(sourceUri))
+                },
+                pendingAvatarCropResult = pendingAvatarCropResult,
+                onAvatarCropResultConsumed = { pendingAvatarCropResult = null },
+                onLogout = { activity.showLogoutConfirmDialog() },
+            )
+        }
+        composable<AvatarCropRoute> {
+            val route = it.toRoute<AvatarCropRoute>()
+            AvatarCropScreen(
+                sourceUri = route.sourceUri,
+                onBack = onBack,
+                onConfirm = { file ->
+                    pendingAvatarCropResult = file.absolutePath
+                    onBack()
+                },
             )
         }
         composable<HomeSettingsRoute> {

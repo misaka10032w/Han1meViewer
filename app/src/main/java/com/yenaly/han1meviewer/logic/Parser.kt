@@ -18,6 +18,7 @@ import com.yenaly.han1meviewer.logic.model.MySubscriptions
 import com.yenaly.han1meviewer.logic.model.Playlists
 import com.yenaly.han1meviewer.logic.model.SubscriptionItem
 import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
+import com.yenaly.han1meviewer.logic.model.UserAccount
 import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
@@ -682,6 +683,60 @@ object Parser {
         } else {
             PageLoadingState.Success(MyListItems(items, csrfToken = csrfToken))
         }
+    }
+
+    fun userAccountPage(body: String): WebsiteState<UserAccount> {
+        val parseBody = Jsoup.parse(body).body()
+        extractFormError(parseBody)?.let { errorMessage ->
+            return WebsiteState.Error(IllegalStateException(errorMessage))
+        }
+
+        val csrfToken = parseBody.selectFirst("meta[name=csrf-token]")?.attr("content")
+            ?: parseBody.selectFirst("input[name=_token]")?.attr("value")
+        val avatarElement = parseBody.selectFirst("img#playlist-avatar")
+        val avatarUrl = avatarElement?.absUrl("src")?.ifBlank { avatarElement.attr("src") }
+            .throwIfParseNull(Parser::userAccountPage.name, "avatarUrl")
+        val username = parseBody.selectFirst("input[name=name]")?.attr("value")?.trim()
+            .throwIfParseNull(Parser::userAccountPage.name, "username")
+        val email = parseBody.selectFirst("input[name=email]")?.attr("value")?.trim()
+            .throwIfParseNull(Parser::userAccountPage.name, "email")
+        val userIdText = parseBody.selectFirst("div.profile-sub-stats-id")?.text()
+            .throwIfParseNull(Parser::userAccountPage.name, "userId")
+        val userId = Regex("""\d+""").find(userIdText)?.value
+            .throwIfParseNull(Parser::userAccountPage.name, "userId")
+        val statsText = parseBody.selectFirst("div.profile-sub-stats-new-line")?.text().orEmpty()
+        val statNumbers = Regex("""\d+""").findAll(statsText)
+            .mapNotNull { it.value.toIntOrNull() }
+            .toList()
+
+        return WebsiteState.Success(
+            UserAccount(
+                csrfToken = csrfToken,
+                avatarUrl = avatarUrl,
+                username = username,
+                email = email,
+                userId = userId,
+                subscriberCount = statNumbers.getOrElse(0) { 0 },
+                videoCount = statNumbers.getOrElse(1) { 0 },
+            )
+        )
+    }
+
+    private fun extractFormError(parseBody: Element): String? {
+        val selectors = listOf(
+            ".alert-danger",
+            ".invalid-feedback",
+            ".text-danger",
+            ".help-block",
+            ".error-message",
+        )
+        selectors.forEach { selector ->
+            parseBody.select(selector)
+                .map { it.text().trim() }
+                .firstOrNull { it.isNotBlank() }
+                ?.let { return it }
+        }
+        return null
     }
 
 

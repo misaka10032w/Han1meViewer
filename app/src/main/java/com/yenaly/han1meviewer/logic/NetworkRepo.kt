@@ -25,9 +25,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.ResponseBody
 import org.json.JSONObject
 import retrofit2.Response
+import java.io.File
 import javax.net.ssl.SSLHandshakeException
 
 /**
@@ -111,6 +116,97 @@ object NetworkRepo {
         },
         action = Parser::onlineWatchHistoryItems,
     )
+
+    fun getUserAccountPage(userId: String) = websiteIOFlow(
+        request = { HanimeNetwork.myListService.getUserAccountPage(userId) },
+        action = Parser::userAccountPage,
+    )
+
+    fun updateUserAccountProfile(
+        userId: String,
+        csrfToken: String?,
+        name: String,
+        email: String,
+    ) = websiteIOFlow(
+        request = {
+            HanimeNetwork.myListService.updateUserAccountProfile(
+                userId = userId,
+                csrfToken = csrfToken,
+                name = name,
+                email = email,
+            )
+        },
+        permittedSuccessCode = intArrayOf(302),
+    ) {
+        if (it.isBlank()) {
+            WebsiteState.Success(Unit)
+        } else {
+            when (val result = Parser.userAccountPage(it)) {
+                is WebsiteState.Error -> WebsiteState.Error(result.throwable)
+                else -> WebsiteState.Success(Unit)
+            }
+        }
+    }
+
+    fun updateUserAccountPassword(
+        userId: String,
+        csrfToken: String?,
+        oldPassword: String,
+        newPassword: String,
+        newPasswordConfirm: String,
+    ) = websiteIOFlow(
+        request = {
+            HanimeNetwork.myListService.updateUserAccountPassword(
+                userId = userId,
+                csrfToken = csrfToken,
+                oldPassword = oldPassword,
+                newPassword = newPassword,
+                newPasswordConfirm = newPasswordConfirm,
+            )
+        },
+        permittedSuccessCode = intArrayOf(302),
+    ) {
+        if (it.isBlank()) {
+            WebsiteState.Success(Unit)
+        } else {
+            when (val result = Parser.userAccountPage(it)) {
+                is WebsiteState.Error -> WebsiteState.Error(result.throwable)
+                else -> WebsiteState.Success(Unit)
+            }
+        }
+    }
+
+    fun updateUserAccountAvatar(
+        userId: String,
+        csrfToken: String?,
+        avatarFile: File,
+    ) = websiteIOFlow(
+        request = {
+            val imageRequestBody = avatarFile.asRequestBody("image/jpeg".toMediaType())
+            val imagePart = MultipartBody.Part.createFormData(
+                "photo",
+                avatarFile.name,
+                imageRequestBody,
+            )
+            HanimeNetwork.myListService.updateUserAccountAvatar(
+                userId = userId,
+                csrfToken = (csrfToken ?: EMPTY_STRING).toRequestBody("text/plain".toMediaType()),
+                method = "patch".toRequestBody("text/plain".toMediaType()),
+                type = "photo".toRequestBody("text/plain".toMediaType()),
+                photo = imagePart,
+            )
+        },
+        permittedSuccessCode = intArrayOf(302),
+    ) {
+        if (it.isBlank()) {
+            WebsiteState.Success(Unit)
+        } else {
+            when (val result = Parser.userAccountPage(it)) {
+                is WebsiteState.Error -> WebsiteState.Error(result.throwable)
+                else -> WebsiteState.Success(Unit)
+            }
+        }
+    }
 
     fun deleteOnlineWatchHistory(
         videoCode: String,

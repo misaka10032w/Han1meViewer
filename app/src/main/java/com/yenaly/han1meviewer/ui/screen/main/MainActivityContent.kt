@@ -49,6 +49,7 @@ fun MainActivityContent(
     viewModel: MainViewModel,
     pendingNavigationRequests: Flow<Intent>,
     showAuthGuard: Boolean,
+    onOpenAccount: () -> Unit,
     onLogoutClick: () -> Unit,
     onRequireLogin: () -> Unit,
     onSwitchSiteClick: () -> Unit,
@@ -111,7 +112,8 @@ fun MainActivityContent(
             currentSite = Preferences.baseUrl,
             onAvatarClick = {
                 if (isLoggedIn) {
-                    onLogoutClick()
+                    scope.launch { drawerState.close() }
+                    onOpenAccount()
                 } else {
                     onRequireLogin()
                 }
