@@ -247,10 +247,11 @@ fun HomeSettingsScreen(
         item {
             SettingSwitchItem(
                 title = stringResource(R.string.disable_predictive_back_title),
-                summary = stringResource(R.string.disable_predictive_back_summary),
+                summary = "暂不可用 Temporarily unavailable",
                 checked = state.disablePredictiveBack,
                 iconRes = R.drawable.ic_baseline_arrow_back_24,
                 onCheckedChange = onDisablePredictiveBackChange,
+                enabled = false
             )
         }
         item {
