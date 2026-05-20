@@ -81,6 +81,10 @@ import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.component.lazy.LazyRow
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.preview.fakeVideoIntroduction
+import com.yenaly.han1meviewer.ui.screen.rememberCardResponsiveWidth
+import com.yenaly.han1meviewer.ui.theme.SpacingNormal
+import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
+import com.yenaly.han1meviewer.ui.theme.VideoSimplifiedCardMinWidth
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
@@ -1002,12 +1006,15 @@ private fun PlaylistSection(
             actionText = if (onShowAllPlaylist != null) stringResource(R.string.more) else null,
             onActionClick = onShowAllPlaylist,
         )
+        val (cardWidth, _) = rememberCardResponsiveWidth()
         LazyRow(
             state = listState,
-            contentPadding = PaddingValues(horizontal = 2.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp)
         ) {
             items(playlist.video, key = { it.videoCode }) { item ->
                 VideoCardItem(
+                    modifier = Modifier.width(cardWidth),
                     videoItem = item,
                     isHorizontalCard = item.itemType == HanimeInfo.NORMAL,
                     onClickVideosItem = { onOpenVideo(item) },
@@ -1024,22 +1031,25 @@ internal fun RelatedVideosSection(
     videos: List<HanimeInfo>,
     onOpenVideo: (HanimeInfo) -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(SpacingNormal),) {
         SectionHeader(title = stringResource(R.string.related_video))
+
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            val cardWidth = if (videos.firstOrNull()?.itemType == HanimeInfo.NORMAL) {
-                dimensionResource(R.dimen.video_cover_width)
-            } else {
-                dimensionResource(R.dimen.video_cover_simplified_width)
-            }
-            val columns = maxOf(1, (maxWidth / cardWidth).toInt())
+            val isNormal = videos.firstOrNull()?.itemType == HanimeInfo.NORMAL
+            val minCardWidth = if (isNormal) VideoNormalCardMinWidth else VideoSimplifiedCardMinWidth
+            val spacing = SpacingNormal
+            val columns = maxOf(2, ((maxWidth + spacing) / (minCardWidth + spacing)).toInt())
+            val itemWidth = ((maxWidth - (spacing * (columns - 1))) / columns) - 0.5.dp
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 maxItemsInEachRow = columns,
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.spacedBy(spacing),
+                verticalArrangement = Arrangement.spacedBy(spacing)
             ) {
                 videos.forEach { item ->
                     VideoCardItem(
+                        modifier = Modifier.width(itemWidth),
                         videoItem = item,
                         isHorizontalCard = item.itemType == HanimeInfo.NORMAL,
                         onClickVideosItem = { onOpenVideo(item) },

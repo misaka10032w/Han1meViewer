@@ -696,4 +696,5 @@ Recommendations are as follows:\n
     <string name="theme_color_yellow">Golden Yellow</string>
     <string name="theme_color_high_contrast">High Contrast</string>
     <string name="restart_needed">You need to restart the program, otherwise it won\'t work!</string>
+    <string name="played">Watched</string>
 </resources>

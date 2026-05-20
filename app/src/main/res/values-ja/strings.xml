@@ -701,4 +701,5 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="theme_color_yellow">ゴールデンイエロー</string>
     <string name="theme_color_high_contrast">ハイコントラスト</string>
     <string name="restart_needed">プログラムを再起動する必要があります。そうしないと動作しません！</string>
+    <string name="played">閲覧済み</string>
 </resources>

@@ -59,6 +59,9 @@ import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.preview.fakeArtists
 import com.yenaly.han1meviewer.ui.preview.fakeVideos
+import com.yenaly.han1meviewer.ui.theme.ArtistIconSize
+import com.yenaly.han1meviewer.ui.theme.SpacingNormal
+import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
 import com.yenaly.han1meviewer.ui.viewmodel.MySubscriptionsViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -210,8 +213,8 @@ fun SubscriptionPageContent(
     val windowInfo = LocalWindowInfo.current
     val screenWidthPx = windowInfo.containerSize.width
     val screenWidthDp = with(density) { screenWidthPx.toDp() }
-    val videoColumns = maxOf(2, (screenWidthDp / 180.dp).toInt())
-    val artistColumns = maxOf(4, (screenWidthDp / 72.dp).toInt())
+    val videoColumns = maxOf(2, ((screenWidthDp + SpacingNormal) / (VideoNormalCardMinWidth + SpacingNormal)).toInt())
+    val artistColumns = maxOf(3, ((screenWidthDp + SpacingNormal) / (ArtistIconSize + SpacingNormal)).toInt())
     var currentPage by remember { mutableIntStateOf(1) }
     val pageSize = 60
 
@@ -235,14 +238,17 @@ fun SubscriptionPageContent(
         state = gridState,
         columns = GridCells.Fixed(videoColumns),
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        contentPadding = PaddingValues(SpacingNormal),
+        horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
+        verticalArrangement = Arrangement.spacedBy(SpacingNormal)
     ) {
         // 艺术家
-        items(artists.chunked(artistColumns), span = { GridItemSpan(videoColumns) }) { artistRow ->
+        items(
+            artists.chunked(artistColumns),
+            span = { GridItemSpan(videoColumns) }
+        ) { artistRow ->
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
@@ -277,11 +283,11 @@ fun SubscriptionPageContent(
             VideoCardItem(
                 videoItem = video,
                 onClickVideosItem = onClickVideosItem,
-                onLongClickVideosItem = onLongClickVideosItem
+                onLongClickVideosItem = {_, _ ->}
             )
         }
         if (videos.isNotEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            item(span = { GridItemSpan(videoColumns) }) {
                 var loadState by remember {
                     mutableStateOf<PageLoadingState<*>>(
                         PageLoadingState.Success(

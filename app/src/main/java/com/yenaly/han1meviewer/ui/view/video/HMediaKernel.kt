@@ -501,6 +501,10 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
 
     val videoRealHeight: Int
         get() = MPVLib.getPropertyInt("video-params/h") ?: 0
+
+    private var mpvTimePos: Double = 0.0
+    private var mpvCacheDuration: Double = 0.0
+    private var mpvDuration: Double = 0.0
     private var currentPfd: ParcelFileDescriptor? = null
     private var detachFd: Int? = null
     private var pfdFilePath = false
@@ -580,6 +584,7 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
         "playback-active" to MPVLib.mpvFormat.MPV_FORMAT_FLAG, // 播放是否处于活动状态
         "video-params/w" to MPVLib.mpvFormat.MPV_FORMAT_INT64, // 视频宽度（像素）
         "video-params/h" to MPVLib.mpvFormat.MPV_FORMAT_INT64, // 视频高度（像素）
+        "demuxer-cache-duration" to MPVLib.mpvFormat.MPV_FORMAT_DOUBLE
     )
     fun parseCustomMpvParams(): LinkedHashMap<String, String> {
         val rawInput = Preferences.customMpvParams
@@ -807,6 +812,20 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
 
         override fun eventProperty(property: String, value: Double) {
 //            Log.d(TAG, "eventProperty: $property $value")
+            when (property) {
+                "time-pos" -> mpvTimePos = value
+                "demuxer-cache-duration" -> mpvCacheDuration = value
+                "duration" -> mpvDuration = value
+            }
+            if (mpvDuration > 0) {
+                val bufferedTime = mpvTimePos + mpvCacheDuration
+                val safeBufferedTime = bufferedTime.coerceAtMost(mpvDuration)
+                val bufferPercent = ((safeBufferedTime / mpvDuration) * 100).toInt()
+                handler.post {
+                    jzvd.setBufferProgress(bufferPercent)
+                }
+            }
+
         }
 
         override fun event(eventId: Int) {
@@ -814,6 +833,9 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
                 when (eventId) {
                     MPVLib.mpvEventId.MPV_EVENT_START_FILE -> {
                         // 文件开始加载
+                        mpvTimePos = 0.0
+                        mpvCacheDuration = 0.0
+                        mpvDuration = 0.0
                         jzvd.onStatePreparing()
                     }
                     MPVLib.mpvEventId.MPV_EVENT_FILE_LOADED -> {
