@@ -622,7 +622,7 @@ private class VideoRouteShell(
             WRAP_CONTENT,
         ).apply {
             collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PARALLAX
-            parallaxMultiplier = 0.7f
+            parallaxMultiplier = 1f
         }
     }
 
