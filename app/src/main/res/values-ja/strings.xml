@@ -607,6 +607,11 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="search_artist_ignore_video_type_summary">有効にすると、詳細ページのアバターをクリックしてアーティストを検索する際、動画タイプが含まれなくなります。</string>
     <string name="show_played_indicator">再生状態マークを表示</string>
     <string name="show_played_indicator_summary">有効にすると、検索結果ページの動画カバー右上に再生済みマークが表示されます</string>
+    <string name="horizontal_card_count_title">横スクロール一覧の表示カード数</string>
+    <string name="horizontal_card_count_summary">ホームや関連動画など、横スクロール一覧で一度に見えるカード数を調整します</string>
+    <string name="horizontal_card_count_dialog_hint">画面幅ごとに、横スクロール一覧で一度に見えるカード数を設定します</string>
+    <string name="horizontal_card_count_current_width_hint">現在のコンテナ幅の目安：約 %1$ddp</string>
+    <string name="horizontal_card_count_current_bucket_hint">現在の適用範囲：%1$s = %2$.1f 枚</string>
     <string name="video_group_error">動画グループ取得エラー：</string>
     <string name="video_group_empty">動画グループが空です</string>
     <string name="default_group_rename_not_allowed">デフォルトグループ（%s）は名前変更できません！</string>

@@ -32,6 +32,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.yenaly.han1meviewer.HorizontalCardCountConfig
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SearchGridColumnsConfig
 import com.yenaly.han1meviewer.ui.component.ChoiceDialog
@@ -77,6 +78,8 @@ data class HomeSettingsUiState(
     val themeColorName: String,
     val searchGridColumnsSummary: String,
     val searchGridColumnsConfig: SearchGridColumnsConfig,
+    val horizontalCardCountSummary: String,
+    val horizontalCardCountConfig: HorizontalCardCountConfig,
 )
 
 private enum class HomeSettingsChoiceDialog {
@@ -103,6 +106,7 @@ fun HomeSettingsScreen(
     onDisableCommentsChange: (Boolean) -> Unit,
     onCollapseDownloadedGroupChange: (Boolean) -> Unit,
     onSearchGridColumnsConfigChange: (SearchGridColumnsConfig) -> Unit,
+    onHorizontalCardCountConfigChange: (HorizontalCardCountConfig) -> Unit,
     onUseCIUpdateChannelChange: (Boolean) -> Unit,
     onUseAnalyticsChange: (Boolean) -> Unit,
     onUseLockScreenChange: (Boolean) -> Unit,
@@ -124,6 +128,7 @@ fun HomeSettingsScreen(
 ) {
     var activeDialog by rememberSaveable { mutableStateOf<HomeSettingsChoiceDialog?>(null) }
     var showSearchGridColumnsDialog by rememberSaveable { mutableStateOf(false) }
+    var showHorizontalCardCountDialog by rememberSaveable { mutableStateOf(false) }
 
     ChoiceDialog(
         visible = activeDialog == HomeSettingsChoiceDialog.VideoLanguage,
@@ -209,6 +214,17 @@ fun HomeSettingsScreen(
         )
     }
 
+    if (showHorizontalCardCountDialog) {
+        HorizontalCardCountDialog(
+            initialConfig = state.horizontalCardCountConfig,
+            onDismiss = { showHorizontalCardCountDialog = false },
+            onConfirm = {
+                showHorizontalCardCountDialog = false
+                onHorizontalCardCountConfigChange(it)
+            },
+        )
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = 8.dp),
@@ -259,6 +275,15 @@ fun HomeSettingsScreen(
             )
         }
         item {
+            SettingNavigationItem(
+                title = stringResource(R.string.horizontal_card_count_title),
+                summary = stringResource(R.string.horizontal_card_count_summary),
+                valueText = state.horizontalCardCountSummary,
+                iconRes = R.drawable.baseline_row_24,
+                onClick = { showHorizontalCardCountDialog = true },
+            )
+        }
+        item {
             SettingSwitchItem(
                 title = stringResource(R.string.search_artist_ignore_video_type),
                 summary = stringResource(R.string.search_artist_ignore_video_type_summary),
@@ -301,7 +326,7 @@ fun HomeSettingsScreen(
                     title = stringResource(R.string.search_grid_columns_title),
                     summary = stringResource(R.string.search_grid_columns_summary),
                     valueText = state.searchGridColumnsSummary,
-                    iconRes = R.drawable.ic_baseline_tablet_24,
+                    iconRes = R.drawable.baseline_grid_24,
                     onClick = { showSearchGridColumnsDialog = true },
                 )
             }
@@ -541,6 +566,8 @@ private fun HomeSettingsScreenPreview() {
                 themeColorName = "預設（暖紅）",
                 searchGridColumnsSummary = "2 / 3 / 4 / 5",
                 searchGridColumnsConfig = SearchGridColumnsConfig(),
+                horizontalCardCountSummary = "1.5 / 2.1 / 4.1 / 5.1",
+                horizontalCardCountConfig = HorizontalCardCountConfig(),
             ),
             onVideoLanguageChange = {},
             onVideoQualityChange = {},
@@ -555,6 +582,7 @@ private fun HomeSettingsScreenPreview() {
             onDisableCommentsChange = {},
             onCollapseDownloadedGroupChange = {},
             onSearchGridColumnsConfigChange = {},
+            onHorizontalCardCountConfigChange = {},
             onUseCIUpdateChannelChange = {},
             onUseAnalyticsChange = {},
             onUseLockScreenChange = {},
@@ -574,6 +602,161 @@ private fun HomeSettingsScreenPreview() {
             onSubmitBug = {},
             onOpenForum = {},
         )
+    }
+}
+
+@Composable
+private fun HorizontalCardCountDialog(
+    initialConfig: HorizontalCardCountConfig,
+    onDismiss: () -> Unit,
+    onConfirm: (HorizontalCardCountConfig) -> Unit,
+) {
+    val density = LocalDensity.current
+    val containerSize = LocalWindowInfo.current.containerSize
+    val currentWidthDp = with(density) { containerSize.width.toDp().value.toInt() }
+    var narrowCountText by remember(initialConfig) { mutableStateOf(initialConfig.narrowCount.toString()) }
+    var compactCountText by remember(initialConfig) { mutableStateOf(initialConfig.compactCount.toString()) }
+    var mediumCountText by remember(initialConfig) { mutableStateOf(initialConfig.mediumCount.toString()) }
+    var expandedCountText by remember(initialConfig) { mutableStateOf(initialConfig.expandedCount.toString()) }
+    val narrowCount = narrowCountText.toHorizontalCardCountOrNull()
+    val compactCount = compactCountText.toHorizontalCardCountOrNull()
+    val mediumCount = mediumCountText.toHorizontalCardCountOrNull()
+    val expandedCount = expandedCountText.toHorizontalCardCountOrNull()
+    val currentConfig = HorizontalCardCountConfig(
+        narrowCount = narrowCount ?: initialConfig.narrowCount,
+        compactCount = compactCount ?: initialConfig.compactCount,
+        mediumCount = mediumCount ?: initialConfig.mediumCount,
+        expandedCount = expandedCount ?: initialConfig.expandedCount,
+    )
+    val canConfirm = narrowCount != null && compactCount != null && mediumCount != null && expandedCount != null
+    val currentBucketLabel = horizontalCardCountBucketLabel(currentWidthDp)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.horizontal_card_count_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = stringResource(R.string.horizontal_card_count_dialog_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = stringResource(R.string.horizontal_card_count_current_width_hint, currentWidthDp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = stringResource(
+                        R.string.horizontal_card_count_current_bucket_hint,
+                        currentBucketLabel,
+                        currentConfig.countForWidthDp(currentWidthDp),
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                HorizontalCardCountInputRow(
+                    label = stringResource(R.string.horizontal_card_count_range_narrow),
+                    value = narrowCountText,
+                    onValueChange = { narrowCountText = it },
+                    isError = narrowCount == null,
+                    isHighlighted = currentWidthDp < 350,
+                )
+                HorizontalCardCountInputRow(
+                    label = stringResource(R.string.horizontal_card_count_range_compact),
+                    value = compactCountText,
+                    onValueChange = { compactCountText = it },
+                    isError = compactCount == null,
+                    isHighlighted = currentWidthDp in 350..599,
+                )
+                HorizontalCardCountInputRow(
+                    label = stringResource(R.string.horizontal_card_count_range_medium),
+                    value = mediumCountText,
+                    onValueChange = { mediumCountText = it },
+                    isError = mediumCount == null,
+                    isHighlighted = currentWidthDp in 600..839,
+                )
+                HorizontalCardCountInputRow(
+                    label = stringResource(R.string.horizontal_card_count_range_expanded),
+                    value = expandedCountText,
+                    onValueChange = { expandedCountText = it },
+                    isError = expandedCount == null,
+                    isHighlighted = currentWidthDp >= 840,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(currentConfig) }, enabled = canConfirm) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        dismissButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(
+                    onClick = {
+                        narrowCountText = HorizontalCardCountConfig.DEFAULT_NARROW_COUNT.toString()
+                        compactCountText = HorizontalCardCountConfig.DEFAULT_COMPACT_COUNT.toString()
+                        mediumCountText = HorizontalCardCountConfig.DEFAULT_MEDIUM_COUNT.toString()
+                        expandedCountText = HorizontalCardCountConfig.DEFAULT_EXPANDED_COUNT.toString()
+                    },
+                ) {
+                    Text(stringResource(R.string.reset))
+                }
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        },
+    )
+}
+
+@Composable
+private fun HorizontalCardCountInputRow(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    isError: Boolean,
+    isHighlighted: Boolean,
+) {
+    val containerColor = if (isHighlighted) {
+        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f)
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(containerColor, RoundedCornerShape(16.dp))
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f),
+        )
+        OutlinedTextField(
+            value = value,
+            onValueChange = {
+                if (it.isEmpty() || it.matches(Regex("^\\d*(\\.\\d*)?$"))) {
+                    onValueChange(it)
+                }
+            },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(0.32f),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            isError = isError,
+        )
+    }
+}
+
+@Composable
+private fun horizontalCardCountBucketLabel(widthDp: Int): String {
+    return when {
+        widthDp < 350 -> stringResource(R.string.horizontal_card_count_range_narrow)
+        widthDp < 600 -> stringResource(R.string.horizontal_card_count_range_compact)
+        widthDp < 840 -> stringResource(R.string.horizontal_card_count_range_medium)
+        else -> stringResource(R.string.horizontal_card_count_range_expanded)
     }
 }
 
@@ -793,6 +976,11 @@ private fun SearchGridColumnsInputRow(
 private fun String.toSearchGridColumnsOrNull(): Int? {
     val parsed = toIntOrNull() ?: return null
     return parsed.takeIf { it in 1..12 }
+}
+
+private fun String.toHorizontalCardCountOrNull(): Float? {
+    val parsed = toFloatOrNull() ?: return null
+    return parsed.takeIf { it in 1f..12f }
 }
 
 @Composable

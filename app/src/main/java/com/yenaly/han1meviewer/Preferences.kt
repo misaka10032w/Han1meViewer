@@ -153,6 +153,26 @@ object Preferences {
             ),
         )
 
+    val horizontalCardCountConfig: HorizontalCardCountConfig
+        get() = HorizontalCardCountConfig(
+            narrowCount = preferenceSp.getString(
+                SettingsPreferenceKeys.HORIZONTAL_CARD_COUNT_NARROW,
+                HorizontalCardCountConfig.DEFAULT_NARROW_COUNT.toString(),
+            )?.toFloatOrNull() ?: HorizontalCardCountConfig.DEFAULT_NARROW_COUNT,
+            compactCount = preferenceSp.getString(
+                SettingsPreferenceKeys.HORIZONTAL_CARD_COUNT_COMPACT,
+                HorizontalCardCountConfig.DEFAULT_COMPACT_COUNT.toString(),
+            )?.toFloatOrNull() ?: HorizontalCardCountConfig.DEFAULT_COMPACT_COUNT,
+            mediumCount = preferenceSp.getString(
+                SettingsPreferenceKeys.HORIZONTAL_CARD_COUNT_MEDIUM,
+                HorizontalCardCountConfig.DEFAULT_MEDIUM_COUNT.toString(),
+            )?.toFloatOrNull() ?: HorizontalCardCountConfig.DEFAULT_MEDIUM_COUNT,
+            expandedCount = preferenceSp.getString(
+                SettingsPreferenceKeys.HORIZONTAL_CARD_COUNT_EXPANDED,
+                HorizontalCardCountConfig.DEFAULT_EXPANDED_COUNT.toString(),
+            )?.toFloatOrNull() ?: HorizontalCardCountConfig.DEFAULT_EXPANDED_COUNT,
+        )
+
     val fakeLauncherIcon: String
         get() = preferenceSp.getString(
             SettingsPreferenceKeys.FAKE_LAUNCHER_ICON,

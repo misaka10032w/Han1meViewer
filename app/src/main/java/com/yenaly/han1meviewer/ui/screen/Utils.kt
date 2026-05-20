@@ -77,11 +77,8 @@ fun rememberCardResponsiveWidth(
     val containerWidth = LocalWindowInfo.current.containerSize.width
     val density = LocalDensity.current
     val currentWidthDp = with(density) { containerWidth.toDp() }
-    val itemsToShow = when {
-        currentWidthDp < 600.dp -> 2.1f
-        currentWidthDp < 840.dp -> 4.1f
-        else -> 6.1f
-    }
+    val itemsToShow = Preferences.horizontalCardCountConfig
+        .countForWidthDp(currentWidthDp.value.toInt())
 
     val cardWidth = (currentWidthDp - (horizontalPadding * 2) - (itemSpacing * itemsToShow.toInt())) / itemsToShow
 

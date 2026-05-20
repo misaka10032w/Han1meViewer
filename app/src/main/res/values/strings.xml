@@ -643,6 +643,15 @@
     <string name="search_artist_ignore_video_type_summary">開啟後，點選詳細頁頭像搜尋藝術家時，不再附帶影片類型。</string>
     <string name="show_played_indicator">顯示播放狀態標記</string>
     <string name="show_played_indicator_summary">開啟後將在搜尋結果頁影片封面右上角顯示已播放標記</string>
+    <string name="horizontal_card_count_title">橫向列表可見卡片數</string>
+    <string name="horizontal_card_count_summary">可調整首頁與影片詳情相關影片等橫向列表一次可見的卡片數量</string>
+    <string name="horizontal_card_count_dialog_hint">依不同螢幕寬度設定橫向列表一次可見的卡片數量</string>
+    <string name="horizontal_card_count_current_width_hint">目前容器寬度參考：約 %1$ddp</string>
+    <string name="horizontal_card_count_current_bucket_hint">目前命中檔位：%1$s = %2$.1f 張</string>
+    <string name="horizontal_card_count_range_narrow" translatable="false">&lt;350dp</string>
+    <string name="horizontal_card_count_range_compact" translatable="false">350-599dp</string>
+    <string name="horizontal_card_count_range_medium" translatable="false">600-839dp</string>
+    <string name="horizontal_card_count_range_expanded" translatable="false">≥840dp</string>
     <string name="video_group_error">取得影片群組錯誤：</string>
     <string name="video_group_empty">影片群組為空</string>
     <string name="default_group_rename_not_allowed">預設群組（%s）不允許重新命名！</string>
