@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.main
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -137,6 +138,13 @@ fun MainActivityScaffold(
                     )
                 }
             }
+        }
+
+        BackHandler(
+            enabled = drawerState.currentValue == DrawerValue.Open ||
+                drawerState.targetValue == DrawerValue.Open,
+        ) {
+            scope.launch { drawerState.close() }
         }
     }
 }
