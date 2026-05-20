@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.ui.navigation.main
 
 import android.content.Intent
 import androidx.navigation.NavHostController
+import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import kotlinx.serialization.json.Json
 
@@ -23,15 +24,15 @@ fun NavHostController.navigateDrawerDestination(
     }
 
     when (destination) {
-        MainDrawerDestination.Home -> navigate(HomeRoute)
-        MainDrawerDestination.Settings -> navigate(HomeSettingsRoute)
-        MainDrawerDestination.DailyCheckIn -> navigate(DailyCheckInRoute)
-        MainDrawerDestination.WatchLater -> navigate(MyWatchLaterRoute)
-        MainDrawerDestination.FavVideo -> navigate(MyFavVideoRoute)
-        MainDrawerDestination.Playlist -> navigate(MyPlaylistRoute)
-        MainDrawerDestination.Subscription -> navigate(SubscriptionRoute)
-        MainDrawerDestination.WatchHistory -> navigate(WatchHistoryRoute)
-        MainDrawerDestination.Download -> navigate(DownloadRoute)
+        MainDrawerDestination.Home -> navigateSafely(HomeRoute)
+        MainDrawerDestination.Settings -> navigateSafely(HomeSettingsRoute)
+        MainDrawerDestination.DailyCheckIn -> navigateSafely(DailyCheckInRoute)
+        MainDrawerDestination.WatchLater -> navigateSafely(MyWatchLaterRoute)
+        MainDrawerDestination.FavVideo -> navigateSafely(MyFavVideoRoute)
+        MainDrawerDestination.Playlist -> navigateSafely(MyPlaylistRoute)
+        MainDrawerDestination.Subscription -> navigateSafely(SubscriptionRoute)
+        MainDrawerDestination.WatchHistory -> navigateSafely(WatchHistoryRoute)
+        MainDrawerDestination.Download -> navigateSafely(DownloadRoute)
     }
     return true
 }
@@ -43,12 +44,12 @@ fun NavHostController.handleMainIntent(intent: Intent) {
             "http", "https" -> {
                 val videoCode = uri.getQueryParameter("v")
                 if (videoCode != null) {
-                    navigate(VideoRoute(videoCode))
+                    navigateSafely(VideoRoute(videoCode))
                 }
             }
 
             "file", "content" -> {
-                navigate(VideoRoute("-1", uri.toString()))
+                navigateSafely(VideoRoute("-1", uri.toString()))
             }
         }
         return
@@ -56,7 +57,7 @@ fun NavHostController.handleMainIntent(intent: Intent) {
 
     intent.getStringExtra("startSearchFromTag")?.let { tag ->
         intent.removeExtra("startSearchFromTag")
-        navigate(SearchRoute(query = tag))
+        navigateSafely(SearchRoute(query = tag))
         return
     }
 
@@ -64,13 +65,13 @@ fun NavHostController.handleMainIntent(intent: Intent) {
     val map = intent.getSerializableExtra("startSearchFromMap") as? HashMap<String, String>
     if (map != null) {
         intent.removeExtra("startSearchFromMap")
-        navigate(SearchRoute(advancedSearchJson = Json.encodeToString(map)))
+        navigateSafely(SearchRoute(advancedSearchJson = Json.encodeToString(map)))
         return
     }
 
     val videoCode = intent.getStringExtra("startVideoCode")
     if (!videoCode.isNullOrEmpty()) {
         intent.removeExtra("startVideoCode")
-        navigate(VideoRoute(videoCode))
+        navigateSafely(VideoRoute(videoCode))
     }
 }

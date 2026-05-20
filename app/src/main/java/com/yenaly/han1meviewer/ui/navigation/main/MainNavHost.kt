@@ -16,6 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframeSettingsRoute
@@ -47,9 +48,9 @@ fun MainNavHost(
     val destinationSpec = MainDestinationSpec.fromDestination(backStackEntry?.destination)
 
     val onBack: () -> Unit = { navController.popBackStack() }
-    val onNavigateToVideo: (String) -> Unit = { code -> navController.navigate(VideoRoute(code)) }
+    val onNavigateToVideo: (String) -> Unit = { code -> navController.navigateSafely(VideoRoute(code)) }
     val onNavigateToLocalVideo: (String, String?) -> Unit =
-        { code, uri -> navController.navigate(VideoRoute(code, uri)) }
+        { code, uri -> navController.navigateSafely(VideoRoute(code, uri)) }
 
     LaunchedEffect(destinationSpec) {
         destinationSpec?.let(onDestinationChanged)
@@ -94,10 +95,10 @@ fun MainNavHost(
                 activity = activity,
                 isDrawerOpen = isDrawerOpen,
                 onOpenDrawer = onOpenDrawer,
-                onNavigateToPreview = { navController.navigate(PreviewRoute) },
-                onNavigateToSearch = { query -> navController.navigate(SearchRoute(query = query)) },
+                onNavigateToPreview = { navController.navigateSafely(PreviewRoute) },
+                onNavigateToSearch = { query -> navController.navigateSafely(SearchRoute(query = query)) },
                 onNavigateToSearchAdvanced = { params ->
-                    navController.navigate(
+                    navController.navigateSafely(
                         SearchRoute(advancedSearchJson = Json.encodeToString(params))
                     )
                 },
@@ -131,7 +132,7 @@ fun MainNavHost(
         composable<SubscriptionRoute> {
             SubscriptionRouteScreen(
                 onBack = onBack,
-                onNavigateToSearch = { query -> navController.navigate(SearchRoute(query = query)) },
+                onNavigateToSearch = { query -> navController.navigateSafely(SearchRoute(query = query)) },
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
@@ -156,10 +157,10 @@ fun MainNavHost(
             ) {
                 HomeSettingsRouteScreen(
                     activity = activity,
-                    onNavigateToPlayerSettings = { navController.navigate(PlayerSettingsRoute) },
-                    onNavigateToHKeyframeSettings = { navController.navigate(HKeyframeSettingsRoute) },
-                    onNavigateToDownloadSettings = { navController.navigate(DownloadSettingsRoute) },
-                    onNavigateToNetworkSettings = { navController.navigate(NetworkSettingsRoute) },
+                    onNavigateToPlayerSettings = { navController.navigateSafely(PlayerSettingsRoute) },
+                    onNavigateToHKeyframeSettings = { navController.navigateSafely(HKeyframeSettingsRoute) },
+                    onNavigateToDownloadSettings = { navController.navigateSafely(DownloadSettingsRoute) },
+                    onNavigateToNetworkSettings = { navController.navigateSafely(NetworkSettingsRoute) },
                 )
             }
         }
@@ -169,7 +170,7 @@ fun MainNavHost(
                 fallbackDestination = HomeSettingsRoute,
             ) {
                 PlayerSettingsRouteScreen(
-                    onNavigateToMpvSettings = { navController.navigate(MpvPlayerSettingsRoute) },
+                    onNavigateToMpvSettings = { navController.navigateSafely(MpvPlayerSettingsRoute) },
                 )
             }
         }
@@ -223,8 +224,8 @@ fun MainNavHost(
                 fallbackDestination = HomeSettingsRoute,
             ) {
                 HKeyframeSettingsRouteScreen(
-                    onNavigateToHKeyframes = { navController.navigate(HKeyframesRoute) },
-                    onNavigateToSharedHKeyframes = { navController.navigate(SharedHKeyframesRoute) },
+                    onNavigateToHKeyframes = { navController.navigateSafely(HKeyframesRoute) },
+                    onNavigateToSharedHKeyframes = { navController.navigateSafely(SharedHKeyframesRoute) },
                 )
             }
         }
@@ -240,7 +241,7 @@ fun MainNavHost(
                 activity = activity,
                 onBack = onBack,
                 onNavigateToPreviewComment = { date, dateCode ->
-                    navController.navigate(PreviewCommentRoute(date, dateCode))
+                    navController.navigateSafely(PreviewCommentRoute(date, dateCode))
                 },
                 onNavigateToVideo = onNavigateToVideo,
             )

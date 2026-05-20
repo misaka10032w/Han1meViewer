@@ -40,6 +40,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
+import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
 import com.yenaly.han1meviewer.ui.screen.main.MainActivityContent
@@ -308,7 +309,7 @@ class MainActivity : FrameActivity(), PermissionRequester {
     }
 
     fun showVideoDetailFragment(videoCode: String, fileUri: String? = null) {
-        navController.navigate(VideoRoute(videoCode, fileUri))
+        navController.navigateSafely(VideoRoute(videoCode, fileUri))
     }
 
     fun registerCurrentVideoHost(host: VideoPageHost?) {
