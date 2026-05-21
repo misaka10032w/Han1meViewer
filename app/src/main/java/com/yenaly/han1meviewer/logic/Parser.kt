@@ -8,6 +8,8 @@ import com.yenaly.han1meviewer.HanimeResolution
 import com.yenaly.han1meviewer.LOCAL_DATE_FORMAT
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
+import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.logic.exception.LoginStateExpiredException
 import com.yenaly.han1meviewer.logic.exception.ParseException
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimePreview
@@ -18,6 +20,7 @@ import com.yenaly.han1meviewer.logic.model.MySubscriptions
 import com.yenaly.han1meviewer.logic.model.Playlists
 import com.yenaly.han1meviewer.logic.model.SubscriptionItem
 import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
+import com.yenaly.han1meviewer.logic.model.UserAccount
 import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
@@ -62,6 +65,10 @@ object Parser {
         val avatarUrl: String? = userInfo?.selectFirst("img")?.absUrl("src")
         val username: String? = userInfo?.getElementById("user-modal-name")?.text()
         val userHomePageLink = parseBody.getElementById("user-modal-trigger")!!.attr("href")
+
+        if (isAlreadyLogin && isLoginStateExpired(userHomePageLink, username)) {
+            return WebsiteState.Error(LoginStateExpiredException(getString(R.string.login_state_expired)))
+        }
 
         val userIdRegex = Regex("""/user/(\d+)""")
         val userId: String = userIdRegex.find(userHomePageLink)?.groupValues?.get(1) ?: ""
@@ -192,6 +199,12 @@ object Parser {
             )
         )
     }
+
+    private fun isLoginStateExpired(userHomePageLink: String, username: String?): Boolean {
+        return userHomePageLink.contains("/login") || username.isNullOrBlank()
+    }
+
+    private fun getString(resId: Int) = com.yenaly.yenaly_libs.utils.applicationContext.getString(resId)
     fun Element?.extractHanimeInfo(selector: String = "div[class^=horizontal-card]"): MutableList<HanimeInfo> {
         val resultList = mutableListOf<HanimeInfo>()
         this?.select(selector)?.forEach { item ->
@@ -670,6 +683,74 @@ object Parser {
                 csrfToken = csrfToken
             )
         )
+    }
+
+    fun onlineWatchHistoryItems(body: String): PageLoadingState<MyListItems<HanimeInfo>> {
+        val parseBody = Jsoup.parse(body).body()
+        val csrfToken = parseBody.selectFirst("input[name=_token]")?.attr("value")
+        val allHanimeClass = parseBody.getElementsByClass("horizontal-row").firstOrNull()
+        val items = allHanimeClass.extractHanimeInfo("div[class^=user-tab-item-wrapper]")
+        return if (items.isEmpty()) {
+            PageLoadingState.NoMoreData
+        } else {
+            PageLoadingState.Success(MyListItems(items, csrfToken = csrfToken))
+        }
+    }
+
+    fun userAccountPage(body: String): WebsiteState<UserAccount> {
+        val parseBody = Jsoup.parse(body).body()
+        extractFormError(parseBody)?.let { errorMessage ->
+            return WebsiteState.Error(IllegalStateException(errorMessage))
+        }
+
+        val csrfToken = parseBody.selectFirst("meta[name=csrf-token]")?.attr("content")
+            ?: parseBody.selectFirst("input[name=_token]")?.attr("value")
+        val avatarElement = parseBody.selectFirst("img#playlist-avatar")
+        val avatarUrl = avatarElement?.absUrl("src")?.ifBlank { avatarElement.attr("src") }
+            .throwIfParseNull(Parser::userAccountPage.name, "avatarUrl")
+        val username = parseBody.selectFirst("input[name=name]")?.attr("value")?.trim()
+            .throwIfParseNull(Parser::userAccountPage.name, "username")
+        val email = parseBody.selectFirst("input[name=email]")?.attr("value")?.trim()
+            .throwIfParseNull(Parser::userAccountPage.name, "email")
+        val userIdText = parseBody.selectFirst("div.profile-sub-stats-id")?.text()
+            .throwIfParseNull(Parser::userAccountPage.name, "userId")
+        val userId = Regex("""\d+""").find(userIdText)?.value
+            .throwIfParseNull(Parser::userAccountPage.name, "userId")
+        val joinedLabel = parseBody.selectFirst("#user-modal-created")?.text()?.trim()
+        val statsText = parseBody.selectFirst("div.profile-sub-stats-new-line")?.text().orEmpty()
+        val statNumbers = Regex("""\d+""").findAll(statsText)
+            .mapNotNull { it.value.toIntOrNull() }
+            .toList()
+
+        return WebsiteState.Success(
+            UserAccount(
+                csrfToken = csrfToken,
+                avatarUrl = avatarUrl,
+                username = username,
+                email = email,
+                userId = userId,
+                joinedLabel = joinedLabel,
+                subscriberCount = statNumbers.getOrElse(0) { 0 },
+                videoCount = statNumbers.getOrElse(1) { 0 },
+            )
+        )
+    }
+
+    private fun extractFormError(parseBody: Element): String? {
+        val selectors = listOf(
+            ".alert-danger",
+            ".invalid-feedback",
+            ".text-danger",
+            ".help-block",
+            ".error-message",
+        )
+        selectors.forEach { selector ->
+            parseBody.select(selector)
+                .map { it.text().trim() }
+                .firstOrNull { it.isNotBlank() }
+                ?.let { return it }
+        }
+        return null
     }
 
 

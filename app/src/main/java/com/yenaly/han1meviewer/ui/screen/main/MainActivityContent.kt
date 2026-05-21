@@ -49,6 +49,7 @@ fun MainActivityContent(
     viewModel: MainViewModel,
     pendingNavigationRequests: Flow<Intent>,
     showAuthGuard: Boolean,
+    onOpenAccount: () -> Unit,
     onLogoutClick: () -> Unit,
     onRequireLogin: () -> Unit,
     onSwitchSiteClick: () -> Unit,
@@ -60,6 +61,8 @@ fun MainActivityContent(
         val scope = rememberCoroutineScope()
         var currentMainDestination by remember { mutableStateOf(MainDestinationSpec.Home) }
         var pendingUpdate by remember { mutableStateOf<Latest?>(null) }
+        val isDrawerOpen =
+            drawerState.currentValue == DrawerValue.Open || drawerState.targetValue == DrawerValue.Open
 
         val homeState by viewModel.homePageFlow.collectAsStateWithLifecycle()
         val isLoggedIn by Preferences.loginStateFlow.collectAsStateWithLifecycle()
@@ -90,6 +93,11 @@ fun MainActivityContent(
                 pendingUpdate = latest
             }
         }
+        LaunchedEffect(viewModel) {
+            viewModel.sessionExpiredMessage.collect { message ->
+                showShortToast(message)
+            }
+        }
         LaunchedEffect(homeState) {
             if (homeState is WebsiteState.Error) {
                 val throwable = (homeState as WebsiteState.Error).throwable
@@ -109,10 +117,14 @@ fun MainActivityContent(
             currentSite = Preferences.baseUrl,
             onAvatarClick = {
                 if (isLoggedIn) {
-                    onLogoutClick()
+                    scope.launch { drawerState.close() }
+                    onOpenAccount()
                 } else {
                     onRequireLogin()
                 }
+            },
+            onAvatarLongClick = {
+                onLogoutClick()
             },
             onSwitchSiteClick = onSwitchSiteClick,
             onDrawerItemSelected = { destination ->
@@ -131,6 +143,7 @@ fun MainActivityContent(
                 MainNavHost(
                     activity = activity,
                     navController = composeNavController,
+                    isDrawerOpen = isDrawerOpen,
                     onOpenDrawer = {
                         if (currentMainDestination.drawerEnabled) {
                             scope.launch { drawerState.open() }

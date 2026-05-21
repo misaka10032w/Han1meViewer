@@ -163,6 +163,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(libs.aboutlibraries.compose.m3)
+    implementation(libs.compose.avatar.cropper)
     // datetime
 
     implementation(libs.datetime)

@@ -55,7 +55,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -103,7 +102,7 @@ fun VideoIntroductionScreen(
     fromDownload: Boolean,
     hideRelatedInIntro: Boolean,
     shareText: String,
-    playlistInitialIndex: Int,
+    playlistInitialIndex: Int?,
     introFirstVisibleItemIndex: Int,
     introFirstVisibleItemScrollOffset: Int,
     downloadPrompt: DownloadPromptState?,
@@ -197,7 +196,7 @@ private fun VideoIntroductionContent(
     fromDownload: Boolean,
     hideRelatedInIntro: Boolean,
     shareText: String,
-    playlistInitialIndex: Int,
+    playlistInitialIndex: Int?,
     introFirstVisibleItemIndex: Int,
     introFirstVisibleItemScrollOffset: Int,
     downloadPrompt: DownloadPromptState?,
@@ -701,11 +700,20 @@ private fun PlaylistBottomSheet(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
+                            .background(
+                                if (item.isPlaying) {
+                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+                                } else {
+                                    MaterialTheme.colorScheme.surface
+                                }
+                            )
                             .combinedClickable(
+                                enabled = !item.isPlaying,
                                 onClick = { onOpenVideo(item) },
                                 onLongClick = null,
                             )
-                            .padding(4.dp),
+                            .padding(8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
@@ -722,15 +730,32 @@ private fun PlaylistBottomSheet(
                             Text(
                                 text = item.title,
                                 style = MaterialTheme.typography.titleSmall,
+                                color = if (item.isPlaying) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                },
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis,
                             )
                             Text(
                                 text = item.currentArtist.orEmpty(),
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = if (item.isPlaying) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f)
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                        if (item.isPlaying) {
+                            Text(
+                                text = stringResource(R.string.now_playing),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
                             )
                         }
                     }
@@ -986,13 +1011,25 @@ private fun TagsSection(
 @Composable
 private fun PlaylistSection(
     playlist: HanimeVideo.Playlist,
-    initialIndex: Int,
+    initialIndex: Int?,
     onOpenVideo: (HanimeInfo) -> Unit,
     onShowAllPlaylist: (() -> Unit)?,
     onPlaylistScrollChange: (Int) -> Unit,
 ) {
-    val listState = remember(playlist.video, initialIndex) {
-        LazyListState(firstVisibleItemIndex = initialIndex)
+    val (_, itemsToShow) = rememberCardResponsiveWidth()
+    val playingIndex = playlist.video.indexOfFirst { it.isPlaying }
+    val visibleItemCount = itemsToShow.toInt().coerceAtLeast(1)
+    val centeredInitialIndex = if (playingIndex >= 0) {
+        val centerOffset = (itemsToShow / 2f).toInt()
+        val maxStartIndex = (playlist.video.size - visibleItemCount).coerceAtLeast(0)
+        (playingIndex - centerOffset).coerceIn(0, maxStartIndex)
+    } else {
+        0
+    }
+    val resolvedInitialIndex = (initialIndex ?: centeredInitialIndex)
+        .coerceIn(0, playlist.video.lastIndex.coerceAtLeast(0))
+    val listState = remember(playlist.video, resolvedInitialIndex) {
+        LazyListState(firstVisibleItemIndex = resolvedInitialIndex)
     }
     LaunchedEffect(listState) {
         snapshotFlow { listState.firstVisibleItemIndex }
@@ -1017,6 +1054,7 @@ private fun PlaylistSection(
                     modifier = Modifier.width(cardWidth),
                     videoItem = item,
                     isHorizontalCard = item.itemType == HanimeInfo.NORMAL,
+                    isPlaying = item.isPlaying,
                     onClickVideosItem = { onOpenVideo(item) },
                     onLongClickVideosItem = { _, _ -> },
                 )

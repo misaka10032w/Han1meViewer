@@ -45,15 +45,14 @@ import com.yenaly.han1meviewer.BuildConfig
 import com.yenaly.han1meviewer.HA1_GITHUB_FORUM_URL
 import com.yenaly.han1meviewer.HA1_GITHUB_ISSUE_URL
 import com.yenaly.han1meviewer.HanimeApplication
-import com.yenaly.han1meviewer.HorizontalCardCountConfig
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.screen.settings.HomeSettingsScreen
-import com.yenaly.han1meviewer.ui.screen.settings.HomeSettingsUiState
-import com.yenaly.han1meviewer.ui.screen.settings.LicenseDialog
+import com.yenaly.han1meviewer.ui.screen.settings.dialog.LicenseDialog
+import com.yenaly.han1meviewer.ui.screen.settings.model.HomeSettingsUiState
 import com.yenaly.han1meviewer.ui.theme.ThemeColorPreset
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.util.ThemeUtils

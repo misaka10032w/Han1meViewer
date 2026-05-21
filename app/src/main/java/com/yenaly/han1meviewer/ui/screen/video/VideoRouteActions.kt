@@ -14,6 +14,7 @@ import com.yenaly.han1meviewer.getHanimeVideoLink
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.main.SearchRoute
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.requestPostNotificationPermission
@@ -64,13 +65,13 @@ class VideoRouteActions(
             map.forEach { (key, value) -> put(key.name, value) }
         }
         val routeMap = bundleMap.mapValues { it.value.toString() }
-        (context as? MainActivity)?.navController?.navigate(
+        (context as? MainActivity)?.navController?.navigateSafely(
             SearchRoute(advancedSearchJson = Json.encodeToString(routeMap))
         )
     }
 
     fun openTagSearch(tag: String) {
-        (context as? MainActivity)?.navController?.navigate(SearchRoute(query = tag))
+        (context as? MainActivity)?.navController?.navigateSafely(SearchRoute(query = tag))
     }
 
     fun toggleArtistSubscription(artist: HanimeVideo.Artist) {

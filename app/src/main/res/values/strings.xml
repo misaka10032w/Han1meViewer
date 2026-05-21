@@ -243,6 +243,9 @@
     <string name="watch_history_watched_at">觀看於 %1$s</string>
     <string name="watch_history_released_at">發佈於 %1$s</string>
     <string name="watch_history_progress_minutes">已觀看約 %1$d 分鐘</string>
+    <string name="online">在線</string>
+    <string name="popular">熱門</string>
+    <string name="watch_history_online_help">下拉重新整理，滑到底部自動載入更多。</string>
     <string name="speed">倍速</string>
     <string name="cancel_thumb_up_success">取消點讚成功！</string>
     <string name="thumb_up_success">點讚成功！</string>
@@ -303,6 +306,7 @@
     <string name="do_not_use_japan_ip">不要使用日本IP位址!!!</string>
     <string name="website_blocked_msg">看到這裡說明他們網站被加固了，能不能恢復只能聽天命了…</string>
     <string name="not_logged_in_currently">當前未登入</string>
+    <string name="login_state_expired">登入狀態已失效，已自動登出，請重新登入</string>
     <string name="parse_error_msg">可能這個網址解析起來不大一樣…</string>
     <string name="network_unstable_msg">可能是你的網路不穩定，多刷新！</string>
     <string name="unknown_download_error">未知下載錯誤</string>
@@ -385,6 +389,23 @@
     <string name="disable_comments_sum">啟用後，影片詳情頁將不再顯示評論區</string>
     <string name="default_video_quilty">預設解析度</string>
     <string name="my_subscribe">我的訂閱</string>
+    <string name="my_account">我的</string>
+    <string name="username">用戶名稱</string>
+    <string name="logout">登出</string>
+    <string name="change_avatar">更改頭像</string>
+    <string name="account_stats_summary">%1$d 位訂閱者 • %2$d 部影片</string>
+    <string name="edit_profile">編輯個人檔案</string>
+    <string name="update_profile">更新個人檔案</string>
+    <string name="change_password">更改密碼</string>
+    <string name="old_password">舊密碼</string>
+    <string name="new_password">新密碼</string>
+    <string name="confirm_new_password">確認新密碼</string>
+    <string name="password_not_match">兩次輸入的新密碼不一致</string>
+    <string name="forgot_password">忘記密碼？</string>
+    <string name="crop_avatar">裁剪頭像</string>
+    <string name="updating">更新中…</string>
+    <string name="changing">更改中…</string>
+    <string name="uploading">上傳中…</string>
     <string name="title_activity_qrcode_scanner">手動錄入cookies</string>
     <string name="scan_for_cookies">手動錄入cookies</string>
     <string name="cookies_import_desc">引導圖片</string>
@@ -763,4 +784,6 @@
     <string name="theme_color_high_contrast">高對比</string>
     <string name="restart_needed">需要重啟程序，否則不起作用！</string>
     <string name="played">已觀看</string>
+    <string name="local">本地</string>
+    <string name="current_bucket">目前命中檔位</string>
 </resources>

@@ -1,13 +1,18 @@
 package com.yenaly.han1meviewer.logic.network.service
 
 import androidx.annotation.IntRange
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.HTTP
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -26,6 +31,61 @@ interface HanimeMyListService {
         @Path("userid") userId: String,
         @Path("type") listType: String,
         @Query("page") page: Int
+    ): Response<ResponseBody>
+
+    @GET("user/{userid}/histories")
+    suspend fun getOnlineWatchHistories(
+        @Path("userid") userId: String,
+        @Query("sort") sort: String,
+        @Query("page") page: Int,
+    ): Response<ResponseBody>
+
+    @GET("user/{userid}/edit")
+    suspend fun getUserAccountPage(
+        @Path("userid") userId: String,
+    ): Response<ResponseBody>
+
+    @FormUrlEncoded
+    @POST("user/{userid}")
+    suspend fun updateUserAccountProfile(
+        @Path("userid") userId: String,
+        @Field("_token") csrfToken: String?,
+        @Field("_method") method: String = "patch",
+        @Field("type") type: String = "profile",
+        @Field("name") name: String,
+        @Field("email") email: String,
+        @Header("X-CSRF-TOKEN") csrfToken_1: String? = csrfToken,
+    ): Response<ResponseBody>
+
+    @FormUrlEncoded
+    @POST("user/{userid}")
+    suspend fun updateUserAccountPassword(
+        @Path("userid") userId: String,
+        @Field("_token") csrfToken: String?,
+        @Field("_method") method: String = "patch",
+        @Field("type") type: String = "password",
+        @Field("password_old") oldPassword: String,
+        @Field("password_new") newPassword: String,
+        @Field("password_new_confirm") newPasswordConfirm: String,
+        @Header("X-CSRF-TOKEN") csrfToken_1: String? = csrfToken,
+    ): Response<ResponseBody>
+
+    @Multipart
+    @POST("user/{userid}")
+    suspend fun updateUserAccountAvatar(
+        @Path("userid") userId: String,
+        @Part("_token") csrfToken: RequestBody,
+        @Part("_method") method: RequestBody,
+        @Part("type") type: RequestBody,
+        @Part photo: MultipartBody.Part,
+    ): Response<ResponseBody>
+
+    @FormUrlEncoded
+    @HTTP(method = "DELETE", path = "user/tab-item/{id}", hasBody = true)
+    suspend fun deleteOnlineWatchHistory(
+        @Path("id") videoCode: String,
+        @Field("tab") tab: String = "histories",
+        @Header("X-CSRF-TOKEN") csrfToken: String?,
     ): Response<ResponseBody>
 
     @GET("playlist")

@@ -68,7 +68,7 @@ fun RenderVideoIntroductionContent(
             fromDownload = viewModel.fromDownload,
             hideRelatedInIntro = viewModel.hideRelatedInIntro,
             shareText = videoShareText,
-            playlistInitialIndex = viewModel.getPlaylistFirstVisibleIndex(videoCode) ?: 0,
+            playlistInitialIndex = viewModel.getPlaylistFirstVisibleIndex(videoCode),
             introFirstVisibleItemIndex = introScrollState.firstVisibleItemIndex,
             introFirstVisibleItemScrollOffset = introScrollState.firstVisibleItemScrollOffset,
             downloadPrompt = pendingDownloadPrompt,

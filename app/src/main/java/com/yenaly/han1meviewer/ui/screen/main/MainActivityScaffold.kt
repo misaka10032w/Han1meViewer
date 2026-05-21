@@ -49,6 +49,7 @@ fun MainActivityScaffold(
     isLoading: Boolean,
     currentSite: String,
     onAvatarClick: () -> Unit,
+    onAvatarLongClick: () -> Unit,
     onSwitchSiteClick: () -> Unit,
     onDrawerItemSelected: (MainDrawerDestination) -> Boolean,
     content: @Composable () -> Unit,
@@ -73,6 +74,7 @@ fun MainActivityScaffold(
                     isLoading = isLoading,
                     currentSite = currentSite,
                     onAvatarClick = onAvatarClick,
+                    onAvatarLongClick = onAvatarLongClick,
                     onSwitchSiteClick = onSwitchSiteClick,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -226,6 +228,7 @@ private fun MainActivityScaffoldPreview() {
             isLoading = false,
             currentSite = "https://hanime1.me/",
             onAvatarClick = {},
+            onAvatarLongClick = {},
             onSwitchSiteClick = {},
             onDrawerItemSelected = { true },
         ) {

@@ -29,6 +29,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun HomeRouteScreen(
     activity: MainActivity,
+    isDrawerOpen: Boolean,
     onOpenDrawer: () -> Unit,
     onNavigateToPreview: () -> Unit,
     onNavigateToSearch: (String?) -> Unit,
@@ -51,6 +52,7 @@ fun HomeRouteScreen(
     ) {
         HomePageScreen(
             viewModel = viewModel,
+            isDrawerOpen = isDrawerOpen,
             onOpenDrawer = onOpenDrawer,
             onNavigateToPreview = onNavigateToPreview,
             onNavigateToSearch = { query -> onNavigateToSearch(query) },

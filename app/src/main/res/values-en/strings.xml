@@ -233,6 +233,9 @@
     <string name="watch_history_watched_at">Watched at %1$s</string>
     <string name="watch_history_released_at">Released at %1$s</string>
     <string name="watch_history_progress_minutes">Watched for about %1$d minute(s)</string>
+    <string name="online">Online</string>
+    <string name="popular">Popular</string>
+    <string name="watch_history_online_help">Pull to refresh and scroll to the bottom to load more.</string>
     <string name="speed">Speed</string>
     <string name="cancel_thumb_up_success">Thumb Up Cancelled Successfully!</string>
     <string name="thumb_up_success">Thumb Up Successful!</string>
@@ -287,6 +290,7 @@ Recommendations are as follows:\n
     <string name="do_not_use_japan_ip">Do not use Japanese IP address!!!</string>
     <string name="website_blocked_msg">Seeing this message means their website has been reinforced. Whether it can be restored depends on fate…</string>
     <string name="not_logged_in_currently">Currently not logged in</string>
+    <string name="login_state_expired">Your login session has expired. You have been logged out automatically. Please sign in again.</string>
     <string name="parse_error_msg">Maybe this URL is parsed differently…</string>
     <string name="network_unstable_msg">Your network may be unstable, please refresh more!</string>
     <string name="unknown_download_error">Unknown download error</string>
@@ -353,6 +357,23 @@ Recommendations are as follows:\n
     <string name="disable_comments_sum">When enabled, the comment section will be hidden on the video details page</string>
     <string name="default_video_quilty">Default video resolution</string>
     <string name="my_subscribe">My Subscriptions</string>
+    <string name="my_account">My</string>
+    <string name="username">Username</string>
+    <string name="logout">Log out</string>
+    <string name="change_avatar">Change avatar</string>
+    <string name="account_stats_summary">%1$d subscribers • %2$d videos</string>
+    <string name="edit_profile">Edit profile</string>
+    <string name="update_profile">Update profile</string>
+    <string name="change_password">Change password</string>
+    <string name="old_password">Old password</string>
+    <string name="new_password">New password</string>
+    <string name="confirm_new_password">Confirm new password</string>
+    <string name="password_not_match">The new passwords do not match</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="crop_avatar">Crop avatar</string>
+    <string name="updating">Updating…</string>
+    <string name="changing">Changing…</string>
+    <string name="uploading">Uploading…</string>
     <string name="title_activity_qrcode_scanner">Manual Cookies Input</string>
     <string name="scan_for_cookies">Manual Cookies Input</string>
     <string name="cookies_import_desc">Guide</string>
@@ -709,4 +730,6 @@ Recommendations are as follows:\n
     <string name="theme_color_high_contrast">High Contrast</string>
     <string name="restart_needed">You need to restart the program, otherwise it won\'t work!</string>
     <string name="played">Watched</string>
+    <string name="local">Local</string>
+    <string name="current_bucket">Current bucket</string>
 </resources>

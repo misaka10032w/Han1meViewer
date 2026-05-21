@@ -76,6 +76,7 @@ private fun ScanCookieContent(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Button(
+                enabled = scannedText.value.length > 100,
                 onClick = {
                     if (scannedText.value.isEmpty() || scannedText.value.length < 100) return@Button
                     onCookieScanned(scannedText.value)

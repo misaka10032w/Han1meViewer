@@ -40,6 +40,8 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.fragment.PermissionRequester
+import com.yenaly.han1meviewer.ui.navigation.navigateSafely
+import com.yenaly.han1meviewer.ui.navigation.main.AccountRoute
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
 import com.yenaly.han1meviewer.ui.screen.main.MainActivityContent
@@ -99,6 +101,7 @@ class MainActivity : FrameActivity(), PermissionRequester {
                 viewModel = viewModel,
                 pendingNavigationRequests = pendingNavigationRequests,
                 showAuthGuard = showAuthGuard,
+                onOpenAccount = { navController.navigateSafely(AccountRoute) },
                 onLogoutClick = { showLogoutConfirmDialog() },
                 onRequireLogin = { gotoLoginActivity() },
                 onSwitchSiteClick = { showSiteSwitchDialog() },
@@ -289,26 +292,31 @@ class MainActivity : FrameActivity(), PermissionRequester {
         }
     }
 
-    private fun gotoLoginActivity() {
+    fun gotoLoginActivity() {
         val intent = Intent(this, LoginActivity::class.java)
         loginDataLauncher.launch(intent)
     }
 
-    private fun showLogoutConfirmDialog() {
+    fun showLogoutConfirmDialog(closeCurrentPageOnConfirm: Boolean = false) {
         showAlertDialog {
             setTitle(R.string.sure_to_logout)
-            setPositiveButton(R.string.sure) { _, _ -> logoutWithRefresh() }
+            setPositiveButton(R.string.sure) { _, _ ->
+                if (closeCurrentPageOnConfirm) {
+                    navController.popBackStack()
+                }
+                logoutWithRefresh()
+            }
             setNegativeButton(R.string.no, null)
         }
     }
 
-    private fun logoutWithRefresh() {
+    fun logoutWithRefresh() {
         logout()
         viewModel.getHomePage()
     }
 
     fun showVideoDetailFragment(videoCode: String, fileUri: String? = null) {
-        navController.navigate(VideoRoute(videoCode, fileUri))
+        navController.navigateSafely(VideoRoute(videoCode, fileUri))
     }
 
     fun registerCurrentVideoHost(host: VideoPageHost?) {

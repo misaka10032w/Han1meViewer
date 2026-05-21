@@ -38,6 +38,14 @@ object DailyCheckInRoute
 object DownloadRoute
 
 @Serializable
+object AccountRoute
+
+@Serializable
+data class AvatarCropRoute(
+    val sourceUri: String,
+)
+
+@Serializable
 data class SearchRoute(
     val query: String? = null,
     val advancedSearchJson: String? = null,
@@ -101,6 +109,16 @@ enum class MainDestinationSpec(
     Download(
         drawerDestination = MainDrawerDestination.Download,
         routeClass = DownloadRoute::class,
+        drawerEnabled = false,
+    ),
+    Account(
+        drawerDestination = null,
+        routeClass = AccountRoute::class,
+        drawerEnabled = false,
+    ),
+    AvatarCrop(
+        drawerDestination = null,
+        routeClass = AvatarCropRoute::class,
         drawerEnabled = false,
     ),
     SettingsHome(

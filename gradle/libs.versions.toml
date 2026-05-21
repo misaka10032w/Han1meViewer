@@ -4,6 +4,7 @@ aboutlibraries = "14.2.0"
 androidGradle = "9.2.1"
 biometric = "1.1.0"
 coilCompose = "3.4.0"
+composeAvatarCropper = "1.0.0"
 coreSplashscreen = "1.2.0"
 kotlin = "2.3.21"
 materialIconsCore = "1.7.8"
@@ -73,6 +74,7 @@ androidx-window = { module = "androidx.window:window", version.ref = "window" }
 androidx-window-java = { module = "androidx.window:window-java", version.ref = "windowJava" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilCompose" }
+compose-avatar-cropper = { module = "cn.mucute:compose-avatar-cropper", version.ref = "composeAvatarCropper" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 firebase-database = { module = "com.google.firebase:firebase-database" }
