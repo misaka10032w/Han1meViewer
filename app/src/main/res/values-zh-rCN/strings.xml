@@ -296,6 +296,7 @@
     <string name="do_not_use_japan_ip">不要使用日本IP地址!!!</string>
     <string name="website_blocked_msg">看到这里说明他们网站被加固了，能不能恢复只能听天命了…</string>
     <string name="not_logged_in_currently">当前未登录</string>
+    <string name="login_state_expired">登录状态已失效，已自动登出，请重新登录</string>
     <string name="parse_error_msg">可能这个网址解析起来不太一样…</string>
     <string name="network_unstable_msg">可能是你的网络不稳定，多刷新！</string>
     <string name="unknown_download_error">未知下载错误</string>

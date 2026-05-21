@@ -93,6 +93,11 @@ fun MainActivityContent(
                 pendingUpdate = latest
             }
         }
+        LaunchedEffect(viewModel) {
+            viewModel.sessionExpiredMessage.collect { message ->
+                showShortToast(message)
+            }
+        }
         LaunchedEffect(homeState) {
             if (homeState is WebsiteState.Error) {
                 val throwable = (homeState as WebsiteState.Error).throwable

@@ -11,7 +11,9 @@ import com.yenaly.han1meviewer.FIREBASE_REALTIME_DATABASE
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SAVED_USER_ID
+import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.logic.DatabaseRepo
+import com.yenaly.han1meviewer.logic.exception.LoginStateExpiredException
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
@@ -43,6 +45,8 @@ class MainViewModel(application: Application) : YenalyViewModel(application) {
     private val _announcements = MutableLiveData<List<Announcement>>()
     val announcements: LiveData<List<Announcement>> = _announcements
     private val database = FirebaseDatabase.getInstance(FIREBASE_REALTIME_DATABASE)
+    private val _sessionExpiredMessage = MutableSharedFlow<String>()
+    val sessionExpiredMessage = _sessionExpiredMessage
 
     init {
         viewModelScope.launch {
@@ -53,6 +57,12 @@ class MainViewModel(application: Application) : YenalyViewModel(application) {
     fun getHomePage() {
         viewModelScope.launch {
             NetworkRepo.getHomePage().collect { homePage ->
+                if (homePage is WebsiteState.Error && homePage.throwable is LoginStateExpiredException) {
+                    logout()
+                    _sessionExpiredMessage.emit(
+                        homePage.throwable.message ?: application.getString(R.string.login_state_expired)
+                    )
+                }
                 if (homePage is WebsiteState.Success) {
                     csrfToken = homePage.info.csrfToken
                     homePage.info.userId.takeIf { it.isNotEmpty() }?.let { userId ->

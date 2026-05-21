@@ -8,6 +8,8 @@ import com.yenaly.han1meviewer.HanimeResolution
 import com.yenaly.han1meviewer.LOCAL_DATE_FORMAT
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
+import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.logic.exception.LoginStateExpiredException
 import com.yenaly.han1meviewer.logic.exception.ParseException
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimePreview
@@ -63,6 +65,10 @@ object Parser {
         val avatarUrl: String? = userInfo?.selectFirst("img")?.absUrl("src")
         val username: String? = userInfo?.getElementById("user-modal-name")?.text()
         val userHomePageLink = parseBody.getElementById("user-modal-trigger")!!.attr("href")
+
+        if (isAlreadyLogin && isLoginStateExpired(userHomePageLink, username)) {
+            return WebsiteState.Error(LoginStateExpiredException(getString(R.string.login_state_expired)))
+        }
 
         val userIdRegex = Regex("""/user/(\d+)""")
         val userId: String = userIdRegex.find(userHomePageLink)?.groupValues?.get(1) ?: ""
@@ -193,6 +199,12 @@ object Parser {
             )
         )
     }
+
+    private fun isLoginStateExpired(userHomePageLink: String, username: String?): Boolean {
+        return userHomePageLink.contains("/login") || username.isNullOrBlank()
+    }
+
+    private fun getString(resId: Int) = com.yenaly.yenaly_libs.utils.applicationContext.getString(resId)
     fun Element?.extractHanimeInfo(selector: String = "div[class^=horizontal-card]"): MutableList<HanimeInfo> {
         val resultList = mutableListOf<HanimeInfo>()
         this?.select(selector)?.forEach { item ->

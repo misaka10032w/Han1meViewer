@@ -290,6 +290,7 @@ Recommendations are as follows:\n
     <string name="do_not_use_japan_ip">Do not use Japanese IP address!!!</string>
     <string name="website_blocked_msg">Seeing this message means their website has been reinforced. Whether it can be restored depends on fate…</string>
     <string name="not_logged_in_currently">Currently not logged in</string>
+    <string name="login_state_expired">Your login session has expired. You have been logged out automatically. Please sign in again.</string>
     <string name="parse_error_msg">Maybe this URL is parsed differently…</string>
     <string name="network_unstable_msg">Your network may be unstable, please refresh more!</string>
     <string name="unknown_download_error">Unknown download error</string>

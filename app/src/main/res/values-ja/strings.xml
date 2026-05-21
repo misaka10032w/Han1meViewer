@@ -295,6 +295,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="do_not_use_japan_ip">日本のIPアドレスは使用しないでください!!!</string>
     <string name="website_blocked_msg">ここに表示されているということは、サイトが強化されたということ。復旧できるかは運次第…</string>
     <string name="not_logged_in_currently">現在未ログイン</string>
+    <string name="login_state_expired">ログイン状態の有効期限が切れたため、自動的にログアウトしました。再度ログインしてください。</string>
     <string name="parse_error_msg">このURLの解析は少し異なるかも…</string>
     <string name="network_unstable_msg">ネットワークが不安定かもしれません、再読み込み！</string>
     <string name="unknown_download_error">不明なダウンロードエラー</string>
