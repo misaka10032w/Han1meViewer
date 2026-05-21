@@ -22,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
+import kotlin.math.roundToInt
 
 @Composable
 fun SettingSwitchItem(
@@ -177,9 +178,15 @@ fun SettingSliderItem(
     valueRange: IntRange,
     onValueChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    step: Int = 1,
     summary: String? = null,
     iconRes: Int? = null,
 ) {
+    val totalSteps = if (step > 0) {
+        ((valueRange.last - valueRange.first) / step) - 1
+    } else {
+        0
+    }
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -213,13 +220,12 @@ fun SettingSliderItem(
         }
         Slider(
             value = value.toFloat(),
-            onValueChange = { onValueChange(it.toInt()) },
+            onValueChange = { onValueChange(it.roundToInt()) },
             valueRange = valueRange.first.toFloat()..valueRange.last.toFloat(),
-            steps = (valueRange.last - valueRange.first - 1).coerceAtLeast(0),
+            steps = totalSteps.coerceAtLeast(0),
         )
     }
 }
-
 @Composable
 fun SettingChoiceItem(
     title: String,
