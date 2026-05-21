@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.screen.main
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,6 +46,7 @@ fun MainDrawerHeader(
     isLoading: Boolean,
     currentSite: String,
     onAvatarClick: () -> Unit,
+    onAvatarLongClick: () -> Unit,
     onSwitchSiteClick: () -> Unit,
 ) {
     ElevatedCard(
@@ -71,7 +73,10 @@ fun MainDrawerHeader(
                 modifier = Modifier
                     .size(56.dp)
                     .clip(CircleShape)
-                    .clickable(onClick = onAvatarClick),
+                    .combinedClickable(
+                        onClick = onAvatarClick,
+                        onLongClick = onAvatarLongClick
+                    ),
                 contentScale = ContentScale.Crop,
                 placeholder = painterResource(id = R.drawable.bg_default_header),
                 fallback = painterResource(id = R.drawable.bg_default_header),
@@ -150,6 +155,7 @@ fun MainDrawerHeaderPreview() {
             isLoading = false,
             currentSite = "https://www.baidu.com",
             onAvatarClick = {},
+            onAvatarLongClick = {},
             onSwitchSiteClick = {}
         )
     }

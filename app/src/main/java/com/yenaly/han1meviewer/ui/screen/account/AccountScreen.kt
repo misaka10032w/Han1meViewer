@@ -28,9 +28,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -162,6 +163,7 @@ fun AccountScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun AccountContent(
     account: UserAccount,
@@ -240,7 +242,7 @@ private fun AccountContent(
                         shape = CircleShape,
                     ) {
                         if (isUpdatingAvatar) {
-                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                            LoadingIndicator(modifier = Modifier.size(16.dp))
                         } else {
                             Icon(
                                 painter = painterResource(R.drawable.ic_baseline_edit_24),
@@ -320,10 +322,8 @@ private fun AccountContent(
                     enabled = !isSubmitting && name.isNotBlank() && email.isNotBlank(),
                 ) {
                     if (isUpdatingProfile) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp).padding(end = 8.dp),
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onPrimary
+                        LoadingIndicator(
+                            modifier = Modifier.size(18.dp).padding(end = 8.dp)
                         )
                         Text(stringResource(R.string.updating))
                     } else {
@@ -433,10 +433,8 @@ private fun AccountContent(
                     enabled = !isSubmitting && oldPassword.isNotBlank() && newPassword.isNotBlank() && newPasswordConfirm.isNotBlank(),
                 ) {
                     if (isUpdatingPassword) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp).padding(end = 8.dp),
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onPrimary
+                        LoadingIndicator(
+                            modifier = Modifier.size(18.dp).padding(end = 8.dp)
                         )
                         Text(stringResource(R.string.changing))
                     } else {

@@ -1,42 +1,41 @@
 package com.yenaly.han1meviewer.ui.screen.account
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import androidx.compose.foundation.Image
+import android.graphics.ImageDecoder
+import android.os.Build
+import android.provider.MediaStore
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.scale
 import androidx.core.net.toUri
+import cn.mucute.compose.avatar.cropper.AvatarCropper
+import cn.mucute.compose.avatar.cropper.CropShape
+import cn.mucute.compose.avatar.cropper.rememberCropState
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import kotlinx.coroutines.Dispatchers
@@ -44,11 +43,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
-import kotlin.math.min
-import kotlin.math.roundToInt
 
-private val AvatarCropBoxSize = 280.dp
-
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AvatarCropScreen(
     sourceUri: String,
@@ -57,146 +53,123 @@ fun AvatarCropScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val imageBitmap by produceState<Bitmap?>(initialValue = null, sourceUri) {
-        value = withContext(Dispatchers.IO) {
-            context.contentResolver.openInputStream(sourceUri.toUri())?.use(BitmapFactory::decodeStream)
+    val cropState = rememberCropState()
+
+    var originalImageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+    var isProcessing by remember { mutableStateOf(false) }
+
+    LaunchedEffect(sourceUri) {
+        withContext(Dispatchers.IO) {
+            try {
+                val uri = sourceUri.toUri()
+                val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    val source = ImageDecoder.createSource(context.contentResolver, uri)
+                    ImageDecoder.decodeBitmap(source)
+                } else {
+                    @Suppress("DEPRECATION")
+                    MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                }
+                originalImageBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true).asImageBitmap()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                withContext(Dispatchers.Main) { onBack() }
+            }
         }
     }
-    var scale by remember { mutableFloatStateOf(1f) }
-    var offset by remember { mutableStateOf(Offset.Zero) }
-    var cropping by remember { mutableStateOf(false) }
-    var containerWidthPxState by remember { mutableFloatStateOf(0f) }
-    var containerHeightPxState by remember { mutableFloatStateOf(0f) }
-    var cropBoxSizePxState by remember { mutableFloatStateOf(0f) }
-
     HanimeScaffold(
         title = stringResource(R.string.crop_avatar),
-        onBack = onBack,
-        actions = {
-            val bitmap = imageBitmap
-            Button(
-                onClick = {
-                    if (bitmap == null) return@Button
-                    cropping = true
-                    scope.launch {
-                        val cropped = withContext(Dispatchers.IO) {
-                            createCroppedAvatarFile(
-                                cacheDir = context.cacheDir,
-                                bitmap = bitmap,
-                                scale = scale,
-                                offset = offset,
-                                containerWidthPx = containerWidthPxState,
-                                containerHeightPx = containerHeightPxState,
-                                cropBoxSizePx = cropBoxSizePxState,
-                            )
-                        }
-                        cropping = false
-                        if (cropped != null) {
-                            onConfirm(cropped)
-                        }
-                    }
-                },
-                enabled = bitmap != null && !cropping,
-            ) {
-                if (cropping) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                } else {
-                    Text(stringResource(R.string.confirm))
-                }
-            }
-        },
+        onBack = onBack
     ) { paddingValues ->
-        BoxWithConstraints(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(paddingValues),
-            contentAlignment = Alignment.Center,
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
         ) {
-            val density = LocalDensity.current
-            containerWidthPxState = with(density) { maxWidth.toPx() }
-            containerHeightPxState = with(density) { maxHeight.toPx() }
-            cropBoxSizePxState = with(density) { AvatarCropBoxSize.toPx() }
+            originalImageBitmap?.let { bitmap ->
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        AvatarCropper(
+                            imageBitmap = bitmap,
+                            state = cropState,
+                            shape = CropShape.Square,
+                            modifier = Modifier.fillMaxSize(),
+                            backgroundColor = MaterialTheme.colorScheme.background
+                        )
+                    }
 
-            val bitmap = imageBitmap
-            if (bitmap != null) {
-                Image(
-                    bitmap = bitmap.asImageBitmap(),
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .pointerInput(sourceUri) {
-                            detectTransformGestures { _, pan, zoom, _ ->
-                                scale = (scale * zoom).coerceIn(1f, 4f)
-                                offset += pan
-                            }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(
+                            onClick = onBack,
+                            enabled = !isProcessing
+                        ) {
+                            Text(stringResource(R.string.cancel))
                         }
-                        .graphicsLayer {
-                            scaleX = scale
-                            scaleY = scale
-                            translationX = offset.x
-                            translationY = offset.y
-                        },
-                )
+
+                        Button(
+                            onClick = {
+                                if (isProcessing) return@Button
+                                isProcessing = true
+                                scope.launch {
+                                    val croppedResult = cropState.crop(bitmap)
+
+                                    val file = withContext(Dispatchers.IO) {
+                                        saveImageBitmapToFile(context, croppedResult!!)
+                                    }
+
+                                    if (file != null) {
+                                        onConfirm(file)
+                                    } else {
+                                        isProcessing = false
+                                    }
+                                }
+                            },
+                            enabled = !isProcessing
+                        ) {
+                            Text(stringResource(R.string.confirm))
+                        }
+                    }
+                }
+            } ?: run {
                 Box(
-                    modifier = Modifier
-                        .size(AvatarCropBoxSize)
-                        .border(2.dp, Color.White)
-                        .background(Color.Transparent)
-                        .align(Alignment.Center),
-                )
-            } else {
-                CircularProgressIndicator()
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    LoadingIndicator()
+                }
             }
+
         }
     }
 }
 
-private fun createCroppedAvatarFile(
-    cacheDir: File,
-    bitmap: Bitmap,
-    scale: Float,
-    offset: Offset,
-    containerWidthPx: Float,
-    containerHeightPx: Float,
-    cropBoxSizePx: Float,
+private fun saveImageBitmapToFile(
+    context: android.content.Context,
+    imageBitmap: ImageBitmap
 ): File? {
-    return runCatching {
-        val fitScale = min(
-            containerWidthPx / bitmap.width.toFloat(),
-            containerHeightPx / bitmap.height.toFloat(),
-        )
-        val transformedScale = fitScale * scale
-        val displayedWidthPx = bitmap.width * transformedScale
-        val displayedHeightPx = bitmap.height * transformedScale
-        val imageLeftPx = (containerWidthPx - displayedWidthPx) / 2f + offset.x
-        val imageTopPx = (containerHeightPx - displayedHeightPx) / 2f + offset.y
+    return try {
+        val bitmap = imageBitmap.asAndroidBitmap()
+        val cacheDir = context.cacheDir
+        val avatarFile = File(cacheDir, "avatar_${System.currentTimeMillis()}.jpg")
 
-        val cropLeftOnScreen = (containerWidthPx - cropBoxSizePx) / 2f
-        val cropTopOnScreen = (containerHeightPx - cropBoxSizePx) / 2f
-
-        val left = ((cropLeftOnScreen - imageLeftPx) / transformedScale)
-            .roundToInt()
-            .coerceIn(0, bitmap.width - 1)
-        val top = ((cropTopOnScreen - imageTopPx) / transformedScale)
-            .roundToInt()
-            .coerceIn(0, bitmap.height - 1)
-        val cropSize = (cropBoxSizePx / transformedScale)
-            .roundToInt()
-            .coerceAtLeast(1)
-
-        val safeCropSize = min(cropSize, min(bitmap.width - left, bitmap.height - top))
-            .coerceAtLeast(1)
-
-        val cropped = Bitmap.createBitmap(bitmap, left, top, safeCropSize, safeCropSize)
-        val output = cropped.scale(1024, 1024)
-        val avatarFile = File(cacheDir, "avatar_crop_${System.currentTimeMillis()}.jpg")
-        FileOutputStream(avatarFile).use {
-            output.compress(Bitmap.CompressFormat.JPEG, 92, it)
+        FileOutputStream(avatarFile).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+            out.flush()
         }
-        if (cropped != output) cropped.recycle()
-        output.recycle()
         avatarFile
-    }.getOrNull()
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
 }

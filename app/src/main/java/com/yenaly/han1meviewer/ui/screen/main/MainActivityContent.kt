@@ -118,6 +118,9 @@ fun MainActivityContent(
                     onRequireLogin()
                 }
             },
+            onAvatarLongClick = {
+                onLogoutClick()
+            },
             onSwitchSiteClick = onSwitchSiteClick,
             onDrawerItemSelected = { destination ->
                 val handled = composeNavController.navigateDrawerDestination(
