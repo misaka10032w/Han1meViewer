@@ -168,7 +168,7 @@ fun MainNavHost(
                 },
                 pendingAvatarCropResult = pendingAvatarCropResult,
                 onAvatarCropResultConsumed = { pendingAvatarCropResult = null },
-                onLogout = { activity.showLogoutConfirmDialog() },
+                onLogout = { activity.showLogoutConfirmDialog(closeCurrentPageOnConfirm = true) },
             )
         }
         composable<AvatarCropRoute> {

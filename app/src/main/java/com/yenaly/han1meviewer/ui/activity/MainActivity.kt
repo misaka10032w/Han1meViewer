@@ -297,11 +297,13 @@ class MainActivity : FrameActivity(), PermissionRequester {
         loginDataLauncher.launch(intent)
     }
 
-    fun showLogoutConfirmDialog() {
+    fun showLogoutConfirmDialog(closeCurrentPageOnConfirm: Boolean = false) {
         showAlertDialog {
             setTitle(R.string.sure_to_logout)
             setPositiveButton(R.string.sure) { _, _ ->
-                navController.popBackStack()
+                if (closeCurrentPageOnConfirm) {
+                    navController.popBackStack()
+                }
                 logoutWithRefresh()
             }
             setNegativeButton(R.string.no, null)
