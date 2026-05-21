@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.screen.settings
+package com.yenaly.han1meviewer.ui.screen.settings.dialog
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

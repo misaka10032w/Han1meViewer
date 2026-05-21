@@ -784,4 +784,5 @@
     <string name="restart_needed">需要重啟程序，否則不起作用！</string>
     <string name="played">已觀看</string>
     <string name="local">本地</string>
+    <string name="current_bucket">目前命中檔位</string>
 </resources>

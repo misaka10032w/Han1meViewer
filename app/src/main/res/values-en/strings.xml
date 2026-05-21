@@ -730,4 +730,5 @@ Recommendations are as follows:\n
     <string name="restart_needed">You need to restart the program, otherwise it won\'t work!</string>
     <string name="played">Watched</string>
     <string name="local">Local</string>
+    <string name="current_bucket">Current bucket</string>
 </resources>

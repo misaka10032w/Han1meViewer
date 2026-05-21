@@ -735,4 +735,5 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="restart_needed">プログラムを再起動する必要があります。そうしないと動作しません！</string>
     <string name="played">閲覧済み</string>
     <string name="local">ローカル</string>
+    <string name="current_bucket">現在の適用範囲</string>
 </resources>

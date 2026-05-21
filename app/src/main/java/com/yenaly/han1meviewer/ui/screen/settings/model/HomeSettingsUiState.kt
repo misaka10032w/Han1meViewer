@@ -1,0 +1,40 @@
+package com.yenaly.han1meviewer.ui.screen.settings.model
+
+import com.yenaly.han1meviewer.HorizontalCardCountConfig
+import com.yenaly.han1meviewer.SearchGridColumnsConfig
+
+data class HomeSettingsUiState(
+    val videoLanguage: String,
+    val videoLanguageLabel: String,
+    val defaultVideoQuality: String,
+    val darkMode: String,
+    val darkModeLabel: String,
+    val appLanguage: String,
+    val appLanguageLabel: String,
+    val allowPipMode: Boolean,
+    val allowResumePlayback: Boolean,
+    val showPlayedIndicator: Boolean,
+    val searchArtistIgnoreVideoType: Boolean,
+    val disableMobileDataWarning: Boolean,
+    val disablePredictiveBack: Boolean,
+    val tabletMode: Boolean,
+    val disableComments: Boolean,
+    val collapseDownloadedGroup: Boolean,
+    val useDynamicColor: Boolean,
+    val useCIUpdateChannel: Boolean,
+    val useAnalytics: Boolean,
+    val useLockScreen: Boolean,
+    val fakeLauncherIconName: String,
+    val updateSummary: String,
+    val cacheSummary: String,
+    val versionSummary: String,
+    val updatePopupIntervalSummary: String,
+    val updatePopupIntervalDays: Int,
+    val dynamicColorEnabled: Boolean,
+    val themeColorKey: String,
+    val themeColorName: String,
+    val searchGridColumnsSummary: String,
+    val searchGridColumnsConfig: SearchGridColumnsConfig,
+    val horizontalCardCountSummary: String,
+    val horizontalCardCountConfig: HorizontalCardCountConfig,
+)

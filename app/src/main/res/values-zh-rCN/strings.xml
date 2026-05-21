@@ -735,4 +735,5 @@
     <string name="theme_color_high_contrast">高对比</string>
     <string name="played">已观看</string>
     <string name="local">本地</string>
+    <string name="current_bucket">当前命中档位</string>
 </resources>
