@@ -716,6 +716,7 @@ object Parser {
             .throwIfParseNull(Parser::userAccountPage.name, "userId")
         val userId = Regex("""\d+""").find(userIdText)?.value
             .throwIfParseNull(Parser::userAccountPage.name, "userId")
+        val joinedLabel = parseBody.selectFirst("#user-modal-created")?.text()?.trim()
         val statsText = parseBody.selectFirst("div.profile-sub-stats-new-line")?.text().orEmpty()
         val statNumbers = Regex("""\d+""").findAll(statsText)
             .mapNotNull { it.value.toIntOrNull() }
@@ -728,6 +729,7 @@ object Parser {
                 username = username,
                 email = email,
                 userId = userId,
+                joinedLabel = joinedLabel,
                 subscriberCount = statNumbers.getOrElse(0) { 0 },
                 videoCount = statNumbers.getOrElse(1) { 0 },
             )

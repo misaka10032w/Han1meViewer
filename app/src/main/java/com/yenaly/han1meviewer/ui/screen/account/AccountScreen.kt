@@ -1,6 +1,8 @@
 package com.yenaly.han1meviewer.ui.screen.account
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -75,6 +77,7 @@ import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AccountScreen(
     viewModel: UserAccountViewModel,
@@ -82,6 +85,7 @@ fun AccountScreen(
     onOpenAvatarCrop: (String) -> Unit,
     pendingAvatarCropResult: String?,
     onAvatarCropResultConsumed: () -> Unit,
+    onRefreshHome: () -> Unit,
     onLogout: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -108,6 +112,11 @@ fun AccountScreen(
                 }
 
                 is WebsiteState.Success -> {
+                    when (event.action) {
+                        UserAccountAction.ProfileUpdated,
+                        UserAccountAction.AvatarUpdated -> onRefreshHome()
+                        UserAccountAction.PasswordUpdated -> Unit
+                    }
                     val message = when (event.action) {
                         UserAccountAction.ProfileUpdated -> modifySuccess
                         UserAccountAction.PasswordUpdated -> modifySuccess
@@ -128,8 +137,28 @@ fun AccountScreen(
         PageContent(
             isLoading = state is WebsiteState.Loading,
             isError = state is WebsiteState.Error,
-            isEmpty = false,
+            isEmpty = state !is WebsiteState.Success,
             onRetry = { viewModel.loadAccount(forceReload = true) },
+            loading = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        LoadingIndicator()
+                        Text(
+                            text = stringResource(R.string.loading),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            },
             error = {
                 Box(
                     modifier = Modifier
@@ -213,24 +242,20 @@ private fun AccountContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primaryContainer),
-                        modifier = Modifier.size(108.dp)
-                    ) {
-                        AsyncImage(
-                            model = account.avatarUrl,
-                            contentDescription = account.username,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop,
-                            placeholder = painterResource(R.drawable.bg_default_header),
-                            error = painterResource(R.drawable.bg_default_header),
-                            fallback = painterResource(R.drawable.bg_default_header),
-                        )
-                    }
+                    val defaultPlaceholder = painterResource(R.drawable.bg_default_header)
+                    AsyncImage(
+                        model = account.avatarUrl,
+                        contentDescription = account.username,
+                        modifier = Modifier
+                            .size(108.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .border(2.dp, MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                        contentScale = ContentScale.Crop,
+                        placeholder = defaultPlaceholder,
+                        error = defaultPlaceholder,
+                        fallback = defaultPlaceholder,
+                    )
 
                     SmallFloatingActionButton(
                         onClick = { scope.launch { onPickAvatar() } },
@@ -254,30 +279,44 @@ private fun AccountContent(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
+
                 Text(
                     text = account.username,
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+
+                Spacer(modifier = Modifier.height(4.dp))
+
                 Surface(
                     color = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                     shape = MaterialTheme.shapes.small,
-                    modifier = Modifier.padding(vertical = 2.dp)
                 ) {
                     Text(
-                        text = "@ ${account.userId}",
+                        text = "@${account.userId}",
                         style = MaterialTheme.typography.labelMedium,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+
+                Spacer(modifier = Modifier.height(12.dp))
+
                 Text(
                     text = stringResource(R.string.account_stats_summary, account.subscriberCount, account.videoCount),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+
+                if (!account.joinedLabel.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = account.joinedLabel,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
 
@@ -473,6 +512,7 @@ private fun AccountScreenPreview() {
                 username = "你的名字",
                 email = "username@gmail.com",
                 userId = "987654",
+                joinedLabel = "加入於 1年前",
                 subscriberCount = 0,
                 videoCount = 9,
             ),

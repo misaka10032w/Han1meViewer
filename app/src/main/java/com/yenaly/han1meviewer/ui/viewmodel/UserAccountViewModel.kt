@@ -19,8 +19,6 @@ import java.io.File
 
 class UserAccountViewModel(application: Application) : YenalyViewModel(application) {
 
-    private val mainViewModel by sub<MainViewModel>()
-
     private val _accountState = MutableStateFlow<WebsiteState<UserAccount>>(WebsiteState.Loading)
     val accountState = _accountState.asStateFlow()
 
@@ -62,7 +60,6 @@ class UserAccountViewModel(application: Application) : YenalyViewModel(applicati
                 _actionFlow.emit(UserAccountActionEvent(UserAccountAction.ProfileUpdated, state))
                 if (state is WebsiteState.Success) {
                     loadAccount(forceReload = true)
-                    mainViewModel.getHomePage()
                 }
                 if (state !is WebsiteState.Loading) {
                     _submittingState.value = UserAccountSubmittingState.Idle
@@ -106,7 +103,6 @@ class UserAccountViewModel(application: Application) : YenalyViewModel(applicati
                 _actionFlow.emit(UserAccountActionEvent(UserAccountAction.AvatarUpdated, state))
                 if (state is WebsiteState.Success) {
                     loadAccount(forceReload = true)
-                    mainViewModel.getHomePage()
                 }
                 if (state !is WebsiteState.Loading) {
                     _submittingState.value = UserAccountSubmittingState.Idle

@@ -6,6 +6,7 @@ data class UserAccount(
     val username: String,
     val email: String,
     val userId: String,
+    val joinedLabel: String?,
     val subscriberCount: Int,
     val videoCount: Int,
 )
