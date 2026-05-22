@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.home
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -23,6 +24,7 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +41,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -70,6 +73,7 @@ import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
 import com.yenaly.han1meviewer.ui.viewmodel.CreatorCenterViewModel
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 @Composable
@@ -176,10 +180,7 @@ fun CreatorCenterScreen(
     }
 }
 
-@OptIn(
-    ExperimentalFoundationApi::class,
-    androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class,
-)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun CreatorUploadedPage(
     items: List<HanimeInfo>,
@@ -194,6 +195,7 @@ private fun CreatorUploadedPage(
     val gridState = rememberLazyGridState()
     val refreshState = rememberPullToRefreshState()
     val refreshing = state is PageLoadingState.Loading && items.isEmpty()
+    var sortBarVisible by rememberSaveable { mutableStateOf(true) }
 
     LaunchedEffect(gridState.canLoadMore(items, state), isLoadingMore) {
         if (gridState.canLoadMore(items, state) && !isLoadingMore) {
@@ -201,8 +203,29 @@ private fun CreatorUploadedPage(
         }
     }
 
+    LaunchedEffect(gridState) {
+        var previousIndex = 0
+        var previousOffset = 0
+        snapshotFlow { gridState.firstVisibleItemIndex to gridState.firstVisibleItemScrollOffset }
+            .distinctUntilChanged()
+            .collect { (currentIndex, currentOffset) ->
+                sortBarVisible = when {
+                    !gridState.canScrollBackward -> true
+                    currentIndex < previousIndex -> true
+                    currentIndex > previousIndex -> false
+                    currentOffset < previousOffset -> true
+                    currentOffset > previousOffset -> false
+                    else -> sortBarVisible
+                }
+                previousIndex = currentIndex
+                previousOffset = currentOffset
+            }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
-        CreatorSortRow(sort = sort, onRefresh = onRefresh)
+        AnimatedVisibility(visible = sortBarVisible) {
+            CreatorSortRow(sort = sort, onRefresh = onRefresh)
+        }
         PullToRefreshBox(
             isRefreshing = refreshing,
             state = refreshState,
@@ -256,7 +279,11 @@ private fun CreatorUploadedPage(
                     }
                     if (items.isNotEmpty()) {
                         item(span = { GridItemSpan(maxLineSpan) }) {
-                            LoadMoreFooter(state = state, loadedPage = loadedPageCount, isLoadingMore = isLoadingMore)
+                            LoadMoreFooter(
+                                state = state,
+                                loadedPage = loadedPageCount,
+                                isLoadingMore = isLoadingMore
+                            )
                         }
                     }
                 }
@@ -265,10 +292,7 @@ private fun CreatorUploadedPage(
     }
 }
 
-@OptIn(
-    ExperimentalFoundationApi::class,
-    androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class,
-)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun CreatorUploadingPage(
     items: List<CreatorUploadingItem>,
@@ -283,6 +307,7 @@ private fun CreatorUploadingPage(
     val gridState = rememberLazyGridState()
     val refreshState = rememberPullToRefreshState()
     val refreshing = state is PageLoadingState.Loading && items.isEmpty()
+    var sortBarVisible by rememberSaveable { mutableStateOf(true) }
 
     LaunchedEffect(gridState.canLoadMoreUploading(items, state), isLoadingMore) {
         if (gridState.canLoadMoreUploading(items, state) && !isLoadingMore) {
@@ -290,8 +315,29 @@ private fun CreatorUploadingPage(
         }
     }
 
+    LaunchedEffect(gridState) {
+        var previousIndex = 0
+        var previousOffset = 0
+        snapshotFlow { gridState.firstVisibleItemIndex to gridState.firstVisibleItemScrollOffset }
+            .distinctUntilChanged()
+            .collect { (currentIndex, currentOffset) ->
+                sortBarVisible = when {
+                    !gridState.canScrollBackward -> true
+                    currentIndex < previousIndex -> true
+                    currentIndex > previousIndex -> false
+                    currentOffset < previousOffset -> true
+                    currentOffset > previousOffset -> false
+                    else -> sortBarVisible
+                }
+                previousIndex = currentIndex
+                previousOffset = currentOffset
+            }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
-        CreatorSortRow(sort = sort, onRefresh = onRefresh)
+        AnimatedVisibility(visible = sortBarVisible) {
+            CreatorSortRow(sort = sort, onRefresh = onRefresh)
+        }
         PullToRefreshBox(
             isRefreshing = refreshing,
             state = refreshState,
@@ -341,7 +387,11 @@ private fun CreatorUploadingPage(
                     }
                     if (items.isNotEmpty()) {
                         item(span = { GridItemSpan(maxLineSpan) }) {
-                            LoadMoreFooter(state = state, loadedPage = loadedPageCount, isLoadingMore = isLoadingMore)
+                            LoadMoreFooter(
+                                state = state,
+                                loadedPage = loadedPageCount,
+                                isLoadingMore = isLoadingMore
+                            )
                         }
                     }
                 }
@@ -361,13 +411,22 @@ private fun CreatorSortRow(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        CreatorSortChip(text = stringResource(R.string.sort_by_newest), selected = sort == CreatorSort.Latest) {
+        CreatorSortChip(
+            text = stringResource(R.string.sort_by_newest),
+            selected = sort == CreatorSort.Latest
+        ) {
             onRefresh(CreatorSort.Latest)
         }
-        CreatorSortChip(text = stringResource(R.string.popular), selected = sort == CreatorSort.Popular) {
+        CreatorSortChip(
+            text = stringResource(R.string.popular),
+            selected = sort == CreatorSort.Popular
+        ) {
             onRefresh(CreatorSort.Popular)
         }
-        CreatorSortChip(text = stringResource(R.string.sort_by_oldest), selected = sort == CreatorSort.Oldest) {
+        CreatorSortChip(
+            text = stringResource(R.string.sort_by_oldest),
+            selected = sort == CreatorSort.Oldest
+        ) {
             onRefresh(CreatorSort.Oldest)
         }
     }
@@ -443,7 +502,10 @@ private fun CreatorUploadingCard(
                         style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
-                            .background(Color.Black.copy(alpha = 0.65f), RoundedCornerShape(topStart = 8.dp))
+                            .background(
+                                Color.Black.copy(alpha = 0.65f),
+                                RoundedCornerShape(topStart = 8.dp)
+                            )
                             .padding(horizontal = 6.dp, vertical = 2.dp),
                     )
                 }
@@ -511,7 +573,6 @@ private fun String.toReviewStatusColor(): Color {
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 }
-
 
 
 private fun LazyGridState.canLoadMore(
