@@ -377,6 +377,8 @@
     <string name="disable_comments_title">关闭评论区</string>
     <string name="default_video_quilty">默认分辨率</string>
     <string name="my_subscribe">我的订阅</string>
+    <string name="subscribed_artists_count">已关注作者（%1$d）</string>
+    <string name="swipe_more">向右滑动</string>
     <string name="my_account">我的</string>
     <string name="username">用户名</string>
     <string name="logout">登出</string>

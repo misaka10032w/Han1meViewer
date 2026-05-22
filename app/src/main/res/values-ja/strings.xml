@@ -376,6 +376,8 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="disable_comments_title">コメント欄非表示</string>
     <string name="default_video_quilty">デフォルト解像度</string>
     <string name="my_subscribe">マイフォロー</string>
+    <string name="subscribed_artists_count">フォロー中の作者（%1$d）</string>
+    <string name="swipe_more">右へスワイプ</string>
     <string name="my_account">マイ</string>
     <string name="username">ユーザー名</string>
     <string name="logout">ログアウト</string>

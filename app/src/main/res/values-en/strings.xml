@@ -371,6 +371,8 @@ Recommendations are as follows:\n
     <string name="disable_comments_sum">When enabled, the comment section will be hidden on the video details page</string>
     <string name="default_video_quilty">Default video resolution</string>
     <string name="my_subscribe">My Subscriptions</string>
+    <string name="subscribed_artists_count">Subscribed Artists (%1$d)</string>
+    <string name="swipe_more">Swipe right</string>
     <string name="my_account">My</string>
     <string name="username">Username</string>
     <string name="logout">Log out</string>

@@ -403,6 +403,8 @@
     <string name="disable_comments_sum">啟用後，影片詳情頁將不再顯示評論區</string>
     <string name="default_video_quilty">預設解析度</string>
     <string name="my_subscribe">我的訂閱</string>
+    <string name="subscribed_artists_count">已訂閱作者（%1$d）</string>
+    <string name="swipe_more">向右滑動</string>
     <string name="my_account">我的</string>
     <string name="username">用戶名稱</string>
     <string name="logout">登出</string>
