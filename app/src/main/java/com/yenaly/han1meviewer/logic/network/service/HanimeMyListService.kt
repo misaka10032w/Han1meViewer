@@ -45,6 +45,20 @@ interface HanimeMyListService {
         @Path("userid") userId: String,
     ): Response<ResponseBody>
 
+    @GET("user/{userid}/uploaded")
+    suspend fun getUploadedVideos(
+        @Path("userid") userId: String,
+        @Query("sort") sort: String,
+        @Query("page") page: Int,
+    ): Response<ResponseBody>
+
+    @GET("user/{userid}/uploading")
+    suspend fun getUploadingVideos(
+        @Path("userid") userId: String,
+        @Query("sort") sort: String,
+        @Query("page") page: Int,
+    ): Response<ResponseBody>
+
     @FormUrlEncoded
     @POST("user/{userid}")
     suspend fun updateUserAccountProfile(

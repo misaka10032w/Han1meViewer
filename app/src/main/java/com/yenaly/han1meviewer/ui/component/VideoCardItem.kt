@@ -90,8 +90,8 @@ fun VideoCardItem(
                     model = videoItem.coverUrl,
                     contentDescription = videoItem.title,
                     modifier = Modifier.fillMaxSize(),
-                    placeholder = painterResource(R.drawable.akarin),
-                    error = painterResource(android.R.drawable.stat_notify_error),
+                    placeholder = painterResource(R.drawable.h_chan_loading),
+                    error = painterResource(R.drawable.h_chan_load_failed),
                     contentScale = ContentScale.FillWidth,
                 )
 

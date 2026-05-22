@@ -22,6 +22,7 @@ import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.screen.account.AvatarCropScreen
+import com.yenaly.han1meviewer.ui.screen.home.CreatorCenterScreen
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframeSettingsRoute
@@ -40,6 +41,7 @@ import com.yenaly.han1meviewer.ui.navigation.settings.SettingsScaffold
 import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRouteScreen
 import com.yenaly.han1meviewer.ui.screen.account.AccountScreen
+import com.yenaly.han1meviewer.ui.viewmodel.CreatorCenterViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.UserAccountViewModel
 import kotlinx.serialization.json.Json
 
@@ -156,6 +158,15 @@ fun MainNavHost(
                 onBack = onBack,
                 onNavigateToVideo = onNavigateToVideo,
                 onNavigateToLocalVideo = onNavigateToLocalVideo,
+            )
+        }
+        composable<CreatorCenterRoute> {
+            val creatorViewModel: CreatorCenterViewModel = viewModel()
+            CreatorCenterScreen(
+                viewModel = creatorViewModel,
+                onBack = onBack,
+                onOpenUploadedVideo = { item -> onNavigateToVideo(item.videoCode) },
+                onOpenUploadingVideo = { item -> onNavigateToLocalVideo("-1", item.remoteVideoUrl) },
             )
         }
         composable<AccountRoute> {

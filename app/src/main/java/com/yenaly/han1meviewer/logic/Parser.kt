@@ -14,6 +14,7 @@ import com.yenaly.han1meviewer.logic.exception.ParseException
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimePreview
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
+import com.yenaly.han1meviewer.logic.model.CreatorUploadingItem
 import com.yenaly.han1meviewer.logic.model.HomePage
 import com.yenaly.han1meviewer.logic.model.MyListItems
 import com.yenaly.han1meviewer.logic.model.MySubscriptions
@@ -734,6 +735,59 @@ object Parser {
                 videoCount = statNumbers.getOrElse(1) { 0 },
             )
         )
+    }
+
+    fun creatorUploadedItems(body: String): PageLoadingState<MyListItems<HanimeInfo>> {
+        val parseBody = Jsoup.parse(body).body()
+        val csrfToken = parseBody.selectFirst("input[name=_token]")?.attr("value")
+        val allHanimeClass = parseBody.getElementsByClass("horizontal-row").firstOrNull()
+        val items = allHanimeClass.extractHanimeInfo("div[class^=user-tab-item-wrapper]")
+        return if (items.isEmpty()) {
+            PageLoadingState.NoMoreData
+        } else {
+            PageLoadingState.Success(MyListItems(items, csrfToken = csrfToken))
+        }
+    }
+
+    fun creatorUploadingItems(body: String): PageLoadingState<MyListItems<CreatorUploadingItem>> {
+        val parseBody = Jsoup.parse(body).body()
+        val csrfToken = parseBody.selectFirst("input[name=_token]")?.attr("value")
+        val wrappers = parseBody.select("div.user-tab-item-wrapper")
+        if (wrappers.isEmpty()) return PageLoadingState.NoMoreData
+
+        val items = wrappers.mapNotNull { wrapper ->
+            val card = wrapper.selectFirst("div.video-item-container") ?: return@mapNotNull null
+            val link = card.selectFirst("a.video-link") ?: return@mapNotNull null
+            val title = card.selectFirst("div.title")?.text()?.trim() ?: return@mapNotNull null
+            val coverUrl = card.selectFirst("img.main-thumb")?.absUrl("src")?.ifBlank {
+                card.selectFirst("img.main-thumb")?.attr("src")
+            } ?: return@mapNotNull null
+            val duration = card.selectFirst("div.duration")?.text()?.trim()
+            val subtitleText = card.selectFirst("div.subtitle a")?.text()?.trim().orEmpty()
+            val artist = subtitleText.substringBefore("•").trim().ifBlank { null }
+            val uploadTime = subtitleText.substringAfter("•", "").trim().ifBlank { null }
+            val remoteVideoUrl = link.attr("href")
+            val reviewStatus = card.selectFirst("div.stats-container div.stat-item")?.text()?.trim()
+                ?: return@mapNotNull null
+            val itemId = wrapper.id().substringAfterLast("-").ifBlank { title }
+
+            CreatorUploadingItem(
+                title = title,
+                coverUrl = coverUrl,
+                videoCode = itemId,
+                duration = duration,
+                currentArtist = artist,
+                uploadTime = uploadTime,
+                remoteVideoUrl = remoteVideoUrl,
+                reviewStatus = reviewStatus,
+            )
+        }
+
+        return if (items.isEmpty()) {
+            PageLoadingState.NoMoreData
+        } else {
+            PageLoadingState.Success(MyListItems(items, csrfToken = csrfToken))
+        }
     }
 
     private fun extractFormError(parseBody: Element): String? {

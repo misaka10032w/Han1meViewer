@@ -41,6 +41,11 @@ enum class MainDrawerDestination(
         titleRes = R.string.my_subscribe,
         requiresLogin = true,
     ),
+    CreatorCenter(
+        iconRes = R.drawable.baseline_creator_center_24,
+        titleRes = R.string.creator_center,
+        requiresLogin = true,
+    ),
     WatchHistory(
         iconRes = R.drawable.ic_baseline_history_24,
         titleRes = R.string.watch_history,

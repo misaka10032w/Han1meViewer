@@ -492,8 +492,8 @@ fun BannerCarousel(
                         contentDescription = item.title,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
-                        placeholder = painterResource(R.drawable.akarin),
-                        error = painterResource(R.drawable.baseline_error_outline_24)
+                        placeholder = painterResource(R.drawable.h_chan_loading),
+                        error = painterResource(R.drawable.h_chan_load_failed)
                     )
 
                     // 底部渐变遮罩

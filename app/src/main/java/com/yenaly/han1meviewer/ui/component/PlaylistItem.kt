@@ -57,8 +57,8 @@ fun PlaylistItem(
                 RetryableImage(
                     model = playlist.coverUrl ?: "",
                     contentDescription = playlist.title,
-                    placeholder = painterResource(R.drawable.akarin),
-                    error = painterResource(R.drawable.baseline_error_outline_24),
+                    placeholder = painterResource(R.drawable.h_chan_loading),
+                    error = painterResource(R.drawable.h_chan_load_failed),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
                 )
