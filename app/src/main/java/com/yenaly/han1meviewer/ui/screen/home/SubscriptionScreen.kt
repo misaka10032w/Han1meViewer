@@ -1,32 +1,41 @@
 package com.yenaly.han1meviewer.ui.screen.home
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults.pinnedScrollBehavior
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -37,6 +46,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -214,6 +225,7 @@ fun SubscriptionPageContent(
     val screenWidthPx = windowInfo.containerSize.width
     val screenWidthDp = with(density) { screenWidthPx.toDp() }
     val videoColumns = rememberVideoGridColumns()
+    val artistRows = 3
     val artistColumns = maxOf(3, ((screenWidthDp + SpacingNormal) / (ArtistIconSize + SpacingNormal)).toInt())
     var currentPage by remember { mutableIntStateOf(1) }
     val pageSize = 60
@@ -243,28 +255,93 @@ fun SubscriptionPageContent(
         verticalArrangement = Arrangement.spacedBy(SpacingNormal)
     ) {
         // 艺术家
-        items(
-            artists.chunked(artistColumns),
-            span = { GridItemSpan(videoColumns) }
-        ) { artistRow ->
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            ) {
-                artistRow.forEach { artist ->
-                    ArtistItem(
-                        artist = artist,
-                        modifier = Modifier.weight(1f),
-                        onClickArtist = onClickArtist,
-                        onLongClickArtist = onLongClickArtist
-                    )
+        item(span = { GridItemSpan(videoColumns) }) {
+            val scrollState = rememberScrollState()
+            val artistColumnCount = maxOf(1, (artists.size + artistRows - 1) / artistRows)
+            val showArtistOverflowHint by remember(scrollState, artistColumnCount, artistColumns) {
+                derivedStateOf {
+                    artistColumnCount > artistColumns && scrollState.value < scrollState.maxValue
                 }
-                // 添加空白占位防止最后一列被压扁
-                val emptySlots = artistColumns - artistRow.size
-                repeat(emptySlots) {
-                    Spacer(modifier = Modifier.weight(1f))
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.subscribed_artists_count, artists.size),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    AnimatedVisibility(
+                        visible = showArtistOverflowHint
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = stringResource(R.string.swipe_more),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Icon(
+                                painter = androidx.compose.ui.res.painterResource(R.drawable.ic_baseline_arrow_forward_24),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.width(16.dp)
+                            )
+                        }
+                    }
+                }
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(scrollState)
+                            .padding(end = 28.dp, bottom = 8.dp)
+                    ) {
+                        repeat(artistColumnCount) { columnIndex ->
+                            Column(
+                                modifier = Modifier.width(ArtistIconSize),
+                                verticalArrangement = Arrangement.spacedBy(SpacingNormal)
+                            ) {
+                                repeat(artistRows) { rowIndex ->
+                                    val itemIndex = columnIndex * artistRows + rowIndex
+                                    val artist = artists.getOrNull(itemIndex)
+                                    if (artist != null) {
+                                        ArtistItem(
+                                            artist = artist,
+                                            onClickArtist = onClickArtist,
+                                            onLongClickArtist = onLongClickArtist
+                                        )
+                                    } else {
+                                        Spacer(modifier = Modifier.width(ArtistIconSize))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (showArtistOverflowHint) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .width(32.dp)
+                                .fillMaxHeight()
+                                .background(
+                                    Brush.horizontalGradient(
+                                        colors = listOf(
+                                            Color.Transparent,
+                                            MaterialTheme.colorScheme.background,
+                                        )
+                                    )
+                                )
+                        )
+                    }
                 }
             }
         }

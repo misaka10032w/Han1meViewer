@@ -9,6 +9,8 @@ import com.yenaly.han1meviewer.logic.exception.HanimeNotFoundException
 import com.yenaly.han1meviewer.logic.exception.IPBlockedException
 import com.yenaly.han1meviewer.logic.exception.ParseException
 import com.yenaly.han1meviewer.logic.model.CommentPlace
+import com.yenaly.han1meviewer.logic.model.CreatorSort
+import com.yenaly.han1meviewer.logic.model.CreatorUploadingItem
 import com.yenaly.han1meviewer.logic.model.ModifiedPlaylistArgs
 import com.yenaly.han1meviewer.logic.model.MyListType
 import com.yenaly.han1meviewer.logic.model.OnlineWatchHistorySort
@@ -120,6 +122,28 @@ object NetworkRepo {
     fun getUserAccountPage(userId: String) = websiteIOFlow(
         request = { HanimeNetwork.myListService.getUserAccountPage(userId) },
         action = Parser::userAccountPage,
+    )
+
+    fun getUploadedVideos(
+        userId: String,
+        sort: CreatorSort,
+        page: Int,
+    ) = pageIOFlow(
+        request = {
+            HanimeNetwork.myListService.getUploadedVideos(userId, sort.value, page)
+        },
+        action = Parser::creatorUploadedItems,
+    )
+
+    fun getUploadingVideos(
+        userId: String,
+        sort: CreatorSort,
+        page: Int,
+    ) = pageIOFlow(
+        request = {
+            HanimeNetwork.myListService.getUploadingVideos(userId, sort.value, page)
+        },
+        action = Parser::creatorUploadingItems,
     )
 
     fun updateUserAccountProfile(

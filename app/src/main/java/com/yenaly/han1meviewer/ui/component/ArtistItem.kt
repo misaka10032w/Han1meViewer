@@ -59,8 +59,8 @@ fun ArtistItem(
                 .size(56.dp)
                 .clip(CircleShape)
                 .border(4.dp, MaterialTheme.colorScheme.primaryContainer, CircleShape),
-            placeholder = painterResource(R.drawable.baseline_data_usage_24),
-            error = painterResource(R.drawable.baseline_error_outline_24),
+            placeholder = painterResource(R.drawable.h_chan_loading_small),
+            error = painterResource(R.drawable.h_chan_load_failed_small),
         )
         Spacer(Modifier.height(4.dp))
         Text(

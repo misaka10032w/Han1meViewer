@@ -166,6 +166,7 @@ fun MpvPlayerSettingsScreen(
                 summary = state.cacheSecsSummary,
                 value = state.cacheSecs,
                 valueRange = 10..120,
+                step = 5,
                 iconRes = R.drawable.baseline_cache_24,
                 onValueChange = onCacheSecsChange,
             )
