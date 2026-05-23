@@ -172,7 +172,7 @@ class SearchViewModel(
                             } else {
                                 list
                             }
-                            prevList + updatedList
+                            (prevList + updatedList).distinctBy(HanimeInfo::videoCode)
                         }
                         is PageLoadingState.Loading -> emptyList()
                         else -> prevList

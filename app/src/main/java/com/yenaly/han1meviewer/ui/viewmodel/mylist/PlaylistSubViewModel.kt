@@ -56,7 +56,8 @@ class PlaylistSubViewModel(application: Application) : YenalyViewModel(applicati
                 if (prev is PageLoadingState.Loading) _playlistFlow.value = emptyList()
                 _playlistFlow.update { prevList ->
                     when (state) {
-                        is PageLoadingState.Success -> prevList + state.info.hanimeInfo
+                        is PageLoadingState.Success -> (prevList + state.info.hanimeInfo)
+                            .distinctBy(HanimeInfo::videoCode)
                         is PageLoadingState.Loading -> emptyList()
                         else -> prevList
                     }
