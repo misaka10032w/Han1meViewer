@@ -66,7 +66,7 @@ class VideoRouteActions(
         }
         val routeMap = bundleMap.mapValues { it.value.toString() }
         (context as? MainActivity)?.navController?.navigateSafely(
-            SearchRoute(advancedSearchJson = Json.encodeToString(routeMap))
+            SearchRoute(query = artist.name, advancedSearchJson = Json.encodeToString(routeMap))
         )
     }
 
