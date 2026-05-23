@@ -5,7 +5,6 @@ import Config.Version.source
 import Config.isRelease
 import Config.lastCommitSha
 import com.android.build.api.variant.impl.VariantOutputImpl
-import com.android.build.gradle.internal.api.BaseVariantOutputImpl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -38,7 +37,7 @@ android {
         applicationId = "com.yenaly.han1meviewer"
         minSdk = property("min.sdk")?.toString()?.toIntOrNull()
         targetSdk = property("target.sdk")?.toString()?.toIntOrNull()
-        val (code, name) = createVersion(major = 0, minor = 25, patch = 0)
+        val (code, name) = createVersion(major = 0, minor = 26, patch = 0)
         versionCode = code
         versionName = name
 
@@ -177,6 +176,8 @@ dependencies {
 
     implementation(libs.retrofit)
     implementation(libs.converter.serialization)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.dns.over.https)
 
     // pic
 

@@ -1,9 +1,14 @@
 package com.yenaly.han1meviewer.logic.network
 
+import android.util.Log
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_HOSTNAME
 import com.yenaly.han1meviewer.Preferences
 import okhttp3.Dns
+import okhttp3.dnsoverhttps.DnsOverHttps
+import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.OkHttpClient
 import java.net.InetAddress
+import java.util.concurrent.TimeUnit
 
 /**
  * @project Han1meViewer
@@ -12,23 +17,24 @@ import java.net.InetAddress
  */
 class HDns : Dns {
 
-    private val dnsMap = mutableMapOf<String, List<InetAddress>>()
+    private data class DohRuntimeConfig(
+        val url: String,
+        val bootstrapIps: List<String>,
+        val timeoutSeconds: Int,
+    )
 
-    private val useBuiltInHosts = Preferences.useBuiltInHosts
+    @Volatile
+    private var cachedDohConfig: DohRuntimeConfig? = null
 
-    init {
-        if (useBuiltInHosts) {
-            val cloudFlareIps = listOf(
-                "172.64.229.154", "104.25.254.167", "172.67.75.184", "104.21.7.20", "172.67.187.141",
-                "2606:4700:8dd1::2a46:47f8", "2606:4700:3031::ac43:bb8d", "2606:4700:3030::6815:746"
-            )
-            HANIME_HOSTNAME.forEach { host ->
-                dnsMap[host] = cloudFlareIps
-            }
-        }
-    }
+    @Volatile
+    private var cachedDohDns: Dns? = null
 
     companion object {
+
+        private val cloudFlareIps = listOf(
+            "172.64.229.154", "104.25.254.167", "172.67.75.184", "104.21.7.20", "172.67.187.141",
+            "2606:4700:8dd1::2a46:47f8", "2606:4700:3031::ac43:bb8d", "2606:4700:3030::6815:746"
+        )
 
         /**
          * 添加DNS
@@ -43,15 +49,77 @@ class HDns : Dns {
     }
 
     override fun lookup(hostname: String): List<InetAddress> {
-        return if (useBuiltInHosts) dnsMap[hostname] ?: Dns.SYSTEM.lookup(hostname)
-        else Dns.SYSTEM.lookup(hostname)
-    }
-    fun getCDNList(host: String): List<String> {
-        if (useBuiltInHosts) {
-            val builtInIps = dnsMap[host]?.mapNotNull { it.hostAddress }?.distinct()
-            if (!builtInIps.isNullOrEmpty()) {
-                return builtInIps
+        if (Preferences.useBuiltInHosts && HANIME_HOSTNAME.contains(hostname)) {
+            return cloudFlareIps.map {
+                InetAddress.getByAddress(hostname, InetAddress.getByName(it).address)
             }
+        }
+
+        val dohUrl = DohConfig.resolveUrl()
+        if (!dohUrl.isNullOrBlank()) {
+            return runCatching { lookupByDoH(dohUrl, hostname) }
+                .getOrElse {
+                    Log.w("DOH", "lookup failed for $hostname: ${it.message}")
+                    Dns.SYSTEM.lookup(hostname)
+                }
+        }
+
+        return Dns.SYSTEM.lookup(hostname)
+    }
+
+    private fun lookupByDoH(dohUrl: String, hostname: String): List<InetAddress> {
+        val config = DohRuntimeConfig(
+            url = dohUrl,
+            bootstrapIps = DohConfig.bootstrapIps(),
+            timeoutSeconds = DohConfig.timeoutSeconds(),
+        )
+        val dns = getOrCreateDohDns(config)
+        return dns.lookup(hostname).also {
+            Log.i("DOH", it.toString())
+        }
+    }
+
+    fun lookupByDoHOnly(hostname: String): List<InetAddress> {
+        val dohUrl = DohConfig.resolveUrl() ?: error("DoH is disabled")
+        return lookupByDoH(dohUrl, hostname)
+    }
+
+    private fun getOrCreateDohDns(config: DohRuntimeConfig): Dns {
+        val currentDns = cachedDohDns
+        if (currentDns != null && cachedDohConfig == config) return currentDns
+
+        synchronized(this) {
+            val dnsAgain = cachedDohDns
+            if (dnsAgain != null && cachedDohConfig == config) return dnsAgain
+
+            val client = OkHttpClient.Builder()
+                .connectTimeout(config.timeoutSeconds.toLong(), TimeUnit.SECONDS)
+                .readTimeout(config.timeoutSeconds.toLong(), TimeUnit.SECONDS)
+                .build()
+            val bootstrapHosts = config.bootstrapIps.mapNotNull { ip ->
+                runCatching { InetAddress.getByName(ip) }.getOrNull()
+            }
+            val dnsBuilder = DnsOverHttps.Builder()
+                .client(client)
+                .url(config.url.toHttpUrl())
+                .includeIPv6(true)
+                .post(false)
+                .resolvePrivateAddresses(true)
+                .resolvePublicAddresses(true)
+            if (bootstrapHosts.isNotEmpty()) {
+                dnsBuilder.bootstrapDnsHosts(bootstrapHosts)
+            }
+            val dns = dnsBuilder.build()
+
+            cachedDohConfig = config
+            cachedDohDns = dns
+            return dns
+        }
+    }
+
+    fun getCDNList(host: String): List<String> {
+        if (Preferences.useBuiltInHosts && HANIME_HOSTNAME.contains(host)) {
+            return cloudFlareIps.distinct()
         }
 
         return runCatching {

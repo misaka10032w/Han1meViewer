@@ -189,6 +189,21 @@ object Preferences {
     val useBuiltInHosts: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.USE_BUILT_IN_HOSTS, false)
 
+    val useDoH: Boolean
+        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.USE_DOH, false)
+
+    val dohPreset: String
+        get() = preferenceSp.getString(SettingsPreferenceKeys.DOH_PRESET, "alidns") ?: "alidns"
+
+    val dohCustomUrl: String
+        get() = preferenceSp.getString(SettingsPreferenceKeys.DOH_CUSTOM_URL, EMPTY_STRING).orEmpty()
+
+    val dohBootstrapIps: String
+        get() = preferenceSp.getString(SettingsPreferenceKeys.DOH_BOOTSTRAP_IPS, EMPTY_STRING).orEmpty()
+
+    val dohTimeoutSeconds: Int
+        get() = preferenceSp.getInt(SettingsPreferenceKeys.DOH_TIMEOUT_SECONDS, 10)
+
     // 關鍵H幀 相關
 
     val whenCountdownRemind: Int

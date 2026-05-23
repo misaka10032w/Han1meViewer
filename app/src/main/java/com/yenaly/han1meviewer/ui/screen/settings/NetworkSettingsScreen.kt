@@ -28,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.logic.network.DohConfig
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.ui.component.ChoiceDialog
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
@@ -40,12 +41,21 @@ data class NetworkSettingsUiState(
     val domainDisplay: String,
     val proxySummary: String,
     val useBuiltInHosts: Boolean,
+    val useDoH: Boolean,
+    val dohSummary: String,
     val delaySummary: String,
 )
 
 data class DelayResultUi(
     val ip: String,
     val delay: Int,
+)
+
+data class DohTestResultUi(
+    val host: String,
+    val ips: List<String>,
+    val delay: Int,
+    val message: String,
 )
 
 enum class ProxyTypeOption(val value: Int) {
@@ -65,14 +75,25 @@ fun NetworkSettingsScreen(
     proxyType: Int,
     proxyIp: String,
     proxyPort: Int,
+    dohEnabled: Boolean,
+    dohPreset: String,
+    dohCustomUrl: String,
+    dohBootstrapIps: String,
+    dohTimeoutSeconds: Int,
+    dohTestResults: List<DohTestResultUi>,
+    isDohTesting: Boolean,
     onDomainChange: (String) -> Unit,
     onUseBuiltInHostsChange: (Boolean) -> Unit,
+    onSaveDohSettings: (Boolean, String, String, String, Int) -> Unit,
     onOpenDelayTest: () -> Unit,
+    onOpenDohTest: () -> Unit,
     onDismissDelayTest: () -> Unit,
+    onDismissDohTest: () -> Unit,
     onApplyProxy: (Int, String, Int) -> Unit,
 ) {
     var showDomainDialog by rememberSaveable { mutableStateOf(false) }
     var showProxyDialog by rememberSaveable { mutableStateOf(false) }
+    var showDohDialog by rememberSaveable { mutableStateOf(false) }
 
     if (showDomainDialog) {
         NetworkChoiceDialog(
@@ -100,11 +121,34 @@ fun NetworkSettingsScreen(
         )
     }
 
+    if (showDohDialog) {
+        DohDialog(
+            enabled = dohEnabled,
+            preset = dohPreset,
+            customUrl = dohCustomUrl,
+            bootstrapIps = dohBootstrapIps,
+            timeoutSeconds = dohTimeoutSeconds,
+            onDismiss = { showDohDialog = false },
+            onConfirm = { enabled, preset, url, bootstrapIps, timeout ->
+                showDohDialog = false
+                onSaveDohSettings(enabled, preset, url, bootstrapIps, timeout)
+            },
+        )
+    }
+
     if (isDelayTesting) {
         DelayTestDialog(
             currentHost = currentHost,
             results = delayResults,
             onDismiss = onDismissDelayTest,
+        )
+    }
+
+    if (isDohTesting) {
+        DohTestDialog(
+            currentHost = currentHost,
+            results = dohTestResults,
+            onDismiss = onDismissDohTest,
         )
     }
 
@@ -145,10 +189,28 @@ fun NetworkSettingsScreen(
 
         item {
             SettingNavigationItem(
+                title = stringResource(R.string.use_doh),
+                summary = state.dohSummary,
+                iconRes = R.drawable.baseline_doh_24,
+                onClick = { showDohDialog = true },
+            )
+        }
+
+        item {
+            SettingNavigationItem(
                 title = stringResource(R.string.view_node_latency),
                 summary = state.delaySummary,
                 iconRes = R.drawable.baseline_delay_24,
                 onClick = onOpenDelayTest,
+            )
+        }
+
+        item {
+            SettingNavigationItem(
+                title = stringResource(R.string.test_doh),
+                summary = stringResource(R.string.test_doh_summary),
+                iconRes = R.drawable.baseline_doh_24,
+                onClick = onOpenDohTest,
             )
         }
     }
@@ -307,6 +369,166 @@ private fun DelayTestDialog(
 }
 
 @Composable
+private fun DohTestDialog(
+    currentHost: String,
+    results: List<DohTestResultUi>,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.doh_test_result)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    text = currentHost,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 320.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(results, key = { it.host }) { item ->
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            Text(item.host)
+                            Text(
+                                text = item.message.ifBlank {
+                                    if (item.delay >= 0) {
+                                        "${item.delay} ms"
+                                    } else {
+                                        stringResource(R.string.network_timeout_text)
+                                    }
+                                },
+                                color = when (item.delay) {
+                                    in 0 until 100 -> Color(0xFF4CAF50)
+                                    in 100..500 -> Color(0xFFFFC107)
+                                    else -> Color(0xFFF44336)
+                                },
+                            )
+                            if (item.ips.isNotEmpty()) {
+                                Text(
+                                    text = item.ips.joinToString(),
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        dismissButton = {},
+    )
+}
+
+@Composable
+private fun DohDialog(
+    enabled: Boolean,
+    preset: String,
+    customUrl: String,
+    bootstrapIps: String,
+    timeoutSeconds: Int,
+    onDismiss: () -> Unit,
+    onConfirm: (Boolean, String, String, String, Int) -> Unit,
+) {
+    var dohEnabled by rememberSaveable(enabled) { mutableStateOf(enabled) }
+    var presetValue by rememberSaveable(preset) {
+        mutableStateOf(preset.ifBlank { DohConfig.presets.first().key })
+    }
+    var customValue by rememberSaveable(customUrl) { mutableStateOf(customUrl) }
+    var bootstrapValue by rememberSaveable(bootstrapIps) { mutableStateOf(bootstrapIps) }
+    var timeoutValue by rememberSaveable(timeoutSeconds) { mutableStateOf(timeoutSeconds.toString()) }
+    var showPresetDialog by rememberSaveable { mutableStateOf(false) }
+
+    if (showPresetDialog) {
+        NetworkChoiceDialog(
+            title = stringResource(R.string.doh_preset),
+            selectedValue = presetValue,
+            options = DohConfig.presets.map { it.title to it.key } + (stringResource(R.string.custom) to "custom"),
+            onDismiss = { showPresetDialog = false },
+            onSelect = {
+                presetValue = it
+                showPresetDialog = false
+            },
+        )
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.doh_settings)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectable(selected = dohEnabled, onClick = { dohEnabled = !dohEnabled })
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Checkbox(checked = dohEnabled, onCheckedChange = null)
+                    Text(stringResource(R.string.use_doh))
+                }
+
+                SettingNavigationItem(
+                    title = stringResource(R.string.doh_preset),
+                    valueText = DohConfig.presets.firstOrNull { it.key == presetValue }?.title
+                        ?: stringResource(R.string.custom),
+                    iconRes = R.drawable.baseline_domain_24,
+                    onClick = { showPresetDialog = true },
+                )
+
+                OutlinedTextField(
+                    value = customValue,
+                    onValueChange = { customValue = it },
+                    label = { Text(stringResource(R.string.doh_custom_url)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                )
+
+                OutlinedTextField(
+                    value = bootstrapValue,
+                    onValueChange = { bootstrapValue = it },
+                    label = { Text(stringResource(R.string.doh_bootstrap_ips)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    supportingText = { Text(stringResource(R.string.doh_bootstrap_ips_summary)) },
+                )
+
+                OutlinedTextField(
+                    value = timeoutValue,
+                    onValueChange = { timeoutValue = it.filter(Char::isDigit).take(2) },
+                    label = { Text(stringResource(R.string.doh_timeout_seconds)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    supportingText = { Text(stringResource(R.string.doh_timeout_seconds_summary)) },
+                    singleLine = true,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onConfirm(
+                    dohEnabled,
+                    presetValue,
+                    customValue.trim(),
+                    bootstrapValue.trim(),
+                    timeoutValue.toIntOrNull()?.coerceIn(1, 60) ?: 10,
+                )
+            }) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+    )
+}
+
+@Composable
 private fun NetworkGroupTitle(title: String) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -329,6 +551,8 @@ private fun NetworkSettingsScreenPreview() {
                 domainDisplay = "hanime1.me (默认)",
                 proxySummary = "系统代理",
                 useBuiltInHosts = false,
+                useDoH = false,
+                dohSummary = "关闭",
                 delaySummary = "启用内建Hosts后可侦测延迟状况\n不启用为实际解析位址",
             ),
             domainOptions = listOf(
@@ -341,14 +565,26 @@ private fun NetworkSettingsScreenPreview() {
                 DelayResultUi("8.8.8.8", 164),
                 DelayResultUi("9.9.9.9", -1),
             ),
+            dohTestResults = listOf(
+                DohTestResultUi("hanime1.me", listOf("1.1.1.1"), 82, ""),
+            ),
             isDelayTesting = false,
+            isDohTesting = false,
             proxyType = HProxySelector.TYPE_SYSTEM,
             proxyIp = "",
             proxyPort = -1,
+            dohEnabled = false,
+            dohPreset = "cloudflare",
+            dohCustomUrl = "",
+            dohBootstrapIps = "1.1.1.1, 8.8.8.8",
+            dohTimeoutSeconds = 10,
             onDomainChange = {},
             onUseBuiltInHostsChange = {},
+            onSaveDohSettings = { _, _, _, _, _ -> },
             onOpenDelayTest = {},
+            onOpenDohTest = {},
             onDismissDelayTest = {},
+            onDismissDohTest = {},
             onApplyProxy = { _, _, _ -> },
         )
     }
@@ -378,7 +614,8 @@ fun ProxyDialogPreview() {
             initialType = 1,
             initialIp = "1.1.1.1",
             initialPort = 8080,
-            onDismiss = { }
-        ) { _, _, _ -> }
+            onDismiss = { },
+            onConfirm = { _, _, _ -> },
+        )
     }
 }

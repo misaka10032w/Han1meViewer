@@ -34,6 +34,8 @@ object ServiceCreator {
         SpeedLimitInterceptor(maxSpeed = Preferences.downloadSpeedLimit)
     }
 
+    private val dns = HDns()
+
     inline fun <reified T> create(baseUrl: String): T = Retrofit.Builder()
         .baseUrl(baseUrl)
         .client(hClient)
@@ -71,6 +73,7 @@ object ServiceCreator {
             .connectTimeout(5, TimeUnit.SECONDS)
             .addInterceptor(UserAgentInterceptor)
             .addInterceptor(downloadSpeedLimitInterceptor)
+            .dns(dns)
             .build()
     }
 
@@ -86,7 +89,7 @@ object ServiceCreator {
             .cache(cache)
             .cookieJar(HCookieJar())
             .proxySelector(HProxySelector())
-            .dns(HDns())
+            .dns(dns)
             .build()
     }
 
