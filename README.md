@@ -76,6 +76,61 @@ Telegram 群组：[https://t.me/Han1meViewer](https://t.me/Han1meViewer)
 - 🌐 网络辅助：支持 Cloudflare 处理、备用域名、代理相关设置、CDN/网络检测和更新检查。
 - 📅 健康打卡：内置冲了么打卡页面和桌面小组件。
 - 🎯 共享关键 H 帧：支持内置关键帧数据读取、设置和共享数据展示。
+- 🗞️ 公告系统：支持首页公告展示、公告详情弹窗，并配套 `HanimeAnnouncementManagerWebUI` 维护 Firebase Realtime Database 中的 `announcements` 节点。
+
+## 🗞️ 公告系统使用须知
+
+公告系统分为两部分：
+
+- 用户侧：应用启动后由 `MainViewModel.loadAnnouncements()` 从 Firebase Realtime Database 读取 `announcements` 节点，首页会展示有效公告，并可点开公告详情弹窗。
+- 维护侧：`HanimeAnnouncementManagerWebUI` 用于维护公告数据，负责向同一个 `announcements` 节点写入、更新或下线公告。
+
+`HanimeAnnouncementManagerWebUI` 目录包含两个文件：
+
+- `HanimeAnnouncementManager.html`：公告管理网页，用于增删改查公告、切换启用状态。
+- `PermitAdmin.py`：给 Firebase Auth 用户写入 `isAdmin` 自定义声明，用于控制谁能访问管理端。
+
+前置条件：
+
+- 应用必须能够正常访问网络。
+- 项目中配置的 Firebase Realtime Database 地址必须可用。
+- `announcements` 节点下的公告数据结构需要和 `Announcement` 模型一致，至少包含 `title`、`content`、`isActive` 等字段。
+- 公告内容会按 `priority` 排序，只有 `isActive = true` 的公告才会显示。
+- 管理端需要启用 Firebase Authentication 和 Realtime Database。
+- 管理端需要准备 Firebase Web 配置参数和可登录的管理员邮箱、密码。
+- 若使用 `PermitAdmin.py`，还需要 Firebase Admin SDK 的 `serviceAccountKey.json`。
+
+使用规则：
+
+- 首页公告默认会展示为有效公告列表。
+- 用户关闭公告后，会记录 `last_dismiss_time`，24 小时内不会再次自动弹出。
+- 公告详情支持标题、内容、发布时间、图片和按钮文案。
+- 若公告配置了链接，内容中可直接展示可点击的 URL。
+
+管理端使用步骤：
+
+1. 在 `HanimeAnnouncementManager.html` 中填写 `firebaseConfig`。
+2. 在 `ADMIN_EMAIL` 和 `ADMIN_PASSWORD` 中填入可登录 Firebase Auth 的管理员账号。
+3. 确保 Realtime Database 规则允许该管理员账号读写 `announcements` 节点。
+4. 如需批量授权管理员，先安装 `firebase-admin`，准备 `serviceAccountKey.json`，再运行 `PermitAdmin.py` 并填写目标用户 UID。
+5. 打开管理页后即可新增、编辑、启用、停用或删除公告。
+
+公告字段说明：
+
+- `title`：公告标题。
+- `content`：公告正文。
+- `imageUrl`：公告图片地址，可选。
+- `positiveText`：确认按钮文案，可选。
+- `negativeText`：取消按钮文案，可选。
+- `priority`：排序优先级。
+- `timestamp`：公告时间戳，单位为秒。
+- `isActive`：是否启用。
+
+维护建议：
+
+- 新公告建议先在 WebUI 中预览，再切换为 `isActive = true`。
+- 过期或不再需要显示的公告应直接下线，而不是删除，以便回溯。
+- 重要公告优先级数值应更高或更低需与 WebUI 约定保持一致，避免排序混乱。
 
 ## 📷 截图预览
 
@@ -105,6 +160,7 @@ Telegram 群组：[https://t.me/Han1meViewer](https://t.me/Han1meViewer)
 - `logic.network`：Retrofit Service、OkHttp 拦截器、DNS、CookieJar、更新服务和网络入口。
 - `logic.model`：页面和网络解析后的领域模型，如 `HanimeVideo`、`HanimeInfo`、`HomePage`、`Playlists` 等。
 - `logic.dao` / `logic.entity`：Room 数据库、DAO 和实体，用于历史、下载、搜索历史、关键帧、打卡等本地数据。
+- `announcement` 链路：公告数据从 Firebase Realtime Database 的 `announcements` 节点读取，首页通过 `MainViewModel.loadAnnouncements()` 拉取并展示，管理端使用 `HanimeAnnouncementManagerWebUI` 维护公告内容。
 - `worker`：WorkManager 下载任务和更新任务。
 - `util`：主题、网络、文件、权限、Cookie、Toast、视频和通用工具方法。
 

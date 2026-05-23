@@ -398,7 +398,61 @@ Room 主要用于：
 - Cloudflare 页面和拦截器用于处理访问保护导致的请求失败。
 - 账号信息修改、密码修改、头像上传都通过 `HanimeMyListService` 和 `NetworkRepo` 包装。
 
-## 13. 设置体系
+## 13. 公告系统与管理端
+
+公告系统分为应用侧展示和管理端写入两部分。
+
+关键文件：
+
+- `ui/viewmodel/MainViewModel.kt`
+- `ui/component/AnnouncementDialog.kt`
+- `ui/screen/home/HomePageScreen.kt`
+- `logic/model/Announcement.kt`
+- `HanimeAnnouncementManagerWebUI/HanimeAnnouncementManager.html`
+- `HanimeAnnouncementManagerWebUI/PermitAdmin.py`
+
+应用侧链路：
+
+- `MainViewModel.loadAnnouncements()` 从 Firebase Realtime Database 的 `announcements` 节点读取公告。
+- 只有 `isActive = true` 的公告会参与展示。
+- 首页通过公告卡片展示公告列表。
+- 点击公告后进入 `AnnouncementDialog`，可查看标题、正文、时间、图片和按钮文案。
+- 用户关闭公告后，会记录 `last_dismiss_time`，24 小时内不会再次自动弹出。
+
+管理端链路：
+
+- `HanimeAnnouncementManager.html` 是基于 Firebase Web SDK 的管理页面。
+- 页面通过 `firebaseConfig` 连接到项目对应的 Realtime Database。
+- 页面使用 `ADMIN_EMAIL` 和 `ADMIN_PASSWORD` 登录 Firebase Auth。
+- 登录成功后读取 `announcements` 节点并渲染为表格。
+- 页面支持新增、编辑、启用、停用和删除公告。
+
+管理员权限：
+
+- `PermitAdmin.py` 使用 Firebase Admin SDK 给指定 UID 写入 `isAdmin: true` 自定义声明。
+- 该脚本依赖本地 `serviceAccountKey.json`。
+- 运行前需要安装 `firebase-admin`，并填写目标用户 UID。
+- 该自定义声明用于管理端权限校验。
+
+公告字段约定：
+
+- `title`：公告标题。
+- `content`：公告正文。
+- `imageUrl`：公告图片地址，可选。
+- `positiveText`：确认按钮文本，可选。
+- `negativeText`：取消按钮文本，可选。
+- `priority`：排序优先级。
+- `timestamp`：更新时间戳，单位为秒。
+- `isActive`：是否启用。
+
+实现约定：
+
+- 公告数据应兼容部分字段缺失的情况。
+- 管理端更新公告时会刷新 `timestamp`，便于前端显示最新时间。
+- 停用公告时只更新 `isActive`，删除则直接移除节点。
+- 后续如果新增公告字段，需要同步更新 `Announcement` 模型、管理端表单和展示弹窗。
+
+## 14. 设置体系
 
 设置页采用 Compose + typed routes。
 
@@ -427,7 +481,7 @@ Room 主要用于：
 - UI 设置页只负责展示和修改偏好，不直接散落业务逻辑。
 - 与播放器、网络、下载有关的设置要同步检查对应模块读取点。
 
-## 14. 共享关键 H 帧
+## 15. 共享关键 H 帧
 
 共享关键 H 帧仍使用 assets 中的 JSON 文件作为输入。
 
@@ -460,7 +514,7 @@ entities
 
 这种结构避免了在 assets 里维护复杂目录索引，也便于贡献者直接提交单个 JSON 文件。
 
-## 15. Compose 列表封装
+## 16. Compose 列表封装
 
 项目提供了 `AnimatedLazy.kt` 封装：
 
@@ -482,7 +536,7 @@ entities
 - 使用 `items(list, key = { ... })` 时，调用方仍必须保证 key 唯一。
 - 网络分页列表优先在 ViewModel 层去重，不建议在 UI 层临时过滤后再展示，除非数据源来自单次接口且不参与后续业务逻辑。
 
-## 16. 构建和版本
+## 17. 构建和版本
 
 关键文件：
 
@@ -517,7 +571,7 @@ entities
 .\gradlew.bat :app:compileDebugKotlin
 ```
 
-## 17. 开发约定
+## 18. 开发约定
 
 代码约定：
 
@@ -537,7 +591,7 @@ entities
 - 登录态或 Cookie 是否过期。
 - Cloudflare/IP blocked 是否被正确映射。
 
-## 18. 常见改动入口
+## 19. 常见改动入口
 
 新增首页模块：
 
@@ -584,7 +638,7 @@ entities
 - `HomeSettingsScreen.kt` / 子设置页面
 - 实际业务读取点
 
-## 19. 维护提示
+## 20. 维护提示
 
 - 目标网站 DOM 改版时，优先检查 `Parser.kt`。
 - 出现网络请求异常时，优先检查拦截器、Cookie、Cloudflare 和备用域名逻辑。
