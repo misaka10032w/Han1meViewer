@@ -1,12 +1,7 @@
 package com.yenaly.han1meviewer.ui.screen.home
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
@@ -30,29 +25,46 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
-import com.yenaly.han1meviewer.ui.component.LoadMoreFooter
 import com.yenaly.han1meviewer.ui.component.PageContent
-import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.content.ErrorContent
-import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
-import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
-import com.yenaly.han1meviewer.ui.theme.SpacingNormal
+import com.yenaly.han1meviewer.ui.screen.home.videogrid.VideoGridContent
+import com.yenaly.han1meviewer.ui.screen.home.videogrid.VideoGridUiState
+import com.yenaly.han1meviewer.ui.screen.home.videogrid.canLoadMore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
+/**
+ * 通用视频网格页面 Screen 层。
+ *
+ * 为"稍后观看"、"收藏视频"等列表页面提供统一的 Scaffold + 下拉刷新 + 删除确认逻辑，
+ * 渲染委托给 [VideoGridContent]。
+ *
+ * @param items 视频列表
+ * @param state 加载状态
+ * @param deleteStateFlow 删除操作结果流
+ * @param loadedPageCount 已加载页数
+ * @param isLoadingMore 是否正在加载更多
+ * @param titleRes 标题资源 ID
+ * @param helpMessageRes 帮助信息资源 ID
+ * @param deleteTitleRes 删除确认标题资源 ID
+ * @param onBack 返回回调
+ * @param onOpenVideo 打开视频详情回调
+ * @param onDeleteItem 删除视频回调
+ * @param onRefresh 下拉刷新回调
+ * @param onLoadMore 加载更多回调
+ */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-internal fun MyListVideoGridScreen(
+fun VideoGridScreen(
     items: List<HanimeInfo>,
     state: PageLoadingState<*>,
     deleteStateFlow: Flow<WebsiteState<Boolean>>,
@@ -79,8 +91,7 @@ internal fun MyListVideoGridScreen(
     val refreshingState = rememberPullToRefreshState()
     val isError = state is PageLoadingState.Error && items.isEmpty()
     val isEmpty = state is PageLoadingState.NoMoreData && items.isEmpty()
-    val shouldBootstrap =
-        items.isEmpty() && state is PageLoadingState.Loading && loadedPageCount == 0
+    val shouldBootstrap = items.isEmpty() && state is PageLoadingState.Loading && loadedPageCount == 0
 
     LaunchedEffect(shouldBootstrap) {
         if (shouldBootstrap) {
@@ -132,6 +143,16 @@ internal fun MyListVideoGridScreen(
         dismissText = stringResource(R.string.close),
         onConfirm = { showHelpDialog = false },
         onDismiss = { showHelpDialog = false },
+    )
+
+    val uiState = VideoGridUiState(
+        items = items,
+        state = state,
+        loadedPageCount = loadedPageCount,
+        isLoadingMore = isLoadingMore,
+        isRefreshing = refreshing,
+        isError = isError,
+        isEmpty = isEmpty,
     )
 
     HanimeScaffold(
@@ -194,101 +215,24 @@ internal fun MyListVideoGridScreen(
                     EmptyContent(hint = stringResource(R.string.empty_content))
                 },
             ) {
-                MyListVideoGrid(
-                    items = items,
+                VideoGridContent(
+                    uiState = uiState,
                     gridState = gridState,
-                    loadedPageCount = loadedPageCount,
                     onOpenVideo = onOpenVideo,
                     onDeleteItem = { pendingDelete = it },
-                    state = state,
-                    loadingMore = isLoadingMore,
                 )
             }
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-private fun MyListVideoGrid(
-    items: List<HanimeInfo>,
-    gridState: LazyGridState,
-    loadedPageCount: Int,
-    onOpenVideo: (HanimeInfo) -> Unit,
-    onDeleteItem: (HanimeInfo) -> Unit,
-    state: PageLoadingState<*>,
-    loadingMore: Boolean,
-) {
-    val videoColumns = rememberVideoGridColumns()
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(videoColumns),
-        state = gridState,
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(SpacingNormal),
-        horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
-        verticalArrangement = Arrangement.spacedBy(SpacingNormal)
-    ) {
-        items(items, key = { it.videoCode }) { item ->
-            VideoCardItem(
-                videoItem = item,
-                isHorizontalCard = true,
-                onClickVideosItem = { onOpenVideo(item) },
-                onLongClickVideosItem = { _, _ -> onDeleteItem(item) },
-            )
-        }
-        if (items.isNotEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                LoadMoreFooter(
-                    state = state,
-                    loadedPage = loadedPageCount,
-                    isLoadingMore = loadingMore
-                )
-            }
-        }
-    }
-}
-
-private fun LazyGridState.canLoadMore(
-    items: List<HanimeInfo>,
-    state: PageLoadingState<*>,
-): Boolean {
-    if (items.isEmpty()) return false
-    if (state is PageLoadingState.Loading || state is PageLoadingState.NoMoreData || state is PageLoadingState.Error) {
-        return false
-    }
-    val lastVisible = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: return false
-    return lastVisible >= layoutInfo.totalItemsCount - 4
 }
 
 @Preview(showBackground = true, widthDp = 420, heightDp = 900)
 @Composable
-private fun MyListVideoGridScreenPreview() {
+private fun VideoGridScreenPreview() {
     ComponentPreview {
-        MyListVideoGridScreen(
+        VideoGridScreen(
             items = fakeHomePageVideos.take(6),
             state = PageLoadingState.Success(Unit),
-            deleteStateFlow = flowOf(WebsiteState.Success(true)),
-            loadedPageCount = 2,
-            isLoadingMore = false,
-            titleRes = R.string.fav_video,
-            helpMessageRes = R.string.long_press_to_cancel_fav,
-            deleteTitleRes = R.string.delete_fav,
-            onBack = {},
-            onOpenVideo = {},
-            onDeleteItem = {},
-            onRefresh = {},
-            onLoadMore = {},
-        )
-    }
-}
-
-@Preview(showBackground = true, widthDp = 420, heightDp = 900)
-@Composable
-private fun MyListVideoGridScreenEmptyPreview() {
-    ComponentPreview {
-        MyListVideoGridScreen(
-            items = emptyList(),
-            state = PageLoadingState.NoMoreData,
             deleteStateFlow = flowOf(WebsiteState.Success(true)),
             loadedPageCount = 2,
             isLoadingMore = false,

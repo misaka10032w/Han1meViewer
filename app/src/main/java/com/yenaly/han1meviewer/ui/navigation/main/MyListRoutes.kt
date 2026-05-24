@@ -1,78 +1,91 @@
 package com.yenaly.han1meviewer.ui.navigation.main
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.Preferences
-import com.yenaly.han1meviewer.ui.screen.home.MyFavVideoScreen
-import com.yenaly.han1meviewer.ui.screen.home.MyWatchLaterScreen
+import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.screen.home.VideoGridScreen
 import com.yenaly.han1meviewer.ui.viewmodel.MyListViewModel
 
 @Composable
-fun MyFavVideoRouteScreen(
+fun FavVideoRouteScreen(
     onBack: () -> Unit,
     onNavigateToVideo: (String) -> Unit,
 ) {
     val viewModel: MyListViewModel = viewModel()
-    MyFavVideoScreen(
-        favVideoFlow = viewModel.fav.favVideoFlow,
-        favVideoStateFlow = viewModel.fav.favVideoStateFlow,
-        deleteStateFlow = viewModel.fav.deleteMyFavVideoFlow,
-        loadedPageCountFlow = viewModel.fav.loadedPageCount,
-        isLoadingMoreFlow = viewModel.fav.isLoadingMore,
+    val fav = viewModel.fav
+    val items = fav.favVideoFlow.collectAsStateWithLifecycle().value
+    val state = fav.favVideoStateFlow.collectAsStateWithLifecycle().value
+    val loadedPageCount = fav.loadedPageCount.collectAsStateWithLifecycle().value
+    val isLoadingMore = fav.isLoadingMore.collectAsStateWithLifecycle().value
+
+    VideoGridScreen(
+        items = items,
+        state = state,
+        deleteStateFlow = fav.deleteMyFavVideoFlow,
+        loadedPageCount = loadedPageCount,
+        isLoadingMore = isLoadingMore,
+        titleRes = R.string.fav_video,
+        helpMessageRes = R.string.long_press_to_cancel_fav,
+        deleteTitleRes = R.string.delete_fav,
         onBack = onBack,
         onOpenVideo = { onNavigateToVideo(it.videoCode) },
-        onDeleteFavorite = { item ->
-            val position =
-                viewModel.fav.favVideoFlow.value.indexOfFirst { it.videoCode == item.videoCode }
-            if (position >= 0) {
-                viewModel.fav.deleteMyFavVideo(item.videoCode, position)
-            }
+        onDeleteItem = { item ->
+            val position = items.indexOfFirst { it.videoCode == item.videoCode }
+            if (position >= 0) fav.deleteMyFavVideo(item.videoCode, position)
         },
         onRefresh = {
-            viewModel.fav.favVideoPage = 1
-            viewModel.fav.clearMyListItems()
-            viewModel.fav.getMyFavVideoItems(Preferences.savedUserId, 1)
-            viewModel.fav.favVideoPage = 2
+            fav.favVideoPage = 1
+            fav.clearMyListItems()
+            fav.getMyFavVideoItems(Preferences.savedUserId, 1)
+            fav.favVideoPage = 2
         },
         onLoadMore = {
-            val page = viewModel.fav.favVideoPage
-            viewModel.fav.getMyFavVideoItems(Preferences.savedUserId, page)
-            viewModel.fav.favVideoPage = page + 1
+            val page = fav.favVideoPage
+            fav.getMyFavVideoItems(Preferences.savedUserId, page)
+            fav.favVideoPage = page + 1
         },
     )
 }
 
 @Composable
-fun MyWatchLaterRouteScreen(
+fun WatchLaterRouteScreen(
     onBack: () -> Unit,
     onNavigateToVideo: (String) -> Unit,
 ) {
     val viewModel: MyListViewModel = viewModel()
-    MyWatchLaterScreen(
-        watchLaterFlow = viewModel.watchLater.watchLaterFlow,
-        watchLaterStateFlow = viewModel.watchLater.watchLaterStateFlow,
-        deleteStateFlow = viewModel.watchLater.deleteMyWatchLaterFlow,
-        loadedPageCountFlow = viewModel.watchLater.loadedPageCount,
-        isLoadingMoreFlow = viewModel.watchLater.isLoadingMore,
+    val wl = viewModel.watchLater
+    val items = wl.watchLaterFlow.collectAsStateWithLifecycle().value
+    val state = wl.watchLaterStateFlow.collectAsStateWithLifecycle().value
+    val loadedPageCount = wl.loadedPageCount.collectAsStateWithLifecycle().value
+    val isLoadingMore = wl.isLoadingMore.collectAsStateWithLifecycle().value
+
+    VideoGridScreen(
+        items = items,
+        state = state,
+        deleteStateFlow = wl.deleteMyWatchLaterFlow,
+        loadedPageCount = loadedPageCount,
+        isLoadingMore = isLoadingMore,
+        titleRes = R.string.watch_later,
+        helpMessageRes = R.string.long_press_to_cancel_watch_later,
+        deleteTitleRes = R.string.delete_watch_later,
         onBack = onBack,
         onOpenVideo = { onNavigateToVideo(it.videoCode) },
-        onDeleteWatchLater = { item ->
-            val position =
-                viewModel.watchLater.watchLaterFlow.value.indexOfFirst { it.videoCode == item.videoCode }
-            if (position >= 0) {
-                viewModel.watchLater.deleteMyWatchLater(item.videoCode, position)
-            }
+        onDeleteItem = { item ->
+            val position = items.indexOfFirst { it.videoCode == item.videoCode }
+            if (position >= 0) wl.deleteMyWatchLater(item.videoCode, position)
         },
         onRefresh = {
-            viewModel.watchLater.watchLaterPage = 1
-            viewModel.watchLater.clearMyListItems()
-            viewModel.watchLater.getMyWatchLaterItems(1)
-            viewModel.watchLater.watchLaterPage = 2
+            wl.watchLaterPage = 1
+            wl.clearMyListItems()
+            wl.getMyWatchLaterItems(1)
+            wl.watchLaterPage = 2
         },
         onLoadMore = {
-            val page = viewModel.watchLater.watchLaterPage
-            viewModel.watchLater.getMyWatchLaterItems(page)
-            viewModel.watchLater.watchLaterPage = page + 1
+            val page = wl.watchLaterPage
+            wl.getMyWatchLaterItems(page)
+            wl.watchLaterPage = page + 1
         },
     )
 }
