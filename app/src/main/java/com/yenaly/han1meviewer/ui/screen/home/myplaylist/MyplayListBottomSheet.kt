@@ -1,7 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.home.myplaylist
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.widget.EditText
 import androidx.compose.animation.AnimatedVisibility
@@ -67,8 +66,18 @@ import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.showShortToast
-import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * 播放列表详情底部弹窗。
+ *
+ * @param listCode 播放列表代码
+ * @param onDismiss 关闭回调
+ * @param playListTitle 播放列表标题
+ * @param onClickItem 点击视频项回调
+ * @param onLongClickItem 长按视频项回调
+ * @param vm 播放列表 ViewModel（弹窗内需要直接观察 ViewModel StateFlow）
+ * @param context Android Context
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaylistBottomSheet(
@@ -78,16 +87,13 @@ fun PlaylistBottomSheet(
     onClickItem: (String) -> Unit,
     onLongClickItem: (String, String) -> Unit,
     vm: MyPlayListViewModelV2,
-    context: Context
+    context: Context,
 ) {
     val playlistState by vm.playlistStateFlow.collectAsState()
     val playlist by vm.playlistFlow.collectAsState()
     val sheetState = rememberBottomSheetState(
         initialValue = SheetValue.Hidden,
-        enabledValues = setOf(
-            SheetValue.Hidden,
-            SheetValue.Expanded,
-        ),
+        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
     )
     if (listCode.isNotEmpty()) {
         vm.setListInfo(listCode, playListTitle)
@@ -116,56 +122,40 @@ fun PlaylistBottomSheet(
         }
     }
 
-    LaunchedEffect(Unit) {
-        sheetState.show()
-    }
+    LaunchedEffect(Unit) { sheetState.show() }
 
     LaunchedEffect(gridState, currentCode) {
-        snapshotFlow {
-            gridState.firstVisibleItemIndex to gridState.firstVisibleItemScrollOffset
-        }.collect { (index, offset) ->
-            vm.updatePlaylistSheetScrollState(
-                listCode = currentCode,
-                firstVisibleItemIndex = index,
-                firstVisibleItemScrollOffset = offset,
-            )
-        }
+        snapshotFlow { gridState.firstVisibleItemIndex to gridState.firstVisibleItemScrollOffset }
+            .collect { (index, offset) ->
+                vm.updatePlaylistSheetScrollState(currentCode, index, offset)
+            }
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        dragHandle = null
-    ) {
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState, dragHandle = null) {
         if (playlist.isEmpty() && playlistState is PageLoadingState.Loading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         } else if (playlist.isEmpty() && playlistState is PageLoadingState.Error) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .height(200.dp),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(Modifier
+                .fillMaxSize()
+                .height(200.dp), contentAlignment = Alignment.Center) {
                 Text(stringResource(R.string.load_failed_retry))
             }
         } else {
-            AnimatedVisibility(
-                visible = true,
-                enter = fadeIn()
-            ) {
-                PlaylistDetailContent(
-                    gridState,
-                    currentCode,
-                    playlist,
+            AnimatedVisibility(visible = true, enter = fadeIn()) {
+                PlaylistSheetContent(
+                    gridState = gridState,
+                    listCode = currentCode,
+                    playlist = playlist,
                     onDismiss = onDismiss,
-                    currentTitle,
-                    vm.playlistDesc,
+                    playListTitle = currentTitle,
+                    playlistDesc = vm.playlistDesc,
+                    playlistState = playlistState,
                     onClickItem = onClickItem,
-                    onLongClickItem,
-                    vm,
-                    context
+                    onLongClickItem = onLongClickItem,
+                    vm = vm,
+                    context = context,
                 )
                 if (playlist.isEmpty()) {
                     EmptyContent(stringResource(R.string.empty_content))
@@ -173,10 +163,7 @@ fun PlaylistBottomSheet(
             }
         }
     }
-//    LaunchedEffect(sheetState) {
-//        sheetState.partialExpand()
-//    }
-    // 收集修改playlist结果
+
     LaunchedEffect(Unit) {
         vm.modifyPlaylistFlow.collect { result ->
             when (result) {
@@ -197,17 +184,12 @@ fun PlaylistBottomSheet(
             }
         }
     }
-    // 收集详情页删除视频的结果
+
     LaunchedEffect(Unit) {
         vm.deleteFromPlaylistFlow.collect { result ->
             when (result) {
-                is WebsiteState.Error -> {
-                    showShortToast(R.string.delete_failed)
-                }
-
-                is WebsiteState.Loading -> {
-                }
-
+                is WebsiteState.Error -> showShortToast(R.string.delete_failed)
+                is WebsiteState.Loading -> {}
                 is WebsiteState.Success -> {
                     showShortToast(R.string.delete_success)
                     vm.loadMyPlayList()
@@ -219,34 +201,30 @@ fun PlaylistBottomSheet(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlaylistDetailContent(
+private fun PlaylistSheetContent(
     gridState: LazyGridState,
     listCode: String,
     playlist: List<HanimeInfo>,
     onDismiss: () -> Unit,
     playListTitle: String,
-    playlistDesc: StateFlow<String?>,
+    playlistDesc: kotlinx.coroutines.flow.StateFlow<String?>,
+    playlistState: PageLoadingState<*>,
     onClickItem: (String) -> Unit,
     onLongClickItem: (String, String) -> Unit,
     vm: MyPlayListViewModelV2,
     context: Context,
-    onlyEdit: Boolean = false
 ) {
-    val playlistState by vm.playlistStateFlow.collectAsState()
     var showDeletePlaylistConfirm by remember { mutableStateOf(false) }
     var showDeleteItemConfirm by remember { mutableStateOf<Triple<String, String, Int>?>(null) }
+    val desc by playlistDesc.collectAsState()
+
     Column(modifier = Modifier.fillMaxSize()) {
-        // 顶部图片区域
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(240.dp)
-        ) {
-            // 自制bottomSheet把手
+        Box(Modifier
+            .fillMaxWidth()
+            .height(240.dp)) {
             BottomSheetHandler()
 
-            if (playlist.isNotEmpty() && !onlyEdit) {
-                // banner 背景图
+            if (playlist.isNotEmpty()) {
                 RetryableImage(
                     model = playlist.first().coverUrl,
                     contentDescription = playlist.first().title,
@@ -256,9 +234,8 @@ fun PlaylistDetailContent(
                     modifier = Modifier.fillMaxSize()
                 )
             }
-            // 渐变覆盖
             Box(
-                modifier = Modifier
+                Modifier
                     .fillMaxSize()
                     .background(
                         Brush.verticalGradient(
@@ -266,21 +243,17 @@ fun PlaylistDetailContent(
                                 Color.Transparent,
                                 MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
                             ),
-                            startY = 0f,
-                            endY = Float.POSITIVE_INFINITY
+                            startY = 0f, endY = Float.POSITIVE_INFINITY
                         )
                     )
             )
-
-            // 顶部标题栏
             TopAppBar(
                 title = { Text(playListTitle, color = Color.White) },
                 colors = topAppBarColors(containerColor = Color.Transparent)
             )
 
-            // 图片下方描述栏
             Box(
-                modifier = Modifier
+                Modifier
                     .align(Alignment.BottomStart)
                     .fillMaxWidth()
                     .background(Color.Transparent)
@@ -290,13 +263,11 @@ fun PlaylistDetailContent(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 8.dp)
-                    ) {
+                    Column(Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp)) {
                         Text(
-                            text = playlistDesc.value ?: "",
+                            desc ?: "",
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 color = Color.White.copy(alpha = 0.8f)
                             ),
@@ -304,7 +275,6 @@ fun PlaylistDetailContent(
                             overflow = TextOverflow.Ellipsis
                         )
                     }
-                    // 删除按钮
                     Button(
                         onClick = { showDeletePlaylistConfirm = true },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
@@ -312,31 +282,24 @@ fun PlaylistDetailContent(
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_baseline_delete_24),
-                            contentDescription = stringResource(R.string.delete),
+                            painterResource(R.drawable.ic_baseline_delete_24),
+                            stringResource(R.string.delete),
                             tint = Color.White
                         )
                     }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-                    // 编辑按钮
+                    Spacer(Modifier.width(8.dp))
                     Button(
                         onClick = {
                             context.showAlertDialog {
                                 setTitle(R.string.modify_title_or_desc)
-                                val etView =
-                                    LayoutInflater.from(context)
-                                        .inflate(R.layout.dialog_playlist_modify_edit_text, null)
+                                val etView = LayoutInflater.from(context)
+                                    .inflate(R.layout.dialog_playlist_modify_edit_text, null)
                                 val etTitle = etView.findViewById<EditText>(R.id.et_title)
                                 val etDesc = etView.findViewById<EditText>(R.id.et_desc)
                                 etTitle.setText(playListTitle)
-                                etDesc.setText(playlistDesc.value)
+                                etDesc.setText(desc)
                                 setView(etView)
                                 setPositiveButton(R.string.confirm) { _, _ ->
-                                    Log.i(
-                                        "modify_playlist",
-                                        "${listCode},${etTitle.text},${etDesc.text}"
-                                    )
                                     vm.modifyPlaylist(
                                         listCode,
                                         etTitle.text.toString(),
@@ -352,8 +315,8 @@ fun PlaylistDetailContent(
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.baseline_edit_24),
-                            contentDescription = stringResource(R.string.edit),
+                            painterResource(R.drawable.baseline_edit_24),
+                            stringResource(R.string.edit),
                             tint = Color.Red
                         )
                     }
@@ -363,11 +326,8 @@ fun PlaylistDetailContent(
 
         Spacer(Modifier.height(8.dp))
 
-        // 视频列表
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-            val sheetWidth = maxWidth
-            val cardWidth = VideoNormalCardMinWidth
-            val columns = maxOf(2, (sheetWidth / cardWidth).toInt())
+            val columns = maxOf(2, (maxWidth / VideoNormalCardMinWidth).toInt())
 
             LazyVerticalGrid(
                 state = gridState,
@@ -380,13 +340,12 @@ fun PlaylistDetailContent(
                     VideoCardItem(
                         videoItem = item,
                         isHorizontalCard = true,
-                        onClickVideosItem =  onClickItem,
+                        onClickVideosItem = onClickItem
                     ) { videoCode, _ ->
                         showDeleteItemConfirm = Triple(listCode, videoCode, index)
                     }
                 }
 
-                // 加载中占位
                 item(span = { GridItemSpan(columns) }) {
                     if (playlistState is PageLoadingState.Loading && vm.currentPage > 1) {
                         Box(
@@ -400,7 +359,6 @@ fun PlaylistDetailContent(
                     }
                 }
 
-                // 没有更多数据提示
                 if (playlistState is PageLoadingState.NoMoreData && playlist.isNotEmpty()) {
                     item(span = { GridItemSpan(columns) }) {
                         Box(
@@ -410,35 +368,31 @@ fun PlaylistDetailContent(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = stringResource(
+                                stringResource(
                                     R.string.load_complete_with_pages,
                                     vm.currentPage - 1
                                 ),
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                             )
                         }
                     }
                 }
             }
 
-            // 加载更多
-            LaunchedEffect(gridState) {
-                snapshotFlow { gridState.layoutInfo }
-                    .collect { layoutInfo ->
-                        val totalItems = layoutInfo.totalItemsCount
-                        val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-                        // 滑到倒数第3个时触发加载下一页
-                        if (lastVisibleItem >= totalItems - 3 &&
-                            playlistState !is PageLoadingState.Loading &&
-                            playlistState !is PageLoadingState.NoMoreData &&
-                            !vm.isLoadingMore
-                        ) {
-                            vm.currentPage++
-                            vm.getPlaylistItems(vm.currentPage, listCode)
-                        }
+            val currentListCode = listCode
+            LaunchedEffect(gridState, playlistState) {
+                snapshotFlow { gridState.layoutInfo }.collect { layoutInfo ->
+                    val totalItems = layoutInfo.totalItemsCount
+                    val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+                    if (lastVisibleItem >= totalItems - 3 &&
+                        playlistState !is PageLoadingState.Loading &&
+                        playlistState !is PageLoadingState.NoMoreData &&
+                        !vm.isLoadingMore
+                    ) {
+                        vm.currentPage++
+                        vm.getPlaylistItems(vm.currentPage, currentListCode)
                     }
+                }
             }
 
             showDeleteItemConfirm?.let { (code, videoCode, index) ->
@@ -450,8 +404,11 @@ fun PlaylistDetailContent(
                     confirmText = context.getString(R.string.confirm),
                     dismissText = context.getString(R.string.cancel),
                     onConfirm = {
-                        vm.deleteFromPlaylist(code, videoCode, index)
-                        showDeleteItemConfirm = null
+                        vm.deleteFromPlaylist(
+                            code,
+                            videoCode,
+                            index
+                        ); showDeleteItemConfirm = null
                     },
                     onDismiss = { showDeleteItemConfirm = null },
                 )
@@ -464,8 +421,12 @@ fun PlaylistDetailContent(
                 confirmText = context.getString(R.string.confirm),
                 dismissText = context.getString(R.string.cancel),
                 onConfirm = {
-                    vm.modifyPlaylist(listCode, playListTitle, playlistDesc.value.orEmpty(), true)
-                    showDeletePlaylistConfirm = false
+                    vm.modifyPlaylist(
+                        listCode,
+                        playListTitle,
+                        desc.orEmpty(),
+                        true
+                    ); showDeletePlaylistConfirm = false
                 },
                 onDismiss = { showDeletePlaylistConfirm = false },
             )
