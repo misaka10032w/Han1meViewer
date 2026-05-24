@@ -85,6 +85,8 @@ fun DownloadingItemCard(
                 AsyncImage(
                     model = item.coverUri ?: item.coverUrl,
                     contentDescription = item.title,
+                    placeholder = painterResource(R.drawable.h_chan_loading),
+                    error = painterResource(R.drawable.h_chan_load_failed),
                     modifier = Modifier
                         .width(136.dp)
                         .aspectRatio(16f / 9f)

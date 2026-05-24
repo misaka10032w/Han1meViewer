@@ -102,10 +102,23 @@ fun DownloadRouteScreen(
                 showLongToast(application.getString(R.string.delete_success))
             }
 
+            is DownloadEvent.OnBatchDelete -> event.videos.forEach { video ->
+                viewModel.deleteDownloadHanimeBy(video.video.videoCode, video.video.quality)
+                SafFileManager.deleteDownloadVideoFolder(context, video.video.videoCode)
+            }
+
+            is DownloadEvent.OnBatchMoveGroup -> event.videos.forEach { video ->
+                viewModel.updateVideoGroup(video.video.videoCode, event.groupId)
+            }
+
             // 以下事件由 Screen 层自行处理，Route 不关心
             is DownloadEvent.OnToggleGroup,
             is DownloadEvent.OnCreateGroupDialogChange,
-            is DownloadEvent.OnPageChange -> Unit
+            is DownloadEvent.OnPageChange,
+            is DownloadEvent.OnToggleMultiSelect,
+            is DownloadEvent.OnToggleVideoSelection,
+            is DownloadEvent.OnSelectAllCurrentGroup,
+            is DownloadEvent.OnBatchMoveRequest -> Unit
         }
     }
 

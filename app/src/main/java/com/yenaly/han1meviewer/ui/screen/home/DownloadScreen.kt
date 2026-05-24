@@ -30,11 +30,13 @@ import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.logic.model.DownloadHeaderNode
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
+import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadEvent
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadUiState
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadedScreen
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadingScreen
+import com.yenaly.han1meviewer.ui.screen.home.download.MoveGroupDialog
 import com.yenaly.han1meviewer.ui.screen.home.download.toDisplayGroups
 import com.yenaly.han1meviewer.ui.screen.home.download.toFlatNodeList
 import com.yenaly.han1meviewer.ui.screen.home.download.toNodeList
@@ -77,6 +79,10 @@ fun DownloadScreen(
     val scope = rememberCoroutineScope()
     var showCreateGroupDialog by remember { mutableStateOf(false) }
     var downloadedHeaderNodes by remember { mutableStateOf<List<DownloadHeaderNode>>(emptyList()) }
+    var multiSelectMode by remember { mutableStateOf(false) }
+    var selectedVideoIds by remember { mutableStateOf(setOf<Int>()) }
+    var pendingBatchMove by remember { mutableStateOf(false) }
+    var pendingBatchMoveConfirm by remember { mutableStateOf<Pair<List<VideoWithCategories>, Int>?>(null) }
 
     val displayGroups = downloadedGroups.toDisplayGroups()
 
@@ -107,6 +113,8 @@ fun DownloadScreen(
         displayGroups = displayGroups,
         currentPage = pagerState.currentPage,
         showCreateGroupDialog = showCreateGroupDialog,
+        multiSelectMode = multiSelectMode,
+        selectedVideoIds = selectedVideoIds,
     )
 
     val handleEvent: (DownloadEvent) -> Unit = { event ->
@@ -125,6 +133,28 @@ fun DownloadScreen(
             is DownloadEvent.OnPageChange -> {
                 scope.launch { pagerState.animateScrollToPage(event.page) }
             }
+            // 多选事件：Screen 自行处理
+            is DownloadEvent.OnToggleMultiSelect -> {
+                multiSelectMode = !multiSelectMode
+                if (!multiSelectMode) selectedVideoIds = emptySet()
+            }
+            is DownloadEvent.OnToggleVideoSelection -> {
+                selectedVideoIds = if (event.videoId in selectedVideoIds) {
+                    selectedVideoIds - event.videoId
+                } else {
+                    selectedVideoIds + event.videoId
+                }
+            }
+            is DownloadEvent.OnSelectAllCurrentGroup -> {
+                val groupVideos = downloadedNodes.filterIsInstance<com.yenaly.han1meviewer.logic.model.DownloadItemNode>()
+                    .filter { it.parentKey == event.groupKey }
+                selectedVideoIds = if (event.select) {
+                    selectedVideoIds + groupVideos.map { it.data.video.id }.toSet()
+                } else {
+                    selectedVideoIds - groupVideos.map { it.data.video.id }.toSet()
+                }
+            }
+            is DownloadEvent.OnBatchMoveRequest -> { pendingBatchMove = true }
             // 业务事件：透传给 Route
             else -> onEvent(event)
         }
@@ -158,21 +188,31 @@ fun DownloadScreen(
                     )
                 }
             } else {
-                FilledIconButton(
-                    onClick = { handleEvent(DownloadEvent.OnCreateGroupDialogChange(true)) }
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.baseline_add_24),
-                        contentDescription = stringResource(R.string.create_new_group),
-                    )
-                }
-                FilledIconButton(
-                    onClick = { handleEvent(DownloadEvent.OnImportDownloaded) }
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_baseline_download_24),
-                        contentDescription = stringResource(R.string.read_download_dir_title),
-                    )
+                if (!uiState.multiSelectMode) {
+                    FilledIconButton(
+                        onClick = { handleEvent(DownloadEvent.OnToggleMultiSelect) }
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.baseline_format_list_bulleted_24),
+                            contentDescription = stringResource(R.string.edit),
+                        )
+                    }
+                    FilledIconButton(
+                        onClick = { handleEvent(DownloadEvent.OnCreateGroupDialogChange(true)) }
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.baseline_add_24),
+                            contentDescription = stringResource(R.string.create_new_group),
+                        )
+                    }
+                    FilledIconButton(
+                        onClick = { handleEvent(DownloadEvent.OnImportDownloaded) }
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_baseline_download_24),
+                            contentDescription = stringResource(R.string.read_download_dir_title),
+                        )
+                    }
                 }
             }
         },
@@ -214,6 +254,44 @@ fun DownloadScreen(
                 }
             }
         }
+    }
+
+    if (pendingBatchMove) {
+        val selectedVideos = downloadedNodes
+            .filterIsInstance<com.yenaly.han1meviewer.logic.model.DownloadItemNode>()
+            .filter { it.data.video.id in selectedVideoIds }
+            .map { it.data }
+        if (selectedVideos.isNotEmpty()) {
+            MoveGroupDialog(
+                video = selectedVideos.first(),
+                groups = displayGroups,
+                onDismiss = { pendingBatchMove = false },
+                onConfirm = { _, groupId ->
+                    pendingBatchMoveConfirm = Pair(selectedVideos, groupId)
+                    pendingBatchMove = false
+                },
+            )
+        } else {
+            pendingBatchMove = false
+        }
+    }
+
+    pendingBatchMoveConfirm?.let { (videos, groupId) ->
+        val groupName = displayGroups.find { it.id == groupId }?.name ?: "ID:$groupId"
+        ConfirmDialog(
+            visible = true,
+            title = stringResource(R.string.move_group),
+            message = stringResource(R.string.confirm_move_videos,videos.size,groupName),
+            confirmText = stringResource(R.string.confirm),
+            dismissText = stringResource(R.string.cancel),
+            onConfirm = {
+                handleEvent(DownloadEvent.OnBatchMoveGroup(videos, groupId))
+                pendingBatchMoveConfirm = null
+                multiSelectMode = false
+                selectedVideoIds = emptySet()
+            },
+            onDismiss = { pendingBatchMoveConfirm = null },
+        )
     }
 }
 

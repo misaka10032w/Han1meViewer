@@ -3,6 +3,7 @@ package com.yenaly.han1meviewer.ui.screen.home.download
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,10 +19,12 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -120,6 +123,9 @@ fun DownloadGroupHeader(
  * @param onExternalPlayback 外部播放器
  * @param onDeleteVideo 删除视频
  * @param onMoveGroup 移动到其他分组
+ * @param isMultiSelect 是否多选模式
+ * @param isSelected 是否已选中
+ * @param onToggleSelect 切换选中状态
  */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalTime::class)
 @Composable
@@ -130,6 +136,9 @@ fun DownloadedVideoCard(
     onExternalPlayback: () -> Unit,
     onDeleteVideo: () -> Unit,
     onMoveGroup: () -> Unit,
+    isMultiSelect: Boolean = false,
+    isSelected: Boolean = false,
+    onToggleSelect: (() -> Unit)? = null,
 ) {
     val addedTime = if (!LocalInspectionMode.current) {
         remember(item.video.addDate) {
@@ -144,7 +153,15 @@ fun DownloadedVideoCard(
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
-            .combinedClickable(onClick = onOpenVideo, onLongClick = onMoveGroup),
+            .then(
+                if (isMultiSelect) Modifier.combinedClickable(
+                    onClick = { onToggleSelect?.invoke() },
+                    onLongClick = {},
+                ) else Modifier.combinedClickable(
+                    onClick = onOpenVideo,
+                    onLongClick = onMoveGroup,
+                )
+            ),
         shape = RoundedCornerShape(24.dp),
     ) {
         Column {
@@ -155,15 +172,37 @@ fun DownloadedVideoCard(
                     .height(IntrinsicSize.Min),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                AsyncImage(
-                    model = item.video.coverUri ?: item.video.coverUrl,
-                    contentDescription = item.video.title,
-                    modifier = Modifier
-                        .width(150.dp)
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(18.dp)),
-                    contentScale = ContentScale.Crop,
-                )
+                Box {
+                    AsyncImage(
+                        model = item.video.coverUri ?: item.video.coverUrl,
+                        contentDescription = item.video.title,
+                        placeholder = painterResource(R.drawable.h_chan_loading),
+                        error = painterResource(R.drawable.h_chan_load_failed),
+                        modifier = Modifier
+                            .width(150.dp)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(18.dp)),
+                        contentScale = ContentScale.Crop,
+                    )
+                    if (isMultiSelect) {
+                        Surface(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(4.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (isSelected)
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
+                            else
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+                        ) {
+                            Checkbox(
+                                checked = isSelected,
+                                onCheckedChange = { onToggleSelect?.invoke() },
+                                modifier = Modifier.size(32.dp),
+                            )
+                        }
+                    }
+                }
 
                 Column(
                     modifier = Modifier.weight(1f),
@@ -307,6 +346,8 @@ private fun PreviewDownloadedVideoCard() {
             onExternalPlayback = {},
             onDeleteVideo = {},
             onMoveGroup = {},
+            isMultiSelect = true,
+            isSelected = true
         )
     }
 }

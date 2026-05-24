@@ -20,6 +20,8 @@ data class DownloadUiState(
     val displayGroups: List<DownloadGroupEntity> = emptyList(),
     val currentPage: Int = 0,
     val showCreateGroupDialog: Boolean = false,
+    val multiSelectMode: Boolean = false,
+    val selectedVideoIds: Set<Int> = emptySet(),
 )
 
 /**
@@ -76,4 +78,22 @@ sealed interface DownloadEvent {
 
     /** 切换 Tab 页 */
     data class OnPageChange(val page: Int) : DownloadEvent
+
+    /** 进入/退出多选模式 */
+    data object OnToggleMultiSelect : DownloadEvent
+
+    /** 切换单个视频的选中状态 */
+    data class OnToggleVideoSelection(val videoId: Int) : DownloadEvent
+
+    /** 全选/取消全选当前分组 */
+    data class OnSelectAllCurrentGroup(val groupKey: String, val select: Boolean) : DownloadEvent
+
+    /** 批量删除选中视频 */
+    data class OnBatchDelete(val videos: List<VideoWithCategories>) : DownloadEvent
+
+    /** 批量移动选中视频到指定分组 */
+    data class OnBatchMoveGroup(val videos: List<VideoWithCategories>, val groupId: Int) : DownloadEvent
+
+    /** 多选模式下打开批量移动分组选择 */
+    data object OnBatchMoveRequest : DownloadEvent
 }

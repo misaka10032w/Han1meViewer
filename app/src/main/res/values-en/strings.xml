@@ -764,4 +764,9 @@ Recommendations are as follows:\n
     <string name="local">Local</string>
     <string name="current_bucket">Current bucket</string>
     <string name="sex_times">Cranking the hog so hard the engine literally blew up.</string>
+    <string name="select_all">Select All</string>
+    <string name="deselect_all">Deselect All</string>
+    <string name="move_group">Move Group</string>
+    <string name="confirm_delete_videos">Are you sure you want to delete %d videos?</string>
+    <string name="confirm_move_videos">Are you sure you want to move %d videos to group %s?</string>
 </resources>
