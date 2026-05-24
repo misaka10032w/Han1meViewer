@@ -63,15 +63,10 @@ fun PlaylistScreen(
     onLongClickItem: (String, String) -> Unit,
 ) {
     val state by viewModel.myPlaylistsFlow.collectAsState()
-    val playlists by viewModel.cachedMyPlayList.collectAsState()
+    val uiState by viewModel.mainUiState.collectAsState()
     val scrollBehavior = pinnedScrollBehavior(rememberTopAppBarState())
     var isRefreshing by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()
-    val showSheet by viewModel.showSheet.collectAsState()
-    val isLoadingMorePlaylists by viewModel.isLoadingMorePlaylists.collectAsState()
-    val noMorePlaylists by viewModel.noMorePlaylists.collectAsState()
-    val selectedListCode = remember { mutableStateOf("") }
-    val listTitle = remember { mutableStateOf("") }
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var temporarilyHideSheetForNavigation by rememberSaveable { mutableStateOf(false) }
@@ -81,12 +76,12 @@ fun PlaylistScreen(
     }
 
     LaunchedEffect(Unit) {
-        if (playlists.isEmpty()) viewModel.loadMyPlayList()
+        if (uiState.playlists.isEmpty()) viewModel.loadMyPlayList()
     }
 
-    DisposableEffect(lifecycleOwner, showSheet) {
+    DisposableEffect(lifecycleOwner, uiState.showSheet) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME && showSheet) {
+            if (event == Lifecycle.Event.ON_RESUME && uiState.showSheet) {
                 temporarilyHideSheetForNavigation = false
             }
         }
@@ -107,17 +102,6 @@ fun PlaylistScreen(
         }
     }
 
-    val uiState = PlaylistUiState(
-        playlists = playlists,
-        isRefreshing = isRefreshing,
-        showSheet = showSheet,
-        selectedListCode = selectedListCode.value,
-        selectedListTitle = listTitle.value,
-        isLoadingMore = isLoadingMorePlaylists,
-        noMorePlaylists = noMorePlaylists,
-        playlistPage = viewModel.playlistPage,
-    )
-
     val handleEvent: (PlaylistEvent) -> Unit = { event ->
         when (event) {
             PlaylistEvent.OnBack -> navigateBack()
@@ -125,21 +109,17 @@ fun PlaylistScreen(
                 isRefreshing = true
                 viewModel.loadMyPlayList(forceReload = true)
             }
-
             PlaylistEvent.OnLoadMore -> viewModel.loadMyPlayList(viewModel.playlistPage + 1)
             is PlaylistEvent.OnPlaylistClick -> {
-                selectedListCode.value = event.listCode
                 viewModel.setShowSheet(true)
-                listTitle.value = event.title
+                viewModel.setListInfo(event.listCode, event.title)
             }
-
             PlaylistEvent.OnDismissSheet -> {
                 temporarilyHideSheetForNavigation = false
                 viewModel.setShowSheet(false)
                 viewModel.currentPage = 1
                 viewModel.clearCurrentList()
             }
-
             is PlaylistEvent.OnCreatePlaylist -> viewModel.createPlaylist(event.title, event.desc)
         }
     }
@@ -188,7 +168,7 @@ fun PlaylistScreen(
         ) {
             when (state) {
                 is WebsiteState.Loading -> {
-                    if (playlists.isEmpty()) {
+                    if (uiState.playlists.isEmpty()) {
                         LoadingIndicator(Modifier.align(Alignment.Center))
                     } else {
                         PlaylistContent(uiState = uiState, onEvent = handleEvent, rawState = state)
@@ -196,7 +176,7 @@ fun PlaylistScreen(
                 }
 
                 is WebsiteState.Error -> {
-                    if (playlists.isEmpty()) {
+                    if (uiState.playlists.isEmpty()) {
                         EmptyContent(
                             hint = stringResource(
                                 R.string.load_failed_with_reason,
@@ -216,11 +196,11 @@ fun PlaylistScreen(
 
             PullRefreshOverlay(state = refreshState, isRefreshing = isRefreshing)
 
-            if (showSheet && !temporarilyHideSheetForNavigation) {
+            if (uiState.showSheet && !temporarilyHideSheetForNavigation) {
                 PlaylistBottomSheet(
-                    listCode = selectedListCode.value,
+                    listCode = uiState.selectedListCode,
                     onDismiss = { handleEvent(PlaylistEvent.OnDismissSheet) },
-                    playListTitle = listTitle.value,
+                    playListTitle = uiState.selectedListTitle,
                     onClickItem = { item ->
                         temporarilyHideSheetForNavigation = true
                         onClickItem(item)
