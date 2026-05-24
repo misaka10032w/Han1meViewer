@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.screen.home.preview
+package com.yenaly.han1meviewer.ui.screen.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.pager.rememberPagerState
@@ -29,6 +29,15 @@ import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
 import com.yenaly.han1meviewer.ui.viewmodel.PreviewViewModel
 import com.yenaly.han1meviewer.ui.navigation.main.shiftMonthCodeForPreview
+import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewContent
+import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewEvent
+import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewImageViewerDialog
+import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewImageViewerState
+import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewMonthHeaderState
+import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewRouteUiState
+import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewUiState
+import com.yenaly.han1meviewer.ui.screen.home.preview.shiftMonthCode
+import com.yenaly.han1meviewer.ui.screen.home.preview.toNormalDateLabel
 import kotlinx.coroutines.launch
 
 /**
@@ -36,7 +45,7 @@ import kotlinx.coroutines.launch
  *
  * 持有 [PreviewViewModel] 和 [CommentViewModel]，负责状态收集、图片预加载、
  * 评论预取器生命周期、月份翻页编排和图片查看器 UI 管理。
- * 渲染委托给 [PreviewContent]。
+ * 渲染委托给 [com.yenaly.han1meviewer.ui.screen.home.preview.PreviewContent]。
  *
  * @param onBack 返回回调
  * @param onNavigateToPreviewComment 打开预览评论页回调

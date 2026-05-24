@@ -3,7 +3,7 @@ package com.yenaly.han1meviewer.ui.navigation.main
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewScreen
+import com.yenaly.han1meviewer.ui.screen.home.PreviewScreen
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.PreviewViewModel
 
