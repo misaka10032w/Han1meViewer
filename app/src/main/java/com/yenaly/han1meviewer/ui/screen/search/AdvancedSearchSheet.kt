@@ -29,11 +29,13 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -83,7 +85,13 @@ fun AdvancedSearchSheet(
     }.collectAsStateWithLifecycle(initialValue = emptyList())
     var dialogState by remember { mutableStateOf<AdvancedSearchDialogState?>(null) }
     var selectionVersion by remember { mutableIntStateOf(0) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(
+            SheetValue.Hidden,
+            SheetValue.Expanded,
+        ),
+    )
     val typeLabel = stringResource(R.string.type)
     val sortLabel = stringResource(R.string.sort_option)
     val tagLabel = stringResource(R.string.tag)
@@ -298,22 +306,22 @@ private fun AdvancedSearchDialogHost(
     onDismiss: () -> Unit,
     updateSelection: (block: () -> Unit) -> Unit,
 ) {
-    when (val state = dialogState) {
+    when (dialogState) {
         null -> Unit
         is AdvancedSearchDialogState.SingleChoice -> AdvancedSearchSingleChoiceDialog(
-            state = state,
+            state = dialogState,
             onDismiss = onDismiss,
             updateSelection = updateSelection,
         )
 
         is AdvancedSearchDialogState.MultiChoice -> AdvancedSearchMultiChoiceDialog(
-            state = state,
+            state = dialogState,
             onDismiss = onDismiss,
             updateSelection = updateSelection,
         )
 
         is AdvancedSearchDialogState.ReleaseDate -> AdvancedSearchReleaseDateDialog(
-            state = state,
+            state = dialogState,
             onDismiss = onDismiss,
             updateSelection = updateSelection,
         )
@@ -363,7 +371,9 @@ private fun AdvancedSearchMultiChoiceDialog(
     updateSelection: (block: () -> Unit) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
-    var selected by remember(state.key) { mutableStateOf(state.selected.toMutableSet()) }
+    val selected = remember(state.key) {
+        mutableStateListOf<SearchOption>().apply { addAll(state.selected) }
+    }
     var broad by remember(state.key) { mutableStateOf(state.broad) }
     val pagerState = rememberPagerState(pageCount = { state.scopes.size })
 
@@ -430,8 +440,10 @@ private fun AdvancedSearchMultiChoiceDialog(
                                 text = option.value,
                                 selected = option in selected,
                                 onClick = {
-                                    selected = selected.toMutableSet().also {
-                                        if (!it.add(option)) it.remove(option)
+                                    if (option in selected) {
+                                        selected.remove(option)
+                                    } else {
+                                        selected.add(option)
                                     }
                                 },
                             )
@@ -442,7 +454,7 @@ private fun AdvancedSearchMultiChoiceDialog(
         },
         confirmButton = {
             TextButton(onClick = {
-                updateSelection { state.onSave(selected, broad) }
+                updateSelection { state.onSave(selected.toSet(), broad) }
                 onDismiss()
             }) {
                 Text(stringResource(R.string.save))

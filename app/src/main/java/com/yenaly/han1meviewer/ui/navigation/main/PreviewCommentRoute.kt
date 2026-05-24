@@ -7,9 +7,10 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -53,7 +54,14 @@ fun PreviewCommentRouteScreen(
         viewModel.getCommentUiState(route.dateCode)
     }
     var childCommentId by rememberSaveable { mutableStateOf(commentUiState.childCommentId) }
-    val childSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val childSheetState = rememberBottomSheetState(
+        initialValue = SheetValue.Hidden,
+        enabledValues = setOf(
+            SheetValue.Hidden,
+            SheetValue.PartiallyExpanded,
+            SheetValue.Expanded,
+        ),
+    )
     val scope = rememberCoroutineScope()
     val prefetchedComments = PreviewCommentPrefetcher.here(viewModel)
         .commentFlow

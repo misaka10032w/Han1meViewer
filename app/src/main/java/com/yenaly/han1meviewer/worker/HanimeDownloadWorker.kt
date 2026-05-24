@@ -191,27 +191,26 @@ class HanimeDownloadWorker(
                 response = ServiceCreator.downloadClient.newCall(request).await()
                 if (response.isSuccessful) {
                     body = response.body
-                    body?.let { responseBody ->
-                        val len = responseBody.contentLength()
-                        // 创建数据库记录
-                        val entity = HanimeDownloadEntity(
-                            coverUrl = coverUrl,
-                            coverUri = null,
-                            title = hanimeName,
-                            addDate = System.currentTimeMillis(),
-                            videoCode = videoCode,
-                            videoUri = safUri?.toString() ?: file.toUri().toString(),
-                            quality = quality,
-                            videoUrl = downloadUrl,
-                            length = len,
-                            downloadedLength = 0,
-                            state = DownloadState.Queued
-                        )
-                        DatabaseRepo.HanimeDownload.insert(entity)
-                        // 预写入长度（只有 File 支持）
-                        raf?.setLength(len)
-                        return@withContext entity
-                    }
+                    val responseBody = body
+                    val len = responseBody.contentLength()
+                    // 创建数据库记录
+                    val entity = HanimeDownloadEntity(
+                        coverUrl = coverUrl,
+                        coverUri = null,
+                        title = hanimeName,
+                        addDate = System.currentTimeMillis(),
+                        videoCode = videoCode,
+                        videoUri = safUri?.toString() ?: file.toUri().toString(),
+                        quality = quality,
+                        videoUrl = downloadUrl,
+                        length = len,
+                        downloadedLength = 0,
+                        state = DownloadState.Queued
+                    )
+                    DatabaseRepo.HanimeDownload.insert(entity)
+                    // 预写入长度（只有 File 支持）
+                    raf?.setLength(len)
+                    return@withContext entity
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -301,9 +300,10 @@ class HanimeDownloadWorker(
                 }
 
                 body = response.body
-                bodyStream = body?.byteStream()
+                val responseBody = body
+                bodyStream = responseBody.byteStream()
                 val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                var len: Int = bodyStream?.read(buffer) ?: -1
+                var len: Int = bodyStream.read(buffer)
                 var delayTime = 0L
 
                 while (len != -1) {
@@ -323,7 +323,7 @@ class HanimeDownloadWorker(
                         )
                         delayTime = System.currentTimeMillis()
                     }
-                    len = bodyStream?.read(buffer) ?: -1
+                    len = bodyStream.read(buffer)
                 }
 
                 showSuccessNotification()
