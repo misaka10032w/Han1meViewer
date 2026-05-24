@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.screen.home.download
+package com.yenaly.han1meviewer.ui.screen.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
@@ -29,16 +29,27 @@ import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.logic.model.DownloadHeaderNode
-import com.yenaly.han1meviewer.logic.model.DownloadItemNode
-import com.yenaly.han1meviewer.logic.model.DownloadedNode
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
+import com.yenaly.han1meviewer.ui.screen.home.download.DownloadEvent
+import com.yenaly.han1meviewer.ui.screen.home.download.DownloadUiState
+import com.yenaly.han1meviewer.ui.screen.home.download.DownloadedScreen
+import com.yenaly.han1meviewer.ui.screen.home.download.DownloadingScreen
+import com.yenaly.han1meviewer.ui.screen.home.download.toDisplayGroups
+import com.yenaly.han1meviewer.ui.screen.home.download.toFlatNodeList
+import com.yenaly.han1meviewer.ui.screen.home.download.toNodeList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
+/**
+ * 下载页面 Screen 层。
+ *
+ * 接收来自 Route 层的 Flow 和回调，构建 [com.yenaly.han1meviewer.ui.screen.home.download.DownloadUiState] 统一管理 UI 状态，
+ * 将 [com.yenaly.han1meviewer.ui.screen.home.download.DownloadEvent] 映射到具体操作。Content 组件仅接收 UiState + Event 回调。
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DownloadScreen(
@@ -71,13 +82,7 @@ fun DownloadScreen(
     var showCreateGroupDialog by remember { mutableStateOf(false) }
     var downloadedHeaderNodes by remember { mutableStateOf<List<DownloadHeaderNode>>(emptyList()) }
 
-    val displayGroups = downloadedGroups.map { group ->
-        if (group.id == DownloadGroupEntity.DEFAULT_GROUP_ID) {
-            group.copy(name = stringResource(R.string.ungrouped))
-        } else {
-            group
-        }
-    }
+    val displayGroups = downloadedGroups.toDisplayGroups()
 
     val downloadedNodes =
         remember(downloadedItems, displayGroups, collapseDownloadedGroup, downloadedHeaderNodes) {
@@ -100,6 +105,46 @@ fun DownloadScreen(
             }
         }
 
+    val uiState = DownloadUiState(
+        downloadingItems = downloadingItems,
+        downloadedNodes = downloadedNodes,
+        displayGroups = displayGroups,
+        currentPage = pagerState.currentPage,
+        showCreateGroupDialog = showCreateGroupDialog,
+    )
+
+    val handleEvent: (DownloadEvent) -> Unit = { event ->
+        when (event) {
+            is DownloadEvent.OnPauseAll -> onPauseAll(uiState.downloadingItems)
+            is DownloadEvent.OnResumeAll -> onResumeAll(uiState.downloadingItems)
+            is DownloadEvent.OnPauseItem -> onPauseItem(event.item)
+            is DownloadEvent.OnResumeItem -> onResumeItem(event.item)
+            is DownloadEvent.OnDeleteDownloadingItem -> onDeleteDownloadingItem(event.item)
+            is DownloadEvent.OnImportDownloaded -> onImportDownloaded()
+            is DownloadEvent.OnOpenDownloadedVideo -> onOpenDownloadedVideo(event.video)
+            is DownloadEvent.OnLocalPlayback -> onLocalPlayback(event.video)
+            is DownloadEvent.OnExternalPlayback -> onExternalPlayback(event.video)
+            is DownloadEvent.OnDeleteDownloadedVideo -> onDeleteDownloadedVideo(event.video)
+            is DownloadEvent.OnMoveVideoGroup -> onMoveVideoGroup(event.video, event.groupId)
+            is DownloadEvent.OnRenameGroup -> onRenameGroup(event.groupId, event.newName)
+            is DownloadEvent.OnCreateGroup -> onCreateGroup(event.name)
+            is DownloadEvent.OnDeleteGroup -> onDeleteGroup(event.group)
+            is DownloadEvent.OnToggleGroup -> {
+                downloadedHeaderNodes = downloadedHeaderNodes.map {
+                    if (it.groupKey == event.groupKey) {
+                        it.copy(isExpanded = !it.isExpanded)
+                    } else {
+                        it
+                    }
+                }
+            }
+            is DownloadEvent.OnCreateGroupDialogChange -> showCreateGroupDialog = event.visible
+            is DownloadEvent.OnPageChange -> {
+                scope.launch { pagerState.animateScrollToPage(event.page) }
+            }
+        }
+    }
+
     LaunchedEffect(Unit) {
         onLoadDownloaded()
     }
@@ -108,10 +153,10 @@ fun DownloadScreen(
         title = stringResource(R.string.download),
         onBack = onBack,
         actions = {
-            if (pagerState.currentPage == 0) {
+            if (uiState.currentPage == 0) {
                 FilledIconButton(
-                    onClick = { onResumeAll(downloadingItems) },
-                    enabled = downloadingItems.isNotEmpty()
+                    onClick = { handleEvent(DownloadEvent.OnResumeAll) },
+                    enabled = uiState.downloadingItems.isNotEmpty()
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_baseline_play_arrow_24),
@@ -119,8 +164,8 @@ fun DownloadScreen(
                     )
                 }
                 FilledIconButton(
-                    onClick = { onPauseAll(downloadingItems) },
-                    enabled = downloadingItems.isNotEmpty()
+                    onClick = { handleEvent(DownloadEvent.OnPauseAll) },
+                    enabled = uiState.downloadingItems.isNotEmpty()
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_baseline_pause_24),
@@ -128,13 +173,17 @@ fun DownloadScreen(
                     )
                 }
             } else {
-                FilledIconButton(onClick = { showCreateGroupDialog = true }) {
+                FilledIconButton(
+                    onClick = { handleEvent(DownloadEvent.OnCreateGroupDialogChange(true)) }
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.baseline_add_24),
                         contentDescription = stringResource(R.string.create_new_group),
                     )
                 }
-                FilledIconButton(onClick = onImportDownloaded) {
+                FilledIconButton(
+                    onClick = { handleEvent(DownloadEvent.OnImportDownloaded) }
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_baseline_download_24),
                         contentDescription = stringResource(R.string.read_download_dir_title),
@@ -148,15 +197,15 @@ fun DownloadScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            PrimaryTabRow(selectedTabIndex = pagerState.currentPage) {
+            PrimaryTabRow(selectedTabIndex = uiState.currentPage) {
                 Tab(
-                    selected = pagerState.currentPage == 0,
-                    onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
+                    selected = uiState.currentPage == 0,
+                    onClick = { handleEvent(DownloadEvent.OnPageChange(0)) },
                     text = { Text(stringResource(R.string.downloading)) },
                 )
                 Tab(
-                    selected = pagerState.currentPage == 1,
-                    onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
+                    selected = uiState.currentPage == 1,
+                    onClick = { handleEvent(DownloadEvent.OnPageChange(1)) },
                     text = { Text(stringResource(R.string.downloaded)) },
                 )
             }
@@ -169,71 +218,18 @@ fun DownloadScreen(
             ) { page ->
                 when (page) {
                     0 -> DownloadingScreen(
-                        items = downloadingItems,
-                        onPauseItem = onPauseItem,
-                        onResumeItem = onResumeItem,
-                        onDeleteItem = onDeleteDownloadingItem,
+                        uiState = uiState,
+                        onEvent = handleEvent,
                     )
 
                     else -> DownloadedScreen(
-                        nodes = downloadedNodes,
-                        groups = displayGroups,
-                        showCreateGroupDialog = showCreateGroupDialog,
-                        onToggleGroup = { header ->
-                            downloadedHeaderNodes = downloadedHeaderNodes.map {
-                                if (it.groupKey == header.groupKey) {
-                                    it.copy(isExpanded = !it.isExpanded)
-                                } else {
-                                    it
-                                }
-                            }
-                        },
-                        onHeaderLongClick = {},
-                        onOpenVideo = onOpenDownloadedVideo,
-                        onLocalPlayback = onLocalPlayback,
-                        onExternalPlayback = onExternalPlayback,
-                        onDeleteVideo = onDeleteDownloadedVideo,
-                        onMoveVideoGroup = onMoveVideoGroup,
-                        onRenameGroup = onRenameGroup,
-                        onCreateGroup = onCreateGroup,
-                        onDeleteGroup = onDeleteGroup,
-                        onCreateGroupDialogChange = { showCreateGroupDialog = it },
+                        uiState = uiState,
+                        onEvent = handleEvent,
                     )
                 }
             }
         }
     }
-}
-
-private fun List<VideoWithCategories>.toNodeList(
-    groupIdToNameMap: Map<Int, String>,
-    collapseDownloadedGroup: Boolean,
-): List<DownloadHeaderNode> {
-    val groupedData = this.groupBy { it.video.groupId }.toSortedMap()
-    return buildList {
-        for ((groupId, videos) in groupedData) {
-            add(
-                DownloadHeaderNode(
-                    groupKey = groupIdToNameMap[groupId] ?: "ID: $groupId",
-                    originalVideos = videos,
-                    isExpanded = !collapseDownloadedGroup,
-                )
-            )
-        }
-    }
-}
-
-private fun List<DownloadHeaderNode>.toFlatNodeList(): List<DownloadedNode> {
-    val flatList = mutableListOf<DownloadedNode>()
-    for (header in this) {
-        flatList.add(header)
-        if (header.isExpanded) {
-            header.originalVideos.forEach { video ->
-                flatList.add(DownloadItemNode(video, header.groupKey))
-            }
-        }
-    }
-    return flatList
 }
 
 @Preview(showBackground = true)
