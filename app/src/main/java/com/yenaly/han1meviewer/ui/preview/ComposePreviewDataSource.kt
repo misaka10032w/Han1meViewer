@@ -15,7 +15,7 @@ import com.yenaly.han1meviewer.logic.model.Playlists
 import com.yenaly.han1meviewer.logic.model.SubscriptionItem
 import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
 import com.yenaly.han1meviewer.logic.model.VideoComments
-import com.yenaly.han1meviewer.ui.screen.home.HomeCategory
+import com.yenaly.han1meviewer.ui.screen.home.homepage.HomeCategory
 import kotlinx.datetime.LocalDate
 
 
