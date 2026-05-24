@@ -674,7 +674,7 @@ private fun AnnouncementCardMultiplePreview() {
     }
 }
 
-@Preview(showBackground = true, name = "公告列表弹窗")
+@Preview(showBackground = true, name = "公告列表弹窗", showSystemUi = true)
 @Composable
 private fun AnnouncementListDialogPreview() {
     ComponentPreview {

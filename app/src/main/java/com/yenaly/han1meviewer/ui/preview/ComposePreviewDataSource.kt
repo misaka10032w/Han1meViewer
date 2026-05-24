@@ -32,6 +32,18 @@ val fakeArtists = listOf(
     SubscriptionItem("初音未来", "null"),
     SubscriptionItem("绫波丽", "null"),
     SubscriptionItem("阿库娅", "null"),
+    SubscriptionItem("阿库娅", "null"),
+    SubscriptionItem("初音未来", "null"),
+    SubscriptionItem("绫波丽", "null"),
+    SubscriptionItem("阿库娅", "null"),
+    SubscriptionItem("阿库娅", "null"),
+    SubscriptionItem("初音未来", "null"),
+    SubscriptionItem("绫波丽", "null"),
+    SubscriptionItem("阿库娅", "null"),
+    SubscriptionItem("阿库娅", "null"),
+    SubscriptionItem("初音未来", "null"),
+    SubscriptionItem("绫波丽", "null"),
+    SubscriptionItem("阿库娅", "null"),
 )
 
 val fakeVideos = listOf(
