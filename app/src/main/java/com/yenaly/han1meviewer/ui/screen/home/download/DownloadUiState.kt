@@ -27,10 +27,10 @@ data class DownloadUiState(
  */
 sealed interface DownloadEvent {
     /** 暂停全部下载任务 */
-    data object OnPauseAll : DownloadEvent
+    data class OnPauseAll(val items: List<HanimeDownloadEntity>) : DownloadEvent
 
     /** 恢复全部暂停任务 */
-    data object OnResumeAll : DownloadEvent
+    data class OnResumeAll(val items: List<HanimeDownloadEntity>) : DownloadEvent
 
     /** 暂停单个下载任务 */
     data class OnPauseItem(val item: HanimeDownloadEntity) : DownloadEvent

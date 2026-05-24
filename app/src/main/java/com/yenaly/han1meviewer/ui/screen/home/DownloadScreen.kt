@@ -47,8 +47,17 @@ import kotlinx.coroutines.launch
 /**
  * 下载页面 Screen 层。
  *
- * 接收来自 Route 层的 Flow 和回调，构建 [com.yenaly.han1meviewer.ui.screen.home.download.DownloadUiState] 统一管理 UI 状态，
- * 将 [com.yenaly.han1meviewer.ui.screen.home.download.DownloadEvent] 映射到具体操作。Content 组件仅接收 UiState + Event 回调。
+ * 接收数据流和 [DownloadEvent] 回调，管理 Tab、分组展开等 UI 编排状态。
+ * 本地 UI 事件（Tab 切换、分组折叠）由 Screen 处理；业务事件透传给 Route。
+ * Content 组件仅接收 UiState + Event 回调。
+ *
+ * @param downloadingFlow 下载中任务流
+ * @param downloadedFlow 已下载视频流
+ * @param downloadedGroupsFlow 分组列表流
+ * @param collapseDownloadedGroup 默认折叠分组
+ * @param onBack 返回回调
+ * @param onLoadDownloaded 初始加载已下载列表（一次性调用）
+ * @param onEvent 业务事件回调（透传给 Route 层处理）
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -58,21 +67,8 @@ fun DownloadScreen(
     downloadedGroupsFlow: StateFlow<List<DownloadGroupEntity>>,
     collapseDownloadedGroup: Boolean,
     onBack: () -> Unit,
-    onPauseAll: (List<HanimeDownloadEntity>) -> Unit,
-    onResumeAll: (List<HanimeDownloadEntity>) -> Unit,
-    onPauseItem: (HanimeDownloadEntity) -> Unit,
-    onResumeItem: (HanimeDownloadEntity) -> Unit,
-    onDeleteDownloadingItem: (HanimeDownloadEntity) -> Unit,
-    onImportDownloaded: () -> Unit,
     onLoadDownloaded: () -> Unit,
-    onOpenDownloadedVideo: (VideoWithCategories) -> Unit,
-    onLocalPlayback: (VideoWithCategories) -> Unit,
-    onExternalPlayback: (VideoWithCategories) -> Unit,
-    onDeleteDownloadedVideo: (VideoWithCategories) -> Unit,
-    onMoveVideoGroup: (VideoWithCategories, Int) -> Unit,
-    onRenameGroup: (Int, String) -> Unit,
-    onCreateGroup: (String) -> Unit,
-    onDeleteGroup: (DownloadGroupEntity) -> Unit,
+    onEvent: (DownloadEvent) -> Unit,
 ) {
     val downloadingItems by downloadingFlow.collectAsStateWithLifecycle(initialValue = emptyList())
     val downloadedItems by downloadedFlow.collectAsStateWithLifecycle()
@@ -115,20 +111,7 @@ fun DownloadScreen(
 
     val handleEvent: (DownloadEvent) -> Unit = { event ->
         when (event) {
-            is DownloadEvent.OnPauseAll -> onPauseAll(uiState.downloadingItems)
-            is DownloadEvent.OnResumeAll -> onResumeAll(uiState.downloadingItems)
-            is DownloadEvent.OnPauseItem -> onPauseItem(event.item)
-            is DownloadEvent.OnResumeItem -> onResumeItem(event.item)
-            is DownloadEvent.OnDeleteDownloadingItem -> onDeleteDownloadingItem(event.item)
-            is DownloadEvent.OnImportDownloaded -> onImportDownloaded()
-            is DownloadEvent.OnOpenDownloadedVideo -> onOpenDownloadedVideo(event.video)
-            is DownloadEvent.OnLocalPlayback -> onLocalPlayback(event.video)
-            is DownloadEvent.OnExternalPlayback -> onExternalPlayback(event.video)
-            is DownloadEvent.OnDeleteDownloadedVideo -> onDeleteDownloadedVideo(event.video)
-            is DownloadEvent.OnMoveVideoGroup -> onMoveVideoGroup(event.video, event.groupId)
-            is DownloadEvent.OnRenameGroup -> onRenameGroup(event.groupId, event.newName)
-            is DownloadEvent.OnCreateGroup -> onCreateGroup(event.name)
-            is DownloadEvent.OnDeleteGroup -> onDeleteGroup(event.group)
+            // 本地 UI 事件：Screen 自行处理
             is DownloadEvent.OnToggleGroup -> {
                 downloadedHeaderNodes = downloadedHeaderNodes.map {
                     if (it.groupKey == event.groupKey) {
@@ -142,6 +125,8 @@ fun DownloadScreen(
             is DownloadEvent.OnPageChange -> {
                 scope.launch { pagerState.animateScrollToPage(event.page) }
             }
+            // 业务事件：透传给 Route
+            else -> onEvent(event)
         }
     }
 
@@ -155,7 +140,7 @@ fun DownloadScreen(
         actions = {
             if (uiState.currentPage == 0) {
                 FilledIconButton(
-                    onClick = { handleEvent(DownloadEvent.OnResumeAll) },
+                    onClick = { handleEvent(DownloadEvent.OnResumeAll(uiState.downloadingItems)) },
                     enabled = uiState.downloadingItems.isNotEmpty()
                 ) {
                     Icon(
@@ -164,7 +149,7 @@ fun DownloadScreen(
                     )
                 }
                 FilledIconButton(
-                    onClick = { handleEvent(DownloadEvent.OnPauseAll) },
+                    onClick = { handleEvent(DownloadEvent.OnPauseAll(uiState.downloadingItems)) },
                     enabled = uiState.downloadingItems.isNotEmpty()
                 ) {
                     Icon(
@@ -242,21 +227,8 @@ private fun DownloadScreenPreview() {
             downloadedGroupsFlow = MutableStateFlow(emptyList()),
             collapseDownloadedGroup = false,
             onBack = {},
-            onPauseAll = {},
-            onResumeAll = {},
-            onPauseItem = {},
-            onResumeItem = {},
-            onDeleteDownloadingItem = {},
-            onImportDownloaded = {},
             onLoadDownloaded = {},
-            onOpenDownloadedVideo = {},
-            onLocalPlayback = {},
-            onExternalPlayback = {},
-            onDeleteDownloadedVideo = {},
-            onMoveVideoGroup = { _, _ -> },
-            onRenameGroup = { _, _ -> },
-            onCreateGroup = {},
-            onDeleteGroup = {},
+            onEvent = {},
         )
     }
 }
