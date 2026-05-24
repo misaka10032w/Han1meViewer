@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -112,12 +113,12 @@ fun CalendarGrid(
                 modifier = Modifier
                     .size(52.dp)
                     .padding(2.dp)
-                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(10.dp))
+                    .clip(RoundedCornerShape(10.dp))
                     .background(bgColor)
                     .border(
                         width = if (isToday) 2.dp else 1.dp,
                         color = borderColor,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp)
+                        shape = RoundedCornerShape(10.dp)
                     )
                     .combinedClickable(
                         onClick = { onDateClick(date) },
@@ -131,7 +132,7 @@ fun CalendarGrid(
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
                         color = when {
-                            isToday -> MaterialTheme.colorScheme.onTertiaryContainer
+                            isToday -> MaterialTheme.colorScheme.onTertiary
                             count > 0 -> MaterialTheme.colorScheme.onPrimaryContainer
                             else -> MaterialTheme.colorScheme.onSurface
                         }
@@ -140,7 +141,7 @@ fun CalendarGrid(
                         Text(
                             text = "x$count",
                             fontSize = 10.sp,
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                         )
                     }
                 }

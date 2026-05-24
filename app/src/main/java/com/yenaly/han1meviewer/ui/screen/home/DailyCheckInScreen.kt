@@ -1,12 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.home
 
 import android.app.Activity
-import android.content.Intent
-import android.content.pm.ActivityInfo
-import android.os.Build
-import android.provider.CalendarContract
-import android.view.View
-import android.view.WindowInsetsController
 import android.widget.Toast
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -14,8 +8,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.TopAppBarDefaults.pinnedScrollBehavior
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -30,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
@@ -39,7 +34,8 @@ import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.ContributionReportDia
 import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.DailyCheckInContent
 import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.DailyCheckInEvent
 import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.DailyCheckInUiState
-import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.computeStreaks
+import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.createCalendarEvent
+import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.updateReportWindowMode
 import com.yenaly.han1meviewer.ui.viewmodel.CheckInCalendarViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
 import java.time.LocalDate
@@ -80,19 +76,11 @@ fun DailyCheckInScreen(
         }
     }
 
-    val currentMonth by viewModel.currentMonth
-    val records = viewModel.records
-    val checkedDays by viewModel.checkedDays
-    val monthlyTotal by viewModel.monthlyTotal
-    val monthStats by viewModel.monthlyStats
-    val yearRecords = viewModel.yearRecords
-    val yearStats by viewModel.yearStats
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val yearRecords by viewModel.yearRecords.collectAsStateWithLifecycle()
+    val yearStats by viewModel.yearStats.collectAsStateWithLifecycle()
 
     val today = remember { LocalDate.now() }
-    val todayCount = records[today] ?: 0
-    val bestStreakThisMonth = remember(records.size, currentMonth) {
-        computeStreaks(records, currentMonth).second
-    }
 
     var forgotDialogDate by remember { mutableStateOf<LocalDate?>(null) }
     var suckBackDialogDate by remember { mutableStateOf<LocalDate?>(null) }
@@ -109,8 +97,8 @@ fun DailyCheckInScreen(
     val initialPage = Int.MAX_VALUE / 2
     val pagerState = rememberPagerState(initialPage = initialPage) { Int.MAX_VALUE }
 
-    LaunchedEffect(currentMonth) {
-        val monthsDiff = ChronoUnit.MONTHS.between(anchorMonth, currentMonth).toInt()
+    LaunchedEffect(uiState.currentMonth) {
+        val monthsDiff = ChronoUnit.MONTHS.between(anchorMonth, uiState.currentMonth).toInt()
         val targetPage = initialPage + monthsDiff
         if (pagerState.currentPage != targetPage) {
             pagerState.animateScrollToPage(targetPage)
@@ -122,8 +110,8 @@ fun DailyCheckInScreen(
             .distinctUntilChanged()
             .collect { page ->
                 val pageMonth = anchorMonth.plusMonths((page - initialPage).toLong())
-                if (pageMonth != currentMonth) {
-                    if (pageMonth.isAfter(currentMonth)) viewModel.nextMonth()
+                if (pageMonth != uiState.currentMonth) {
+                    if (pageMonth.isAfter(uiState.currentMonth)) viewModel.nextMonth()
                     else viewModel.previousMonth()
                 }
             }
@@ -139,19 +127,6 @@ fun DailyCheckInScreen(
 
     val context = LocalContext.current
 
-    val uiState = DailyCheckInUiState(
-        currentMonth = currentMonth,
-        records = records,
-        checkedDays = checkedDays,
-        monthlyTotal = monthlyTotal,
-        bestStreakThisMonth = bestStreakThisMonth,
-        monthlyStats = monthStats,
-        today = today,
-        todayCount = todayCount,
-        showEasterEgg = showEasterEgg,
-        eggVisible = eggVisible,
-    )
-
     val handleEvent: (DailyCheckInEvent) -> Unit = { event ->
         when (event) {
             is DailyCheckInEvent.OnDateClick -> {
@@ -160,7 +135,7 @@ fun DailyCheckInScreen(
                         calendarDialogDate = event.date
                     }
 
-                    event.date.isBefore(today) && (records[event.date] ?: 0) == 0 -> {
+                    event.date.isBefore(today) && (uiState.records[event.date] ?: 0) == 0 -> {
                         forgotDialogDate = event.date
                     }
 
@@ -171,7 +146,7 @@ fun DailyCheckInScreen(
             }
 
             is DailyCheckInEvent.OnDateLongClick -> {
-                val count = records[event.date] ?: 0
+                val count = uiState.records[event.date] ?: 0
                 if (count > 0 && event.date.isBefore(today)) {
                     suckBackDialogDate = event.date
                 } else if (count > 0) {
@@ -181,9 +156,14 @@ fun DailyCheckInScreen(
 
             DailyCheckInEvent.OnPreviousMonth -> viewModel.previousMonth()
             DailyCheckInEvent.OnNextMonth -> viewModel.nextMonth()
-            DailyCheckInEvent.OnTodayCheckIn -> { checkInDialogDate = today }
+            DailyCheckInEvent.OnTodayCheckIn -> {
+                checkInDialogDate = today
+            }
+
             DailyCheckInEvent.OnTodayClear -> viewModel.clearCheckIn(today)
-            DailyCheckInEvent.OnShowReport -> { showReport = true }
+            DailyCheckInEvent.OnShowReport -> {
+                showReport = true
+            }
         }
     }
 
@@ -212,6 +192,9 @@ fun DailyCheckInScreen(
             paddingValues = innerPadding,
             uiState = uiState,
             onEvent = handleEvent,
+            onNavigateToVideo = onNavigateToVideo,
+            showEasterEgg = showEasterEgg,
+            eggVisible = eggVisible,
             pagerState = pagerState,
             anchorMonth = anchorMonth,
             initialPage = initialPage,
@@ -261,7 +244,7 @@ fun DailyCheckInScreen(
             stringResource(
                 R.string.suck_back_message,
                 it.format(DateTimeFormatter.ofPattern("MM月dd日")),
-                records[it] ?: 0
+                uiState.records[it] ?: 0
             )
         } ?: "",
         confirmText = stringResource(R.string.suck_back_confirm),
@@ -314,80 +297,5 @@ fun DailyCheckInScreen(
             onToggleFullscreen = { isReportFullscreen = !isReportFullscreen },
             onLoadYearRecords = { viewModel.loadYearRecords(it) },
         )
-    }
-}
-
-/**
- * 创建日历事件，用于向系统日历添加未来打卡提醒。
- *
- * @param context Android Context
- * @param date 提醒日期
- */
-private fun createCalendarEvent(context: android.content.Context, date: LocalDate) {
-    val intent = Intent(Intent.ACTION_INSERT).apply {
-        setDataAndType(CalendarContract.Events.CONTENT_URI, "vnd.android.cursor.dir/event")
-        putExtra(
-            CalendarContract.Events.TITLE,
-            context.getString(R.string.calendar_title, date.monthValue, date.dayOfMonth)
-        )
-        putExtra(CalendarContract.Events.DESCRIPTION, context.getString(R.string.calendar_desc))
-        putExtra(
-            CalendarContract.Events.EVENT_LOCATION,
-            context.getString(R.string.calendar_location)
-        )
-        putExtra(
-            CalendarContract.EXTRA_EVENT_BEGIN_TIME,
-            date.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
-        )
-        putExtra(
-            CalendarContract.EXTRA_EVENT_END_TIME,
-            date.plusDays(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant()
-                .toEpochMilli()
-        )
-        putExtra(CalendarContract.Events.ALL_DAY, true)
-        putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_FREE)
-    }
-    try {
-        context.startActivity(intent)
-    } catch (_: android.content.ActivityNotFoundException) {
-        Toast.makeText(context, R.string.no_calendar_app, Toast.LENGTH_SHORT).show()
-    }
-}
-
-/**
- * 根据是否全屏切换 Activity 的屏幕方向与系统栏可见性。
- *
- * @param isFullscreen 是否进入全屏模式
- */
-private fun Activity.updateReportWindowMode(isFullscreen: Boolean) {
-    requestedOrientation = if (isFullscreen) {
-        ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-    } else {
-        ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-    }
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        window.insetsController?.apply {
-            if (isFullscreen) {
-                hide(android.view.WindowInsets.Type.statusBars() or android.view.WindowInsets.Type.navigationBars())
-                systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            } else {
-                show(android.view.WindowInsets.Type.statusBars() or android.view.WindowInsets.Type.navigationBars())
-            }
-        }
-    } else {
-        @Suppress("DEPRECATION")
-        run {
-            window.decorView.systemUiVisibility = if (isFullscreen) {
-                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                        View.SYSTEM_UI_FLAG_FULLSCREEN
-            } else {
-                View.SYSTEM_UI_FLAG_VISIBLE
-            }
-        }
     }
 }

@@ -511,8 +511,8 @@
     <string name="ach_morning">晨练达人</string>
     <string name="ach_scholar">贤者文豪</string>
     <string name="no_calendar_app">找不到日历应用</string>
-    <string name="egg_six">6 次！你是魔鬼吗？👹</string>
-    <string name="egg_nine">9 次！九九归一，功力大成！🧘</string>
+    <string name="egg_three">3 次！你是魔鬼吗？👹</string>
+    <string name="egg_four">4 次！功力大成！🧘</string>
     <string name="egg_round">%1$d 次达成！你是传说！👑</string>
     <string name="nice_title">NICE</string>
     <string name="streak_title">连续达成</string>
@@ -768,4 +768,5 @@
     <string name="played">已观看</string>
     <string name="local">本地</string>
     <string name="current_bucket">当前命中档位</string>
+    <string name="sex_times">强撸灰飞烟灭。</string>
 </resources>

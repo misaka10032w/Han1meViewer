@@ -514,8 +514,8 @@
     <string name="calendar_dialog_confirm">建立提醒</string>
     <string name="calendar_dialog_dismiss">不用了</string>
     <string name="no_calendar_app">找不到日曆應用</string>
-    <string name="egg_six">6 次了！你是魔鬼嗎？👹</string>
-    <string name="egg_nine">9 次！九九歸一，功力大成！🧘</string>
+    <string name="egg_three">3 次了！你是魔鬼嗎？👹</string>
+    <string name="egg_four">4 次！功力大成！🧘</string>
     <string name="egg_round">%1$d 次達成！你是傳奇！👑</string>
     <string name="nice_title">NICE</string>
     <string name="streak_title">連續達成</string>
@@ -817,4 +817,5 @@
     <string name="played">已觀看</string>
     <string name="local">本地</string>
     <string name="current_bucket">目前命中檔位</string>
+    <string name="sex_times">這不是自慰，這是肉體與靈魂的極限大爆炸。</string>
 </resources>

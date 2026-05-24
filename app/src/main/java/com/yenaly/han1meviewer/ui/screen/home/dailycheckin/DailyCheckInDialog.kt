@@ -172,9 +172,9 @@ fun CheckInDialog(
                 }
 
                 if (canAddMore) {
-                    val eggSex = stringResource(R.string.egg_six)
-                    val eggNine = stringResource(R.string.egg_nine)
-                    val eggGod = stringResource(R.string.egg_god, 20)
+                    val eggSex = stringResource(R.string.egg_three)
+                    val eggNine = stringResource(R.string.egg_four)
+                    val eggGod = stringResource(R.string.egg_god, 6)
                     val eggRoundTemplate = stringResource(R.string.egg_round)
                     AddCheckInForm(
                         watchHistory = watchHistory,
@@ -183,10 +183,14 @@ fun CheckInDialog(
                             onAddRecord(date, time, type, sideDishes, feeling)
                             onGetCountByDate(date) { newCount ->
                                 when {
-                                    newCount == 6 -> onEasterEgg(eggSex)
-                                    newCount == 9 -> onEasterEgg(eggNine)
-                                    newCount == 20 -> onEasterEgg(eggGod)
-                                    newCount % 10 == 0 -> onEasterEgg(eggRoundTemplate.format(newCount))
+                                    newCount + 1 == 3 -> onEasterEgg(eggSex)
+                                    newCount + 1 == 4 -> onEasterEgg(eggNine)
+                                    newCount + 1 == 6 -> onEasterEgg(eggGod)
+                                    newCount + 1 % 10 == 0 -> onEasterEgg(
+                                        eggRoundTemplate.format(
+                                            newCount
+                                        )
+                                    )
                                 }
                                 onDismiss()
                             }

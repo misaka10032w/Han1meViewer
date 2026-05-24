@@ -27,8 +27,6 @@ data class DailyCheckInUiState(
     val monthlyStats: MonthlyStats = MonthlyStats(),
     val today: LocalDate = LocalDate.now(),
     val todayCount: Int = 0,
-    val showEasterEgg: String = "",
-    val eggVisible: Boolean = false,
 )
 
 /**

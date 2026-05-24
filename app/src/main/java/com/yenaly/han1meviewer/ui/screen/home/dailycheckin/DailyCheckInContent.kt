@@ -47,6 +47,8 @@ import java.time.format.DateTimeFormatter
  * @param paddingValues 从 Scaffold 传入的内边距
  * @param uiState 页面 UI 状态
  * @param onEvent 用户交互事件回调
+ * @param showEasterEgg 彩蛋文本（空字符串表示无彩蛋）
+ * @param eggVisible 彩蛋是否当前可见
  * @param pagerState 月份翻页状态（UI 框架层，不属于业务状态）
  * @param anchorMonth 翻页锚点月份
  * @param initialPage 初始页索引
@@ -54,13 +56,16 @@ import java.time.format.DateTimeFormatter
  */
 @Composable
 fun DailyCheckInContent(
+    modifier: Modifier = Modifier,
     paddingValues: PaddingValues,
     uiState: DailyCheckInUiState,
     onEvent: (DailyCheckInEvent) -> Unit,
+    onNavigateToVideo: (String) -> Unit = {},
+    showEasterEgg: String = "",
+    eggVisible: Boolean = false,
     pagerState: PagerState,
     anchorMonth: YearMonth,
     initialPage: Int,
-    modifier: Modifier = Modifier,
 ) {
     val animatedCheckedDays by animateIntAsState(
         targetValue = uiState.checkedDays, label = "days"
@@ -146,7 +151,7 @@ fun DailyCheckInContent(
         Spacer(modifier = Modifier.height(4.dp))
 
         AnimatedVisibility(
-            visible = uiState.eggVisible,
+            visible = eggVisible,
             enter = fadeIn() + slideInVertically(),
             exit = fadeOut()
         ) {
@@ -157,7 +162,7 @@ fun DailyCheckInContent(
                 )
             ) {
                 Text(
-                    text = uiState.showEasterEgg,
+                    text = showEasterEgg,
                     modifier = Modifier.padding(8.dp),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -173,6 +178,9 @@ fun DailyCheckInContent(
             monthlyTotal = uiState.monthlyTotal,
             bestStreak = uiState.bestStreakThisMonth,
             stats = uiState.monthlyStats,
+            todayCount = uiState.todayCount,
+            yearMonth = uiState.currentMonth,
+            onNavigateToVideo = onNavigateToVideo,
         )
 
         Spacer(modifier = Modifier.height(8.dp))

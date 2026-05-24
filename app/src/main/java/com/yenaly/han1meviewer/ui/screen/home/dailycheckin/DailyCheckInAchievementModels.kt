@@ -3,7 +3,7 @@ package com.yenaly.han1meviewer.ui.screen.home.dailycheckin
 import com.yenaly.han1meviewer.ui.viewmodel.MonthlyStats
 
 /** 月度统计中打卡类型卡片最大展示数量 */
-internal const val STATS_TYPE_DISPLAY_COUNT = 4
+internal const val STATS_TYPE_DISPLAY_COUNT = 6
 
 /** 附加成就卡片最大展示数量 */
 internal const val EXTRA_ACHIEVEMENT_DISPLAY_COUNT = 6
@@ -19,6 +19,7 @@ data class Achievement(
     val emoji: String,
     val title: String,
     val subtitle: String,
+    val videoCode: String = "",
 )
 
 /**
@@ -49,6 +50,7 @@ data class ExtraAchievementRule(
     val emoji: String,
     val label: String,
     val value: String,
+    val videoCode: String = "",
 )
 
 /**
@@ -178,6 +180,7 @@ fun buildExtraAchievementRules(
             emoji = "\uD83C\uDFAF",
             label = stats.topDish,
             value = "${lb("topDish")}·${stats.topDishCount}次",
+            videoCode = stats.topDishVideoCode,
         )
     )
 
@@ -216,24 +219,38 @@ fun buildExtraAchievementRules(
             value = stats.scholarDate,
         )
     )
+    if (stats.daysChecked >= 6) add(
+        ExtraAchievementRule(
+            check = { it.daysChecked >= 6 },
+            emoji = "\uD83D\uDCA5",
+            label = lb("sixTimes"),
+            value = "6",
+        )
+    )
 }
 
 /**
- * 从规则表中选出首个匹配的主成就，无匹配时返回默认成就。
+ * 从规则表中筛选所有满足条件的主成就，按规则顺序排列。
+ * 无匹配时返回仅含默认成就的列表。
  */
-fun evaluateMainAchievement(
+fun evaluateMainAchievements(
     rules: List<MainAchievementRule>,
     checkedDays: Int,
     monthlyTotal: Int,
     bestStreak: Int,
     defaultTitle: String,
     defaultSubtitle: String,
-): Achievement {
-    val match = rules.firstOrNull { it.check(checkedDays, monthlyTotal, bestStreak) }
-    return if (match != null) {
-        Achievement(emoji = match.emoji, title = match.title, subtitle = match.subtitle)
-    } else {
-        Achievement(emoji = "\uD83D\uDC4D", title = defaultTitle, subtitle = defaultSubtitle)
+): List<Achievement> {
+    val matches = rules.filter { it.check(checkedDays, monthlyTotal, bestStreak) }
+        .map { Achievement(emoji = it.emoji, title = it.title, subtitle = it.subtitle) }
+    return matches.ifEmpty {
+        listOf(
+            Achievement(
+                emoji = "\uD83D\uDC4D",
+                title = defaultTitle,
+                subtitle = defaultSubtitle
+            )
+        )
     }
 }
 
@@ -247,4 +264,11 @@ fun evaluateExtraAchievements(
 ): List<Achievement> = rules
     .filter { it.check(stats) }
     .take(maxCount)
-    .map { Achievement(emoji = it.emoji, title = it.value, subtitle = it.label) }
+    .map {
+        Achievement(
+            emoji = it.emoji,
+            title = it.value,
+            subtitle = it.label,
+            videoCode = it.videoCode
+        )
+    }

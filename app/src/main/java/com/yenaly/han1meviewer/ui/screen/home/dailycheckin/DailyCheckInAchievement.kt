@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,19 +42,40 @@ import java.time.LocalDate
  */
 @Composable
 fun AchievementSection(
+    modifier: Modifier = Modifier,
     checkedDays: Int,
     monthlyTotal: Int,
     bestStreak: Int,
     stats: MonthlyStats,
-    modifier: Modifier = Modifier,
+    todayCount: Int = 0,
+    yearMonth: java.time.YearMonth = java.time.YearMonth.now(),
+    onNavigateToVideo: (String) -> Unit = {},
 ) {
+    val today = LocalDate.now()
+    val isSinglesDay =
+        today.monthValue == 11 && today.dayOfMonth == 11 && yearMonth.monthValue == 11 && todayCount == 0
+
     AnimatedVisibility(
-        visible = checkedDays > 0,
+        visible = checkedDays > 0 || isSinglesDay,
         enter = fadeIn() + slideInVertically(),
         exit = fadeOut(),
         modifier = modifier,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (isSinglesDay) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+                ) {
+                    Text(
+                        text = stringResource(R.string.egg_singles),
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f),
+                    )
+                }
+            }
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -92,7 +114,7 @@ fun AchievementSection(
                         formattedSubs = formattedSubs,
                     )
 
-                    val achievement = evaluateMainAchievement(
+                    val mainAchievements = evaluateMainAchievements(
                         rules = mainRules,
                         checkedDays = checkedDays,
                         monthlyTotal = monthlyTotal,
@@ -101,26 +123,21 @@ fun AchievementSection(
                         defaultSubtitle = stringResource(R.string.achievement_desc_keep),
                     )
 
-                    Text(text = achievement.emoji, fontSize = 36.sp)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = achievement.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer
-                    )
-                    Text(
-                        text = achievement.subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
-                    )
-
-                    val today = LocalDate.now()
-                    if (today.monthValue == 11 && today.dayOfMonth == 11 && checkedDays == 0) {
-                        Spacer(modifier = Modifier.height(8.dp))
+                    mainAchievements.forEach { achievement ->
+                        if (achievement != mainAchievements.first()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                        Text(text = achievement.emoji, fontSize = 36.sp)
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = stringResource(R.string.egg_singles),
+                            text = achievement.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer
+                        )
+                        Text(
+                            text = achievement.subtitle,
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.6f)
+                            color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
                         )
                     }
                 }
@@ -152,6 +169,7 @@ fun AchievementSection(
                 "nightOwl" to stringResource(R.string.ach_night_owl),
                 "morning" to stringResource(R.string.ach_morning),
                 "scholar" to stringResource(R.string.ach_scholar),
+                "sixTimes" to stringResource(R.string.sex_times)
             )
             val extraRules = buildExtraAchievementRules(
                 stats = stats,
@@ -172,6 +190,9 @@ fun AchievementSection(
                             emoji = ach.emoji,
                             value = ach.title,
                             label = ach.subtitle,
+                            onClick = if (ach.videoCode.isNotEmpty()) {
+                                { onNavigateToVideo(ach.videoCode) }
+                            } else null,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -191,13 +212,17 @@ fun AchievementSection(
  */
 @Composable
 fun AchievementMiniCard(
+    modifier: Modifier = Modifier,
     emoji: String,
     value: String,
     label: String,
-    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
 ) {
+    val cardModifier = if (onClick != null) {
+        modifier.clickable { onClick() }
+    } else modifier
     Card(
-        modifier = modifier,
+        modifier = cardModifier,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
         )
@@ -218,7 +243,6 @@ fun AchievementMiniCard(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
