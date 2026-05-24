@@ -177,7 +177,6 @@ fun CheckInDialog(
                     val eggGod = stringResource(R.string.egg_god, 20)
                     val eggRoundTemplate = stringResource(R.string.egg_round)
                     AddCheckInForm(
-                        date = date,
                         watchHistory = watchHistory,
                         onNavigateToVideo = onNavigateToVideo,
                         onAddRecord = { time, type, sideDishes, feeling ->
@@ -210,7 +209,6 @@ fun CheckInDialog(
 /**
  * 新增打卡表单。
  *
- * @param date 打卡日期
  * @param watchHistory 最近观看记录
  * @param onNavigateToVideo 跳转到视频详情的回调
  * @param onAddRecord 提交打卡记录的回调 (time, type, sideDishes, feeling)
@@ -219,7 +217,6 @@ fun CheckInDialog(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AddCheckInForm(
-    date: LocalDate,
     watchHistory: List<WatchHistoryEntity>,
     onNavigateToVideo: (String) -> Unit,
     onAddRecord: (String, String, String, String) -> Unit,
