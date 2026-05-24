@@ -21,9 +21,9 @@ class SpeedLimitInterceptor(var maxSpeed: Long) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val response = chain.proceed(chain.request())
+        val body = response.body
         return response.newBuilder()
-            .body(response.body?.let {
-                SpeedLimitResponseBody(it, maxSpeed)
-            }).build()
+            .body(SpeedLimitResponseBody(body, maxSpeed))
+            .build()
     }
 }
