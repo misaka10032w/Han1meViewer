@@ -56,6 +56,7 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.adapter.HKeyframeRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.SuperResolutionAdapter
 import com.yenaly.han1meviewer.ui.adapter.VideoSpeedAdapter
+import com.yenaly.han1meviewer.ui.navigation.main.HomeRoute
 import com.yenaly.han1meviewer.util.setStateViewLayout
 import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.OrientationManager
@@ -710,7 +711,7 @@ class HJzvdStd @JvmOverloads constructor(
             R.id.go_home -> {
                 if (screen != SCREEN_FULLSCREEN) {
                     context.findActivityOrNull<MainActivity>()?.let { activity ->
-                        activity.finish()
+                        activity.navController.popBackStack(HomeRoute, false)
                         return
                     }
                 } else {
