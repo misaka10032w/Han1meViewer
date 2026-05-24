@@ -499,16 +499,28 @@ private fun AdvancedSearchReleaseDateDialog(
         title = { Text(stringResource(R.string.release_date)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilledTonalButton(onClick = { selectedTab = 0 }) {
+                Row(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    FilledTonalButton(
+                        modifier = Modifier.weight(1f),
+                        onClick = { selectedTab = 0 }
+                    ) {
                         Text(stringResource(R.string.specific_y_m))
                     }
-                    FilledTonalButton(onClick = { selectedTab = 1 }) {
+                    FilledTonalButton(
+                        modifier = Modifier.weight(1f),
+                        onClick = { selectedTab = 1 }
+                    ) {
                         Text(stringResource(R.string.approximate_range))
                     }
                 }
                 if (selectedTab == 0) {
-                    TextButton(onClick = { yearOnly = !yearOnly }) {
+                    TextButton(
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        onClick = { yearOnly = !yearOnly }
+                    ) {
                         Text(
                             stringResource(
                                 if (yearOnly) R.string.switch_to_year_month else R.string.switch_to_year
