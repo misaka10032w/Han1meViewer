@@ -5,7 +5,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.getHanimeSearchShareText
 import com.yenaly.han1meviewer.getHanimeShareText
-import com.yenaly.han1meviewer.ui.screen.home.SubscriptionApp
+import com.yenaly.han1meviewer.ui.screen.home.SubscriptionScreen
 import com.yenaly.han1meviewer.ui.viewmodel.MySubscriptionsViewModel
 import com.yenaly.yenaly_libs.utils.copyTextToClipboard
 import com.yenaly.yenaly_libs.utils.showShortToast
@@ -17,7 +17,7 @@ fun SubscriptionRouteScreen(
     onNavigateToVideo: (String) -> Unit,
 ) {
     val viewModel: MySubscriptionsViewModel = viewModel()
-    SubscriptionApp(
+    SubscriptionScreen(
         navigateBack = onBack,
         viewModel = viewModel,
         onClickArtist = { onNavigateToSearch(it) },
