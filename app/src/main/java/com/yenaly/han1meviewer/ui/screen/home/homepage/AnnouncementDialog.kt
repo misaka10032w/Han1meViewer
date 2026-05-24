@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.component
+package com.yenaly.han1meviewer.ui.screen.home.homepage
 
 import android.content.ContentValues
 import android.content.Context
@@ -192,7 +192,7 @@ fun AnnouncementDialog(
 
     if (showSaveImageConfirm && !announcementData.imageUrl.isNullOrBlank()) {
         val imageUrl = announcementData.imageUrl
-        ConfirmDialog(
+        _root_ide_package_.com.yenaly.han1meviewer.ui.component.ConfirmDialog(
             visible = true,
             title = stringResource(R.string.save_image_confirm),
             message = "",
@@ -241,7 +241,7 @@ private suspend fun saveImageToGallery(context: Context, imageUrl: String) {
     }
 }
 
-@Preview
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun AnnouncementDialogPreview(){
     ComponentPreview {

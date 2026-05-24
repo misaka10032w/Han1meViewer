@@ -505,8 +505,8 @@ Recommendations are as follows:\n
     <string name="ach_morning">Early Bird</string>
     <string name="ach_scholar">Scholar</string>
     <string name="no_calendar_app">No calendar app found</string>
-    <string name="egg_six">6 times! Are you a demon? 👹</string>
-    <string name="egg_nine">9 times! You\'ve reached enlightenment! 🧘</string>
+    <string name="egg_three">3 times! Are you a demon? 👹</string>
+    <string name="egg_four">4 times! You\'ve reached enlightenment! 🧘</string>
     <string name="egg_round">%1$d times! You are a legend! 👑</string>
     <string name="nice_title">NICE</string>
     <string name="streak_title">Streak Achieved</string>
@@ -763,4 +763,10 @@ Recommendations are as follows:\n
     <string name="played">Watched</string>
     <string name="local">Local</string>
     <string name="current_bucket">Current bucket</string>
+    <string name="sex_times">Cranking the hog so hard the engine literally blew up.</string>
+    <string name="select_all">Select All</string>
+    <string name="deselect_all">Deselect All</string>
+    <string name="move_group">Move Group</string>
+    <string name="confirm_delete_videos">Are you sure you want to delete %d videos?</string>
+    <string name="confirm_move_videos">Are you sure you want to move %d videos to group %s?</string>
 </resources>

@@ -1,18 +1,19 @@
 package com.yenaly.han1meviewer.ui.viewmodel
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.logic.dao.CheckInRecordDatabase
 import com.yenaly.han1meviewer.logic.dao.HistoryDatabase
 import com.yenaly.han1meviewer.logic.entity.CheckInRecordEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
+import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.DailyCheckInUiState
 import com.yenaly.yenaly_libs.utils.application
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
@@ -20,55 +21,75 @@ import java.time.format.DateTimeFormatter
 
 class CheckInCalendarViewModel : ViewModel() {
 
-    // 当前月份
-    private val _currentMonth = mutableStateOf(YearMonth.now())
-    val currentMonth: State<YearMonth> = _currentMonth
-    //记录数
-    private val _records = mutableStateMapOf<LocalDate, Int>()
-    val records: SnapshotStateMap<LocalDate, Int> = _records
-    //每月计数
-    private val _checkedDays = mutableIntStateOf(0)
-    val checkedDays: State<Int> get() = _checkedDays
-    //每月累计
-    private val _monthTotal = mutableIntStateOf(0)
-    val monthlyTotal: State<Int> get() = _monthTotal
+    private val _currentMonth = MutableStateFlow(YearMonth.now())
+    private val _records = MutableStateFlow<Map<LocalDate, Int>>(emptyMap())
+    private val _checkedDays = MutableStateFlow(0)
+    private val _monthTotal = MutableStateFlow(0)
+    private val _yearRecords = MutableStateFlow<Map<LocalDate, Int>>(emptyMap())
+    private val _monthRecords = MutableStateFlow<List<CheckInRecordEntity>>(emptyList())
+    private val _monthlyStats = MutableStateFlow(MonthlyStats())
+    private val _yearStats = MutableStateFlow(MonthlyStats())
 
-    // 年记录（用于报表）
-    private val _yearRecords = mutableStateMapOf<LocalDate, Int>()
-    val yearRecords: SnapshotStateMap<LocalDate, Int> = _yearRecords
+    /** 对外暴露的唯一 UI 状态流。 */
+    val uiState: StateFlow<DailyCheckInUiState> = combine(
+        _currentMonth, _records, _checkedDays, _monthTotal, _monthlyStats,
+    ) { array ->
+        @Suppress("UNCHECKED_CAST")
+        val recordsMap = array[1] as Map<LocalDate, Int>
+        val month = array[0] as YearMonth
+        val checkedDaysVal = array[2] as Int
+        val monthlyTotalVal = array[3] as Int
+        val statsVal = array[4] as MonthlyStats
+        val today = LocalDate.now()
+        var bestStreak = 0
+        var streak = 0
+        for (day in 1..month.lengthOfMonth()) {
+            val date = month.atDay(day)
+            if ((recordsMap[date] ?: 0) > 0) {
+                streak++
+                if (streak > bestStreak) bestStreak = streak
+            } else {
+                streak = 0
+            }
+        }
+        DailyCheckInUiState(
+            currentMonth = month,
+            records = recordsMap,
+            checkedDays = checkedDaysVal,
+            monthlyTotal = monthlyTotalVal,
+            bestStreakThisMonth = bestStreak,
+            monthlyStats = statsVal,
+            today = today,
+            todayCount = recordsMap[today] ?: 0,
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DailyCheckInUiState())
 
-    // 月记录详情（用于成就）
-    private val _monthRecords = mutableStateListOf<CheckInRecordEntity>()
-
-    private val _monthlyStats = mutableStateOf(MonthlyStats())
-    val monthlyStats: State<MonthlyStats> = _monthlyStats
-
-    private val _yearStats = mutableStateOf(MonthlyStats())
-    val yearStats: State<MonthlyStats> = _yearStats
+    val yearRecords: StateFlow<Map<LocalDate, Int>> = _yearRecords.asStateFlow()
+    val yearStats: StateFlow<MonthlyStats> = _yearStats.asStateFlow()
 
     private val dao = CheckInRecordDatabase.getDatabase(application).checkInDao()
 
     init {
         loadMonthRecords(_currentMonth.value)
-        updateCheckedDays()
-        updateMonthlyTotalCheck()
     }
 
     fun previousMonth() {
         _currentMonth.value = _currentMonth.value.minusMonths(1)
         loadMonthRecords(_currentMonth.value)
-        updateCheckedDays()
-        updateMonthlyTotalCheck()
     }
 
     fun nextMonth() {
         _currentMonth.value = _currentMonth.value.plusMonths(1)
         loadMonthRecords(_currentMonth.value)
-        updateCheckedDays()
-        updateMonthlyTotalCheck()
     }
 
-    fun addRecord(date: LocalDate, time: String, type: String, sideDishes: String, feeling: String) {
+    fun addRecord(
+        date: LocalDate,
+        time: String,
+        type: String,
+        sideDishes: String,
+        feeling: String
+    ) {
         viewModelScope.launch {
             val record = CheckInRecordEntity(
                 date = date.toString(),
@@ -97,7 +118,6 @@ class CheckInCalendarViewModel : ViewModel() {
         }
     }
 
-
     fun getRecentWatchHistory(limit: Int, onResult: (List<WatchHistoryEntity>) -> Unit) {
         viewModelScope.launch {
             val result = HistoryDatabase.instance.watchHistory.getRecentWatches(limit)
@@ -120,76 +140,54 @@ class CheckInCalendarViewModel : ViewModel() {
         }
     }
 
+    fun loadYearRecords(year: Int) {
+        viewModelScope.launch {
+            val allRecords = dao.getYearlyRecords(year.toString())
+            val formatter = DateTimeFormatter.ISO_LOCAL_DATE
+            val countMap = mutableMapOf<LocalDate, Int>()
+            allRecords.forEach {
+                val localDate = LocalDate.parse(it.date, formatter)
+                countMap[localDate] = (countMap[localDate] ?: 0) + 1
+            }
+            _yearRecords.value = countMap
+            _yearStats.value = computeStats(allRecords)
+        }
+    }
+
     private fun reloadDateAndStats(date: LocalDate) {
         viewModelScope.launch {
             val count = dao.getCountByDate(date.toString())
-            _records[date] = count
-            val dates = dao.getMonthlyCheckedDates(
-                currentMonth.value.format(DateTimeFormatter.ofPattern("yyyy-MM"))
-            )
-            _checkedDays.intValue = dates.size
-            val totalCheckIns = dao.getMonthlyCheckInTotal(
-                currentMonth.value.format(DateTimeFormatter.ofPattern("yyyy-MM"))
-            )
-            _monthTotal.intValue = totalCheckIns
-            // Refresh month records and stats
-            val month = currentMonth.value
-            val allRecords = dao.getRecordsBetween(month.atDay(1).toString(), month.atEndOfMonth().toString())
-            _monthRecords.clear()
-            _monthRecords.addAll(allRecords)
+            _records.value = _records.value.toMutableMap().apply { this[date] = count }
+            val month = _currentMonth.value
+            val dates =
+                dao.getMonthlyCheckedDates(month.format(DateTimeFormatter.ofPattern("yyyy-MM")))
+            _checkedDays.value = dates.size
+            val totalCheckIns =
+                dao.getMonthlyCheckInTotal(month.format(DateTimeFormatter.ofPattern("yyyy-MM")))
+            _monthTotal.value = totalCheckIns
+            val allRecords =
+                dao.getRecordsBetween(month.atDay(1).toString(), month.atEndOfMonth().toString())
+            _monthRecords.value = allRecords
             _monthlyStats.value = computeStats(allRecords)
         }
     }
 
-    fun updateCheckedDays() {
-        viewModelScope.launch {
-            val dates = dao.getMonthlyCheckedDates(
-                currentMonth.value.format(DateTimeFormatter.ofPattern("yyyy-MM"))
-            )
-            _checkedDays.intValue = dates.size
-        }
-    }
-
-    fun updateMonthlyTotalCheck() {
-        viewModelScope.launch {
-            val totalCheckIns = dao.getMonthlyCheckInTotal(
-                currentMonth.value.format(DateTimeFormatter.ofPattern("yyyy-MM"))
-            )
-            _monthTotal.intValue = totalCheckIns
-        }
-    }
-
-    fun loadMonthRecords(month: YearMonth) {
+    private fun loadMonthRecords(month: YearMonth) {
         viewModelScope.launch {
             val start = month.atDay(1)
             val end = month.atEndOfMonth()
             val allRecords = dao.getRecordsBetween(start.toString(), end.toString())
             val formatter = DateTimeFormatter.ISO_LOCAL_DATE
-            _records.clear()
-            _monthRecords.clear()
-            _monthRecords.addAll(allRecords)
+            _monthRecords.value = allRecords
             val countMap = mutableMapOf<LocalDate, Int>()
             allRecords.forEach {
                 val localDate = LocalDate.parse(it.date, formatter)
                 countMap[localDate] = (countMap[localDate] ?: 0) + 1
             }
-            _records.putAll(countMap)
+            _records.value = countMap
+            _checkedDays.value = countMap.keys.size
+            _monthTotal.value = countMap.values.sum()
             _monthlyStats.value = computeStats(allRecords)
-        }
-    }
-
-    fun loadYearRecords(year: Int) {
-        viewModelScope.launch {
-            val allRecords = dao.getYearlyRecords(year.toString())
-            val formatter = DateTimeFormatter.ISO_LOCAL_DATE
-            _yearRecords.clear()
-            val countMap = mutableMapOf<LocalDate, Int>()
-            allRecords.forEach {
-                val localDate = LocalDate.parse(it.date, formatter)
-                countMap[localDate] = (countMap[localDate] ?: 0) + 1
-            }
-            _yearRecords.putAll(countMap)
-            _yearStats.value = computeStats(allRecords)
         }
     }
 
@@ -198,21 +196,37 @@ class CheckInCalendarViewModel : ViewModel() {
             if (records.isEmpty()) return MonthlyStats()
             val sep = "\u001E"
             val typeCounts = records.groupingBy { it.type }.eachCount()
-            val sideDishes = records
-                .flatMap { it.sideDishes.split(",").filter { s -> s.isNotBlank() } }
-                .map { it.substringBefore(sep) }
-            val uniqueDishes = sideDishes.distinct().size
-            val topDish = sideDishes.groupingBy { it }.eachCount().maxByOrNull { it.value }
-            val morning = records.count { val h = it.time.substringBefore(":").toIntOrNull() ?: 0; h in 5..10 }
-            val night = records.count { val h = it.time.substringBefore(":").toIntOrNull() ?: 0; h in 22..23 || h in 0..2 }
-            val afternoon = records.count { val h = it.time.substringBefore(":").toIntOrNull() ?: 0; h in 12..16 }
+            val sideDishItems =
+                records.flatMap { it.sideDishes.split(",").filter { s -> s.isNotBlank() } }
+            val sideDishTitles = sideDishItems.map { it.substringBefore(sep) }
+            val uniqueDishes = sideDishTitles.distinct().size
+            val topDishEntry = sideDishTitles.groupingBy { it }.eachCount().maxByOrNull { it.value }
+            val topDish = topDishEntry?.key ?: ""
+            val topDishCount = topDishEntry?.value ?: 0
+            val topDishVideoCode = if (topDish.isNotBlank()) {
+                sideDishItems.firstOrNull { it.startsWith(topDish + sep) }?.substringAfter(sep)
+                    .orEmpty()
+            } else ""
+            val morning = records.count {
+                val h = it.time.substringBefore(":").toIntOrNull() ?: 0; h in 5..10
+            }
+            val night = records.count {
+                val h = it.time.substringBefore(":").toIntOrNull() ?: 0; h in 22..23 || h in 0..2
+            }
+            val afternoon = records.count {
+                val h = it.time.substringBefore(":").toIntOrNull() ?: 0; h in 12..16
+            }
             val totalFeelingChars = records.sumOf { it.feeling.length }
-            val avgFeelingChars = if (records.isNotEmpty()) totalFeelingChars / records.size else 0
-            val maxDailyTypes = records.groupBy { it.date }.values.maxOfOrNull { it.map { r -> r.type }.distinct().size } ?: 0
+            val maxDailyTypes = records.groupBy { it.date }.values.maxOfOrNull {
+                it.map { r -> r.type }.distinct().size
+            } ?: 0
             val daysChecked = records.map { it.date }.distinct().size
             val bestStreak = run {
-                val dates = records.map { it.date }.distinct().sorted().map { LocalDate.parse(it, DateTimeFormatter.ISO_LOCAL_DATE) }
-                var streak = 0; var best = 0; var prev: LocalDate? = null
+                val dates = records.map { it.date }.distinct().sorted()
+                    .map { LocalDate.parse(it, DateTimeFormatter.ISO_LOCAL_DATE) }
+                var streak = 0
+                var best = 0
+                var prev: LocalDate? = null
                 for (d in dates) {
                     if (prev != null && d == prev.plusDays(1)) streak++ else streak = 1
                     if (streak > best) best = streak
@@ -246,16 +260,17 @@ class CheckInCalendarViewModel : ViewModel() {
                 bestStreak = bestStreak,
                 typeCounts = typeCounts,
                 uniqueDishes = uniqueDishes,
-                topDish = topDish?.key ?: "",
-                topDishCount = topDish?.value ?: 0,
+                topDish = topDish,
+                topDishCount = topDishCount,
+                topDishVideoCode = topDishVideoCode,
                 morningCount = morning,
                 nightCount = night,
                 afternoonCount = afternoon,
                 totalFeelingChars = totalFeelingChars,
-                avgFeelingChars = avgFeelingChars,
+                avgFeelingChars = if (records.isNotEmpty()) totalFeelingChars / records.size else 0,
                 maxDailyTypes = maxDailyTypes,
                 dominantPeriod = dominantPeriod,
-                scholarDate = scholarDate
+                scholarDate = scholarDate,
             )
         }
     }
@@ -269,6 +284,7 @@ data class MonthlyStats(
     val uniqueDishes: Int = 0,
     val topDish: String = "",
     val topDishCount: Int = 0,
+    val topDishVideoCode: String = "",
     val morningCount: Int = 0,
     val nightCount: Int = 0,
     val afternoonCount: Int = 0,

@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.component
+package com.yenaly.han1meviewer.ui.screen.home.myplaylist
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

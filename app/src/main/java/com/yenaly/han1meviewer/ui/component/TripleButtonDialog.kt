@@ -11,7 +11,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
 @Composable
 fun TripleButtonDialog(
@@ -46,4 +48,22 @@ fun TripleButtonDialog(
             }
         },
     )
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun TripleButtonDialogPreview(){
+    ComponentPreview {
+        TripleButtonDialog(
+            visible = true,
+            title = "这是标题",
+            message = "这是信息",
+            negativeText = "反向按钮",
+            neutralText = "中性按钮",
+            positiveText = "正向按钮",
+            onNegative = { },
+            onNeutral = { },
+            onPositive = { },
+        ) { }
+    }
 }

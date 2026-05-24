@@ -122,13 +122,13 @@ fun MainNavHost(
             )
         }
         composable<MyFavVideoRoute> {
-            MyFavVideoRouteScreen(
+            FavVideoRouteScreen(
                 onBack = onBack,
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<MyWatchLaterRoute> {
-            MyWatchLaterRouteScreen(
+            WatchLaterRouteScreen(
                 onBack = onBack,
                 onNavigateToVideo = onNavigateToVideo,
             )

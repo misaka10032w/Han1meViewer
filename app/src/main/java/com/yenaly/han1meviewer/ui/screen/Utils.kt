@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -77,12 +78,19 @@ fun rememberCardResponsiveWidth(
     val containerWidth = LocalWindowInfo.current.containerSize.width
     val density = LocalDensity.current
     val currentWidthDp = with(density) { containerWidth.toDp() }
-    val itemsToShow = Preferences.horizontalCardCountConfig
-        .countForWidthDp(currentWidthDp.value.toInt())
 
-    val cardWidth = (currentWidthDp - (horizontalPadding * 2) - (itemSpacing * itemsToShow.toInt())) / itemsToShow
+    val isPreview = LocalInspectionMode.current
+    val itemsToShow = if (!isPreview) {
+        Preferences.horizontalCardCountConfig.countForWidthDp(currentWidthDp.value.toInt())
+    } else {
+        val estimatedCardWidth = 160.dp
+        maxOf(1f, ((currentWidthDp - (horizontalPadding * 2)) / (estimatedCardWidth + itemSpacing)))
+    }
 
-    return Pair(cardWidth, itemsToShow)
+    val safeItemsToShow = maxOf(1f, itemsToShow)
+    val cardWidth = (currentWidthDp - (horizontalPadding * 2) - (itemSpacing * (safeItemsToShow - 1))) / safeItemsToShow
+
+    return Pair(cardWidth, safeItemsToShow)
 }
 
 @Composable
@@ -92,7 +100,9 @@ fun rememberVideoGridColumns(): Int {
     val screenWidthPx = windowInfo.containerSize.width
     val screenWidthDp = with(density) { screenWidthPx.toDp() }
 
-    return if (Preferences.tabletMode) {
+    val isPreview = LocalInspectionMode.current
+
+    return if (!isPreview && Preferences.tabletMode) {
         Preferences.searchGridColumnsConfig.columnsForWidthDp(screenWidthDp.value.toInt())
     } else {
         maxOf(2, ((screenWidthDp + SpacingNormal) / (VideoNormalCardMinWidth + SpacingNormal)).toInt())
