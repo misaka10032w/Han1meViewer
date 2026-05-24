@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.fragment
+package com.yenaly.han1meviewer
 
 interface PermissionRequester {
     fun requestStoragePermission(
