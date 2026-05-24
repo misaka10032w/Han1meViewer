@@ -1017,18 +1017,19 @@ private fun PlaylistSection(
     onPlaylistScrollChange: (Int) -> Unit,
 ) {
     val (_, itemsToShow) = rememberCardResponsiveWidth()
-    val playingIndex = playlist.video.indexOfFirst { it.isPlaying }
+    val videos = remember(playlist.video) { playlist.video.distinctBy(HanimeInfo::videoCode) }
+    val playingIndex = videos.indexOfFirst { it.isPlaying }
     val visibleItemCount = itemsToShow.toInt().coerceAtLeast(1)
     val centeredInitialIndex = if (playingIndex >= 0) {
         val centerOffset = (itemsToShow / 2f).toInt()
-        val maxStartIndex = (playlist.video.size - visibleItemCount).coerceAtLeast(0)
+        val maxStartIndex = (videos.size - visibleItemCount).coerceAtLeast(0)
         (playingIndex - centerOffset).coerceIn(0, maxStartIndex)
     } else {
         0
     }
     val resolvedInitialIndex = (initialIndex ?: centeredInitialIndex)
-        .coerceIn(0, playlist.video.lastIndex.coerceAtLeast(0))
-    val listState = remember(playlist.video, resolvedInitialIndex) {
+        .coerceIn(0, videos.lastIndex.coerceAtLeast(0))
+    val listState = remember(videos, resolvedInitialIndex) {
         LazyListState(firstVisibleItemIndex = resolvedInitialIndex)
     }
     LaunchedEffect(listState) {
@@ -1049,7 +1050,7 @@ private fun PlaylistSection(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(horizontal = 16.dp)
         ) {
-            items(playlist.video, key = { it.videoCode }) { item ->
+            items(videos, key = { it.videoCode }) { item ->
                 VideoCardItem(
                     modifier = Modifier.width(cardWidth),
                     videoItem = item,

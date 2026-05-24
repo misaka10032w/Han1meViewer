@@ -1,9 +1,11 @@
 package com.yenaly.han1meviewer.ui.navigation.main
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -17,12 +19,15 @@ import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadScreen
 import com.yenaly.han1meviewer.ui.viewmodel.DownloadViewModel
 import com.yenaly.han1meviewer.util.SafFileManager
+import com.yenaly.han1meviewer.util.SafFileManager.checkSafPermissions
 import com.yenaly.han1meviewer.util.SafFileManager.scanAndImportHanimeDownloads
 import com.yenaly.han1meviewer.util.openDownloadedHanimeVideoLocally
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import com.yenaly.yenaly_libs.utils.application
 import com.yenaly.yenaly_libs.utils.showLongToast
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun DownloadRouteScreen(
@@ -32,13 +37,17 @@ fun DownloadRouteScreen(
 ) {
     val context = LocalContext.current
     val viewModel: DownloadViewModel = viewModel()
+    val scope = rememberCoroutineScope()
     val dao = remember { DownloadDatabase.instance.hanimeDownloadDao }
     val selectCustomDirectory = stringResource(R.string.select_custom_directory)
     val groupNameEmpty = stringResource(R.string.group_name_empty)
     val readSuccess = stringResource(R.string.read_success)
     val deleteSuccess = stringResource(R.string.delete_success)
+    val permissionError = stringResource(R.string.permission_error)
     var showVideoNotExistConfirm by remember { mutableStateOf<VideoWithCategories?>(null) }
     var showDeleteVideoConfirm by remember { mutableStateOf<VideoWithCategories?>(null) }
+    var showImportDownloadedConfirm by remember { mutableStateOf(false) }
+    var isImportingDownloaded by remember { mutableStateOf(false) }
     DownloadScreen(
         downloadingFlow = viewModel.loadAllDownloadingHanime(),
         downloadedFlow = viewModel.downloaded,
@@ -63,11 +72,11 @@ fun DownloadRouteScreen(
         onResumeItem = HanimeDownloadManagerV2::resumeTask,
         onDeleteDownloadingItem = HanimeDownloadManagerV2::deleteTask,
         onImportDownloaded = {
-            if (!Preferences.safDownloadPath.isNullOrBlank() && !Preferences.isUsePrivateStorage) {
-                runBlocking {
-                    scanAndImportHanimeDownloads(context, dao)
-                }
-                showLongToast(readSuccess)
+            if (!Preferences.safDownloadPath.isNullOrBlank() &&
+                !Preferences.isUsePrivateStorage &&
+                !isImportingDownloaded
+            ) {
+                showImportDownloadedConfirm = true
             } else {
                 showLongToast(selectCustomDirectory)
             }
@@ -110,6 +119,41 @@ fun DownloadRouteScreen(
             viewModel.deleteGroup(group)
             showLongToast(deleteSuccess)
         },
+    )
+
+    ConfirmDialog(
+        visible = showImportDownloadedConfirm,
+        title = application.getString(R.string.confirm_import),
+        message = application.getString(R.string.import_warning),
+        confirmText = application.getString(R.string.ok),
+        dismissText = application.getString(R.string.cancel),
+        onConfirm = {
+            showImportDownloadedConfirm = false
+            isImportingDownloaded = true
+            scope.launch {
+                val importSucceeded = withContext(Dispatchers.IO) {
+                    try {
+                        if (!checkSafPermissions(context)) return@withContext false
+                        scanAndImportHanimeDownloads(context, dao)
+                        true
+                    } catch (e: Exception) {
+                        Log.e("ImportHanime", "Failed to import downloaded videos", e)
+                        false
+                    }
+                }
+                isImportingDownloaded = false
+                if (importSucceeded) {
+                    viewModel.loadAllDownloadedHanime(
+                        sortedBy = HanimeDownloadEntity.SortedBy.ID,
+                        ascending = false,
+                    )
+                    showLongToast(readSuccess)
+                } else {
+                    showLongToast(permissionError)
+                }
+            }
+        },
+        onDismiss = { showImportDownloadedConfirm = false },
     )
 
     showVideoNotExistConfirm?.let { video ->

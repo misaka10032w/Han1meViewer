@@ -1,303 +1,648 @@
-# Han1meViewer 技术相关
+# Han1meViewer 技术文档
 
-> 抄是程序员进步的阶梯。
+本文档面向维护者和贡献者，描述当前项目的技术架构、关键模块、数据流和开发约定。用户侧介绍请看 [README.md](README.md)。
 
-## 概括
+## 1. 技术概览
 
-本软件使用 MVVM 架构，Material 3 视觉风格，Jetpack 不用问肯定用，但未使用 Compose（有一说一不用 Compose
-写 xml 真是写到吐）。网络请求使用 Retrofit，图片加载使用 Coil，视频播放使用 Jiaozi，Json 解析使用
-Serialization，部分弹窗使用的 Xpopup。未使用 LiveData，全部改用功能更强大的 Flow。
+Han1meViewer 当前是以 Kotlin + Jetpack Compose 为主的 Android 应用，整体采用 MVVM 风格组织。
 
-## 受众人群
+核心技术：
 
-这篇文章主要给谁看的呢？一是那些刚学习 Android 的同学，想看看本项目是怎么写的，或者对其中某个功能很感兴趣，想学习一下并且快速集成于自己的
-App 中；二是普通开发者感兴趣来捧个场，能学到东西更好，写的不对的来发 discussion 拷打我。
+- Kotlin 2.3.x，Java 21。
+- Android Gradle Plugin 9.2.x。
+- Jetpack Compose + Material 3。
+- Navigation Compose typed routes。
+- ViewModel + StateFlow + SharedFlow。
+- Retrofit 3 + OkHttp + kotlinx.serialization converter。
+- Jsoup 解析 HTML DOM。
+- Room + KSP。
+- WorkManager 后台下载和更新任务。
+- Coil 3 Compose 图片加载。
+- Media3 ExoPlayer、JZVD、MPV Android 播放链路。
+- Firebase Analytics、Crashlytics、Performance、Remote Config、Realtime Database。
 
-## 功能解析
+当前代码仍有少量历史 View/XML 组件，例如 JZVD 自定义 View、部分设置/播放器相关布局和 `yenaly_libs` 基础库组件，但主业务页面已经以 Compose 为主。
 
-### 断点续传下载
+## 2. 模块结构
 
-#### 你可以学到
+Gradle 模块：
 
-1. WorkManager 使用，如何在 WorkManager 中对下载任务进行基础管理？
-2. RecyclerView 使用，DiffUtil 使用，如何充分利用 `payload` 参数对某个特定的控件进行刷新？
-3. Room 使用，如何通过数据库实现回调？
+- `:app`：主应用模块，包含 UI、业务状态、网络解析、本地数据库、播放器、下载、更新和资源。
+- `:yenaly_libs`：项目内公共库，提供基础 Activity、Fragment、ViewModel、Preference、工具类和部分 View 封装。
+- `buildSrc`：构建辅助逻辑，维护版本号、构建来源、提交 SHA 等 Gradle 侧配置。
 
-#### 关键文件
+主应用关键目录：
 
-- [HanimeDownloadWorker.kt](app/src/main/java/com/yenaly/han1meviewer/worker/HanimeDownloadWorker.kt) - 关键作业类
-- [HanimeDownloadEntity.kt](app/src/main/java/com/yenaly/han1meviewer/logic/entity/HanimeDownloadEntity.kt) - 下载 实体类
-- [HanimeDownloadDao.kt](app/src/main/java/com/yenaly/han1meviewer/logic/dao/HanimeDownloadDao.kt) - 下载 Dao 类
-- [DownloadDatabase.kt](app/src/main/java/com/yenaly/han1meviewer/logic/dao/DownloadDatabase.kt) - 下载 数据库类
-- [HanimeDownloadingRvAdapter.kt](app/src/main/java/com/yenaly/han1meviewer/ui/adapter/HanimeDownloadingRvAdapter.kt) - 下载界面的 RecyclerView Adapter
+```text
+app/src/main/java/com/yenaly/han1meviewer/
+├── logic/                 数据、网络、解析、数据库、状态
+│   ├── network/           Retrofit Service、OkHttp、DNS、Cookie、更新服务
+│   ├── model/             业务模型和解析后的页面模型
+│   ├── dao/               Room DAO 和 Database
+│   ├── entity/            Room 实体和本地实体
+│   ├── state/             WebsiteState、PageLoadingState、VideoLoadingState
+│   ├── NetworkRepo.kt     网络仓库入口
+│   ├── DatabaseRepo.kt    本地仓库入口
+│   └── Parser.kt          HTML/JSON 解析入口
+├── ui/
+│   ├── activity/          MainActivity、登录、Cloudflare、手动 Cookie 页面
+│   ├── navigation/        主导航、设置导航、路由和安全跳转
+│   ├── screen/            Compose 页面
+│   ├── component/         Compose 组件
+│   ├── viewmodel/         页面 ViewModel
+│   ├── view/              自定义 View 和播放器 View
+│   └── theme/             Compose 主题、颜色、尺寸
+├── util/                  文件、网络、权限、主题、Cookie、Toast 等工具
+├── worker/                下载 Worker、更新 Worker、下载管理器
+└── HanimeApplication.kt   应用入口
+```
 
-#### 解释
+## 3. 分层职责
 
-你可能问我你就这几个文件就实现了？我接口呢，没接口你怎么回调的？
+### UI 层
 
-**先去看**我写的 [小白如何快速实现简单的可保存状态断点续传后台下载？一个 Jetpack 库搞定一切！](https://juejin.cn/post/7278929337067225149)，看完再看下面。
+UI 层主要由 Compose 页面和组件组成。
 
-但是不要照搬，使用前要注意这么几点：
+关键职责：
 
-1. 你所下载的东西是否可以断点续传？对于视频类 App 来说，视频基本都是可以断点续传的，毕竟要播放嘛！所以我在实现下载的时候不必考虑那么多。
-2. 是否要对每个下载任务进行很粒度的操作？不是说不行，但可能实现起来有点麻烦。
-3. 一次性下载数目是否很多？如果使用上述文章的做法去下载极多文件可能会对手机性能造成一定压力，一会细说。
+- 只消费 ViewModel 暴露的状态。
+- 通过回调触发导航和业务动作。
+- 不直接访问 Retrofit Service 或 Room DAO。
+- `LazyColumn`、`LazyRow`、`LazyVerticalGrid` 使用稳定 key 时，数据源必须提前保证唯一。
 
-为什么说下载数目过多会造成一定压力？
+典型文件：
 
-聚焦于 [HanimeDownloadWorker.kt](app/src/main/java/com/yenaly/han1meviewer/worker/HanimeDownloadWorker.kt) 第 180 行左右：
+- `ui/screen/home/HomePageScreen.kt`
+- `ui/screen/search/SearchScreen.kt`
+- `ui/screen/video/VideoIntroductionScreen.kt`
+- `ui/screen/video/VideoRouteHostScreen.kt`
+- `ui/screen/home/download/DownloadScreen.kt`
+- `ui/screen/home/myplaylist/MyPlayListScreen.kt`
+- `ui/component/VideoCardItem.kt`
+- `ui/component/lazy/AnimatedLazy.kt`
+
+### ViewModel 层
+
+ViewModel 是页面状态和业务动作的入口。
+
+约定：
+
+- 持久页面状态使用 `MutableStateFlow`。
+- 一次性事件使用 `MutableSharedFlow` 或 UI 回调。
+- 不让 Compose 页面直接处理分页合并、去重、登录态判断等业务细节。
+- 网络列表分页追加时应按稳定业务键去重，例如 `videoCode`、`listCode`、`id`。
+- 登录用户相关页面要先检查 `Preferences.isAlreadyLogin` 和 `Preferences.savedUserId`。
+
+典型文件：
+
+- `ui/viewmodel/MainViewModel.kt`
+- `ui/viewmodel/SearchViewModel.kt`
+- `ui/viewmodel/VideoViewModel.kt`
+- `ui/viewmodel/CommentViewModel.kt`
+- `ui/viewmodel/DownloadViewModel.kt`
+- `ui/viewmodel/MyPlayListViewModelV2.kt`
+- `ui/viewmodel/OnlineWatchHistoryViewModel.kt`
+- `ui/viewmodel/CreatorCenterViewModel.kt`
+- `ui/viewmodel/UserAccountViewModel.kt`
+
+### 数据层
+
+数据层由 `NetworkRepo`、`DatabaseRepo`、`Parser`、Retrofit Service 和 Room DAO 组成。
+
+网络数据流：
+
+```text
+ViewModel -> NetworkRepo -> HanimeNetwork Service -> Parser -> WebsiteState/PageLoadingState/VideoLoadingState -> ViewModel
+```
+
+本地数据流：
+
+```text
+ViewModel/Worker -> DatabaseRepo -> Room DAO -> Flow / suspend result -> ViewModel/UI
+```
+
+关键文件：
+
+- `logic/NetworkRepo.kt`
+- `logic/DatabaseRepo.kt`
+- `logic/Parser.kt`
+- `logic/network/HanimeNetwork.kt`
+- `logic/network/ServiceCreator.kt`
+- `logic/network/service/HanimeBaseService.kt`
+- `logic/network/service/HanimeMyListService.kt`
+- `logic/network/service/HanimeCommentService.kt`
+- `logic/dao/HistoryDatabase.kt`
+- `logic/dao/DownloadDatabase.kt`
+- `logic/dao/MiscellanyDatabase.kt`
+
+## 4. 状态模型
+
+项目使用三个主要状态包装类型：
+
+- `WebsiteState<T>`：普通页面或操作状态，包含 Loading、Success、Error。
+- `PageLoadingState<T>`：分页列表状态，包含 Loading、Success、NoMoreData、Error。
+- `VideoLoadingState<T>`：视频详情状态，处理视频不存在、解析失败、加载中和成功状态。
+
+使用建议：
+
+- 首页、订阅、账号、修改操作等非分页数据使用 `WebsiteState`。
+- 搜索、收藏、稍后观看、播放列表、在线历史、创作中心列表使用 `PageLoadingState`。
+- 视频详情使用 `VideoLoadingState`。
+- UI 层不要根据异常类型硬编码网络逻辑，异常映射应尽量在 `NetworkRepo` 或 Parser 侧完成。
+
+## 5. 导航架构
+
+主导航基于 Navigation Compose typed routes。
+
+关键文件：
+
+- `ui/navigation/main/MainRoutes.kt`
+- `ui/navigation/main/MainNavHost.kt`
+- `ui/navigation/main/MainNavigationActions.kt`
+- `ui/navigation/NavControllerExt.kt`
+- `ui/navigation/settings/SettingsRoutes.kt`
+- `ui/navigation/settings/SettingsNavHost.kt`
+
+路由示例：
 
 ```kotlin
-const val RESPONSE_INTERVAL = 500L
+@Serializable
+data class SearchRoute(
+    val query: String? = null,
+    val advancedSearchJson: String? = null,
+)
 
-if (System.currentTimeMillis() - delayTime > RESPONSE_INTERVAL) {
-    val progress = entity.downloadedLength * 100 / entity.length
-    setProgress(workDataOf(PROGRESS to progress.toInt()))
-    setForeground(createForegroundInfo(progress.toInt()))
-    DatabaseRepo.HanimeDownload.update(entity)
-    delayTime = System.currentTimeMillis()
-}
+@Serializable
+data class VideoRoute(
+    val videoCode: String,
+    val localUri: String? = null,
+)
 ```
 
-我在 App 里设置的是 500 ms 一更新，相当于 `2 次数据库更新操作/s/job`，加上通过 Flow/LiveData 回调，当数据库检测到数据更新，会立即返回全新的、拥有最新数据的列表，相当于又有 `回调 2 次/s/job`。如果一次性下载极多个文件，并且调低了 `RESPONSE_INTERVAL`，可能会对数据库造成一定负担。这个时候这种方法就不太好用了。
+导航约定：
 
-配置好了 RecyclerView，那刷新闪烁问题该如何解决？我在原文章中提供的方法并不好：
+- 普通跳转使用 `navController.navigateSafely(...)`，避免快速点击重复入栈。
+- 页面间只传递路由必要参数，不传大对象。
+- 复杂搜索参数通过 JSON 字符串承载，进入 `SearchRouteScreen` 后再灌入 `SearchViewModel`。
+- 视频本地文件播放使用 `VideoRoute(videoCode = "-1", localUri = uri)` 这一路径。
+
+## 6. 搜索和分页列表
+
+搜索入口：
+
+- 首页搜索框进入 `SearchRoute(query = keyword)`。
+- 标签点击进入 `SearchRoute(query = tag)`。
+- 高级搜索进入 `SearchRoute(advancedSearchJson = json)`。
+- 详情页作者区域会同时传入 `query = artist.name` 和高级搜索 JSON，以保证搜索框填充并自动搜索。
+
+`SearchScreen` 支持：
+
+- `initialQuery` 自动填充。
+- 初始关键词自动搜索。
+- 高级搜索条件自动搜索。
+- 搜索历史建议。
+- 下拉刷新和加载更多。
+
+分页列表去重规则：
+
+- 视频列表按 `HanimeInfo.videoCode` 去重。
+- 播放列表按 `Playlists.Playlist.listCode` 去重。
+- 上传中/已上传列表按各自 `videoCode` 去重。
+- 评论列表使用评论模型提供的 `stableKey`。
+
+原因：Compose `Lazy*` 使用 `key = { ... }` 时，数据源中出现重复 key 会直接抛出：
+
+```text
+java.lang.IllegalArgumentException: Key "xxxx" was already used.
+```
+
+因此分页合并应优先在 ViewModel 层处理：
 
 ```kotlin
-rv.itemAnimator?.changeDuration = 0
+(previous + incoming).distinctBy(HanimeInfo::videoCode)
 ```
 
-这句代码只是解决了表面问题，实际上背后还是接着“闪”。因为即使是通过了 DiffUtil 进行了差分刷新，但还仍是全局更新，这只是自我欺骗罢了。不信你可以试试 `holder.binding.pbProgress.setProgress(item.progress, true)` 能不能正常出现动态效果。那怎么实现，`isDownloading` 字段发生修改，就单独对暂停按钮修改；`downloadedLength` 字段发生修改，就单独对进度条修改？这时候就需要 `payload` 出场了。
+## 7. 视频页架构
 
-与 `payload` 相关的文章真的挺多，StackOverflow 甚至 掘金 上不少介绍这个的文章，自己去搜一搜马上就能看懂，我就不赘述了。关键就是 `DiffUtil.ItemCallback` 中的 `getChangePayload` 方法和 `onBindViewHolder` 中的 `payloads` 参数。
+视频页由路由、Host、播放器、Tab 内容和详情内容协作完成。
 
-**先去看** `payload` 使用相关文章，再看下面。
+关键文件：
 
-但我发现，很多人确实介绍了这种方法，但鲜少有人去介绍如何高效率实现一次性去处理多个字段。你可能想到了 `List<Int>` 或 `IntArray`，通过遍历对应去处理每一种情况。这样的话，时间复杂度和空间复杂度都是 `O(n)`，`n` 是你需要监听的数目；再聪明点也可以想到使用 `Set<Int>`，在 `onBindViewHolder` 中分别查询 set 中是否含有某个情况来对应处理，这时候时间复杂度降到了 `O(1)`。如果在刷新不频繁的情况下，这样做确实没什么不妥，但是高强度下，每次 new 一个数据结构确实是一个小负担，那应该怎么样做呢？
+- `ui/navigation/main/VideoRoute.kt`
+- `ui/screen/video/VideoRouteHostScreen.kt`
+- `ui/screen/video/VideoRouteContent.kt`
+- `ui/screen/video/VideoShellContent.kt`
+- `ui/screen/video/VideoTabsContent.kt`
+- `ui/screen/video/VideoIntroductionScreen.kt`
+- `ui/screen/video/CommentScreen.kt`
+- `ui/screen/video/ChildCommentScreen.kt`
+- `ui/screen/video/VideoRouteActions.kt`
+- `ui/viewmodel/VideoViewModel.kt`
 
-这时候可以选择简单的 Bitmap 数据结构。你可能刚听说，但它确实很常见，你在使用 `Intent#addFlags` 打开新 Activity 的时候，大概率会接触到这种数据结构。我们可以利用一个仅 4 个字节的 32-bit 整数值去实现查找 (`find`)、判空 (`isEmpty`)、添加 (`add`) 的功能（我们只需要这些功能，而且不同情况数量大概率不超过 32 个）。
+主要状态：
 
-聚焦于 [HanimeDownloadingRvAdapter.kt](app/src/main/java/com/yenaly/han1meviewer/ui/adapter/HanimeDownloadingRvAdapter.kt)
+- `hanimeVideoStateFlow`：视频加载状态。
+- `hanimeVideoFlow`：当前视频数据。
+- `videoHostUiStateFlow`：Tab、AppBar、PIP、播放器高度、评论角标等 UI 状态。
+- `videoIntroUiStateMap`：按 `videoCode` 缓存详情页滚动位置、系列横向列表位置和已恢复数据。
 
-> 注意：我使用了 BRVAH 作为 RecyclerView 的代替，所以具体方法和 RecyclerView 不一定一致，但使用方法基本一致。
+视频详情加载：
+
+```text
+VideoRoute -> VideoViewModel.getHanimeVideo -> NetworkRepo.getHanimeVideo -> Parser.hanimeVideoVer2 -> HanimeVideo
+```
+
+本地播放：
+
+```text
+VideoRoute(videoCode = "-1", localUri) -> VideoViewModel.buildLocalPlayInfo -> HanimeVideo(videoUrls = localUri)
+```
+
+作者点击搜索：
+
+- `VideoIntroductionScreen` 的 `ArtistSection` 触发 `onOpenArtist`。
+- `VideoRouteActions.openArtistSearch` 构造 `SearchRoute`。
+- 搜索页通过 `route.query` 自动填充作者名并发起搜索。
+
+## 8. 播放器链路
+
+项目保留了历史 JZVD 播放器封装，同时引入 Media3 和 MPV 能力。
+
+关键文件：
+
+- `ui/view/video/HJzvdStd.kt`
+- `ui/view/video/HMediaKernel.kt`
+- `ui/view/video/HanimeDataSource.kt`
+- `ui/screen/video/VideoPlayerUi.kt`
+- `util/Videos.kt`
+- `HanimeResolution.kt`
+
+播放相关约定：
+
+- 画质信息由 `HanimeResolution` 解析后提供给播放器。
+- 播放器 UI 状态不要直接写入网络模型，应通过 ViewModel 或播放器状态对象同步。
+- PIP、屏幕方向、播放器高度、滚动禁用等与页面布局相关的状态归 `VideoViewModel.VideoHostUiState` 管理。
+- MPV 相关设置归 `MpvPlayerSettingsRouteScreen` 和偏好设置管理。
+
+## 9. 下载架构
+
+下载由 UI、ViewModel、下载管理器、Worker 和 Room 共同完成。
+
+关键文件：
+
+- `ui/screen/home/download/DownloadScreen.kt`
+- `ui/screen/home/download/DownloadingScreen.kt`
+- `ui/screen/home/download/DownloadedScreen.kt`
+- `ui/viewmodel/DownloadViewModel.kt`
+- `worker/HanimeDownloadManagerV2.kt`
+- `worker/HanimeDownloadWorker.kt`
+- `logic/entity/download/HanimeDownloadEntity.kt`
+- `logic/entity/download/DownloadGroupEntity.kt`
+- `logic/dao/download/HanimeDownloadDao.kt`
+- `logic/dao/DownloadDatabase.kt`
+
+下载数据流：
+
+```text
+DownloadScreen -> DownloadViewModel -> HanimeDownloadManagerV2 -> WorkManager -> HanimeDownloadWorker -> DownloadDatabase -> Flow -> UI
+```
+
+设计要点：
+
+- 长任务交给 WorkManager，避免 Activity 生命周期影响下载。
+- 下载进度落库，UI 通过数据库 Flow 获得刷新。
+- 前台服务通知由 Worker 维护。
+- 下载目录通过 SAF 相关工具处理，避免直接依赖旧外部存储权限。
+- 下载完成后可走本地播放路径进入视频页。
+
+性能注意：
+
+- 下载进度不应过于频繁落库，否则多个任务同时下载时会造成数据库和 UI 刷新压力。
+- 更新间隔应在“进度实时性”和“数据库写入频率”之间折中。
+
+## 10. 本地数据库
+
+Room 主要用于：
+
+- 播放历史。
+- 搜索历史。
+- 高级搜索历史。
+- 下载任务和下载分组。
+- 共享/自定义关键 H 帧。
+- 健康打卡记录。
+
+关键入口：
+
+- `logic/DatabaseRepo.kt`
+- `logic/dao/HistoryDatabase.kt`
+- `logic/dao/DownloadDatabase.kt`
+- `logic/dao/MiscellanyDatabase.kt`
+- `logic/dao/CheckInRecordDatabase.kt`
+
+约定：
+
+- UI 不直接访问 DAO。
+- 跨页面复用的数据库操作集中到 `DatabaseRepo`。
+- 高频写入要评估 Flow 回调频率和 UI 刷新成本。
+
+## 11. 网络和解析
+
+网络层入口：
+
+- `NetworkRepo`：业务方法入口，统一包装状态。
+- `HanimeNetwork`：Retrofit Service 聚合。
+- `ServiceCreator`：OkHttp/Retrofit 创建。
+- `Parser`：HTML/JSON 转领域模型。
+
+拦截器和辅助：
+
+- `CloudflareInterceptor`
+- `UserAgentInterceptor`
+- `SpeedLimitInterceptor`
+- `UrlLoggingInterceptor`
+- `HCookieJar`
+- `HDns`
+- `GitHubDns`
+- `HProxySelector`
+
+异常类型：
+
+- `CloudFlareBlockedException`
+- `IPBlockedException`
+- `HanimeNotFoundException`
+- `LoginStateExpiredException`
+- `ParseException`
+
+开发约定：
+
+- Parser 应尽量容错，目标网站 DOM 改动时返回明确错误。
+- `NetworkRepo` 应保留 `CancellationException` 语义，不吞掉协程取消。
+- 登录态过期、Cloudflare、IP blocked 等应映射成可被 UI 理解的异常或状态。
+- 解析列表时优先保证 `videoCode`、`listCode` 等业务键非空和稳定。
+
+## 12. 账号、Cookie 和 Cloudflare
+
+相关页面：
+
+- `ui/activity/LoginActivity.kt`
+- `ui/activity/ManualInputCookiesActivity.kt`
+- `ui/activity/CloudflareActivity.kt`
+- `ui/screen/account/AccountScreen.kt`
+- `ui/screen/account/AvatarCropScreen.kt`
+- `ui/viewmodel/UserAccountViewModel.kt`
+
+关键点：
+
+- 登录态和 Cookie 由 `Preferences`、`HCookieJar` 和相关工具共同维护。
+- 手动 Cookie 输入用于绕过无法自动登录或 WebView 登录失败的情况。
+- Cloudflare 页面和拦截器用于处理访问保护导致的请求失败。
+- 账号信息修改、密码修改、头像上传都通过 `HanimeMyListService` 和 `NetworkRepo` 包装。
+
+## 13. 公告系统与管理端
+
+公告系统分为应用侧展示和管理端写入两部分。
+
+关键文件：
+
+- `ui/viewmodel/MainViewModel.kt`
+- `ui/component/AnnouncementDialog.kt`
+- `ui/screen/home/HomePageScreen.kt`
+- `logic/model/Announcement.kt`
+- `HanimeAnnouncementManagerWebUI/HanimeAnnouncementManager.html`
+- `HanimeAnnouncementManagerWebUI/PermitAdmin.py`
+
+应用侧链路：
+
+- `MainViewModel.loadAnnouncements()` 从 Firebase Realtime Database 的 `announcements` 节点读取公告。
+- 只有 `isActive = true` 的公告会参与展示。
+- 首页通过公告卡片展示公告列表。
+- 点击公告后进入 `AnnouncementDialog`，可查看标题、正文、时间、图片和按钮文案。
+- 用户关闭公告后，会记录 `last_dismiss_time`，24 小时内不会再次自动弹出。
+
+管理端链路：
+
+- `HanimeAnnouncementManager.html` 是基于 Firebase Web SDK 的管理页面。
+- 页面通过 `firebaseConfig` 连接到项目对应的 Realtime Database。
+- 页面使用 `ADMIN_EMAIL` 和 `ADMIN_PASSWORD` 登录 Firebase Auth。
+- 登录成功后读取 `announcements` 节点并渲染为表格。
+- 页面支持新增、编辑、启用、停用和删除公告。
+
+管理员权限：
+
+- `PermitAdmin.py` 使用 Firebase Admin SDK 给指定 UID 写入 `isAdmin: true` 自定义声明。
+- 该脚本依赖本地 `serviceAccountKey.json`。
+- 运行前需要安装 `firebase-admin`，并填写目标用户 UID。
+- 该自定义声明用于管理端权限校验。
+
+公告字段约定：
+
+- `title`：公告标题。
+- `content`：公告正文。
+- `imageUrl`：公告图片地址，可选。
+- `positiveText`：确认按钮文本，可选。
+- `negativeText`：取消按钮文本，可选。
+- `priority`：排序优先级。
+- `timestamp`：更新时间戳，单位为秒。
+- `isActive`：是否启用。
+
+实现约定：
+
+- 公告数据应兼容部分字段缺失的情况。
+- 管理端更新公告时会刷新 `timestamp`，便于前端显示最新时间。
+- 停用公告时只更新 `isActive`，删除则直接移除节点。
+- 后续如果新增公告字段，需要同步更新 `Announcement` 模型、管理端表单和展示弹窗。
+
+## 14. 设置体系
+
+设置页采用 Compose + typed routes。
+
+关键文件：
+
+- `ui/navigation/settings/SettingsRoutes.kt`
+- `ui/navigation/settings/SettingsNavHost.kt`
+- `ui/navigation/settings/HomeSettingsRoute.kt`
+- `ui/screen/settings/HomeSettingsScreen.kt`
+- `ui/screen/settings/PlayerSettingsScreen.kt`
+- `ui/screen/settings/MpvPlayerSettingsScreen.kt`
+- `ui/screen/settings/DownloadSettingsScreen.kt`
+- `ui/screen/settings/NetworkSettingsScreen.kt`
+- `ui/screen/settings/HKeyframeSettingsScreen.kt`
+
+偏好配置入口：
+
+- `Preferences.kt`
+- `SearchGridColumnsConfig.kt`
+- `HorizontalCardCountConfig.kt`
+- `VideoCoverSize.kt`
+
+约定：
+
+- 新设置项应集中放在 `Preferences` 或明确的配置类里。
+- UI 设置页只负责展示和修改偏好，不直接散落业务逻辑。
+- 与播放器、网络、下载有关的设置要同步检查对应模块读取点。
+
+## 15. 共享关键 H 帧
+
+共享关键 H 帧仍使用 assets 中的 JSON 文件作为输入。
+
+关键文件：
+
+- `app/src/main/assets/h_keyframes/`
+- `app/src/main/assets/h_keyframes/README.md`
+- `logic/entity/HKeyframeEntity.kt`
+- `logic/dao/HKeyframeDao.kt`
+- `logic/DatabaseRepo.kt`
+- `ui/screen/settings/HKeyframesScreen.kt`
+- `ui/screen/settings/SharedHKeyframesScreen.kt`
+
+读取思路：
+
+```text
+assets/h_keyframes/*.json -> Json.decodeFromStream<HKeyframeEntity> -> sort/group/flatten -> UI
+```
+
+分组扁平化示意：
 
 ```kotlin
-companion object {
-    private const val DOWNLOADING = 1 // 0000 0001
-    private const val PAUSE = 1 shl 1 // 0000 0010
-
-    val COMPARATOR = object : DiffUtil.ItemCallback<HanimeDownloadEntity>() {
-        override fun areContentsTheSame(
-            oldItem: HanimeDownloadEntity,
-            newItem: HanimeDownloadEntity,
-        ): Boolean {
-            return oldItem == newItem
-        }
-
-        override fun areItemsTheSame(
-            oldItem: HanimeDownloadEntity,
-            newItem: HanimeDownloadEntity,
-        ): Boolean {
-            return oldItem.id == newItem.id
-        }
-
-        override fun getChangePayload(
-            oldItem: HanimeDownloadEntity,
-            newItem: HanimeDownloadEntity,
-        ): Any {
-            // 假设当前只有 progress 和原来不一样
-            var bitset = 0
-            // bitset == 0000 0000
-            if (oldItem.progress != newItem.progress || oldItem.downloadedLength != newItem.downloadedLength)
-                bitset = bitset or DOWNLOADING
-            	// bitset == 0000 0001
-            if (oldItem.isDownloading != newItem.isDownloading)
-                bitset = bitset or PAUSE
-            	// 不经过这里
-            return bitset
-            // return 0000 0001
-        }
+entities
+    .sortedWith(compareBy<HKeyframeEntity> { it.group }.thenBy { it.episode })
+    .groupBy { it.group ?: "???" }
+    .flatMap { (group, entities) ->
+        listOf(HKeyframeHeader(title = group, attached = entities)) + entities
     }
-}
 ```
 
-```kotlin
-override fun onBindViewHolder(
-    holder: DataBindingHolder<ItemHanimeDownloadingBinding>,
-    position: Int,
-    item: HanimeDownloadEntity?,
-    payloads: List<Any>,
-) {
-    // 如果 payloads 列表为空，或者为 0000 0000，说明不需要修改
-    if (payloads.isEmpty() || payloads.first() == 0)
-        return super.onBindViewHolder(holder, position, item, payloads)
-    item.notNull()
-    val bitset = payloads.first() as Int
-    // 0000 0001 & 0000 0001 = 0000 0001 != 0000 0000
-    // 对进度相关控件进行修改
-    if (bitset and DOWNLOADING != 0) {
-        holder.binding.tvSize.text = spannable {
-            item.downloadedLength.formatFileSize().text()
-            " | ".span { color(Color.RED) }
-            item.length.formatFileSize().span { style(Typeface.BOLD) }
-        }
-        holder.binding.tvProgress.text = "${item.progress}%"
-        holder.binding.pbProgress.setProgress(item.progress, true)
-    }
-    // 0000 0001 & 0000 0010 = 0000 0000 == 0000 0000
-    // 不经过下面
-    if (bitset and PAUSE != 0) {
-        holder.binding.btnStart.handleStartButton(item.isDownloading)
-    }
-}
+这种结构避免了在 assets 里维护复杂目录索引，也便于贡献者直接提交单个 JSON 文件。
+
+## 16. Compose 列表封装
+
+项目提供了 `AnimatedLazy.kt` 封装：
+
+- `LazyColumn`
+- `LazyRow`
+- `LazyVerticalGrid`
+- `AnimatedLazyListScope`
+- `AnimatedLazyGridScope`
+
+目的：
+
+- 尽量兼容原生 Lazy API 的常用调用方式。
+- 为列表 item 提供轻量入场动画。
+- 在全项目保持较一致的列表观感。
+
+注意：
+
+- 它不会替代 Compose 对 key 唯一性的要求。
+- 使用 `items(list, key = { ... })` 时，调用方仍必须保证 key 唯一。
+- 网络分页列表优先在 ViewModel 层去重，不建议在 UI 层临时过滤后再展示，除非数据源来自单次接口且不参与后续业务逻辑。
+
+## 17. 构建和版本
+
+关键文件：
+
+- `settings.gradle.kts`
+- `build.gradle.kts`
+- `app/build.gradle.kts`
+- `gradle.properties`
+- `gradle/libs.versions.toml`
+- `buildSrc/src/main/java/Config.kt`
+
+当前构建特征：
+
+- `compileSdk=37`
+- `minSdk=27`
+- `targetSdk=37`
+- Java 21
+- Compose Compiler 插件随 Kotlin 版本
+- Release 默认启用混淆和资源压缩
+- Release 只打 `arm64-v8a` ABI split
+- APK 文件名格式：`Han1meViewer-v{versionName}.apk`
+
+本地常用验证：
+
+```powershell
+.\gradlew.bat :app:compileDebugKotlin
+.\gradlew.bat :app:assembleDebug
 ```
 
-就这样实现了效率比较高的差分刷新。
+提交前建议至少运行：
 
-### CI 更新渠道
-
-#### 你可以学到
-
-#### 关键文件
-
-#### 解释
-
-当你的软件拓展性比较高，但受限于题材内容或者单纯懒，不方便自建服务器去读取这些拓展文件。但你又希望能让用户通过其他渠道实时的获取到更新（比如好心人上传了拓展文件，我合并到主分支之后，几分钟后用户就可以获得更新，而不用我自己做包），但又不是所有人需要这些拓展功能（要是人家不愿用你那功能，又一会一个 Release，用户也会烦；你自己一会发一个包你也会烦）。所以能不能给用户提供两种渠道？一个是稳定更新渠道，自己发版本；另一个是开发版，GitHub 自动构建，保证最新功能（最新拓展功能立即集成）但不保证稳定性。
-
-答案是肯定的。其实我之前也不知道怎么做，但是 @NekoOuO 给我发了 [Foolbar/EhViewer](https://github.com/FooIbar/EhViewer/) 的做法，我想都没想就抄过来了。但没人详细教怎么做，我今天就来讲讲。
-
-**先去看** GitHub CI 基础用法。
-
-谷歌、掘金上全是教程。你先去查一查用法然后配置一下，刚开始的要求不多，你上传 commit 之后，GitHub CI 开始工作并成功 Build，就算入门了，先不用管 Build 之后干什么或者别的。如果你操作非常顺利，再看以下步骤。
-
-待更...
-
-### 共享关键H帧
-
-#### 你可以学到
-
-1. 如何充分利用 Kotlin 的集合操作函数，将一个个单独的 JSON 文件进行排序、分类甚至扁平化？
-
-   相关函数：`groupBy`、`flatMap`、`sortedWith` `=>` `compareBy`、`thenBy`
-
-#### 关键文件
-
-- [HKeyframes 文件夹](app/src/main/assets/h_keyframes) - 存放所有共享关键H帧
-- [DatabaseRepo.kt](app/src/main/java/com/yenaly/han1meviewer/logic/DatabaseRepo.kt) - 处理共享关键H帧
-- [SharedHKeyframesRvAdapter.kt](app/src/main/java/com/yenaly/han1meviewer/ui/adapter/SharedHKeyframesRvAdapter.kt) - 界面 Adapter
-- [HKeyframeEntity.kt](app/src/main/java/com/yenaly/han1meviewer/logic/entity/HKeyframeEntity.kt) - 相关实体类
-
-#### 解释
-
-很多人看到 [HKeyframes 文件夹](app/src/main/assets/h_keyframes) 先笑了，所有 JSON 文件都放一块，作者是个傻宝吧，这都不知道分文件夹来分类？
-
-你以为我没想到吗？首先分文件夹为什么不太行：
-
-1. 分文件夹无法一次性读取到对应影片的关键H帧。比如你正在看 `videoCode` 为 `114514` 的影片，我不分文件夹直接读取文件夹下的对应文件即可，不需要遍历各个文件夹去寻找，相当于 List 和 Map 的区别。
-2. 假设分文件夹后，在根目录创建 JSON 来写好哪个文件夹包含哪些影片的代号，也不是不行，但是会增加其他想提供共享H帧的人的负担。
-
-主要还是历史遗留问题，我懒得改了😄。Kotlin 这么多集合操作函数，分个组排个序不轻轻松松？
-
-我现在给你一个关键H帧的 JSON，你来考虑考虑怎么转化为以下格式：
-
-格式：
-
-```
-- 系列 1
-	- 系列 1 第一集
-	- 系列 1 第二集
-	- 系列 1 第三集
-- 系列 2
-	- 系列 2 第一集
-	- 系列 2 第二集
+```powershell
+.\gradlew.bat :app:compileDebugKotlin
 ```
 
-随机一段关键H帧：
+## 18. 开发约定
 
-> 你要注意，该网站的 `videoCode` 不是按照顺序排列的，第一集和第二集中间可能会夹带一个其他系列的影片。
+代码约定：
 
-```json
-{
-  "videoCode": "114514",
-  "group": "系列 2",
-  "title": "系列 2 第二集",
-  "episode": 2,
-  "author": "Bekki Chen",
-  "keyframes": [
-    {
-      "position": 482500,
-      "prompt": null
-    },
-    {
-      "position": 500500,
-      "prompt": null
-    },
-    {
-      "position": 556000,
-      "prompt": null
-    },
-    {
-      "position": 777300,
-      "prompt": null
-    }
-  ]
-}
-```
+- 优先做最小正确修改。
+- 新 UI 优先使用 Compose。
+- 页面状态优先使用 `StateFlow`，一次性事件用 `SharedFlow` 或回调。
+- 网络和数据库访问不要写进 Composable。
+- 列表分页合并要去重。
+- 文本文件工作区行尾使用 CRLF，文件末尾保留一个换行符。
 
-你可能想用 Map 分类，但是 RecyclerView 可是传不了 Map 的，那怎么才能扁平化成一个 List，并且能实现  RecyclerView 多布局呢？如果是两种截然不同的两个数据去实现 RecyclerView 多布局，不得不依靠接口，比如说本 App 中共享关键H帧界面中数据不一样的标题和内容。
+排查问题时优先看：
 
-聚焦于 [HKeyframeEntity.kt](app/src/main/java/com/yenaly/han1meviewer/logic/entity/HKeyframeEntity.kt)
+- 页面是否重复触发网络请求。
+- ViewModel 是否在 Loading 状态下清空了不该清空的列表。
+- `Lazy*` key 是否唯一。
+- Parser 是否因 DOM 改动解析为空。
+- 登录态或 Cookie 是否过期。
+- Cloudflare/IP blocked 是否被正确映射。
 
-```kotlin
-interface MultiItemEntity {
-    val itemType: Int
-}
+## 19. 常见改动入口
 
-interface HKeyframeType : MultiItemEntity {
-    companion object {
-        const val H_KEYFRAME = 0
-        const val HEADER = 1
-    }
-}
-```
+新增首页模块：
 
-然后 HKeyframeEntity 和 HKeyframeHeader 我就不多说了，把正确的 `itemType` override 给对应的 `itemType` 字段就好。
+- `HomePageScreen.kt`
+- `MainViewModel.kt`
+- `Parser.homePageVer2`
+- `HomePage` 相关 model
 
-现在问题是怎么读取那些共享关键H帧并将其扁平化？
+新增搜索过滤条件：
 
-聚焦于 [DatabaseRepo.kt](app/src/main/java/com/yenaly/han1meviewer/logic/DatabaseRepo.kt)
+- `SearchScreen.kt`
+- `AdvancedSearchSheet.kt`
+- `SearchViewModel.kt`
+- `HAdvancedSearch.kt`
+- `NetworkRepo.getHanimeSearchResult`
+- `HanimeBaseService.getHanimeSearchResult`
 
-```kotlin
-@OptIn(ExperimentalSerializationApi::class)
-fun loadAllShared(): Flow<List<HKeyframeType>> = flow {
-    val res = applicationContext.assets.let { assets ->
-        // assets.list 方法获取到文件夹所有文件的 List
-        assets.list("h_keyframes")?.asSequence() // 将其转化为一个序列
-            ?.filter { it.endsWith(".json") } // 把其中结尾为 json 的挑出来
-            ?.mapNotNull { fileName -> // 将 文件名 映射 为 文件，再通过 文件 转化为 实体
-                try {
-                    // assets.open 方法打开文件
-                    assets.open("h_keyframes/$fileName").use { inputStream ->
-                        Json.decodeFromStream<HKeyframeEntity>(inputStream)
-                    }
-                } catch (e: Exception) { // 出现问题返回 null
-                    e.printStackTrace()
-                    null
-                }
-            }
-            ?.sortedWith(
-                compareBy<HKeyframeEntity> { it.group }.thenBy { it.episode }
-            ) // 排序，先以 group 进行排序，然后对 episode 进行排序
-            ?.groupBy { it.group ?: "???" } // 分组，以 group 为 key，以 group 下的所有影片的列表为 value 建立 Map，若 group 为 null，加入组 ??? 里
-            ?.flatMap { (group, entities) -> // 提供两个参数，分别为 key 和 value
-                listOf(HKeyframeHeader(title = group, attached = entities)) + entities
-            } // 关键：扁平化，group 与 entities 由主从关系变为并列关系
-            .orEmpty() // 若 list 为 null，返回一个长度为 0 的空列表
-    }
-    emit(res)
-}
-```
+新增视频详情字段：
 
-然后在对应 RecyclerView 中设置好 `itemType`，再分 `itemType` 配置相关函数就可以了。
+- `HanimeVideo.kt`
+- `Parser.hanimeVideoVer2`
+- `VideoIntroductionScreen.kt`
+- `VideoRouteActions.kt`，如果字段涉及点击动作或外部跳转
 
-具体查看 [SharedHKeyframesRvAdapter.kt](app/src/main/java/com/yenaly/han1meviewer/ui/adapter/SharedHKeyframesRvAdapter.kt) 
+新增我的页面列表：
+
+- `MainRoutes.kt`
+- `MainNavHost.kt`
+- 对应 `RouteScreen`
+- 对应 `ViewModel`
+- `NetworkRepo` 和 `Parser`
+
+新增下载相关能力：
+
+- `DownloadViewModel.kt`
+- `HanimeDownloadManagerV2.kt`
+- `HanimeDownloadWorker.kt`
+- `DownloadDatabase` / DAO / Entity
+- 下载设置页和权限/SAF 工具
+
+新增设置项：
+
+- `Preferences.kt` 或对应配置类
+- `HomeSettingsScreen.kt` / 子设置页面
+- 实际业务读取点
+
+## 20. 维护提示
+
+- 目标网站 DOM 改版时，优先检查 `Parser.kt`。
+- 出现网络请求异常时，优先检查拦截器、Cookie、Cloudflare 和备用域名逻辑。
+- 出现列表崩溃 `Key "..." was already used` 时，优先检查 ViewModel 合并列表是否去重。
+- 出现视频页状态错乱时，优先检查 `VideoViewModel.VideoHostUiState` 和 `videoIntroUiStateMap`。
+- 出现下载进度异常时，优先检查 Worker、Room 实体和 DAO Flow。
+- 更新依赖版本后，优先跑 `:app:compileDebugKotlin`，播放器、导航和 KSP/Room 是高风险区域。

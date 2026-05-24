@@ -119,7 +119,8 @@ class MyPlayListViewModelV2 : ViewModel() {
                         if (page == 1 || forceReload) {
                             _cachedMyPlayList.value = newList
                         } else {
-                            _cachedMyPlayList.value = _cachedMyPlayList.value + newList
+                            _cachedMyPlayList.value = (_cachedMyPlayList.value + newList)
+                                .distinctBy(Playlists.Playlist::listCode)
                             playlistPage = page
                         }
                         if (newList.isEmpty()) {
@@ -161,7 +162,8 @@ class MyPlayListViewModelV2 : ViewModel() {
                             _playlistStateFlow.value = PageLoadingState.NoMoreData
                         } else {
                             _playlistFlow.update { prevList ->
-                                if (page == 1 || refresh) newList else prevList + newList
+                                val baseList = if (page == 1 || refresh) emptyList() else prevList
+                                (baseList + newList).distinctBy(HanimeInfo::videoCode)
                             }
                             _playlistStateFlow.value = PageLoadingState.Success(state.info)
                         }
