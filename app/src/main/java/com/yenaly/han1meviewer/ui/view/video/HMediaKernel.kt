@@ -40,6 +40,7 @@ import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.USER_AGENT
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.util.AnimeShaders
+import com.yenaly.han1meviewer.util.AnimeShaders.getCert
 import com.yenaly.yenaly_libs.utils.showShortToast
 import `is`.xyz.mpv.MPVLib
 import java.util.concurrent.CountDownLatch
@@ -508,6 +509,7 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
     private var currentPfd: ParcelFileDescriptor? = null
     private var detachFd: Int? = null
     private var pfdFilePath = false
+    private val certFile = getCert(jzvd.context)
     val defaultSpeed = Preferences.playerSpeed
     private val mpvOptions: Map<String, String>
         get() = buildMap {
@@ -562,6 +564,9 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
             put("cache-pause", "no")  // 缓存时是否暂停播放
 
             put("network-timeout", Preferences.mpvNetworkTimeout.toString())  // 请求超时
+
+            put("tls-ca-file", certFile)  // 为播放器指定根证书文件，解决 tls-verify 如果为yes播放失败的问题
+
             put("tls-verify", if (Preferences.mpvTlsVerify) "no" else "yes")  // 是否证书验证 yes、no
 
             // 单独为MPV播放器配置代理，因为它不走ProxySelector，也不支持socks代理，沟槽的非原生实现
