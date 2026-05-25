@@ -595,7 +595,7 @@ object NetworkRepo {
             403 -> if (!body.isNullOrBlank()) {
                 when {
                     "you have been blocked" in body ->
-                        throw IPBlockedException(getString(R.string.do_not_use_japan_ip))
+                        throw IPBlockedException(getString(R.string.cloudflare_ip_block_warning))
 
                     "Just a moment" in body ->
                         throw CloudFlareBlockedException(getString(CloudFlareBlockedException.localizedMessages.random()))
