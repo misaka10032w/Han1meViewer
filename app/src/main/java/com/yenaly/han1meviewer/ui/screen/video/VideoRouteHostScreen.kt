@@ -130,6 +130,7 @@ fun VideoRouteHostScreen(
         mutableStateOf<DownloadPromptState?>(null)
     }
     var videoTitle by remember(route.videoCode, route.localUri) { mutableStateOf<String?>(null) }
+    var isSideRelatedCollapsed by remember { mutableStateOf(false) }
     var showAddHKeyframeDialog by remember { mutableStateOf<Pair<Long, String>?>(null) }
 
     val actions = remember(activity, scope, viewModel, genres) {
@@ -442,6 +443,21 @@ fun VideoRouteHostScreen(
         }
     }
 
+    LaunchedEffect(
+        hostUiState.isInPipMode,
+        isSideRelatedCollapsed,
+        activity.resources.configuration.orientation,
+    ) {
+        if (hostUiState.isInPipMode) return@LaunchedEffect
+        val height = if (Preferences.tabletMode) {
+            if (isSideRelatedCollapsed) 500.dp else 400.dp
+        } else {
+            250.dp
+        }
+        viewModel.setPlayerHeightDp(height)
+        setPlayerHeight(height)
+    }
+
     LaunchedEffect(route.videoCode, route.localUri) {
         checkedQuality = null
         pendingDownloadPrompt = null
@@ -539,6 +555,7 @@ fun VideoRouteHostScreen(
         isInPipMode = hostUiState.isInPipMode,
         relatedItems = relatedItems,
         onHideRelatedInIntroChange = { viewModel.hideRelatedInIntro = it },
+        onSideRelatedCollapsedChange = { isSideRelatedCollapsed = it },
         onOpenVideo = { item -> activity.showVideoDetailFragment(item.videoCode) },
         mainHostFactory = {
             shell.mainHostView.also { view ->
