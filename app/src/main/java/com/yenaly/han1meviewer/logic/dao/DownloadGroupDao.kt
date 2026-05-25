@@ -57,6 +57,15 @@ interface DownloadGroupDao {
     @Query("SELECT * FROM download_groups ORDER BY orderIndex ASC")
     fun getAllGroups(): Flow<List<DownloadGroupEntity>>
 
+    @Query("SELECT * FROM download_groups ORDER BY orderIndex ASC")
+    suspend fun getAllGroupsOnce(): List<DownloadGroupEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(groups: List<DownloadGroupEntity>)
+
+    @Query("DELETE FROM download_groups")
+    suspend fun deleteAll()
+
     /**
      * 通过 ID 获取分组
      */

@@ -595,10 +595,10 @@ object NetworkRepo {
             403 -> if (!body.isNullOrBlank()) {
                 when {
                     "you have been blocked" in body ->
-                        throw IPBlockedException(getString(R.string.do_not_use_japan_ip))
+                        throw IPBlockedException(getString(R.string.cloudflare_ip_block_warning))
 
                     "Just a moment" in body ->
-                        throw CloudFlareBlockedException(getString(CloudFlareBlockedException.localizedMessages.random()))
+                        throw CloudFlareBlockedException(getString(R.string.cloudflare_network_mismatch))
 
                     else ->
                         throw HanimeNotFoundException(getString(R.string.video_might_not_exist)) // 主要出現在影片界面，當你v數不大時會報403
@@ -627,7 +627,7 @@ object NetworkRepo {
 
             is SSLHandshakeException -> {
                 e.printStackTrace()
-                SSLHandshakeException(getString(R.string.network_unstable_msg))
+                SSLHandshakeException(getString(R.string.ssl_handshake_error))
             }
 
             else -> {

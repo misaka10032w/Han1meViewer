@@ -80,9 +80,10 @@ suspend fun Context.showUpdateDialog(latest: Latest) {
         if (update != null) {
             installApkPackage(update)
         } else {
-            requestPostNotificationPermission()
-            HUpdateWorker.enqueue(this.applicationContext, latest)
-            showShortToast(R.string.update_download_background)
+            if (requestPostNotificationPermission()) {
+                HUpdateWorker.enqueue(this.applicationContext, latest)
+                showShortToast(R.string.update_download_background)
+            }
         }
     }
     dialog.dismiss()

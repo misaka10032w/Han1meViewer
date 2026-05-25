@@ -49,12 +49,15 @@ fun ErrorContent(
             painter = painterResource(R.drawable.h_chan_sad),
             contentDescription = resolvedTitle
         )
-        Text(text = resolvedTitle, style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = resolvedTitle,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.error,)
         if (!message.isNullOrBlank()) {
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
         if (onRetry != null) {

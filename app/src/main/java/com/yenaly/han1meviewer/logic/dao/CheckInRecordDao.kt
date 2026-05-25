@@ -11,6 +11,9 @@ interface CheckInRecordDao {
     @Insert
     suspend fun insert(record: CheckInRecordEntity): Long
 
+    @Insert
+    suspend fun insertAll(records: List<CheckInRecordEntity>)
+
     @Delete
     suspend fun delete(record: CheckInRecordEntity)
 
@@ -37,4 +40,10 @@ interface CheckInRecordDao {
 
     @Query("SELECT DISTINCT sideDishes FROM check_in_records WHERE sideDishes != '' ORDER BY id DESC LIMIT :limit")
     suspend fun getRecentSideDishesTexts(limit: Int): List<String>
+
+    @Query("SELECT * FROM check_in_records ORDER BY id ASC")
+    suspend fun getAllRecords(): List<CheckInRecordEntity>
+
+    @Query("DELETE FROM check_in_records")
+    suspend fun deleteAll()
 }

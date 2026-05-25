@@ -123,10 +123,12 @@ suspend fun InputStream.copyTo(
                 ensureActive()
                 out.write(buffer, 0, bytes)
                 bytesCopied += bytes
-                val newPercent = (bytesCopied * 100 / contentLength).toInt()
-                if (newPercent != percent) {
-                    percent = newPercent
-                    progress?.invoke(percent.coerceAtMost(100), contentLength, bytesCopied)
+                if (contentLength > 0) {
+                    val newPercent = (bytesCopied * 100 / contentLength).toInt()
+                    if (newPercent != percent) {
+                        percent = newPercent
+                        progress?.invoke(percent.coerceAtMost(100), contentLength, bytesCopied)
+                    }
                 }
                 bytes = read(buffer)
             }

@@ -20,11 +20,17 @@ abstract class HKeyframeDao {
     @Query("SELECT * FROM HKeyframeEntity ORDER BY createdTime DESC")
     abstract fun loadAll(): Flow<MutableList<HKeyframeEntity>>
 
+    @Query("SELECT * FROM HKeyframeEntity ORDER BY createdTime DESC")
+    abstract suspend fun getAll(): List<HKeyframeEntity>
+
     @Query("SELECT * FROM HKeyframeEntity WHERE `title` LIKE '%' || :keyword || '%' OR `videoCode` == :keyword ORDER BY createdTime DESC")
     abstract fun loadAll(keyword: String): Flow<MutableList<HKeyframeEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insert(entity: HKeyframeEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun insertAll(entities: List<HKeyframeEntity>)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun update(entity: HKeyframeEntity)
@@ -37,6 +43,9 @@ abstract class HKeyframeDao {
 
     @Query("SELECT * FROM HKeyframeEntity WHERE `videoCode` == :videoCode LIMIT 1")
     abstract fun observe(videoCode: String): Flow<HKeyframeEntity?>
+
+    @Query("DELETE FROM HKeyframeEntity")
+    abstract suspend fun deleteAll()
 
     open suspend fun modifyKeyframe(
         videoCode: String,

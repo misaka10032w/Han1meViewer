@@ -27,6 +27,9 @@ abstract class HanimeDownloadDao {
     @Query("SELECT * FROM HanimeDownloadEntity WHERE state != ${DownloadState.Mask.FINISHED} ORDER BY id DESC")
     abstract fun loadAllDownloadingHanime(): Flow<MutableList<HanimeDownloadEntity>>
 
+    @Query("SELECT * FROM HanimeDownloadEntity ORDER BY id ASC")
+    abstract suspend fun getAll(): List<HanimeDownloadEntity>
+
     /**
      * 获取所有正在下载的任务，单次
      */
@@ -69,10 +72,16 @@ abstract class HanimeDownloadDao {
     @Delete
     abstract suspend fun delete(entity: HanimeDownloadEntity)
 
-    @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insert(entity: HanimeDownloadEntity)
 
-    @Update(onConflict = OnConflictStrategy.Companion.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun insertAll(entities: List<HanimeDownloadEntity>)
+
+    @Query("DELETE FROM HanimeDownloadEntity")
+    abstract suspend fun deleteAll()
+
+    @Update(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun update(entity: HanimeDownloadEntity): Int
 
     @Query("SELECT * FROM HanimeDownloadEntity WHERE (`videoCode` = :videoCode AND `quality` = :quality) LIMIT 1")

@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -40,6 +41,7 @@ import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageContent
 import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageTopBar
 import com.yenaly.han1meviewer.ui.screen.home.homepage.buildCategoryList
 import com.yenaly.han1meviewer.ui.screen.home.homepage.toAdvancedSearchParams
+import com.yenaly.han1meviewer.ui.screen.home.homepage.toHomePageErrorMessageRes
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
 import com.yenaly.yenaly_libs.utils.putSpValue
 
@@ -163,7 +165,7 @@ fun HomePageScreen(
                     }
 
                     is WebsiteState.Error -> HomePageError(
-                        message = currentState.throwable.message,
+                        message = stringResource(currentState.throwable.toHomePageErrorMessageRes()),
                         onRetry = {
                             isRefreshing = true
                             viewModel.getHomePage()

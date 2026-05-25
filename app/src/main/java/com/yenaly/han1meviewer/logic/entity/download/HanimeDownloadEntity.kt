@@ -9,12 +9,14 @@ import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import com.yenaly.han1meviewer.HFileManager
 import com.yenaly.han1meviewer.logic.state.DownloadState
+import kotlinx.serialization.Serializable
 
 /**
  * @project Han1meViewer
  * @author Yenaly Liew
  * @time 2023/08/18 018 21:50
  */
+@Serializable
 @Entity(
     foreignKeys = [
         ForeignKey(

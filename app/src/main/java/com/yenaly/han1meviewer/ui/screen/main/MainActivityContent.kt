@@ -172,9 +172,10 @@ fun MainActivityContent(
                                 if (file != null) {
                                     activity.installApkPackage(file)
                                 } else {
-                                    activity.requestPostNotificationPermission()
-                                    HUpdateWorker.enqueue(activity.applicationContext, latest)
-                                    showShortToast(R.string.update_download_background)
+                                    if (activity.requestPostNotificationPermission()) {
+                                        HUpdateWorker.enqueue(activity.applicationContext, latest)
+                                        showShortToast(R.string.update_download_background)
+                                    }
                                 }
                             }
                         },

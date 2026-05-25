@@ -107,7 +107,9 @@ class HUpdateWorker(
     private val downloadId = Random.nextInt()
 
     override suspend fun doWork(): Result {
-        setForeground(createForegroundInfo())
+        val foregroundInfo = createForegroundInfo()
+        setForeground(foregroundInfo)
+        showDownloadNotification()
         with(HUpdater) {
             val file = context.updateFile.apply { delete() }
             val inject = runSuspendCatching {
@@ -118,11 +120,15 @@ class HUpdateWorker(
             if (inject.isSuccess) {
                 val outputData = workDataOf(UPDATE_APK to file.toUri().toString())
                 Preferences.updateNodeId = nodeId
+                cancelDownloadNotification()
                 showInstallNotification(file)
                 return Result.success(outputData)
             } else {
-                inject.exceptionOrNull()?.printStackTrace()
+                val error = inject.exceptionOrNull()
+                error?.printStackTrace()
                 file.delete()
+                cancelDownloadNotification()
+                showFailureNotification(error?.localizedMessage)
                 return Result.failure()
             }
         }
@@ -139,8 +145,14 @@ class HUpdateWorker(
             )
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setOnlyAlertOnce(true)
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setProgress(100, progress, isPending)
             .build()
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun showDownloadNotification() {
+        notificationManager.notify(downloadId, createNotification(isPending = true))
     }
 
     private var lastNotifyTime = 0L  // 节流，通知更新太快Android会抛异常
@@ -166,12 +178,17 @@ class HUpdateWorker(
     private fun createForegroundInfo(progress: Int = 0): ForegroundInfo {
         return ForegroundInfo(
             downloadId,
-            createNotification(progress, isPending = false),
+            createNotification(progress, isPending = true),
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
             } else 0
         )
     }
+
+    private fun cancelDownloadNotification() {
+        notificationManager.cancel(downloadId)
+    }
+
     @SuppressLint("MissingPermission")
     private fun showInstallNotification(file: File) {
         val installIntent = Intent(Intent.ACTION_VIEW).apply {
@@ -205,5 +222,20 @@ class HUpdateWorker(
             )
             .build()
         notificationManager.notify(downloadId + 1, notification)
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun showFailureNotification(errMsg: String? = null) {
+        val notification = NotificationCompat.Builder(context, UPDATE_NOTIFICATION_CHANNEL)
+            .setContentTitle(context.getString(R.string.update_download_failed))
+            .setContentText(
+                errMsg?.takeIf { it.isNotBlank() }
+                    ?: context.getString(R.string.update_download_failed_unknown)
+            )
+            .setSmallIcon(R.mipmap.ic_launcher_new)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .build()
+        notificationManager.notify(downloadId + 2, notification)
     }
 }

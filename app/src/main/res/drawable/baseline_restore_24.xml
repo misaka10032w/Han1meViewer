@@ -1,0 +1,20 @@
+<!--
+  ~ Copyright (C) 2026 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:height="24dp" android:viewportHeight="1024" android:viewportWidth="1024" android:width="24dp">
+      
+    <path android:fillColor="?attr/colorPrimary" android:pathData="M970.8,679.9L875.9,71.5A23.8,23.8 0,0 0,852.4 51.2L177.8,51.2a23.8,23.8 0,0 0,-23.4 20L51.5,683.2a24.4,24.4 0,0 0,-0.2 5.5c0,0.3 -0.1,0.6 -0.1,0.9v259.2a24.1,24.1 0,0 0,7 17A23.6,23.6 0,0 0,74.9 972.8L949,972.8a23.7,23.7 0,0 0,16.8 -7,24.2 24.2,0 0,0 6.9,-16.9L972.8,689.7a24.1,24.1 0,0 0,-2.1 -9.7v-0zM519.2,766c-49,0 -94.1,-44.7 -101.7,-84.7a43.8,43.8 0,0 0,-42.8 -35.5L126,645.8l88.6,-526.8h600.6l82.1,526.8h-233.7a43.6,43.6 0,0 0,-42.7 35.6c-7.7,39.9 -52.8,84.7 -101.8,84.7zM118.5,905v-171.7h224.4c27,61.8 93.2,120.2 176.2,120.2s149.1,-58.4 176.1,-120.2h210.3v171.7L118.4,905zM447.9,573.4a24.5,24.5 0,0 0,25.2 4.6,21.4 21.4,0 0,0 14.2,-19.7L487.3,473.1c77.8,-8.9 133.8,2.4 165.1,33 28.9,28.3 32.7,68.7 30.8,97.6a21.2,21.2 0,0 0,14 20.8,24.5 24.5,0 0,0 26,-5c30.4,-30.1 70.3,-97.4 66,-145.6 -7,-78.9 -46.2,-183.2 -301.8,-187.8v-82.4a21.4,21.4 0,0 0,-14.3 -19.7,24.5 24.5,0 0,0 -25.2,4.6l-192.1,177.3a20.2,20.2 0,0 0,0 30.1zM722.8,489.5a159.4,159.4 0,0 0,-24.4 -30.5c-37.1,-36.4 -91.9,-54.8 -162.8,-54.8a496.5,496.5 0,0 0,-55.8 3.3l-58.4,6.7L421.4,459.3L336.7,381 421.4,302.8v48.2l64.7,1.1c226.4,4 233.8,87.5 237.4,127.6a35.5,35.5 0,0 1,-0.7 9.8zM722.8,489.5"/>
+    
+</vector>

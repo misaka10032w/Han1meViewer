@@ -139,8 +139,8 @@ fun DownloadRouteScreen(
 
     ConfirmDialog(
         visible = showImportDownloadedConfirm,
-        title = application.getString(R.string.confirm_import),
-        message = application.getString(R.string.import_warning),
+        title = application.getString(R.string.read_download_dir_title),
+        message = application.getString(R.string.read_download_dir_message),
         confirmText = application.getString(R.string.ok),
         dismissText = application.getString(R.string.cancel),
         onConfirm = {

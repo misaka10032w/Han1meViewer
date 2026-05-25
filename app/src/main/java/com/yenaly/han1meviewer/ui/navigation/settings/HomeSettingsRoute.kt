@@ -4,6 +4,8 @@ import android.content.Context
 import android.os.Build
 import android.text.method.LinkMovementMethod
 import android.widget.TextView
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -47,6 +49,7 @@ import com.yenaly.han1meviewer.HA1_GITHUB_ISSUE_URL
 import com.yenaly.han1meviewer.HanimeApplication
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.logic.BackupManager
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
@@ -113,6 +116,23 @@ fun HomeSettingsRouteScreen(
     var showRestartConfirmDialog by remember { mutableStateOf(false) }
     var showAnalyticsDialog by remember { mutableStateOf(false) }
     var showLauncherPicker by remember { mutableStateOf(false) }
+    var pendingImportUri by remember { mutableStateOf<android.net.Uri?>(null) }
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        uri ?: return@rememberLauncherForActivityResult
+        coroutineScope.launch(Dispatchers.IO) {
+            runCatching { BackupManager.exportTo(context, uri) }
+                .onSuccess { withContext(Dispatchers.Main) { showShortToast(R.string.backup_export_success) } }
+                .onFailure { withContext(Dispatchers.Main) { showShortToast(R.string.backup_export_failed) } }
+        }
+    }
+    val importLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        pendingImportUri = uri
+    }
 
     val hanimeAppName = stringResource(R.string.hanime_app_name)
     val fakeNameCalc = stringResource(R.string.app_name_fake_calc)
@@ -333,8 +353,42 @@ fun HomeSettingsRouteScreen(
             }
             showClearCacheConfirm = true
         },
+        onExportBackup = {
+            exportLauncher.launch("Han1meViewer-backup-${System.currentTimeMillis()}.json")
+        },
+        onImportBackup = {
+            importLauncher.launch(arrayOf("application/json", "text/*", "*/*"))
+        },
         onSubmitBug = { context.browse(HA1_GITHUB_ISSUE_URL) },
         onOpenForum = { context.browse(HA1_GITHUB_FORUM_URL) },
+    )
+
+    ConfirmDialog(
+        visible = pendingImportUri != null,
+        title = stringResource(R.string.backup_import_title),
+        message = stringResource(R.string.backup_import_confirm_message),
+        confirmText = stringResource(R.string.confirm),
+        dismissText = stringResource(R.string.cancel),
+        onConfirm = {
+            val uri = pendingImportUri ?: return@ConfirmDialog
+            pendingImportUri = null
+            coroutineScope.launch(Dispatchers.IO) {
+                runCatching { BackupManager.importFrom(context, uri) }
+                    .onSuccess {
+                        withContext(Dispatchers.Main) {
+                            showShortToast(R.string.backup_import_success)
+                            refreshKey++
+                            activity.recreate()
+                        }
+                    }
+                    .onFailure {
+                        withContext(Dispatchers.Main) {
+                            showShortToast(R.string.backup_import_failed)
+                        }
+                    }
+            }
+        },
+        onDismiss = { pendingImportUri = null },
     )
 
     ConfirmDialog(

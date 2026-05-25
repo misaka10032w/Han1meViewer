@@ -15,6 +15,9 @@ abstract class WatchHistoryDao {
     @Query("SELECT * FROM WatchHistoryEntity ORDER BY watchDate DESC")
     abstract fun loadAll(): Flow<MutableList<WatchHistoryEntity>>
 
+    @Query("SELECT * FROM WatchHistoryEntity ORDER BY watchDate DESC")
+    abstract suspend fun getAll(): List<WatchHistoryEntity>
+
     @Delete
     abstract suspend fun delete(history: WatchHistoryEntity)
 
@@ -23,6 +26,9 @@ abstract class WatchHistoryDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun insert(history: WatchHistoryEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun insertAll(histories: List<WatchHistoryEntity>)
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     abstract suspend fun update(history: WatchHistoryEntity)
