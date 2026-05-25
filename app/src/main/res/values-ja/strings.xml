@@ -775,4 +775,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="confirm_delete_videos">%d 件の動画を削除してもよろしいですか？</string>
     <string name="confirm_move_videos">%d 件の動画をグループ %s に移動してもよろしいですか？</string>
     <string name="cloudflare_ip_block_warning">お客様のIPアドレスが日本に所在しているか、CloudFlareのブラックリストに登録されている可能性があります。これはアプリ自体の問題ではありません。CloudFlareはセキュリティ上の理由から、定期的に特定の高リスクIPアドレスをブロックします。別のVPNノードに切り替えるか、ネットワーク環境を変更してからもう一度お試しください。</string>
+    <string name="cloudflare_network_mismatch">現在のネットワーク環境では検証を通過できません。内蔵hostsを利用してアクセスしている場合、CloudFlare検証ページはカスタムhostsによる名前解決をサポートしていないため、検証ノードとアプリ本体が異なるリージョンに解決され、アクセス環境が統一されず検証に失敗する可能性があります。この問題は現時点では解決できません。より「クリーンな」IPまたはネットワーク環境に切り替えてから再試行してください。</string>
+    <string name="ssl_handshake_error">SSLセキュア接続に失敗しました。システム時刻の異常、ネットワークの傍受、または証明書検証の失敗が考えられます。時刻設定を確認し、別のネットワーク環境に切り替えてから再試行してください。</string>
+    <string name="parse_page_failed">ウェブページの解析に失敗しました。ページ構造が変更された可能性があります。開発者に連絡して対応を依頼するか、一時的にウェブ版をご利用ください。</string>
 </resources>
