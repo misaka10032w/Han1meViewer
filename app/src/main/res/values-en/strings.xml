@@ -773,4 +773,14 @@ Recommendations are as follows:\n
     <string name="cloudflare_network_mismatch">Unable to verify under the current network environment. If you are using built‑in hosts to access the site, please note that the CloudFlare verification page does not currently support custom hosts resolution. This may cause the verification node and the main site to be resolved to different regions, leading to inconsistent access environments and verification failures. This issue cannot be resolved at the moment. Please try switching to a “cleaner” IP or network environment and try again.</string>
     <string name="ssl_handshake_error">SSL secure connection failed. This may be due to incorrect system time, network interception, or certificate verification failure. Please check your time settings and switch to another network environment before retrying.</string>
     <string name="parse_page_failed">Failed to parse the webpage. The page structure may have changed. Please contact the developer for an update, or use the web version as a temporary workaround.</string>
+    <string name="home_error_dns">Unable to resolve the server address. Please check your network connection or DNS settings and try again.</string>
+    <string name="home_error_timeout">The connection timed out. Your network may be slow or the server may not be responding. Please try again later.</string>
+    <string name="home_error_ssl">Secure connection failed. Please check that your system time is correct, or switch networks and try again.</string>
+    <string name="home_error_connect">Unable to connect to the server. Please check whether your network is available, or try again later.</string>
+    <string name="home_error_connection_interrupted">The connection was interrupted. The current network may be unstable or the server may have disconnected. Please switch networks and try again.</string>
+    <string name="home_error_connection_reset">The connection was reset. The current network may be unstable or access may be blocked. Please switch networks and try again.</string>
+    <string name="home_error_forbidden">The server refused this request. Please try again later, or check your current site/network settings.</string>
+    <string name="home_error_not_found">The requested content was not found. The site content may have changed. Please try again later.</string>
+    <string name="home_error_server_unavailable">The server is temporarily unavailable. Please try again later.</string>
+    <string name="home_error_generic">Failed to load the page. Please check your network connection and try again.</string>
 </resources>

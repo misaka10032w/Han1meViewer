@@ -778,4 +778,14 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="cloudflare_network_mismatch">現在のネットワーク環境では検証を通過できません。内蔵hostsを利用してアクセスしている場合、CloudFlare検証ページはカスタムhostsによる名前解決をサポートしていないため、検証ノードとアプリ本体が異なるリージョンに解決され、アクセス環境が統一されず検証に失敗する可能性があります。この問題は現時点では解決できません。より「クリーンな」IPまたはネットワーク環境に切り替えてから再試行してください。</string>
     <string name="ssl_handshake_error">SSLセキュア接続に失敗しました。システム時刻の異常、ネットワークの傍受、または証明書検証の失敗が考えられます。時刻設定を確認し、別のネットワーク環境に切り替えてから再試行してください。</string>
     <string name="parse_page_failed">ウェブページの解析に失敗しました。ページ構造が変更された可能性があります。開発者に連絡して対応を依頼するか、一時的にウェブ版をご利用ください。</string>
+    <string name="home_error_dns">サーバーアドレスを解決できません。ネットワーク接続または DNS 設定を確認してから再試行してください。</string>
+    <string name="home_error_timeout">接続がタイムアウトしました。現在のネットワークが遅いか、サーバーが応答していない可能性があります。しばらくしてから再試行してください。</string>
+    <string name="home_error_ssl">安全な接続に失敗しました。システム時刻が正しいか確認するか、ネットワークを切り替えて再試行してください。</string>
+    <string name="home_error_connect">サーバーに接続できません。ネットワークが利用可能か確認するか、しばらくしてから再試行してください。</string>
+    <string name="home_error_connection_interrupted">接続が中断されました。現在のネットワークが不安定、またはサーバー側で切断された可能性があります。ネットワークを切り替えて再試行してください。</string>
+    <string name="home_error_connection_reset">接続がリセットされました。現在のネットワークが不安定、またはアクセスがブロックされている可能性があります。ネットワークを切り替えて再試行してください。</string>
+    <string name="home_error_forbidden">サーバーがこのアクセスを拒否しました。しばらくしてから再試行するか、現在のサイト/ネットワーク設定を確認してください。</string>
+    <string name="home_error_not_found">要求されたコンテンツが見つかりません。サイト内容が変更された可能性があります。しばらくしてから再試行してください。</string>
+    <string name="home_error_server_unavailable">サーバーは一時的に利用できません。しばらくしてから再試行してください。</string>
+    <string name="home_error_generic">ページの読み込みに失敗しました。ネットワーク接続を確認してから再試行してください。</string>
 </resources>
