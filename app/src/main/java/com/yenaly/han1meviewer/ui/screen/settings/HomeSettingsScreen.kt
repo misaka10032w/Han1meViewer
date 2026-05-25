@@ -147,7 +147,9 @@ fun HomeSettingsScreen(
     ChoiceDialog(
         visible = activeDialog == HomeSettingsChoiceDialog.ThemeColor,
         title = stringResource(R.string.theme_color),
-        options = ThemeColorPreset.entries.map { stringResource(it.displayNameRes) to it.key },
+        options = ThemeColorPreset.entries
+            .filter { state.dynamicColorEnabled || it != ThemeColorPreset.SYSTEM }
+            .map { stringResource(it.displayNameRes) to it.key },
         selectedValue = state.themeColorKey,
         onDismiss = { activeDialog = null },
         onSelect = {
