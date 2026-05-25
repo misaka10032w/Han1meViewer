@@ -373,7 +373,12 @@ fun VideoRouteHostScreen(
                     }
                 }
 
-                Lifecycle.Event.ON_STOP -> Jzvd.goOnPlayOnPause()
+                Lifecycle.Event.ON_STOP -> {
+                    if (!activity.isInPictureInPictureMode) {
+                        changeScreenNormal()
+                    }
+                    Jzvd.goOnPlayOnPause()
+                }
                 else -> Unit
             }
         }
