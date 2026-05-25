@@ -373,7 +373,12 @@ fun VideoRouteHostScreen(
                     }
                 }
 
-                Lifecycle.Event.ON_STOP -> Jzvd.goOnPlayOnPause()
+                Lifecycle.Event.ON_STOP -> {
+                    if (!activity.isInPictureInPictureMode) {
+                        changeScreenNormal()
+                    }
+                    Jzvd.goOnPlayOnPause()
+                }
                 else -> Unit
             }
         }
@@ -446,7 +451,6 @@ fun VideoRouteHostScreen(
     LaunchedEffect(
         hostUiState.isInPipMode,
         isSideRelatedCollapsed,
-        activity.resources.configuration.orientation,
     ) {
         if (hostUiState.isInPipMode) return@LaunchedEffect
         val height = if (Preferences.tabletMode) {
@@ -454,8 +458,10 @@ fun VideoRouteHostScreen(
         } else {
             250.dp
         }
-        viewModel.setPlayerHeightDp(height)
-        setPlayerHeight(height)
+        if (hostUiState.playerHeightDp != height) {
+            viewModel.setPlayerHeightDp(height)
+            setPlayerHeight(height)
+        }
     }
 
     LaunchedEffect(route.videoCode, route.localUri) {
