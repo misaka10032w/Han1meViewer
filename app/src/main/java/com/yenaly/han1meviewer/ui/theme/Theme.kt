@@ -13,10 +13,14 @@ fun HanimeTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    val preset = ThemeColorPreset.fromKey(Preferences.themeColor)
-    val colorScheme = when {
-        preset == ThemeColorPreset.SYSTEM && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
-            dynamicColorScheme(darkTheme)
+    val colorScheme = when (val preset = ThemeColorPreset.fromKey(Preferences.themeColor)) {
+        ThemeColorPreset.SYSTEM -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                dynamicColorScheme(darkTheme)
+            } else {
+                ThemeColorPreset.DEFAULT.colorScheme(darkTheme)
+            }
+        }
 
         else -> preset.colorScheme(darkTheme)
     }
