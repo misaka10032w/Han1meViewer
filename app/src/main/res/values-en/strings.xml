@@ -70,6 +70,8 @@
     <string name="downloading">Downloading</string>
     <string name="downloading_s">Downloading: %1$s</string>
     <string name="downloading_update_percent">Downloading Update %d%%</string>
+    <string name="update_download_failed">Update Download Failed</string>
+    <string name="update_download_failed_unknown">Update download failed. Please try again later or download manually from GitHub Releases.</string>
     <string name="downloaded">Downloaded</string>
     <string name="start_download">Start Download</string>
     <string name="cancel_download">Cancel Download</string>
