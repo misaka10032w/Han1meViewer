@@ -108,29 +108,37 @@ fun SubscriptionContent(
             }
     }
 
-    AnimatedContent(
-        targetState = Pair(uiState.artists, uiState.videos),
-        label = "video-content-animation",
-        transitionSpec = {
-            fadeIn(tween(300)) togetherWith fadeOut(tween(200))
-        }
-    ) { (artists, videos) ->
+    Box(
+        modifier = modifier.fillMaxSize()
+    ) {
         LazyVerticalGrid(
             state = gridState,
             columns = GridCells.Fixed(videoColumns),
-            modifier = modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(SpacingNormal),
             horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
             verticalArrangement = Arrangement.spacedBy(SpacingNormal)
         ) {
             item(span = { GridItemSpan(videoColumns) }) {
-                ArtistListSection(
-                    artists = artists,
-                    artistRows = artistRows,
-                    artistColumns = artistColumns,
-                    onClickArtist = { onEvent(SubscriptionEvent.OnClickArtist(it)) },
-                    onLongClickArtist = { onEvent(SubscriptionEvent.OnLongClickArtist(it)) },
-                )
+                AnimatedContent(
+                    targetState = uiState.artists,
+                    label = "artist-animation",
+                    transitionSpec = {
+                        fadeIn(tween(300)) togetherWith fadeOut(tween(200))
+                    }
+                ) { artists ->
+                    ArtistListSection(
+                        artists = artists,
+                        artistRows = artistRows,
+                        artistColumns = artistColumns,
+                        onClickArtist = {
+                            onEvent(SubscriptionEvent.OnClickArtist(it))
+                        },
+                        onLongClickArtist = {
+                            onEvent(SubscriptionEvent.OnLongClickArtist(it))
+                        },
+                    )
+                }
             }
 
             item(span = { GridItemSpan(videoColumns) }) {
@@ -143,14 +151,25 @@ fun SubscriptionContent(
                 )
             }
 
-            items(videos) { video ->
-                VideoCardItem(
-                    videoItem = video,
-                    onClickVideosItem = { onEvent(SubscriptionEvent.OnClickVideo(video.videoCode)) },
-                    onLongClickVideosItem = { _, _ -> },
-                )
+            items(
+                items = uiState.videos,
+                key = { it.videoCode }
+            ) { video ->
+                Box(
+                    modifier = Modifier.animateItem()
+                ) {
+                    VideoCardItem(
+                        videoItem = video,
+                        onClickVideosItem = {
+                            onEvent(
+                                SubscriptionEvent.OnClickVideo(video.videoCode)
+                            )
+                        },
+                        onLongClickVideosItem = { _, _ -> },
+                    )
+                }
             }
-            if (videos.isNotEmpty()) {
+            if (uiState.videos.isNotEmpty()) {
                 item(span = { GridItemSpan(videoColumns) }) {
                     LoadMoreFooter(
                         state = PageLoadingState.Success(emptyList<String>()),
