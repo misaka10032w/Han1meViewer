@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.logic.entity.download
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.serialization.Serializable
 
 /**
  * 已下载分组的Entity
@@ -14,6 +15,7 @@ import androidx.room.PrimaryKey
  * 实现分组移动、重命名等
  */
 
+@Serializable
 @Entity(tableName = "download_groups")
 data class DownloadGroupEntity(
     val name: String,

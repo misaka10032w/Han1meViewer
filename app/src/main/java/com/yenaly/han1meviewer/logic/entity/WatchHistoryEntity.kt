@@ -2,12 +2,14 @@ package com.yenaly.han1meviewer.logic.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.serialization.Serializable
 
 /**
  * @project Han1meViewer
  * @author Yenaly Liew
  * @time 2022/07/02 002 13:13
  */
+@Serializable
 @Entity
 data class WatchHistoryEntity(
     val coverUrl: String,

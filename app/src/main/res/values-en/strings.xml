@@ -768,7 +768,7 @@ Recommendations are as follows:\n
     <string name="deselect_all">Deselect All</string>
     <string name="move_group">Move Group</string>
     <string name="confirm_delete_videos">Are you sure you want to delete %d videos?</string>
-    <string name="confirm_move_videos">Are you sure you want to move %d videos to group %s?</string>
+    <string name="confirm_move_videos">Are you sure you want to move %1$d videos to group %2$s?</string>
     <string name="cloudflare_ip_block_warning">We detected that your IP is located in Japan or has been blacklisted by CloudFlare. This is not an issue with the app itself. For security reasons, CloudFlare periodically blocks certain high-risk IP addresses. We recommend switching to a different VPN node or changing your network environment before trying again.</string>
     <string name="cloudflare_network_mismatch">Unable to verify under the current network environment. If you are using built‑in hosts to access the site, please note that the CloudFlare verification page does not currently support custom hosts resolution. This may cause the verification node and the main site to be resolved to different regions, leading to inconsistent access environments and verification failures. This issue cannot be resolved at the moment. Please try switching to a “cleaner” IP or network environment and try again.</string>
     <string name="ssl_handshake_error">SSL secure connection failed. This may be due to incorrect system time, network interception, or certificate verification failure. Please check your time settings and switch to another network environment before retrying.</string>
@@ -783,4 +783,13 @@ Recommendations are as follows:\n
     <string name="home_error_not_found">The requested content was not found. The site content may have changed. Please try again later.</string>
     <string name="home_error_server_unavailable">The server is temporarily unavailable. Please try again later.</string>
     <string name="home_error_generic">Failed to load the page. Please check your network connection and try again.</string>
+    <string name="backup_export_title">Export Data Backup</string>
+    <string name="backup_export_summary">Export settings, watch history, download groups and video info, H keyframes, and check-in records for device migration</string>
+    <string name="backup_import_title">Import Data Backup</string>
+    <string name="backup_import_summary">Restore settings, watch history, download groups and video info, H keyframes, and check-in records from a backup file</string>
+    <string name="backup_import_confirm_message">Importing will overwrite current settings, watch history, download groups and video info, H keyframes, and check-in records. The backup does not include video files. Continue?</string>
+    <string name="backup_export_success">Data backup exported</string>
+    <string name="backup_export_failed">Failed to export data backup</string>
+    <string name="backup_import_success">Data backup imported</string>
+    <string name="backup_import_failed">Failed to import data backup. Please check whether the file is valid.</string>
 </resources>

@@ -773,7 +773,7 @@
     <string name="deselect_all">取消全选</string>
     <string name="move_group">移动分组</string>
     <string name="confirm_delete_videos">确定要删除 %d 个视频吗？</string>
-    <string name="confirm_move_videos">确定要移动 %d 个视频到分组 %s 吗？</string>
+    <string name="confirm_move_videos">确定要移动 %1$d 个视频到分组 %2$s 吗？</string>
     <string name="cloudflare_ip_block_warning">检测到您的IP归属地为日本，或已被CloudFlare列入黑名单。这并非APP本身的问题，CloudFlare出于安全考虑会定期屏蔽部分高风险IP。建议您尝试切换VPN节点或更换网络环境后重试。</string>
     <string name="cloudflare_network_mismatch">当前网络环境无法通过验证。如果您正在使用内置 hosts 访问，请注意：CloudFlare 验证页面暂不支持通过自定义 hosts 解析，可能导致验证节点与应用主站解析到不同区域，两者访问环境不一致，从而造成验证失败。此问题目前无法解决，建议您切换至更“干净”的 IP 或网络环境后重试。</string>
     <string name="ssl_handshake_error">SSL 安全连接失败，可能是系统时间异常、网络被拦截或证书验证失败。请检查时间设置并切换其他网络环境后重试。</string>
@@ -788,4 +788,13 @@
     <string name="home_error_not_found">没有找到请求的内容，可能是站点内容已变更，请稍后重试。</string>
     <string name="home_error_server_unavailable">服务器暂时不可用，请稍后再试。</string>
     <string name="home_error_generic">页面加载失败，请检查网络连接后重试。</string>
+    <string name="backup_export_title">导出数据备份</string>
+    <string name="backup_export_summary">导出设置、观看历史、下载分组与影片信息、H 关键帧与打卡记录，方便换机还原</string>
+    <string name="backup_import_title">导入数据备份</string>
+    <string name="backup_import_summary">从备份文件还原设置、观看历史、下载分组与影片信息、H 关键帧与打卡记录</string>
+    <string name="backup_import_confirm_message">导入后将覆盖当前的设置、观看历史、下载分组与影片信息、H 关键帧与打卡记录。备份不包含影片文件本体，确定要继续吗？</string>
+    <string name="backup_export_success">数据备份已导出</string>
+    <string name="backup_export_failed">数据备份导出失败</string>
+    <string name="backup_import_success">数据备份已导入</string>
+    <string name="backup_import_failed">数据备份导入失败，请确认文件是否正确</string>
 </resources>
