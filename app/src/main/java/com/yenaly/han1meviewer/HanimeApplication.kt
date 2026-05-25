@@ -54,6 +54,9 @@ class HanimeApplication : YenalyApplication() {
         if (AnimeShaders.copyShaderAssets(applicationContext) <= 0) {
             Log.w(TAG, "Shader 复制失败")
         }
+        if (AnimeShaders.copyCertAssets(applicationContext) <= 0) {
+            Log.w(TAG, "cert 复制失败")
+        }
         val selected = Preferences.fakeLauncherIcon
         switchLauncher(selected)
     }

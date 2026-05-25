@@ -80,4 +80,36 @@ object AnimeShaders {
         }
     }
 
+    fun copyCertAssets(context: Context): Int{
+        try {
+            val assetName = "cacert.pem"
+            val outputFile = File(context.filesDir, assetName)
+            if (!outputFile.exists()){
+                val assetManager = context.assets
+                assetManager.open(assetName).use { inputStream ->
+                    FileOutputStream(outputFile).use { outputStream ->
+                        val buffer = ByteArray(1024)
+                        var read: Int
+                        while (inputStream.read(buffer).also { read = it } != -1){
+                            outputStream.write(buffer, 0, read)
+                        }
+                        outputStream.flush()
+                    }
+                }
+            }
+            return 1
+        }catch (e: IOException){
+            e.printStackTrace()
+            return -1
+        }
+    }
+
+    fun getCert(context: Context): String {
+        val certFile = File(context.filesDir, "cacert.pem")
+        if (!certFile.exists()) {
+            throw IllegalStateException("根证书文件不存在: $certFile")
+        }
+        return certFile.absolutePath
+    }
+
 }
