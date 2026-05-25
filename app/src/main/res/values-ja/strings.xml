@@ -774,4 +774,5 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="move_group">グループ移動</string>
     <string name="confirm_delete_videos">%d 件の動画を削除してもよろしいですか？</string>
     <string name="confirm_move_videos">%d 件の動画をグループ %s に移動してもよろしいですか？</string>
+    <string name="cloudflare_ip_block_warning">お客様のIPアドレスが日本に所在しているか、CloudFlareのブラックリストに登録されている可能性があります。これはアプリ自体の問題ではありません。CloudFlareはセキュリティ上の理由から、定期的に特定の高リスクIPアドレスをブロックします。別のVPNノードに切り替えるか、ネットワーク環境を変更してからもう一度お試しください。</string>
 </resources>

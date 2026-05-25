@@ -774,4 +774,5 @@
     <string name="move_group">移动分组</string>
     <string name="confirm_delete_videos">确定要删除 %d 个视频吗？</string>
     <string name="confirm_move_videos">确定要移动 %d 个视频到分组 %s 吗？</string>
+    <string name="cloudflare_ip_block_warning">检测到您的IP归属地为日本，或已被CloudFlare列入黑名单。这并非APP本身的问题，CloudFlare出于安全考虑会定期屏蔽部分高风险IP。建议您尝试切换VPN节点或更换网络环境后重试。</string>
 </resources>

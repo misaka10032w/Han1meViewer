@@ -769,4 +769,5 @@ Recommendations are as follows:\n
     <string name="move_group">Move Group</string>
     <string name="confirm_delete_videos">Are you sure you want to delete %d videos?</string>
     <string name="confirm_move_videos">Are you sure you want to move %d videos to group %s?</string>
+    <string name="cloudflare_ip_block_warning">We detected that your IP is located in Japan or has been blacklisted by CloudFlare. This is not an issue with the app itself. For security reasons, CloudFlare periodically blocks certain high-risk IP addresses. We recommend switching to a different VPN node or changing your network environment before trying again.</string>
 </resources>
