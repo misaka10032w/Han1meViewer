@@ -169,7 +169,10 @@
     <string name="domain_name">域名</string>
     <string name="use_built_in_hosts">應用內建 Hosts</string>
     <string name="network_settings">網路設定</string>
-    <string name="use_built_in_hosts_summary">應用提供的主機到 IP 的映射\nVPN？那是什麼？</string>
+    <string name="use_built_in_hosts_summary">應用提供的主機到 IP 的映射\n若已設定自定義 Hosts，則優先使用\nVPN？那是什麼？</string>
+    <string name="custom_hosts">自定義 Hosts</string>
+    <string name="custom_hosts_format">多個 IP 以逗號分隔，如 1.2.3.4,5.6.7.8</string>
+    <string name="custom_hosts_empty_summary">未設定（使用內建映射）</string>
     <string name="use_doh">使用 DoH</string>
     <string name="doh_settings">DoH 設定</string>
     <string name="doh_preset">DoH 預設</string>

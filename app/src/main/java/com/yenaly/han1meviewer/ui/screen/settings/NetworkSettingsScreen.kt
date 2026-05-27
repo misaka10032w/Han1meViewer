@@ -84,8 +84,10 @@ fun NetworkSettingsScreen(
     isDohTesting: Boolean,
     onDomainChange: (String) -> Unit,
     onUseBuiltInHostsChange: (Boolean) -> Unit,
+    onSaveCustomHosts: (String) -> Unit,
     onSaveDohSettings: (Boolean, String, String, String, Int) -> Unit,
     onOpenDelayTest: () -> Unit,
+    customHostsData: String,
     onOpenDohTest: () -> Unit,
     onDismissDelayTest: () -> Unit,
     onDismissDohTest: () -> Unit,
@@ -94,6 +96,7 @@ fun NetworkSettingsScreen(
     var showDomainDialog by rememberSaveable { mutableStateOf(false) }
     var showProxyDialog by rememberSaveable { mutableStateOf(false) }
     var showDohDialog by rememberSaveable { mutableStateOf(false) }
+    var showCustomHostsDialog by rememberSaveable { mutableStateOf(false) }
 
     if (showDomainDialog) {
         NetworkChoiceDialog(
@@ -132,6 +135,17 @@ fun NetworkSettingsScreen(
             onConfirm = { enabled, preset, url, bootstrapIps, timeout ->
                 showDohDialog = false
                 onSaveDohSettings(enabled, preset, url, bootstrapIps, timeout)
+            },
+        )
+    }
+
+    if (showCustomHostsDialog) {
+        CustomHostsDialog(
+            currentData = customHostsData,
+            onDismiss = { showCustomHostsDialog = false },
+            onConfirm = { data ->
+                showCustomHostsDialog = false
+                onSaveCustomHosts(data)
             },
         )
     }
@@ -184,6 +198,15 @@ fun NetworkSettingsScreen(
                 checked = state.useBuiltInHosts,
                 iconRes = R.drawable.baseline_hosts_24,
                 onCheckedChange = onUseBuiltInHostsChange,
+            )
+        }
+
+        item {
+            SettingNavigationItem(
+                title = stringResource(R.string.custom_hosts),
+                summary = if (customHostsData.isBlank()) stringResource(R.string.custom_hosts_empty_summary) else customHostsData.take(60),
+                iconRes = R.drawable.baseline_edit_24,
+                onClick = { showCustomHostsDialog = true },
             )
         }
 
@@ -529,6 +552,42 @@ private fun DohDialog(
 }
 
 @Composable
+private fun CustomHostsDialog(
+    currentData: String,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+) {
+    var text by rememberSaveable(currentData) { mutableStateOf(currentData) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.custom_hosts)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text(stringResource(R.string.host_or_ipv4)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    supportingText = { Text(stringResource(R.string.custom_hosts_format)) },
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(text.trim()) }) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+    )
+}
+
+@Composable
 private fun NetworkGroupTitle(title: String) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -580,6 +639,8 @@ private fun NetworkSettingsScreenPreview() {
             dohTimeoutSeconds = 10,
             onDomainChange = {},
             onUseBuiltInHostsChange = {},
+            onSaveCustomHosts = {},
+            customHostsData = "",
             onSaveDohSettings = { _, _, _, _, _ -> },
             onOpenDelayTest = {},
             onOpenDohTest = {},

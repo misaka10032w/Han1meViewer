@@ -4,6 +4,9 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -42,6 +45,7 @@ private const val NETWORK_PROXY_PORT = "proxy_port"
 private const val NETWORK_DOMAIN_NAME = "domain_name"
 private const val NETWORK_SELECTED_BASE_URL = "selectedBaseUrl"
 private const val NETWORK_USE_BUILT_IN_HOSTS = "use_built_in_hosts"
+private const val NETWORK_CUSTOM_HOSTS_DATA = "custom_hosts_data"
 private const val NETWORK_USE_DOH = "use_doh"
 private const val NETWORK_DOH_PRESET = "doh_preset"
 private const val NETWORK_DOH_CUSTOM_URL = "doh_custom_url"
@@ -62,6 +66,7 @@ fun NetworkSettingsRouteScreen() {
     var isDohTesting by remember { mutableStateOf(false) }
     var showDomainRestartConfirm by remember { mutableStateOf(false) }
     var showHostsRestartConfirm by remember { mutableStateOf(false) }
+    var showCustomHostsValidationError by remember { mutableStateOf<List<String>?>(null) }
     var showDohConflictConfirm by remember { mutableStateOf(false) }
     var pendingDomainValue by remember { mutableStateOf("") }
     var pendingDohConflictTarget by remember { mutableStateOf(DohConflictTarget.EnableDoH) }
@@ -195,6 +200,21 @@ fun NetworkSettingsRouteScreen() {
             refreshKey++
             showHostsRestartConfirm = true
         },
+        onSaveCustomHosts = { data ->
+            val errors = HDns.validateCustomHosts(data)
+            if (errors.isNotEmpty()) {
+                showCustomHostsValidationError = errors
+                return@NetworkSettingsScreen
+            }
+            Preferences.preferenceSp.edit(commit = true) {
+                putString(NETWORK_CUSTOM_HOSTS_DATA, data)
+            }
+            refreshKey++
+            if (Preferences.useBuiltInHosts) {
+                HanimeNetwork.rebuildNetwork()
+            }
+        },
+        customHostsData = Preferences.customHostsData,
         onSaveDohSettings = { enabled, preset, url, bootstrapIps, timeoutSeconds ->
             pendingDohEnabled = enabled
             pendingDohPreset = preset
@@ -295,6 +315,20 @@ fun NetworkSettingsRouteScreen() {
         onConfirm = { ActivityManager.restart(killProcess = true) },
         onDismiss = { showHostsRestartConfirm = false },
     )
+
+    val validationErrors = showCustomHostsValidationError
+    if (validationErrors != null) {
+        AlertDialog(
+            onDismissRequest = { showCustomHostsValidationError = null },
+            title = { Text(stringResource(R.string.attention)) },
+            text = { Text(validationErrors.joinToString("\n")) },
+            confirmButton = {
+                TextButton(onClick = { showCustomHostsValidationError = null }) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+        )
+    }
 
     ConfirmDialog(
         visible = showDohConflictConfirm,

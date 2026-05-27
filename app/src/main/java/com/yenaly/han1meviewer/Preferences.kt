@@ -189,6 +189,9 @@ object Preferences {
     val useBuiltInHosts: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.USE_BUILT_IN_HOSTS, false)
 
+    val customHostsData: String
+        get() = preferenceSp.getString(SettingsPreferenceKeys.CUSTOM_HOSTS_DATA, EMPTY_STRING).orEmpty()
+
     val useDoH: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.USE_DOH, false)
 

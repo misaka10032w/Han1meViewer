@@ -160,7 +160,10 @@
     <string name="domain_name">域名</string>
     <string name="use_built_in_hosts">应用内置 Hosts</string>
     <string name="network_settings">网络设置</string>
-    <string name="use_built_in_hosts_summary">应用提供的主机到 IP 的映射\nVPN？那是什么？</string>
+    <string name="use_built_in_hosts_summary">应用提供的主机到 IP 的映射\n若已设定自定义 Hosts，则优先使用\nVPN？那是什么？</string>
+    <string name="custom_hosts">自定义 Hosts</string>
+    <string name="custom_hosts_format">多个 IP 以逗号分隔，如 1.2.3.4,5.6.7.8</string>
+    <string name="custom_hosts_empty_summary">未设定（使用内置映射）</string>
     <string name="use_doh">使用 DoH</string>
     <string name="doh_settings">DoH 设置</string>
     <string name="doh_preset">DoH 预设</string>

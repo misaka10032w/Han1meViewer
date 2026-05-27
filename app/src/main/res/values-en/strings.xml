@@ -160,7 +160,10 @@
     <string name="domain_name">Domain Name</string>
     <string name="use_built_in_hosts">Use Built-in Hosts</string>
     <string name="network_settings">Network Settings</string>
-    <string name="use_built_in_hosts_summary">Mapping of hosts to IP provided by the app\nVPN? What\'s that?</string>
+    <string name="use_built_in_hosts_summary">Mapping of hosts to IP provided by the app\nCustom hosts take priority if configured\nVPN? What\'s that?</string>
+    <string name="custom_hosts">Custom Hosts</string>
+    <string name="custom_hosts_format">Multiple IPs separated by commas, e.g. 1.2.3.4,5.6.7.8</string>
+    <string name="custom_hosts_empty_summary">Not set (using built-in mapping)</string>
     <string name="use_doh">Use DoH</string>
     <string name="doh_settings">DoH Settings</string>
     <string name="doh_preset">DoH Preset</string>

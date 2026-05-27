@@ -160,7 +160,10 @@
     <string name="domain_name">ドメイン</string>
     <string name="use_built_in_hosts">組み込みHostsを使用</string>
     <string name="network_settings">ネットワーク設定</string>
-    <string name="use_built_in_hosts_summary">アプリ提供のホストto IPマッピング\nVPN？何それ？</string>
+    <string name="use_built_in_hosts_summary">アプリ提供のホストto IPマッピング\nカスタムHostsが設定されている場合は優先\nVPN？何それ？</string>
+    <string name="custom_hosts">カスタムHosts</string>
+    <string name="custom_hosts_format">複数のIPをカンマ区切りで入力、例 1.2.3.4,5.6.7.8</string>
+    <string name="custom_hosts_empty_summary">未設定（組み込みマッピングを使用）</string>
     <string name="use_doh">DoHを使用</string>
     <string name="doh_settings">DoH設定</string>
     <string name="doh_preset">DoHプリセット</string>
