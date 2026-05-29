@@ -108,7 +108,7 @@ fun CommentScreen(
     var showSortSheet by rememberSaveable { mutableStateOf(false) }
     var replyingComment by remember { mutableStateOf<VideoComments.VideoComment?>(null) }
     var reportComment by remember { mutableStateOf<VideoComments.VideoComment?>(null) }
-    var showComposeDialog by rememberSaveable { mutableStateOf(false) }
+    var showCommentBar by rememberSaveable { mutableStateOf(false) }
     var replyText by remember { mutableStateOf(TextFieldValue("")) }
     var composeText by remember { mutableStateOf(TextFieldValue("")) }
     var selectedReasonIndex by remember { mutableIntStateOf(-1) }
@@ -145,10 +145,10 @@ fun CommentScreen(
         }
     }
 
-    BackHandler(enabled = replyingComment != null || showComposeDialog) {
+    BackHandler(enabled = replyingComment != null || showCommentBar) {
         replyingComment = null
         replyText = TextFieldValue("")
-        showComposeDialog = false
+        showCommentBar = false
         composeText = TextFieldValue("")
     }
 
@@ -209,7 +209,7 @@ fun CommentScreen(
         floatingActionButton = {
             if (isAlreadyLogin) {
                 AnimatedVisibility(
-                    visible = showCommentFab,
+                    visible = showCommentFab && replyingComment == null && !showCommentBar,
                     enter = fadeIn() + slideInVertically { it / 2 },
                     exit = fadeOut() + slideOutVertically { it / 2 },
                 ) {
@@ -221,7 +221,7 @@ fun CommentScreen(
                                 contentDescription = null,
                             )
                         },
-                        onClick = { showComposeDialog = true },
+                        onClick = { showCommentBar = true },
                     )
                 }
             }
@@ -356,7 +356,7 @@ fun CommentScreen(
                 }
             }
             AnimatedVisibility(
-                visible = replyingComment != null || showComposeDialog,
+                visible = replyingComment != null || showCommentBar,
                 modifier = Modifier
                     .align(Alignment.BottomCenter),
                 enter = slideInVertically { it } + fadeIn(),
@@ -388,7 +388,7 @@ fun CommentScreen(
                                 scope.launch { snackbarHostState.showSnackbar(commentTooShortText) }
                             } else {
                                 onComposeComment(text)
-                                showComposeDialog = false
+                                showCommentBar = false
                                 composeText = TextFieldValue("")
                             }
                         },

@@ -26,6 +26,7 @@ import com.yenaly.han1meviewer.logic.model.github.Latest
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.UpdateDialog
+import com.yenaly.han1meviewer.ui.component.UsageNoticeDialog
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
 import com.yenaly.han1meviewer.ui.navigation.main.MainNavHost
 import com.yenaly.han1meviewer.ui.navigation.main.handleMainIntent
@@ -61,6 +62,7 @@ fun MainActivityContent(
         val scope = rememberCoroutineScope()
         var currentMainDestination by remember { mutableStateOf(MainDestinationSpec.Home) }
         var pendingUpdate by remember { mutableStateOf<Latest?>(null) }
+        var showUsageNotice by remember { mutableStateOf(!Preferences.usageNoticeAccepted) }
         val isDrawerOpen =
             drawerState.currentValue == DrawerValue.Open || drawerState.targetValue == DrawerValue.Open
 
@@ -181,6 +183,14 @@ fun MainActivityContent(
                         },
                     )
                 }
+                UsageNoticeDialog(
+                    visible = showUsageNotice,
+                    onAccepted = {
+                        Preferences.usageNoticeAccepted = true
+                        showUsageNotice = false
+                    },
+                    onDeclined = { activity.finish() },
+                )
             }
         }
     }

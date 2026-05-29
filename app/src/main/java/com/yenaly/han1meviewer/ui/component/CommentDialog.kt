@@ -22,8 +22,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -54,6 +59,14 @@ internal fun CommentReplyBar(
     placeholder: String,
     modifier: Modifier = Modifier,
 ) {
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+        keyboardController?.show()
+    }
+
     Box(
         modifier = Modifier
             .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -78,6 +91,7 @@ internal fun CommentReplyBar(
                     placeholder = { Text(placeholder) },
                     modifier = Modifier
                         .weight(1f)
+                        .focusRequester(focusRequester)
                         .padding(start = 14.dp),
                     textStyle = MaterialTheme.typography.bodyLarge,
                     minLines = 1,

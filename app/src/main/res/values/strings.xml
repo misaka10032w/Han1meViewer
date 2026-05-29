@@ -405,6 +405,11 @@
     <string name="use_lock_screen_sum">開啟後，進入應用程式時需驗證螢幕鎖定，防止他人開啟。</string>
     <string name="not_compact_lock_screen">您的系統版本不支援驗證螢幕鎖定，因此無法啟用此功能。</string>
     <string name="not_set_sys_lock">請先在系統設定中啟用指紋、圖案或PIN碼鎖定。</string>
+    <string name="usage_notice_title">使用須知</string>
+    <string name="usage_notice_content">🧩 本應用程式為獨立第三方工具，與 https://hanime1.me/ 及其關聯方不存在隸屬、合作、授權或代言關係。\n\n📢 請勿在任何公開平台宣傳、搬運或引流本應用程式。若因此帶來風險，維護者可能隨時歸檔或隱藏倉庫，並移除已編譯發行版。\n\n🔍 本應用程式僅透過常規網路請求和 HTML DOM 解析取得目標網站公開顯示的資訊，不存取後端資料庫，不進行注入攻擊、授權繞過或取得非公開及隱私資料。\n\n⚖️ 本應用程式僅供技術研究、行動端體驗最佳化與學習交流使用，不提供商業化服務。使用者應自行遵守所在地區法律法規和目標網站規則，並承擔使用本應用程式產生的一切後果。\n\n©️ 原始影片、圖文及相關內容版權歸 https://hanime1.me/ 或原始製作、發行方所有。本應用程式不儲存版權內容，不修改原始內容，也不聲稱擁有任何內容所有權。\n\n🛡️ 如對相關內容存在版權、DMCA、人身攻擊或其他投訴，請直接聯絡源網站管理方處理。本應用程式開發者無法處理或協助處理相關內容糾紛。\n\nℹ️ 建議透過官方渠道支持原站內容與網站營運者。\n\n🔞 R18 警告：未滿 18 歲禁止下載和使用本應用程式。\n\n2026 年 6 月 1 日</string>
+    <string name="usage_notice_accept">我已閱讀並同意</string>
+    <string name="usage_notice_accept_countdown">請閱讀 %1$d 秒</string>
+    <string name="usage_notice_decline">不同意並退出</string>
     <string-array name="lang_display_names">
         <item>跟随系统</item>
         <item>简体中文</item>

@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer
 
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.logic.network.HProxySelector
@@ -19,6 +20,8 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.ExperimentalTime
 
 object Preferences {
+    private const val USAGE_NOTICE_ACCEPTED = "usage_notice_accepted"
+
     /**
      * [Preference][androidx.preference.PreferenceFragmentCompat]自帶的SP
      */
@@ -40,6 +43,10 @@ object Preferences {
         }
 
     val loginStateFlow = MutableStateFlow(isAlreadyLogin)
+
+    var usageNoticeAccepted: Boolean
+        get() = preferenceSp.getBoolean(USAGE_NOTICE_ACCEPTED, false)
+        set(value) = preferenceSp.edit { putBoolean(USAGE_NOTICE_ACCEPTED, value) }
 
     val savedUserId: String
         get() = preferenceSp.getString(SAVED_USER_ID,"") ?: ""
