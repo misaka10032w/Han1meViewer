@@ -21,5 +21,9 @@ class SpeedLimitResponseBody(
 
     override fun contentType() = responseBody.contentType()
 
-    override fun source() = throttler.source(responseBody.source()).buffer()
+    override fun source() = if (maxSpeed > 0) {
+        throttler.source(responseBody.source()).buffer()
+    } else {
+        responseBody.source()
+    }
 }

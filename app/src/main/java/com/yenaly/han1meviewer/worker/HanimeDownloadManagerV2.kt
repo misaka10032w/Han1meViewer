@@ -3,12 +3,12 @@ package com.yenaly.han1meviewer.worker
 import android.util.Log
 import androidx.lifecycle.Observer
 import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.await
 import androidx.work.workDataOf
 import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.state.DownloadState
@@ -99,6 +99,8 @@ object HanimeDownloadManagerV2 {
                     is DownloadMsg.Add -> {
                         if (msg.args.videoCode in activeDownloads) {
                             Log.d(TAG, "任务已存在：${msg.args.videoCode}")
+                        } else if (waitingQueue.any { it.videoCode == msg.args.videoCode }) {
+                            Log.d(TAG, "任务已在等待队列：${msg.args.videoCode}")
                         } else {
                             // Unknown 代表任务刚添加，未开始状态流转
                             if (activeDownloads.size < maxConcurrentDownloadCount &&
@@ -113,14 +115,12 @@ object HanimeDownloadManagerV2 {
                                     DownloadState.Downloading -> {
                                         // 之前为 Downloading 的优先级更高
                                         waitingQueue.addFirst(msg.args)
-                                        // 同时启动 WorkManager 任务时可标识为等待状态
-                                        enqueueWork(msg.args, msg.redownload)
+                                        markQueued(msg.args)
                                     }
 
                                     DownloadState.Queued, DownloadState.Unknown -> {
                                         waitingQueue.addLast(msg.args)
-                                        // 同时启动 WorkManager 任务时可标识为等待状态
-                                        enqueueWork(msg.args, msg.redownload)
+                                        markQueued(msg.args)
                                     }
 
                                     else -> Unit
@@ -139,8 +139,9 @@ object HanimeDownloadManagerV2 {
                             while (activeDownloads.size >= maxConcurrentDownloadCount && activeDownloads.isNotEmpty()) {
                                 val (videoCode, task) = activeDownloads.entries.first()
                                 activeDownloads.remove(videoCode)
-                                enqueueWork(task)
+                                stopWork(task)
                                 waitingQueue.addLast(task)
+                                markQueued(task)
                                 Log.d(TAG, "任务已满，暂停任务：$videoCode")
                             }
                             activeDownloads[msg.args.videoCode] = msg.args
@@ -155,7 +156,8 @@ object HanimeDownloadManagerV2 {
                             processNext()
                         } else {
                             Log.e(TAG, "停止任务，不应该走到这里：${msg.args.videoCode}")
-//                            waitingQueue.removeIf { it.videoCode == msg.args.videoCode }
+                            waitingQueue.removeIf { it.videoCode == msg.args.videoCode }
+                            markPaused(msg.args)
                         }
                     }
 
@@ -248,15 +250,15 @@ object HanimeDownloadManagerV2 {
             // 如果当前处于等待状态，则直接启动任务。目的就是为了添加到列表，但不下载
             if (waiting) {
                 Log.d(TAG, "launchDownload (waiting): ${args.videoCode}")
-                enqueueWork(args, redownload)
+                markQueued(args)
             } else {
                 // 使用 semaphore.withPermit 来确保同时只有规定数量的任务在执行
                 semaphore.withPermit {
                     Log.d(TAG, "launchDownload (start): ${args.videoCode}")
                     // 启动 WorkManager 任务
-                    startWork(args, redownload)
+                    val workId = startWork(args, redownload)
                     // 阻塞等待 WorkManager 任务完成
-                    awaitWorkCompletion(args.videoCode)
+                    awaitWorkCompletion(args.videoCode, workId.toString())
                 }
                 // 下载完成或取消后，从 active 中移除，并尝试启动下一个任务
                 activeDownloads.remove(args.videoCode)
@@ -274,8 +276,7 @@ object HanimeDownloadManagerV2 {
         redownload: Boolean = false,
         waiting: Boolean = false,
         delete: Boolean = false
-    ) {
-        HanimeDownloadWorker.build(constraintsRequired = !delete) {
+    ) = HanimeDownloadWorker.build(constraintsRequired = !delete) {
             setInputData(
                 workDataOf(
                     HanimeDownloadWorker.QUALITY to args.quality,
@@ -293,8 +294,7 @@ object HanimeDownloadManagerV2 {
             workManager.beginUniqueWork(
                 args.videoCode, ExistingWorkPolicy.REPLACE, this
             ).enqueue().await()
-        }
-    }
+        }.id
 
     /**
      * 取消正在执行的 WorkManager 任务
@@ -302,19 +302,25 @@ object HanimeDownloadManagerV2 {
     private suspend fun stopWork(args: HanimeDownloadWorker.Args) {
         runSuspendCatching {
             workManager.cancelUniqueWork(args.videoCode).await()
+            markPaused(args)
             Log.d(TAG, "stopWork (cancelUniqueWork): ${args.videoCode}")
         }.onFailure { t -> // 上述方法可能无法取消任务
             t.printStackTrace()
-            // 通过替换任务实现任务删除（文件不删除），确保 WorkManager 真正取消
-            val deleteRequest =
-                OneTimeWorkRequestBuilder<HanimeDownloadWorker>()
-                    .addTag(HanimeDownloadWorker.TAG)
-                    .setInputData(workDataOf(HanimeDownloadWorker.FAST_PATH_CANCEL to true))
-                    .build()
-            workManager.beginUniqueWork(
-                args.videoCode, ExistingWorkPolicy.REPLACE, deleteRequest
-            ).enqueue().await()
-            Log.d(TAG, "stopWork (delete request): ${args.videoCode}")
+            markPaused(args)
+        }
+    }
+
+    private suspend fun markQueued(args: HanimeDownloadWorker.Args) {
+        DatabaseRepo.HanimeDownload.find(args.videoCode, args.quality.orEmpty())?.let { entity ->
+            DatabaseRepo.HanimeDownload.update(entity.copy(state = DownloadState.Queued))
+        }
+    }
+
+    private suspend fun markPaused(args: HanimeDownloadWorker.Args) {
+        DatabaseRepo.HanimeDownload.find(args.videoCode, args.quality.orEmpty())?.let { entity ->
+            if (entity.state != DownloadState.Finished) {
+                DatabaseRepo.HanimeDownload.update(entity.copy(state = DownloadState.Paused))
+            }
         }
     }
 
@@ -326,23 +332,15 @@ object HanimeDownloadManagerV2 {
     private suspend fun deleteWork(args: HanimeDownloadWorker.Args) = startWork(args, delete = true)
 
     /**
-     * 将下载任务加入等待队列
-     *
-     * 操作交给 WorkManager 处理
-     */
-    private suspend fun enqueueWork(args: HanimeDownloadWorker.Args, redownload: Boolean = false) =
-        startWork(args, redownload = redownload, waiting = true)
-
-    /**
      * 通过观察 WorkManager 的 LiveData 来阻塞等待任务完成
      */
-    private suspend fun awaitWorkCompletion(videoCode: String) =
+    private suspend fun awaitWorkCompletion(videoCode: String, workId: String) =
         suspendCancellableCoroutine { cont ->
             val liveData = workManager.getWorkInfosForUniqueWorkLiveData(videoCode)
             Log.d(TAG, "获取 LiveData：$videoCode")
             val observer = object : Observer<List<WorkInfo>> {
                 override fun onChanged(value: List<WorkInfo>) {
-                    val info = value.firstOrNull() ?: return
+                    val info = value.firstOrNull { it.id.toString() == workId } ?: return
                     if (info.state.isFinished) {
                         Log.d(TAG, "任务完成，移除 observer：$videoCode")
                         liveData.removeObserver(this)
