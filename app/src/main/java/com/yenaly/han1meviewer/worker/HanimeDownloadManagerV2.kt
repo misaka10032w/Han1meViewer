@@ -115,12 +115,12 @@ object HanimeDownloadManagerV2 {
                                     DownloadState.Downloading -> {
                                         // 之前为 Downloading 的优先级更高
                                         waitingQueue.addFirst(msg.args)
-                                        markQueued(msg.args)
+                                        enqueueWaitingWork(msg.args, msg.redownload)
                                     }
 
                                     DownloadState.Queued, DownloadState.Unknown -> {
                                         waitingQueue.addLast(msg.args)
-                                        markQueued(msg.args)
+                                        enqueueWaitingWork(msg.args, msg.redownload)
                                     }
 
                                     else -> Unit
@@ -312,6 +312,18 @@ object HanimeDownloadManagerV2 {
 
     private suspend fun markQueued(args: HanimeDownloadWorker.Args) {
         DatabaseRepo.HanimeDownload.find(args.videoCode, args.quality.orEmpty())?.let { entity ->
+            DatabaseRepo.HanimeDownload.update(entity.copy(state = DownloadState.Queued))
+        }
+    }
+
+    private suspend fun enqueueWaitingWork(
+        args: HanimeDownloadWorker.Args,
+        redownload: Boolean = false
+    ) {
+        val entity = DatabaseRepo.HanimeDownload.find(args.videoCode, args.quality.orEmpty())
+        if (entity == null) {
+            startWork(args, redownload = redownload, waiting = true)
+        } else {
             DatabaseRepo.HanimeDownload.update(entity.copy(state = DownloadState.Queued))
         }
     }
