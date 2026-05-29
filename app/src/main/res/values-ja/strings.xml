@@ -398,6 +398,11 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="use_lock_screen_sum">有効化すると、アプリ起動時に画面ロック認証が必要、他人による起動を防止</string>
     <string name="not_compact_lock_screen">お使いのOSバージョンはロック画面認証非対応、この機能は有効化不可</string>
     <string name="not_set_sys_lock">まずシステム設定で指紋、パターンまたはPINロックを有効化</string>
+    <string name="usage_notice_title">利用上の注意</string>
+    <string name="usage_notice_content">🧩 本アプリは独立した第三者ツールであり、https://hanime1.me/ およびその関連者との間に、所属、提携、認可、推薦などの関係はありません。\n\n📢 本アプリを公開プラットフォームで宣伝、転載、誘導しないでください。それによりリスクが生じた場合、メンテナーはいつでもリポジトリをアーカイブまたは非公開にし、ビルド済みリリースを削除する可能性があります。\n\n🔍 本アプリは通常のネットワークリクエストと HTML DOM 解析により、対象サイトで公開表示されている情報のみを取得します。バックエンドデータベースへのアクセス、インジェクション攻撃、認可回避、非公開または個人情報の取得は行いません。\n\n⚖️ 本アプリは技術研究、モバイル体験の改善、学習交流のみを目的として提供され、商用サービスは提供しません。利用者は所在地の法律および対象サイトの規則を自ら遵守し、利用により生じる一切の結果を自己責任で負うものとします。\n\n©️ 元の動画、画像、文章および関連コンテンツの著作権は https://hanime1.me/ または原制作・配信元に帰属します。本アプリは著作権コンテンツを保存せず、原コンテンツを改変せず、いかなるコンテンツの所有権も主張しません。\n\n🛡️ 著作権、DMCA、誹謗中傷、その他コンテンツに関する申し立ては、直接ソースサイトの管理者へ連絡してください。本アプリ開発者はこれらのコンテンツ紛争を処理または支援できません。\n\nℹ️ 公式な方法で元サイトのコンテンツおよび運営者を支援することを推奨します。\n\n🔞 R18 警告：18 歳未満の方は本アプリのダウンロードおよび使用を禁止します。\n\n2026 年 6 月 1 日</string>
+    <string name="usage_notice_accept">読んで同意しました</string>
+    <string name="usage_notice_accept_countdown">あと %1$d 秒お読みください</string>
+    <string name="usage_notice_decline">同意せず終了</string>
     <string name="app_lang">言語</string>
     <string name="app_lang_sum">アプリの言語を選択</string>
     <string name="auth_request">本人確認🥵</string>
