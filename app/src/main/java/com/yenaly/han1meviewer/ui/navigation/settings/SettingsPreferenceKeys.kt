@@ -33,6 +33,7 @@ object SettingsPreferenceKeys {
     const val DOMAIN_NAME = "domain_name"
     const val SELECTED_BASE_URL = "selectedBaseUrl"
     const val USE_BUILT_IN_HOSTS = "use_built_in_hosts"
+    const val CUSTOM_HOSTS_DATA = "custom_hosts_data"
     const val USE_DOH = "use_doh"
     const val DOH_PRESET = "doh_preset"
     const val DOH_CUSTOM_URL = "doh_custom_url"

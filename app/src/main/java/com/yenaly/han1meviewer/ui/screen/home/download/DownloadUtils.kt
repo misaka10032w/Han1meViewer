@@ -80,7 +80,7 @@ fun downloadStateText(state: DownloadState, progress: Int): String = when (state
     DownloadState.Queued -> stringResource(R.string.already_in_queue)
     DownloadState.Downloading -> stringResource(R.string.download_progress_percent, progress)
     DownloadState.Paused -> stringResource(R.string.paused)
-    DownloadState.Failed -> stringResource(R.string.retry)
+    DownloadState.Failed -> stringResource(R.string.download_failed_tap_retry)
     DownloadState.Finished -> stringResource(R.string.download_complete)
     DownloadState.Unknown -> stringResource(R.string.loading)
 }

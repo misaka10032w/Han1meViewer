@@ -169,7 +169,10 @@
     <string name="domain_name">域名</string>
     <string name="use_built_in_hosts">應用內建 Hosts</string>
     <string name="network_settings">網路設定</string>
-    <string name="use_built_in_hosts_summary">應用提供的主機到 IP 的映射\nVPN？那是什麼？</string>
+    <string name="use_built_in_hosts_summary">應用提供的主機到 IP 的映射\n若已設定自定義 Hosts，則優先使用\nVPN？那是什麼？</string>
+    <string name="custom_hosts">自定義 Hosts</string>
+    <string name="custom_hosts_format">多個 IP 以逗號分隔，如 1.2.3.4,5.6.7.8</string>
+    <string name="custom_hosts_empty_summary">未設定（使用內建映射）</string>
     <string name="use_doh">使用 DoH</string>
     <string name="doh_settings">DoH 設定</string>
     <string name="doh_preset">DoH 預設</string>
@@ -341,8 +344,19 @@
     <string name="this_data_exists">該檔案已存在！</string>
     <string name="download_failed_s_exists">下載失敗：%1$s 已存在</string>
     <string name="download_task_failed">下載任務失敗！</string>
-    <string name="download_task_failed_s">下載任務失敗，請檢查下載目錄是否存在該文件：%1$s</string>
+    <string name="download_task_failed_s">下載任務失敗：%1$s</string>
     <string name="download_task_failed_s_reason_s">下載失敗：%1$s\n原因為：%2$s</string>
+    <string name="download_task_retrying">下載暫時中斷，正在重試</string>
+    <string name="download_task_retrying_s_reason_s">下載暫時中斷：%1$s\n原因：%2$s\n稍後會自動繼續。</string>
+    <string name="download_failed_tap_retry">下載失敗，點按重試</string>
+    <string name="download_error_network">網路連線中斷，請檢查網路後稍等自動重試。</string>
+    <string name="download_error_timeout">連線逾時，目前網路可能較慢，稍後會自動重試。</string>
+    <string name="download_error_dns">無法解析下載伺服器地址，請檢查網路或 DNS 設定。</string>
+    <string name="download_error_connect">無法連線到下載伺服器，請切換網路或稍後重試。</string>
+    <string name="download_error_cancelled">下載已暫停。</string>
+    <string name="download_error_storage">無法寫入下載檔案，請檢查儲存空間、目錄權限或重新選擇下載目錄。</string>
+    <string name="download_error_range_not_supported">伺服器不支援從斷點位置繼續下載，請刪除該任務後重新下載。</string>
+    <string name="download_error_file_info">無法取得檔案大小或下載資訊，請稍後重試。</string>
     <string name="custom">自訂</string>
     <string name="show_bottom_progress">顯示底部進度條</string>
     <string name="default_playback_speed">預設播放速度</string>
@@ -580,7 +594,7 @@
     <string name="directory_saved">目錄已保存:%s</string>
     <string name="no_directory_selected">未選擇目錄，未作變更</string>
     <string name="select_download_folder">選擇您的下載資料夾</string>
-    <string name="select_folder_message">使用系統檔案選擇器指定一個資料夾：\n\n✓ 自主選擇儲存位置\n✓ 下載檔案永久保存\n✓ 方便與其他應用共享\n✓ 解除安裝應用不影響檔案\n✗ 不支援斷點續傳\n\n建議選擇Downloads下新建目錄或自訂資料夾</string>
+    <string name="select_folder_message">使用系統檔案選擇器指定一個資料夾：\n\n✓ 自主選擇儲存位置\n✓ 下載檔案永久保存\n✓ 方便與其他應用共享\n✓ 解除安裝應用不影響檔案\n✓ 支援斷點續傳\n\n請勿移動、重新命名或撤銷該資料夾權限，否則需要重新選擇目錄。建議選擇 Downloads 下的新建目錄或自訂資料夾。</string>
     <string name="restore_default_path">恢復預設儲存路徑</string>
     <string name="restore_default_message">確定要恢復為應用內部儲存嗎？\n\n● 當前下載的檔案不會被移動\n● 後續下載將儲存到應用內部\n● 應用解除安裝後檔案將被清除\n● 選擇外部路徑後，可以使用檔案遷移功能移出</string>
     <string name="default_path_restored">已恢復預設儲存路徑</string>
@@ -848,4 +862,5 @@
     <string name="backup_export_failed">資料備份匯出失敗</string>
     <string name="backup_import_success">資料備份已匯入</string>
     <string name="backup_import_failed">資料備份匯入失敗，請確認檔案是否正確</string>
+    <string name="debug">除錯</string>
 </resources>

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Notification
 import android.content.Context
 import android.content.pm.ServiceInfo
+import android.os.ParcelFileDescriptor
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -47,9 +48,17 @@ import okhttp3.Response
 import okhttp3.ResponseBody
 import okhttp3.internal.closeQuietly
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.RandomAccessFile
+import java.nio.ByteBuffer
+import java.nio.channels.FileChannel
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import java.net.SocketException
 import java.util.concurrent.CancellationException
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
@@ -93,6 +102,9 @@ class HanimeDownloadWorker(
 
         const val BACKOFF_DELAY = 10_000L
 
+        private const val MAX_STREAM_RETRY_COUNT = 3
+        private const val MAX_WORK_RETRY_COUNT = 3
+
         const val FAST_PATH_CANCEL = "fast_path_cancel"
         const val DELETE = "delete"
         const val QUALITY = "quality"
@@ -108,6 +120,8 @@ class HanimeDownloadWorker(
 
         const val PROGRESS = "progress"
         // const val FAILED_REASON = "failed_reason"
+
+        private val CONTENT_RANGE_LENGTH_REGEX = Regex("/([0-9]+)$")
 
         /**
          * 方便统一管理下载 Worker 的创建
@@ -172,27 +186,20 @@ class HanimeDownloadWorker(
 
     private suspend fun createNewRaf(file: File): HanimeDownloadEntity? {
         return withContext(Dispatchers.IO) {
-            var os: OutputStream? = null
             var raf: RandomAccessFile? = null
-            var response: Response? = null
-            var body: ResponseBody? = null
             try {
                 // SAF 优先
                 val safUri = SafFileManager.getDownloadVideoFileUri(context, videoCode, createVideoName(hanimeName, quality, videoType))
                 Log.i(TAG,safUri.toString())
                 if (safUri != null) {
-                    os = context.contentResolver.openOutputStream(safUri, "rwt")
+                    context.contentResolver.openFileDescriptor(safUri, "rw")?.closeQuietly()
                 } else {
                     file.createFileIfNotExists()
                     raf = RandomAccessFile(file, "rwd")
                 }
 
-                val request = Request.Builder().url(downloadUrl).get().build()
-                response = ServiceCreator.downloadClient.newCall(request).await()
-                if (response.isSuccessful) {
-                    body = response.body
-                    val responseBody = body
-                    val len = responseBody.contentLength()
+                val len = fetchContentLength() ?: return@withContext null
+                if (len > 0) {
                     // 创建数据库记录
                     val entity = HanimeDownloadEntity(
                         coverUrl = coverUrl,
@@ -213,6 +220,9 @@ class HanimeDownloadWorker(
                     return@withContext entity
                 }
             } catch (e: Exception) {
+                if (e is CancellationException || e.isStoppedCancellation() || e.isRetryableNetworkError()) {
+                    throw e
+                }
                 e.printStackTrace()
                 if (file.exists() && file.length() == 0L) {
                     dbScope.launch {
@@ -220,13 +230,47 @@ class HanimeDownloadWorker(
                     }
                 }
             } finally {
-                os?.closeQuietly()
                 raf?.closeQuietly()
-                response?.closeQuietly()
-                body?.closeQuietly()
             }
             null
         }
+    }
+
+    private suspend fun fetchContentLength(): Long? {
+        requestContentLength(useHead = true)?.let { return it }
+        return requestContentLength(useHead = false)
+    }
+
+    private suspend fun requestContentLength(useHead: Boolean): Long? {
+        val requestBuilder = Request.Builder().url(downloadUrl)
+        val request = if (useHead) {
+            requestBuilder.head().build()
+        } else {
+            requestBuilder.header("Range", "bytes=0-0").get().build()
+        }
+        return try {
+            ServiceCreator.downloadClient.newCall(request).await().use { response ->
+                if (!response.isSuccessful) return@use null
+                if (useHead) {
+                    response.header("Content-Length")?.toLongOrNull()?.takeIf { it > 0 }
+                        ?: response.contentLengthFromContentRange()
+                } else {
+                    response.contentLengthFromContentRange()
+                }
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            if (e.isRetryableNetworkError()) throw e
+            null
+        }
+    }
+
+    private fun Response.contentLengthFromContentRange(): Long? {
+        return header("Content-Range")
+            ?.let { CONTENT_RANGE_LENGTH_REGEX.find(it)?.groupValues?.getOrNull(1) }
+            ?.toLongOrNull()
+            ?.takeIf { it > 0 }
     }
 
     private suspend fun download(): Result {
@@ -243,19 +287,43 @@ class HanimeDownloadWorker(
                     return@withContext Result.success()
                 }
             }
-            val entity = DatabaseRepo.HanimeDownload.find(videoCode, quality) ?: run {
-                createNewRaf(file)
-                DatabaseRepo.HanimeDownload.find(videoCode, quality)
-                    ?: return@withContext run {
-                        Log.d(TAG, "entity is null, create new raf failed")
-                        showFailureNotification(context.getString(R.string.get_file_info_failed))
-                        mainScope.launch {
-                            showShortToast(
-                                context.getString(R.string.download_task_failed_s, hanimeName)
-                            )
+            var entity = try {
+                DatabaseRepo.HanimeDownload.find(videoCode, quality) ?: run {
+                    createNewRaf(file)
+                    DatabaseRepo.HanimeDownload.find(videoCode, quality)
+                        ?: return@withContext run {
+                            Log.d(TAG, "entity is null, create new raf failed")
+                            val reason = context.getString(R.string.download_error_file_info)
+                            showFailureNotification(reason)
+                            mainScope.launch {
+                                showShortToast(
+                                    context.getString(R.string.download_task_failed_s_reason_s, hanimeName, reason)
+                                )
+                            }
+                            Result.failure(workDataOf(DownloadState.STATE to DownloadState.Failed.mask))
                         }
-                        Result.failure()
+                }
+            } catch (e: Exception) {
+                if (e.isRetryableNetworkError() && runAttemptCount < MAX_WORK_RETRY_COUNT) {
+                    DatabaseRepo.HanimeDownload.find(videoCode, quality)?.let {
+                        DatabaseRepo.HanimeDownload.update(it.copy(state = DownloadState.Queued))
                     }
+                    return@withContext Result.retry()
+                }
+                throw e
+            }
+
+            if (entity.downloadedLength >= entity.length && entity.length > 0) {
+                DatabaseRepo.HanimeDownload.update(entity.copy(state = DownloadState.Finished))
+                showSuccessNotification()
+                return@withContext Result.success(
+                    workDataOf(DownloadState.STATE to DownloadState.Finished.mask)
+                )
+            }
+
+            if (entity.downloadedLength < 0 || entity.downloadedLength > entity.length) {
+                entity = entity.copy(downloadedLength = 0, state = DownloadState.Queued)
+                DatabaseRepo.HanimeDownload.update(entity)
             }
 
             if (entity.coverUri == null) {
@@ -269,61 +337,99 @@ class HanimeDownloadWorker(
             }
 
             var downloadedLength = entity.downloadedLength
-            val needRange = downloadedLength > 0 && safUri == null // SAF 下不支持断点续传
+            val needRange = downloadedLength > 0
             var raf: RandomAccessFile? = null
-            var outputStream: OutputStream? = null
+            var safPfd: ParcelFileDescriptor? = null
+            var safChannel: FileChannel? = null
             var response: Response? = null
             var body: ResponseBody? = null
             var bodyStream: InputStream? = null
 
-            var result: Result = Result.failure()
+            var result: Result = Result.failure(
+                workDataOf(DownloadState.STATE to DownloadState.Failed.mask)
+            )
+            var shouldRetry = false
 
             try {
                 if (safUri != null) {
-                    outputStream = context.contentResolver.openOutputStream(safUri, "rwt")
-                    if (downloadedLength > 0) {
-                        downloadedLength = 0 // SAF 下不支持断点续传，重新下载时重置进度
+                    safPfd = context.contentResolver.openFileDescriptor(safUri, "rw")
+                    safChannel = safPfd?.fileDescriptor?.let { FileOutputStream(it).channel }
+                        ?: throw IOException("Open SAF file failed")
+                    if (downloadedLength > safChannel.size()) {
+                        downloadedLength = safChannel.size()
                     }
+                    safChannel.position(downloadedLength)
                 } else {
                     raf = RandomAccessFile(file, "rwd")
                     if (needRange) raf.seek(downloadedLength)
                 }
-                val requestBuilder = Request.Builder().url(downloadUrl).get()
-                if (needRange) requestBuilder.header("Range", "bytes=$downloadedLength-")
-                val request = requestBuilder.build()
-                response = ServiceCreator.downloadClient.newCall(request).await()
-                val canWrite = (safUri != null) || ((needRange && response.code == 206) || (!needRange && response.isSuccessful))
-                if (!canWrite) {
-                    showFailureNotification(response.message)
-                    mainScope.launch { showShortToast(context.getString(R.string.download_task_failed_s, hanimeName)) }
-                    return@withContext Result.failure(workDataOf(DownloadState.STATE to DownloadState.Failed.mask))
+                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                var delayTime = 0L
+                var retryCount = 0
+
+                while (downloadedLength < entity.length) {
+                    val requestNeedRange = downloadedLength > 0
+                    val requestBuilder = Request.Builder().url(downloadUrl).get()
+                    if (requestNeedRange) requestBuilder.header("Range", "bytes=$downloadedLength-")
+                    val request = requestBuilder.build()
+                    response = ServiceCreator.downloadClient.newCall(request).await()
+                    val canWrite = (requestNeedRange && response.code == 206) || (!requestNeedRange && response.isSuccessful)
+                    if (!canWrite) {
+                        val reason = response.toDownloadErrorMessage(requestNeedRange)
+                        showFailureNotification(reason)
+                        mainScope.launch {
+                            showShortToast(context.getString(R.string.download_task_failed_s_reason_s, hanimeName, reason))
+                        }
+                        result = Result.failure(workDataOf(DownloadState.STATE to DownloadState.Failed.mask))
+                        return@withContext result
+                    }
+
+                    body = response.body
+                    val responseBody = body
+                    bodyStream = responseBody.byteStream()
+                    var len: Int = bodyStream.read(buffer)
+
+                    try {
+                        while (len != -1) {
+                            if (raf != null) {
+                                raf.write(buffer, 0, len)
+                            } else if (safChannel != null) {
+                                safChannel.writeFully(buffer, len)
+                            }
+                            downloadedLength += len
+
+                            if (System.currentTimeMillis() - delayTime > RESPONSE_INTERVAL) {
+                                val progress = (downloadedLength * 100 / entity.length).coerceAtMost(100)
+                                setProgress(workDataOf(PROGRESS to progress.toInt()))
+                                updateDownloadNotification(progress.toInt())
+                                DatabaseRepo.HanimeDownload.update(
+                                    entity.copy(downloadedLength = downloadedLength,
+                                        state = DownloadState.Downloading
+                                    )
+                                )
+                                delayTime = System.currentTimeMillis()
+                            }
+                            len = bodyStream.read(buffer)
+                        }
+                    } catch (e: IOException) {
+                        if (!e.isStreamResetCancel() || retryCount >= MAX_STREAM_RETRY_COUNT) {
+                            throw e
+                        }
+                        retryCount++
+                        response.closeQuietly()
+                        body.closeQuietly()
+                        bodyStream.closeQuietly()
+                        response = null
+                        body = null
+                        bodyStream = null
+                        continue
+                    }
+
+                    break
                 }
 
-                body = response.body
-                val responseBody = body
-                bodyStream = responseBody.byteStream()
-                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                var len: Int = bodyStream.read(buffer)
-                var delayTime = 0L
-
-                while (len != -1) {
-                    if (raf != null) {
-                        raf.write(buffer, 0, len)
-                    } else outputStream?.write(buffer, 0, len)
-                    downloadedLength += len
-
-                    if (System.currentTimeMillis() - delayTime > RESPONSE_INTERVAL) {
-                        val progress = (downloadedLength * 100 / entity.length).coerceAtMost(100)
-                        setProgress(workDataOf(PROGRESS to progress.toInt()))
-                        updateDownloadNotification(progress.toInt())
-                        DatabaseRepo.HanimeDownload.update(
-                            entity.copy(downloadedLength = downloadedLength,
-                                state = DownloadState.Downloading
-                            )
-                        )
-                        delayTime = System.currentTimeMillis()
-                    }
-                    len = bodyStream.read(buffer)
+                if (downloadedLength < entity.length) {
+                    throw IOException("Download incomplete: $downloadedLength/${entity.length}")
                 }
 
                 showSuccessNotification()
@@ -332,40 +438,108 @@ class HanimeDownloadWorker(
                 )
 
             } catch (e: Exception) {
-                result = if (e is CancellationException) {
+                result = if (e is CancellationException || e.isStoppedCancellation()) {
                     cancelDownloadNotification()
+                    mainScope.launch { showShortToast(R.string.download_error_cancelled) }
                     Result.success(
                         workDataOf(DownloadState.STATE to DownloadState.Paused.mask)
                     )
+                } else if (e.isRetryableNetworkError() && runAttemptCount < MAX_WORK_RETRY_COUNT) {
+                    val reason = e.toDownloadErrorMessage()
+                    showRetryNotification(reason)
+                    mainScope.launch {
+                        showShortToast(context.getString(R.string.download_task_retrying_s_reason_s, hanimeName, reason))
+                    }
+                    shouldRetry = true
+                    Result.retry()
                 } else {
-                    showFailureNotification(e.localizedMessage)
+                    val reason = e.toDownloadErrorMessage()
+                    showFailureNotification(reason)
                     e.printStackTrace()
                     mainScope.launch {
-                        showShortToast(e.localizedMessage)
+                        showShortToast(context.getString(R.string.download_task_failed_s_reason_s, hanimeName, reason))
                     }
                     Result.failure(
                         workDataOf(DownloadState.STATE to DownloadState.Failed.mask)
                     )
                 }
             } finally {
-                dbScope.launch {
-                    val state = DownloadState.from(
-                        result.outputData.getInt(DownloadState.STATE, DownloadState.Unknown.mask)
+                val state = DownloadState.from(
+                    result.outputData.getInt(DownloadState.STATE, DownloadState.Unknown.mask)
+                )
+                DatabaseRepo.HanimeDownload.update(
+                    entity.copy(
+                        state = if (shouldRetry) DownloadState.Queued else state,
+                        downloadedLength = downloadedLength
                     )
-                    DatabaseRepo.HanimeDownload.update(
-                        entity.copy(
-                            state = state,
-                            downloadedLength = downloadedLength
-                        )
-                    )
-                }
+                )
                 raf?.closeQuietly()
-                outputStream?.closeQuietly()
+                safChannel?.closeQuietly()
+                safPfd?.closeQuietly()
                 response?.closeQuietly()
                 body?.closeQuietly()
                 bodyStream?.closeQuietly()
             }
             return@withContext result
+        }
+    }
+
+    private fun IOException.isStreamResetCancel(): Boolean {
+        return message?.contains("stream was reset: CANCEL", ignoreCase = true) == true
+    }
+
+    private fun Exception.isStoppedCancellation(): Boolean {
+        return isStopped && this is IOException && message.equals("Canceled", ignoreCase = true)
+    }
+
+    private fun Exception.isRetryableNetworkError(): Boolean {
+        return this is UnknownHostException ||
+                this is SocketTimeoutException ||
+                this is ConnectException ||
+                this is SocketException ||
+                (this is IOException && message.equals("Canceled", ignoreCase = true).not())
+    }
+
+    private fun Exception.toDownloadErrorMessage(): String {
+        return when (this) {
+            is UnknownHostException -> context.getString(R.string.download_error_dns)
+            is SocketTimeoutException -> context.getString(R.string.download_error_timeout)
+            is ConnectException -> context.getString(R.string.download_error_connect)
+            is SocketException -> context.getString(R.string.download_error_network)
+            is IOException -> {
+                val rawMessage = message.orEmpty()
+                when {
+                    rawMessage.contains("No space", ignoreCase = true) ||
+                            rawMessage.contains("Permission", ignoreCase = true) ||
+                            rawMessage.contains("Open SAF file failed", ignoreCase = true) -> {
+                        context.getString(R.string.download_error_storage)
+                    }
+                    rawMessage.contains("Download incomplete", ignoreCase = true) -> {
+                        context.getString(R.string.download_error_network)
+                    }
+                    else -> context.getString(R.string.download_error_network)
+                }
+            }
+            else -> localizedMessage?.takeIf { it.isNotBlank() }
+                ?: context.getString(R.string.unknown_download_error)
+        }
+    }
+
+    private fun Response.toDownloadErrorMessage(requestNeedRange: Boolean): String {
+        return when {
+            requestNeedRange && code == 416 -> {
+                context.getString(R.string.download_error_range_not_supported)
+            }
+            requestNeedRange -> context.getString(R.string.download_error_range_not_supported)
+            code in 500..599 -> context.getString(R.string.download_error_network)
+            else -> message.takeIf { it.isNotBlank() } ?: context.getString(R.string.unknown_download_error)
+        }
+    }
+
+    private fun FileChannel.writeFully(buffer: ByteArray, length: Int) {
+        val byteBuffer = ByteBuffer.wrap(buffer, 0, length)
+        while (byteBuffer.hasRemaining()) {
+            write(byteBuffer)
         }
     }
 
@@ -457,6 +631,24 @@ class HanimeDownloadWorker(
                     context.getString(
                         R.string.download_task_failed_s_reason_s,
                         hanimeName, errMsg ?: context.getString(R.string.unknown_download_error)
+                    )
+                )
+                .build()
+        )
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun showRetryNotification(reason: String) {
+        notificationManager.notify(
+            downloadId, NotificationCompat.Builder(context, DOWNLOAD_NOTIFICATION_CHANNEL)
+                .setSmallIcon(R.drawable.ic_baseline_download_24)
+                .setContentTitle(context.getString(R.string.download_task_retrying))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setContentText(
+                    context.getString(
+                        R.string.download_task_retrying_s_reason_s,
+                        hanimeName, reason
                     )
                 )
                 .build()

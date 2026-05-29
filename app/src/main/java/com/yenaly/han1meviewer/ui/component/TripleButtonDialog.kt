@@ -1,16 +1,14 @@
 package com.yenaly.han1meviewer.ui.component
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
@@ -35,18 +33,25 @@ fun TripleButtonDialog(
         title = { Text(title) },
         text = message?.let { { Text(it) } },
         confirmButton = {
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically,
+                verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                TextButton(onClick = onNegative) { Text(negativeText) }
-                Spacer(Modifier.width(4.dp))
-                TextButton(onClick = onNeutral) { Text(neutralText) }
-                Spacer(Modifier.width(4.dp))
-                TextButton(onClick = onPositive) { Text(positiveText) }
+                TextButton(onClick = onNegative) { DialogButtonText(negativeText) }
+                TextButton(onClick = onNeutral) { DialogButtonText(neutralText) }
+                TextButton(onClick = onPositive) { DialogButtonText(positiveText) }
             }
         },
+    )
+}
+
+@Composable
+private fun DialogButtonText(text: String) {
+    Text(
+        text = text,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
     )
 }
 
@@ -58,9 +63,9 @@ private fun TripleButtonDialogPreview(){
             visible = true,
             title = "这是标题",
             message = "这是信息",
-            negativeText = "反向按钮",
-            neutralText = "中性按钮",
-            positiveText = "正向按钮",
+            negativeText = "取消并关闭",
+            neutralText = "恢复默认下载目录",
+            positiveText = "选择自定义下载文件夹",
             onNegative = { },
             onNeutral = { },
             onPositive = { },

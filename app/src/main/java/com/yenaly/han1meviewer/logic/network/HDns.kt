@@ -32,8 +32,8 @@ class HDns : Dns {
     companion object {
 
         private val cloudFlareIps = listOf(
-            "172.64.229.154", "104.25.254.167", "172.67.75.184", "104.21.7.20", "172.67.187.141",
-            "2606:4700:8dd1::2a46:47f8", "2606:4700:3031::ac43:bb8d", "2606:4700:3030::6815:746"
+            "172.64.229.154", "162.159.0.1", "108.162.192.1", "172.64.33.1", "104.19.0.1",
+            "2606:4700:3035::ac43:bb8d", "2606:4700:3030::6815:746", "2606:4700:3030::6815:714"
         )
 
         /**
@@ -46,10 +46,53 @@ class HDns : Dns {
                 InetAddress.getByAddress(host, InetAddress.getByName(it).address)
             }
         }
+
+        /**
+         * 解析自定义 IP 列表，逗号分隔
+         */
+        fun parseCustomIps(raw: String): List<String> {
+            return raw.split(",")
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+        }
+
+        /**
+         * 验证自定义 IP 列表格式是否有效
+         * @return 无效 IP 的错误信息列表，为空表示全部有效
+         */
+        fun validateCustomHosts(raw: String): List<String> {
+            val errors = mutableListOf<String>()
+            if (raw.isBlank()) return errors
+            val ips = parseCustomIps(raw)
+            if (ips.isEmpty()) {
+                errors.add("No IP addresses entered")
+                return errors
+            }
+            ips.forEach { ip ->
+                if (!isValidIpAddress(ip)) {
+                    errors.add("Invalid IP address: \"$ip\"")
+                }
+            }
+            return errors
+        }
+
+        private fun isValidIpAddress(ip: String): Boolean {
+            return runCatching {
+                val addr = InetAddress.getByName(ip)
+                addr.hostAddress == ip || addr.hostAddress == ip.removePrefix("[")
+                    .removeSuffix("]")
+            }.getOrDefault(false)
+        }
     }
 
     override fun lookup(hostname: String): List<InetAddress> {
         if (Preferences.useBuiltInHosts && HANIME_HOSTNAME.contains(hostname)) {
+            val customIps = resolveCustomIps()
+            if (!customIps.isNullOrEmpty()) {
+                return customIps.map {
+                    InetAddress.getByAddress(hostname, InetAddress.getByName(it).address)
+                }
+            }
             return cloudFlareIps.map {
                 InetAddress.getByAddress(hostname, InetAddress.getByName(it).address)
             }
@@ -119,6 +162,10 @@ class HDns : Dns {
 
     fun getCDNList(host: String): List<String> {
         if (Preferences.useBuiltInHosts && HANIME_HOSTNAME.contains(host)) {
+            val customIps = resolveCustomIps()
+            if (!customIps.isNullOrEmpty()) {
+                return customIps.distinct()
+            }
             return cloudFlareIps.distinct()
         }
 
@@ -128,6 +175,24 @@ class HDns : Dns {
             it.printStackTrace()
             emptyList()
         }
+    }
+
+    @Volatile
+    private var cachedCustomIps: List<String>? = null
+
+    @Volatile
+    private var cachedCustomIpsRaw: String? = null
+
+    private fun resolveCustomIps(): List<String>? {
+        val raw = Preferences.customHostsData
+        if (raw.isBlank()) return null
+        if (raw == cachedCustomIpsRaw && cachedCustomIps != null) {
+            return cachedCustomIps
+        }
+        val result = parseCustomIps(raw)
+        cachedCustomIpsRaw = raw
+        cachedCustomIps = result
+        return result
     }
 
 }
