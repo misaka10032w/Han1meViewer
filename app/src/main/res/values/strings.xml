@@ -862,4 +862,5 @@
     <string name="backup_export_failed">資料備份匯出失敗</string>
     <string name="backup_import_success">資料備份已匯入</string>
     <string name="backup_import_failed">資料備份匯入失敗，請確認檔案是否正確</string>
+    <string name="debug">除錯</string>
 </resources>

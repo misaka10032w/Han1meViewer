@@ -813,4 +813,5 @@
     <string name="backup_export_failed">数据备份导出失败</string>
     <string name="backup_import_success">数据备份已导入</string>
     <string name="backup_import_failed">数据备份导入失败，请确认文件是否正确</string>
+    <string name="debug">调试</string>
 </resources>

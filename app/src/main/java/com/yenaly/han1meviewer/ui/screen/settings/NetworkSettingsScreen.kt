@@ -219,6 +219,8 @@ fun NetworkSettingsScreen(
             )
         }
 
+        item { NetworkGroupTitle(stringResource(R.string.debug)) }
+
         item {
             SettingNavigationItem(
                 title = stringResource(R.string.view_node_latency),

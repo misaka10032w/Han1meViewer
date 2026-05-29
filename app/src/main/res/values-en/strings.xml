@@ -808,4 +808,5 @@ Recommendations are as follows:\n
     <string name="backup_export_failed">Failed to export data backup</string>
     <string name="backup_import_success">Data backup imported</string>
     <string name="backup_import_failed">Failed to import data backup. Please check whether the file is valid.</string>
+    <string name="debug">Debug</string>
 </resources>

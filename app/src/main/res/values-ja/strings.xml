@@ -813,4 +813,5 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="backup_export_failed">データバックアップのエクスポートに失敗しました</string>
     <string name="backup_import_success">データバックアップをインポートしました</string>
     <string name="backup_import_failed">データバックアップのインポートに失敗しました。ファイルが正しいか確認してください</string>
+    <string name="debug">デバッグ</string>
 </resources>
