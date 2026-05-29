@@ -293,10 +293,11 @@ class HanimeDownloadWorker(
                     DatabaseRepo.HanimeDownload.find(videoCode, quality)
                         ?: return@withContext run {
                             Log.d(TAG, "entity is null, create new raf failed")
-                            showFailureNotification(context.getString(R.string.get_file_info_failed))
+                            val reason = context.getString(R.string.download_error_file_info)
+                            showFailureNotification(reason)
                             mainScope.launch {
                                 showShortToast(
-                                    context.getString(R.string.download_task_failed_s, hanimeName)
+                                    context.getString(R.string.download_task_failed_s_reason_s, hanimeName, reason)
                                 )
                             }
                             Result.failure(workDataOf(DownloadState.STATE to DownloadState.Failed.mask))
@@ -347,6 +348,7 @@ class HanimeDownloadWorker(
             var result: Result = Result.failure(
                 workDataOf(DownloadState.STATE to DownloadState.Failed.mask)
             )
+            var shouldRetry = false
 
             try {
                 if (safUri != null) {
@@ -373,8 +375,11 @@ class HanimeDownloadWorker(
                     response = ServiceCreator.downloadClient.newCall(request).await()
                     val canWrite = (requestNeedRange && response.code == 206) || (!requestNeedRange && response.isSuccessful)
                     if (!canWrite) {
-                        showFailureNotification(response.message)
-                        mainScope.launch { showShortToast(context.getString(R.string.download_task_failed_s, hanimeName)) }
+                        val reason = response.toDownloadErrorMessage(requestNeedRange)
+                        showFailureNotification(reason)
+                        mainScope.launch {
+                            showShortToast(context.getString(R.string.download_task_failed_s_reason_s, hanimeName, reason))
+                        }
                         result = Result.failure(workDataOf(DownloadState.STATE to DownloadState.Failed.mask))
                         return@withContext result
                     }
@@ -435,16 +440,24 @@ class HanimeDownloadWorker(
             } catch (e: Exception) {
                 result = if (e is CancellationException || e.isStoppedCancellation()) {
                     cancelDownloadNotification()
+                    mainScope.launch { showShortToast(R.string.download_error_cancelled) }
                     Result.success(
                         workDataOf(DownloadState.STATE to DownloadState.Paused.mask)
                     )
                 } else if (e.isRetryableNetworkError() && runAttemptCount < MAX_WORK_RETRY_COUNT) {
+                    val reason = e.toDownloadErrorMessage()
+                    showRetryNotification(reason)
+                    mainScope.launch {
+                        showShortToast(context.getString(R.string.download_task_retrying_s_reason_s, hanimeName, reason))
+                    }
+                    shouldRetry = true
                     Result.retry()
                 } else {
-                    showFailureNotification(e.localizedMessage)
+                    val reason = e.toDownloadErrorMessage()
+                    showFailureNotification(reason)
                     e.printStackTrace()
                     mainScope.launch {
-                        showShortToast(e.localizedMessage)
+                        showShortToast(context.getString(R.string.download_task_failed_s_reason_s, hanimeName, reason))
                     }
                     Result.failure(
                         workDataOf(DownloadState.STATE to DownloadState.Failed.mask)
@@ -456,7 +469,7 @@ class HanimeDownloadWorker(
                 )
                 DatabaseRepo.HanimeDownload.update(
                     entity.copy(
-                        state = if (result is Result.Retry) DownloadState.Queued else state,
+                        state = if (shouldRetry) DownloadState.Queued else state,
                         downloadedLength = downloadedLength
                     )
                 )
@@ -485,6 +498,42 @@ class HanimeDownloadWorker(
                 this is ConnectException ||
                 this is SocketException ||
                 (this is IOException && message.equals("Canceled", ignoreCase = true).not())
+    }
+
+    private fun Exception.toDownloadErrorMessage(): String {
+        return when (this) {
+            is UnknownHostException -> context.getString(R.string.download_error_dns)
+            is SocketTimeoutException -> context.getString(R.string.download_error_timeout)
+            is ConnectException -> context.getString(R.string.download_error_connect)
+            is SocketException -> context.getString(R.string.download_error_network)
+            is IOException -> {
+                val rawMessage = message.orEmpty()
+                when {
+                    rawMessage.contains("No space", ignoreCase = true) ||
+                            rawMessage.contains("Permission", ignoreCase = true) ||
+                            rawMessage.contains("Open SAF file failed", ignoreCase = true) -> {
+                        context.getString(R.string.download_error_storage)
+                    }
+                    rawMessage.contains("Download incomplete", ignoreCase = true) -> {
+                        context.getString(R.string.download_error_network)
+                    }
+                    else -> context.getString(R.string.download_error_network)
+                }
+            }
+            else -> localizedMessage?.takeIf { it.isNotBlank() }
+                ?: context.getString(R.string.unknown_download_error)
+        }
+    }
+
+    private fun Response.toDownloadErrorMessage(requestNeedRange: Boolean): String {
+        return when {
+            requestNeedRange && code == 416 -> {
+                context.getString(R.string.download_error_range_not_supported)
+            }
+            requestNeedRange -> context.getString(R.string.download_error_range_not_supported)
+            code in 500..599 -> context.getString(R.string.download_error_network)
+            else -> message.takeIf { it.isNotBlank() } ?: context.getString(R.string.unknown_download_error)
+        }
     }
 
     private fun FileChannel.writeFully(buffer: ByteArray, length: Int) {
@@ -582,6 +631,24 @@ class HanimeDownloadWorker(
                     context.getString(
                         R.string.download_task_failed_s_reason_s,
                         hanimeName, errMsg ?: context.getString(R.string.unknown_download_error)
+                    )
+                )
+                .build()
+        )
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun showRetryNotification(reason: String) {
+        notificationManager.notify(
+            downloadId, NotificationCompat.Builder(context, DOWNLOAD_NOTIFICATION_CHANNEL)
+                .setSmallIcon(R.drawable.ic_baseline_download_24)
+                .setContentTitle(context.getString(R.string.download_task_retrying))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setContentText(
+                    context.getString(
+                        R.string.download_task_retrying_s_reason_s,
+                        hanimeName, reason
                     )
                 )
                 .build()

@@ -330,6 +330,17 @@ Recommendations are as follows:\n
     <string name="download_task_failed">Download task failed!</string>
     <string name="download_task_failed_s">Download task failed: %1$s</string>
     <string name="download_task_failed_s_reason_s">Download task failed: %1$s\nReason: %2$s</string>
+    <string name="download_task_retrying">Download interrupted, retrying</string>
+    <string name="download_task_retrying_s_reason_s">Download interrupted: %1$s\nReason: %2$s\nIt will continue automatically.</string>
+    <string name="download_failed_tap_retry">Download failed, tap to retry</string>
+    <string name="download_error_network">Network connection was interrupted. Check your connection and wait for automatic retry.</string>
+    <string name="download_error_timeout">Connection timed out. The current network may be slow; retrying shortly.</string>
+    <string name="download_error_dns">Unable to resolve the download server. Check your network or DNS settings.</string>
+    <string name="download_error_connect">Unable to connect to the download server. Switch networks or try again later.</string>
+    <string name="download_error_cancelled">Download paused.</string>
+    <string name="download_error_storage">Unable to write the downloaded file. Check storage space, folder permission, or choose the download folder again.</string>
+    <string name="download_error_range_not_supported">The server cannot resume from the saved position. Delete this task and download it again.</string>
+    <string name="download_error_file_info">Unable to get file size or download information. Try again later.</string>
     <string name="custom">Custom</string>
     <string name="show_bottom_progress">Show Bottom Progress Bar</string>
     <string name="default_playback_speed">Default Playback Speed</string>
@@ -536,7 +547,7 @@ Recommendations are as follows:\n
     <string name="directory_saved">Directory saved: %s</string>
     <string name="no_directory_selected">No directory selected, no changes made</string>
     <string name="select_download_folder">Select Your Download Folder</string>
-    <string name="select_folder_message">Use the system file picker to specify a folder:\n\n✓ Choose storage location freely\n✓ Download files saved permanently\n✓ Easy to share with other apps\n✓ Uninstalling app won\'t affect files\n✗ Resume not supported\n\nRecommended to create new directory under Downloads or custom folder</string>
+    <string name="select_folder_message">Use the system file picker to choose a folder:\n\n✓ Choose storage location freely\n✓ Download files saved permanently\n✓ Easy to share with other apps\n✓ Uninstalling the app won\'t affect files\n✓ Resume downloads supported\n\nDo not move, rename, or revoke permission for this folder, or you will need to choose it again. Creating a new folder under Downloads or using a custom folder is recommended.</string>
     <string name="restore_default_path">Restore Default Storage Path</string>
     <string name="restore_default_message">Confirm to restore to app internal storage?\n\n● Current downloaded files will not be moved\n● Subsequent downloads will save to app internal\n● Files will be cleared when app is uninstalled\n● After selecting external path, you can use file migration feature</string>
     <string name="default_path_restored">Default storage path restored</string>
