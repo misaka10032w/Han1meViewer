@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
@@ -57,6 +59,7 @@ import com.yenaly.han1meviewer.ui.preview.fakeDownloadedNodes
 @Composable
 fun DownloadedScreen(
     uiState: DownloadUiState,
+    listState: LazyListState,
     onEvent: (DownloadEvent) -> Unit,
 ) {
     var pendingRename by remember { mutableStateOf<DownloadHeaderNode?>(null) }
@@ -114,6 +117,7 @@ fun DownloadedScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
+            state = listState,
             contentPadding = PaddingValues(bottom = if (uiState.multiSelectMode) 72.dp else 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -345,6 +349,7 @@ private fun DownloadedScreenPreview() {
                 displayGroups = fakeDownloadedGroups,
                 multiSelectMode = true,
             ),
+            listState = rememberLazyListState(),
             onEvent = {},
         )
     }
@@ -359,6 +364,7 @@ private fun DownloadedScreenEmptyPreview() {
                 downloadedNodes = emptyList(),
                 displayGroups = emptyList(),
             ),
+            listState = rememberLazyListState(),
             onEvent = {},
         )
     }

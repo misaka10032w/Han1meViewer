@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.screen.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +19,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -76,6 +79,12 @@ fun DownloadScreen(
     val downloadedItems by downloadedFlow.collectAsStateWithLifecycle()
     val downloadedGroups by downloadedGroupsFlow.collectAsStateWithLifecycle()
     val pagerState = rememberPagerState(pageCount = { 2 })
+    var downloadedGroupExpandedState by rememberSaveable(stateSaver = stringBooleanMapSaver()) {
+        mutableStateOf(emptyMap())
+    }
+    val downloadedLazyListState = rememberSaveable(saver = LazyListState.Saver) {
+        LazyListState()
+    }
     val scope = rememberCoroutineScope()
     var showCreateGroupDialog by remember { mutableStateOf(false) }
     var downloadedHeaderNodes by remember { mutableStateOf<List<DownloadHeaderNode>>(emptyList()) }
@@ -87,7 +96,7 @@ fun DownloadScreen(
     val displayGroups = downloadedGroups.toDisplayGroups()
 
     val downloadedNodes =
-        remember(downloadedItems, displayGroups, collapseDownloadedGroup, downloadedHeaderNodes) {
+        remember(downloadedItems, displayGroups, collapseDownloadedGroup, downloadedHeaderNodes, downloadedGroupExpandedState) {
             val groupIdToNameMap = displayGroups.associate { it.id to it.name }
             if (downloadedItems.isEmpty()) {
                 downloadedHeaderNodes = emptyList()
@@ -95,11 +104,10 @@ fun DownloadScreen(
             } else {
                 val newHeaders =
                     downloadedItems.toNodeList(groupIdToNameMap, collapseDownloadedGroup)
-                val oldExpandedByKey =
-                    downloadedHeaderNodes.associate { it.groupKey to it.isExpanded }
                 downloadedHeaderNodes = newHeaders.map { newHeader ->
                     newHeader.copy(
-                        isExpanded = oldExpandedByKey[newHeader.groupKey]
+                        isExpanded = downloadedGroupExpandedState[newHeader.groupKey]
+                            ?: downloadedHeaderNodes.firstOrNull { it.groupKey == newHeader.groupKey }?.isExpanded
                             ?: !collapseDownloadedGroup
                     )
                 }
@@ -123,7 +131,9 @@ fun DownloadScreen(
             is DownloadEvent.OnToggleGroup -> {
                 downloadedHeaderNodes = downloadedHeaderNodes.map {
                     if (it.groupKey == event.groupKey) {
-                        it.copy(isExpanded = !it.isExpanded)
+                        val expanded = !it.isExpanded
+                        downloadedGroupExpandedState = downloadedGroupExpandedState + (it.groupKey to expanded)
+                        it.copy(isExpanded = expanded)
                     } else {
                         it
                     }
@@ -249,6 +259,7 @@ fun DownloadScreen(
 
                     else -> DownloadedScreen(
                         uiState = uiState,
+                        listState = downloadedLazyListState,
                         onEvent = handleEvent,
                     )
                 }
@@ -309,4 +320,20 @@ private fun DownloadScreenPreview() {
             onEvent = {},
         )
     }
+}
+
+private fun stringBooleanMapSaver(): Saver<Map<String, Boolean>, ArrayList<String>> {
+    return Saver(
+        save = { state -> ArrayList(state.map { (key, value) -> "$key=$value" }) },
+        restore = { saved ->
+            saved.mapNotNull { item ->
+                val separatorIndex = item.lastIndexOf('=')
+                if (separatorIndex <= 0) return@mapNotNull null
+                val key = item.substring(0, separatorIndex)
+                val value = item.substring(separatorIndex + 1).toBooleanStrictOrNull()
+                    ?: return@mapNotNull null
+                key to value
+            }.toMap()
+        },
+    )
 }
