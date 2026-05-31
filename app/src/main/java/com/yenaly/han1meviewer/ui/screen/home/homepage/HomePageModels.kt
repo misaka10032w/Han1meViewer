@@ -21,6 +21,7 @@ val LocalSearchHistoryQuery = staticCompositionLocalOf<suspend (String) -> List<
  * @param videos 当前分类下展示的视频列表。
  */
 data class HomeCategory(
+    val key: String,
     @param:StringRes val titleRes: Int,
     val genre: String? = null,
     val sort: String? = null,

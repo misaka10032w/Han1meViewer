@@ -605,7 +605,7 @@
     <string name="sort_most_likes">最多点赞</string>
     <string name="sort_most_dislikes">最多点踩</string>
     <string name="sort_comment">评论排序</string>
-    <string name="theme">主题</string>
+    <string name="theme">主题与外观</string>
     <string name="dark_theme">深色主题</string>
     <string name="dynamic_color_title">动态配色</string>
     <string name="dynamic_color_summary">开启后跟随系统主题色，仅支持Android 12以上</string>
@@ -818,5 +818,8 @@
     <string name="backup_export_failed">数据备份导出失败</string>
     <string name="backup_import_success">数据备份已导入</string>
     <string name="backup_import_failed">数据备份导入失败，请确认文件是否正确</string>
+    <string name="home_category_layout">首页栏目排序与隐藏</string>
+    <string name="home_category_layout_summary">当前显示 %1$d / %2$d 个栏目</string>
+    <string name="home_category_layout_dialog_summary">长按并拖动栏目可调整顺序，关闭开关即可隐藏栏目。</string>
     <string name="debug">调试</string>
 </resources>

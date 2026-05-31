@@ -44,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.analytics
 import com.yenaly.han1meviewer.BuildConfig
+import com.yenaly.han1meviewer.HanimeConstants
 import com.yenaly.han1meviewer.HA1_GITHUB_FORUM_URL
 import com.yenaly.han1meviewer.HA1_GITHUB_ISSUE_URL
 import com.yenaly.han1meviewer.HanimeApplication
@@ -56,6 +57,10 @@ import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.screen.settings.HomeSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.LicenseDialog
 import com.yenaly.han1meviewer.ui.screen.settings.model.HomeSettingsUiState
+import com.yenaly.han1meviewer.ui.screen.home.homepage.defaultHomeCategoryPreferenceItems
+import com.yenaly.han1meviewer.ui.screen.home.homepage.hiddenHomeCategoryKeys
+import com.yenaly.han1meviewer.ui.screen.home.homepage.homeCategoryOrder
+import com.yenaly.han1meviewer.ui.screen.home.homepage.saveHomeCategoryPreferences
 import com.yenaly.han1meviewer.ui.theme.ThemeColorPreset
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.util.ThemeUtils
@@ -279,6 +284,10 @@ fun HomeSettingsRouteScreen(
             saveString(HOME_THEME_COLOR, key)
             refreshKey++
             activity.recreate()
+        },
+        onHomeCategoryPreferencesChange = { order, hiddenKeys ->
+            saveHomeCategoryPreferences(order, hiddenKeys)
+            refreshKey++
         },
         onUseCIUpdateChannelChange = { value ->
             saveBoolean(HOME_USE_CI_UPDATE_CHANNEL, value)
@@ -605,5 +614,9 @@ private fun buildHomeSettingsUiState(
             horizontalCardCountConfig.expandedCount,
         ).joinToString(" / "),
         horizontalCardCountConfig = horizontalCardCountConfig,
+        homeCategoryItems = defaultHomeCategoryPreferenceItems,
+        homeCategoryOrder = homeCategoryOrder,
+        hiddenHomeCategoryKeys = hiddenHomeCategoryKeys,
+        useAvHomeCategoryTitles = Preferences.baseUrl == HanimeConstants.HANIME_URL[3],
     )
 }

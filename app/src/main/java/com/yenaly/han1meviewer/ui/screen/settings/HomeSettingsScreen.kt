@@ -28,6 +28,7 @@ import com.yenaly.han1meviewer.ui.component.SettingSliderItem
 import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
+import com.yenaly.han1meviewer.ui.screen.settings.dialog.HomeCategoryLayoutDialog
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.HorizontalCardCountDialog
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.SearchGridColumnsDialog
 import com.yenaly.han1meviewer.ui.screen.settings.model.HomeSettingsUiState
@@ -62,6 +63,7 @@ fun HomeSettingsScreen(
     onUseAnalyticsChange: (Boolean) -> Unit,
     onUseLockScreenChange: (Boolean) -> Unit,
     onThemeColorChange: (String) -> Unit,
+    onHomeCategoryPreferencesChange: (List<String>, Set<String>) -> Unit,
     onOpenPlayerSettings: () -> Unit,
     onOpenHKeyframeSettings: () -> Unit,
     onOpenDownloadSettings: () -> Unit,
@@ -82,6 +84,7 @@ fun HomeSettingsScreen(
     var activeDialog by rememberSaveable { mutableStateOf<HomeSettingsChoiceDialog?>(null) }
     var showSearchGridColumnsDialog by rememberSaveable { mutableStateOf(false) }
     var showHorizontalCardCountDialog by rememberSaveable { mutableStateOf(false) }
+    var showHomeCategoryDialog by rememberSaveable { mutableStateOf(false) }
 
     ChoiceDialog(
         visible = activeDialog == HomeSettingsChoiceDialog.VideoLanguage,
@@ -176,6 +179,17 @@ fun HomeSettingsScreen(
             onConfirm = {
                 showHorizontalCardCountDialog = false
                 onHorizontalCardCountConfigChange(it)
+            },
+        )
+    }
+
+    if (showHomeCategoryDialog) {
+        HomeCategoryLayoutDialog(
+            state = state,
+            onDismiss = { showHomeCategoryDialog = false },
+            onConfirm = { order, hiddenKeys ->
+                showHomeCategoryDialog = false
+                onHomeCategoryPreferencesChange(order, hiddenKeys)
             },
         )
     }
@@ -364,6 +378,18 @@ fun HomeSettingsScreen(
         }
         item {
             SettingNavigationItem(
+                title = stringResource(R.string.home_category_layout),
+                summary = stringResource(
+                    R.string.home_category_layout_summary,
+                    state.homeCategoryItems.size - state.hiddenHomeCategoryKeys.size,
+                    state.homeCategoryItems.size,
+                ),
+                iconRes = R.drawable.baseline_sort_24,
+                onClick = { showHomeCategoryDialog = true },
+            )
+        }
+        item {
+            SettingNavigationItem(
                 title = stringResource(R.string.app_lang),
                 summary = stringResource(R.string.app_lang_sum),
                 valueText = state.appLanguageLabel,
@@ -539,6 +565,10 @@ private fun HomeSettingsScreenPreview() {
                 searchGridColumnsConfig = SearchGridColumnsConfig(),
                 horizontalCardCountSummary = "1.5 / 2.1 / 4.1 / 5.1",
                 horizontalCardCountConfig = HorizontalCardCountConfig(),
+                homeCategoryItems = emptyList(),
+                homeCategoryOrder = emptyList(),
+                hiddenHomeCategoryKeys = emptySet(),
+                useAvHomeCategoryTitles = false,
             ),
             onVideoLanguageChange = {},
             onVideoQualityChange = {},
@@ -558,6 +588,7 @@ private fun HomeSettingsScreenPreview() {
             onUseAnalyticsChange = {},
             onUseLockScreenChange = {},
             onThemeColorChange = {},
+            onHomeCategoryPreferencesChange = { _, _ -> },
             onOpenPlayerSettings = {},
             onOpenHKeyframeSettings = {},
             onOpenDownloadSettings = {},
