@@ -43,7 +43,6 @@ import com.yenaly.han1meviewer.ui.screen.home.homepage.buildCategoryList
 import com.yenaly.han1meviewer.ui.screen.home.homepage.toAdvancedSearchParams
 import com.yenaly.han1meviewer.ui.screen.home.homepage.toHomePageErrorMessageRes
 import com.yenaly.han1meviewer.ui.viewmodel.MainViewModel
-import com.yenaly.yenaly_libs.utils.putSpValue
 
 /**
  * 首页容器屏幕，负责连接 ViewModel 状态与导航回调。
@@ -147,11 +146,7 @@ fun HomePageScreen(
                             onBannerClick = { videoCode -> videoCode?.let(onOpenVideo) },
                             onAnnouncementClick = onShowAnnouncementDialog,
                             onCloseAnnouncement = {
-                                putSpValue(
-                                    "last_dismiss_time",
-                                    System.currentTimeMillis(),
-                                    "setting_pref"
-                                )
+                                viewModel.dismissAnnouncements()
                             },
                             onMoreClick = { category ->
                                 val params = category.toAdvancedSearchParams()
