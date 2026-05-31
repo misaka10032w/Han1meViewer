@@ -604,7 +604,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="sort_most_likes">高評価順</string>
     <string name="sort_most_dislikes">低評価順</string>
     <string name="sort_comment">コメント並び順</string>
-    <string name="theme">テーマ</string>
+    <string name="theme">テーマと外観</string>
     <string name="dark_theme">ダークテーマ</string>
     <string name="dynamic_color_title">ダイナミックカラー</string>
     <string name="dynamic_color_summary">有効でシステムテーマカラーに追随、Android 12以上のみ対応</string>
@@ -818,5 +818,8 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="backup_export_failed">データバックアップのエクスポートに失敗しました</string>
     <string name="backup_import_success">データバックアップをインポートしました</string>
     <string name="backup_import_failed">データバックアップのインポートに失敗しました。ファイルが正しいか確認してください</string>
+    <string name="home_category_layout">ホーム欄の並び替えと表示</string>
+    <string name="home_category_layout_summary">%1$d / %2$d 件を表示中</string>
+    <string name="home_category_layout_dialog_summary">項目を長押ししてドラッグすると順序を変更できます。スイッチをオフにすると非表示になります。</string>
     <string name="debug">デバッグ</string>
 </resources>

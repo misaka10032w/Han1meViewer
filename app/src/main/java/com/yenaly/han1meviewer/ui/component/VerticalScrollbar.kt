@@ -44,22 +44,32 @@ fun Modifier.verticalScrollbar(
     drawWithContent {
         drawContent()
 
-        val layoutInfo = state.layoutInfo
-        val visibleItemsInfo = layoutInfo.visibleItemsInfo
+        val viewportHeight = size.height
+        val visibleItems = state.layoutInfo.visibleItemsInfo
+        if (visibleItems.isNotEmpty()) {
+            val avgItemHeight =
+                (visibleItems.last().offset + visibleItems.last().size - visibleItems.first().offset) / visibleItems.size
+            val totalEstimatedHeight = state.layoutInfo.totalItemsCount * avgItemHeight
 
-        if (visibleItemsInfo.isNotEmpty() && layoutInfo.totalItemsCount > visibleItemsInfo.size) {
-            val elementHeight = size.height / layoutInfo.totalItemsCount
-            val firstVisibleElementIndex = visibleItemsInfo.first().index
+            if (totalEstimatedHeight > viewportHeight) {
+                val firstItem = visibleItems.first()
+                val scrolledPastPx = (firstItem.index * avgItemHeight) - firstItem.offset
+                val scrollbarHeight = (viewportHeight * viewportHeight / totalEstimatedHeight)
+                    .coerceAtLeast(32.dp.toPx())
+                val scrollFraction = scrolledPastPx / (totalEstimatedHeight - viewportHeight)
+                val scrollbarOffsetY =
+                    (scrollFraction * (viewportHeight - scrollbarHeight)).coerceIn(
+                        0f,
+                        viewportHeight - scrollbarHeight
+                    )
 
-            val scrollbarOffsetY = firstVisibleElementIndex * elementHeight
-            val scrollbarHeight = visibleItemsInfo.size * elementHeight
-
-            drawRoundRect(
-                color = resolvedColor.copy(alpha = resolvedColor.alpha * alpha.value),
-                topLeft = Offset(size.width - width.toPx(), scrollbarOffsetY),
-                size = Size(width.toPx(), scrollbarHeight),
-                cornerRadius = CornerRadius(width.toPx() / 2)
-            )
+                drawRoundRect(
+                    color = resolvedColor.copy(alpha = resolvedColor.alpha * alpha.value),
+                    topLeft = Offset(size.width - width.toPx(), scrollbarOffsetY),
+                    size = Size(width.toPx(), scrollbarHeight),
+                    cornerRadius = CornerRadius(width.toPx() / 2)
+                )
+            }
         }
     }
 }

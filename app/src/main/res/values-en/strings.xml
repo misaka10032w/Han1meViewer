@@ -602,7 +602,7 @@ Recommendations are as follows:\n
     <string name="dark_theme">Dark Theme</string>
     <string name="dynamic_color_summary">Follow system theme colors after enabling, only supported on Android 12+</string>
     <string name="dynamic_color_title">Dynamic Coloring</string>
-    <string name="theme">Theme</string>
+    <string name="theme">Themes and appearance</string>
     <string name="follow_system">Follow System</string>
     <string name="always_off">Always Off</string>
     <string name="always_on">Always On</string>
@@ -813,5 +813,8 @@ Recommendations are as follows:\n
     <string name="backup_export_failed">Failed to export data backup</string>
     <string name="backup_import_success">Data backup imported</string>
     <string name="backup_import_failed">Failed to import data backup. Please check whether the file is valid.</string>
+    <string name="home_category_layout">Home Section Order and Visibility</string>
+    <string name="home_category_layout_summary">Showing %1$d / %2$d sections</string>
+    <string name="home_category_layout_dialog_summary">Long press and drag a section to reorder it. Turn off the switch to hide a section.</string>
     <string name="debug">Debug</string>
 </resources>

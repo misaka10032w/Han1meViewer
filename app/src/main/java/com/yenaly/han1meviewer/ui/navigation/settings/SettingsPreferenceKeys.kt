@@ -25,6 +25,8 @@ object SettingsPreferenceKeys {
     const val HORIZONTAL_CARD_COUNT_COMPACT = "horizontal_card_count_compact"
     const val HORIZONTAL_CARD_COUNT_MEDIUM = "horizontal_card_count_medium"
     const val HORIZONTAL_CARD_COUNT_EXPANDED = "horizontal_card_count_expanded"
+    const val HOME_CATEGORY_ORDER = "home_category_order"
+    const val HOME_CATEGORY_HIDDEN = "home_category_hidden"
     const val SHOW_BOTTOM_PROGRESS = "show_bottom_progress"
     const val SWITCH_PLAYER_KERNEL = "switch_player_kernel"
     const val PLAYER_SPEED = "player_speed"

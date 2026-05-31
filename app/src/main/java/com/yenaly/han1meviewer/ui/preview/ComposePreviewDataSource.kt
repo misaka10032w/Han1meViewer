@@ -236,16 +236,19 @@ val fakeHomePageVideos = listOf(
 
 val fakeCategories = listOf(
     HomeCategory(
+        key = "preview_latest",
         titleRes = R.string.latest_hanime,
         genre = "裏番",
         videos = fakeHomePageVideos,
     ),
     HomeCategory(
+        key = "preview_release",
         titleRes = R.string.latest_release,
         sort = "最新上市",
         videos = fakeHomePageVideos.shuffled().take(4),
     ),
     HomeCategory(
+        key = "preview_watched",
         titleRes = R.string.they_watched,
         sort = "他們在看",
         videos = fakeHomePageVideos.shuffled().take(5),
