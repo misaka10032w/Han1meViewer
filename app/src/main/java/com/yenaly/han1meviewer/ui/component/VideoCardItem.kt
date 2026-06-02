@@ -37,6 +37,7 @@ import com.yenaly.han1meviewer.logic.model.VideoItemType
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.preview.fakeVideosItem
 import com.yenaly.han1meviewer.ui.screen.RetryableImage
+import com.yenaly.han1meviewer.util.DisplayTextLocalizer
 
 
 /**
@@ -141,7 +142,7 @@ fun VideoCardItem(
                         )
                         Text(
                             modifier = Modifier.padding(horizontal = 2.dp),
-                            text = it,
+                            text = DisplayTextLocalizer.localizeViews(it),
                             color = MaterialTheme.colorScheme.onSurface,
                             fontSize = textFontSize,
                         )
@@ -246,7 +247,7 @@ fun VideoCardItem(
                 Spacer(modifier = Modifier.weight(1f))
                 if (!videoItem.uploadTime.isNullOrEmpty()) {
                     Text(
-                        text = videoItem.uploadTime!!,
+                        text = DisplayTextLocalizer.localizeRelativeTime(videoItem.uploadTime!!),
                         fontSize = 11.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

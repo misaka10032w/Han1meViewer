@@ -88,6 +88,7 @@ import com.yenaly.han1meviewer.ui.screen.rememberCardResponsiveWidth
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
 import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
 import com.yenaly.han1meviewer.ui.theme.VideoSimplifiedCardMinWidth
+import com.yenaly.han1meviewer.util.DisplayTextLocalizer
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
@@ -877,7 +878,7 @@ private fun MetaSection(video: HanimeVideo, fromDownload: Boolean) {
     val viewsText = if (fromDownload) {
         stringResource(R.string.s_view_times, "0721")
     } else {
-        stringResource(R.string.s_view_times, video.views.toString())
+        DisplayTextLocalizer.localizeViews(video.views.toString())
     }
     val uploadTime = video.uploadTime?.format(previewSafeDateFormat).orEmpty()
 

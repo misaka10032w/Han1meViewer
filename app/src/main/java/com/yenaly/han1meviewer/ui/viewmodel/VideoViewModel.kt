@@ -192,9 +192,11 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
 
     fun resolveTagSearchKey(tag: String): String = TagLocalizer.resolveSearchKey(tag)
 
-    private fun HanimeVideo.withLocalizedTags(): HanimeVideo {
-        if (tags.isEmpty()) return this
-        return copy(tags = TagLocalizer.localizeTags(tags))
+    private fun HanimeVideo.withLocalizedLabels(): HanimeVideo {
+        return copy(
+            tags = TagLocalizer.localizeTags(tags),
+            artist = artist?.copy(genre = TagLocalizer.localizeTag(artist.genre)),
+        )
     }
 
     fun buildLocalPlayInfo(localPath: String? = null): HanimeVideo {
@@ -246,12 +248,12 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
                         )
                         VideoLoadingState.Success(
                             state.info.copy(videoUrls = resolution.toResolutionLinkMap())
-                                .withLocalizedTags()
+                                .withLocalizedLabels()
                         )
                     }
 
                     state is VideoLoadingState.Success -> {
-                        VideoLoadingState.Success(state.info.withLocalizedTags())
+                        VideoLoadingState.Success(state.info.withLocalizedLabels())
                     }
 
                     else -> state
@@ -266,7 +268,7 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
     }
 
     fun restoreFromCacheIfExists(code: String): Boolean {
-        val cached = videoIntroUiStateMap[code]?.cachedVideo?.withLocalizedTags() ?: return false
+        val cached = videoIntroUiStateMap[code]?.cachedVideo?.withLocalizedLabels() ?: return false
         updateVideoIntroUiState(code) { copy(introRestored = true) }
         _hanimeVideoFlow.value = cached
         _hanimeVideoStateFlow.value = VideoLoadingState.Success(cached)

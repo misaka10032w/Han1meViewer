@@ -31,6 +31,7 @@ import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
+import com.yenaly.han1meviewer.util.DisplayTextLocalizer
 
 /**
  * 视频评论卡片组件。
@@ -92,7 +93,7 @@ fun VideoCommentCard(
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = comment.date,
+                        text = DisplayTextLocalizer.localizeRelativeTime(comment.date),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

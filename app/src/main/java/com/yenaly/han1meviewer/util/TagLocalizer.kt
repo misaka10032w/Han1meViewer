@@ -20,8 +20,10 @@ object TagLocalizer {
 
     fun localizeTags(tags: List<String>): List<String> {
         if (tags.isEmpty()) return tags
-        return tags.map { tag -> tagMappings.labels[tag] ?: tag }
+        return tags.map(::localizeTag)
     }
+
+    fun localizeTag(tag: String): String = tagMappings.labels[tag] ?: tag
 
     fun resolveSearchKey(tag: String): String = tagMappings.searchKeys[tag] ?: tag
 
