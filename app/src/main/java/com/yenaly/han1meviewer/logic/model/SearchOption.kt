@@ -64,6 +64,8 @@ data class SearchOption(
         val zhrTW: String? = null,
         @SerialName("en")
         val en: String? = null,
+        @SerialName("ja")
+        val ja: String? = null,
     ) : Parcelable
 
     override fun hashCode(): Int = searchKey.hashCode()
@@ -71,7 +73,7 @@ data class SearchOption(
     val value: String
         get() = when {
             lang == null -> name.orEmpty()
-            name == null -> LanguageHelper.preferredLanguage.let { pl ->
+            else -> LanguageHelper.preferredLanguage.let { pl ->
                 when (pl.language) {
                     Locale.CHINESE.language -> when (pl.country) {
                         Locale.SIMPLIFIED_CHINESE.country -> lang.zhrCN
@@ -79,10 +81,9 @@ data class SearchOption(
                     }
 
                     Locale.ENGLISH.language -> lang.en
+                    Locale.JAPANESE.language -> lang.ja
                     else -> lang.zhrTW
                 }
             } ?: lang.zhrTW.orEmpty()
-
-            else -> throw IllegalArgumentException("Unknown lang type: ${lang.javaClass.name}")
         }
 }
