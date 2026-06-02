@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.util
 
 import com.yenaly.han1meviewer.logic.model.SearchOption
+import com.yenaly.yenaly_libs.utils.LanguageHelper
 
 object TagLocalizer {
 
@@ -9,14 +10,26 @@ object TagLocalizer {
         val searchKeys: Map<String, String>,
     )
 
-    private val tagMappings: TagMappings by lazy {
-        buildTagMappings(
-            loadAssetAs<Map<String, List<SearchOption>>>("search_options/tags.json")
-                .orEmpty()
-                .values
-                .flatten() + loadAssetAs<List<SearchOption>>("search_options/genre.json").orEmpty()
-        )
+    private val tagOptions: List<SearchOption> by lazy {
+        loadAssetAs<Map<String, List<SearchOption>>>("search_options/tags.json")
+            .orEmpty()
+            .values
+            .flatten() + loadAssetAs<List<SearchOption>>("search_options/genre.json").orEmpty()
     }
+
+    private var cachedLanguageTag: String? = null
+    private var cachedMappings: TagMappings? = null
+
+    private val tagMappings: TagMappings
+        get() {
+            val languageTag = LanguageHelper.preferredLanguage.toLanguageTag()
+            val mappings = cachedMappings
+            if (cachedLanguageTag == languageTag && mappings != null) return mappings
+            return buildTagMappings(tagOptions).also {
+                cachedLanguageTag = languageTag
+                cachedMappings = it
+            }
+        }
 
     fun localizeTags(tags: List<String>): List<String> {
         if (tags.isEmpty()) return tags
