@@ -335,7 +335,14 @@ object Parser {
         if (!likeStatus.isNullOrEmpty()) {
             likeStatus = "1"
         }
+        var unlikeStatus = parseBody.selectFirst("[name=unlike-status]")
+            ?.attr("value")
+        if (!unlikeStatus.isNullOrEmpty()) {
+            unlikeStatus = "1"
+        }
         val likesCount = parseBody.selectFirst("input[name=likes-count]")
+            ?.attr("value")?.toIntOrNull()
+        val unlikesCount = parseBody.selectFirst("input[name=unlikes-count]")
             ?.attr("value")?.toIntOrNull()
         val videoDetailWrapper = parseBody.selectFirst("div[class=video-details-wrapper]")
         val videoCaptionText = videoDetailWrapper?.selectFirst("div[class^=video-caption-text]")
@@ -552,6 +559,8 @@ object Parser {
                 artist = artist.logIfParseNull(Parser::hanimeVideoVer2.name, "artist"),
                 favTimes = likesCount,
                 isFav = likeStatus == "1",
+                unlikesCount = unlikesCount,
+                isUnlike = unlikeStatus == "1",
                 csrfToken = csrfToken,
                 currentUserId = currentUserId,
                 originalComic = originalComic

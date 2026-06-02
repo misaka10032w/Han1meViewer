@@ -304,11 +304,29 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
             ).collect { state ->
                 _addToFavVideoFlow.emit(state)
                 if (likeStatus) {
-                    // 代表移除喜爱
-                    _hanimeVideoFlow.update { it?.decFavTime() }
+                    _hanimeVideoFlow.update { it?.rateVideo(isPositive = true) }
                 } else {
-                    // 代表添加喜爱
-                    _hanimeVideoFlow.update { it?.incFavTime() }
+                    _hanimeVideoFlow.update { it?.rateVideo(isPositive = true) }
+                }
+            }
+        }
+    }
+
+    fun rateVideo(video: HanimeVideo, isPositive: Boolean) {
+        viewModelScope.launch {
+            NetworkRepo.rateVideo(
+                videoCode = videoCode,
+                isPositive = isPositive,
+                likeStatus = video.isFav,
+                unlikeStatus = video.isUnlike,
+                likesCount = video.favTimes ?: 0,
+                unlikesCount = video.unlikesCount ?: 0,
+                currentUserId = video.currentUserId,
+                token = csrfToken,
+            ).collect { state ->
+                _addToFavVideoFlow.emit(state)
+                if (state is WebsiteState.Success) {
+                    _hanimeVideoFlow.update { it?.rateVideo(isPositive) }
                 }
             }
         }

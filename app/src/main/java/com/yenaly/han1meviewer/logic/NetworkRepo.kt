@@ -309,6 +309,33 @@ object NetworkRepo {
         return@websiteIOFlow WebsiteState.Success(likeStatus)
     }
 
+    fun rateVideo(
+        videoCode: String,
+        isPositive: Boolean,
+        likeStatus: Boolean,
+        unlikeStatus: Boolean,
+        likesCount: Int,
+        unlikesCount: Int,
+        currentUserId: String?,
+        token: String?,
+    ) = websiteIOFlow(
+        request = {
+            HanimeNetwork.myListService.rateVideo(
+                videoCode = videoCode,
+                isPositive = if (isPositive) 1 else 0,
+                likeStatus = if (likeStatus) "1" else EMPTY_STRING,
+                unlikeStatus = if (unlikeStatus) "1" else EMPTY_STRING,
+                likesCount = likesCount,
+                unlikesCount = unlikesCount,
+                csrfToken = token,
+                userId = currentUserId,
+            )
+        }
+    ) {
+        Log.d("rate_video_body", it)
+        return@websiteIOFlow WebsiteState.Success(isPositive)
+    }
+
     fun createPlaylist(
         videoCode: String,
         title: String,

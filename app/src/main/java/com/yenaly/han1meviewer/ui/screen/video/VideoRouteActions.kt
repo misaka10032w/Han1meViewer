@@ -106,6 +106,14 @@ class VideoRouteActions(
         }
     }
 
+    fun rateVideo(video: HanimeVideo, isPositive: Boolean) {
+        if (!Preferences.isAlreadyLogin) {
+            showShortToast(R.string.login_first)
+            return
+        }
+        viewModel.rateVideo(video, isPositive)
+    }
+
     fun updateMyListSelection(
         myList: HanimeVideo.MyList?,
         selectedStates: List<Boolean>,

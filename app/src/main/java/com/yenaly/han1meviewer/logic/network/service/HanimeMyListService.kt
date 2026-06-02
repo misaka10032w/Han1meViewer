@@ -128,6 +128,20 @@ interface HanimeMyListService {
         @Header("X-CSRF-TOKEN") csrfToken_1: String? = csrfToken,
     ): Response<ResponseBody>
 
+    @FormUrlEncoded
+    @POST("like")
+    suspend fun rateVideo(
+        @Field("like-foreign-id") videoCode: String,
+        @Field("like-is-positive") isPositive: Int,
+        @Field("like-status") likeStatus: String,
+        @Field("unlike-status") unlikeStatus: String,
+        @Field("likes-count") likesCount: Int,
+        @Field("unlikes-count") unlikesCount: Int,
+        @Field("_token") csrfToken: String?,
+        @Field("like-user-id") userId: String?,
+        @Header("X-CSRF-TOKEN") csrfToken_1: String? = csrfToken,
+    ): Response<ResponseBody>
+
     @GET("user/{userid}/playlists")
     suspend fun getPlaylists(
         @Path("userid") userId: String,
