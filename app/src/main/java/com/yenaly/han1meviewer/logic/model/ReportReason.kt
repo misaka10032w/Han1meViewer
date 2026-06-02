@@ -25,6 +25,8 @@ data class ReportReason(
         val zhrTW: String? = null,
         @SerialName("en")
         val en: String? = null,
+        @SerialName("ja")
+        val ja: String? = null,
     ) : Parcelable
 
     override fun hashCode(): Int = reasonKey?.hashCode() ?: 0
@@ -40,6 +42,7 @@ data class ReportReason(
                     else -> lang.zhrTW
                 }
                 Locale.ENGLISH.language -> lang.en
+                Locale.JAPANESE.language -> lang.ja
                 else -> lang.zhrTW
             } ?: lang.zhrTW.orEmpty()
         }

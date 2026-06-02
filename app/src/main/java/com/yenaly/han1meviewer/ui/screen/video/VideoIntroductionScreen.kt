@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.video
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -29,8 +30,10 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -38,6 +41,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -84,6 +88,7 @@ import com.yenaly.han1meviewer.ui.screen.rememberCardResponsiveWidth
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
 import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
 import com.yenaly.han1meviewer.ui.theme.VideoSimplifiedCardMinWidth
+import com.yenaly.han1meviewer.util.DisplayTextLocalizer
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
@@ -808,14 +813,24 @@ private fun ArtistSection(
                 )
             }
             artist.post?.let {
-                Button(onClick = onToggleSubscribe) {
-                    Text(
-                        text = if (artist.isSubscribed) {
-                            stringResource(R.string.subscribed)
-                        } else {
-                            stringResource(R.string.subscribe)
-                        }
-                    )
+                if (artist.isSubscribed) {
+                    OutlinedButton(
+                        onClick = onToggleSubscribe,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant
+                        )
+                    ) {
+                        Text(text = stringResource(R.string.subscribed))
+                    }
+                } else {
+                    Button(onClick = onToggleSubscribe) {
+                        Text(text = stringResource(R.string.subscribe))
+                    }
                 }
             }
         }
@@ -829,26 +844,31 @@ private fun TitleSection(video: HanimeVideo, onCopyText: (String) -> Unit) {
     val secondaryTitle = video.title.takeIf { it != primaryTitle }
 
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(
-            text = primaryTitle,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.combinedClickable(
-                onClick = {},
-                onLongClick = { onCopyText(primaryTitle) },
-            )
-        )
-        secondaryTitle?.let {
+        SelectionContainer {
             Text(
-                text = it,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                text = primaryTitle,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.combinedClickable(
                     onClick = {},
-                    onLongClick = { onCopyText(it) },
+                    onLongClick = { },
                 )
             )
+        }
+
+        secondaryTitle?.let {
+            SelectionContainer {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.combinedClickable(
+                        onClick = {},
+                        onLongClick = { },
+                    )
+                )
+            }
         }
     }
 }
@@ -858,7 +878,7 @@ private fun MetaSection(video: HanimeVideo, fromDownload: Boolean) {
     val viewsText = if (fromDownload) {
         stringResource(R.string.s_view_times, "0721")
     } else {
-        stringResource(R.string.s_view_times, video.views.toString())
+        DisplayTextLocalizer.localizeViews(video.views.toString())
     }
     val uploadTime = video.uploadTime?.format(previewSafeDateFormat).orEmpty()
 

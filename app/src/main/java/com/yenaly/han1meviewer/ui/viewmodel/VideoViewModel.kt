@@ -23,6 +23,7 @@ import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
+import com.yenaly.han1meviewer.util.TagLocalizer
 import com.yenaly.yenaly_libs.base.YenalyViewModel
 import com.yenaly.yenaly_libs.utils.dp
 import kotlinx.coroutines.Dispatchers
@@ -189,6 +190,15 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
         videoIntroUiStateMap[videoCode] = current.transform()
     }
 
+    fun resolveTagSearchKey(tag: String): String = TagLocalizer.resolveSearchKey(tag)
+
+    private fun HanimeVideo.withLocalizedLabels(): HanimeVideo {
+        return copy(
+            tags = TagLocalizer.localizeTags(tags),
+            artist = artist?.copy(genre = TagLocalizer.localizeTag(artist.genre)),
+        )
+    }
+
     fun buildLocalPlayInfo(localPath: String? = null): HanimeVideo {
         val resolution = HanimeResolution()
         resolution.parseResolution(
@@ -209,10 +219,9 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
     }
     fun getHanimeVideo(videoCode: String,localUri: String? = null) {
         if (videoCode == "-1"){
-            _hanimeVideoStateFlow.value = VideoLoadingState.Success(
-                buildLocalPlayInfo(localUri)
-            )
-            _hanimeVideoFlow.value = buildLocalPlayInfo(localUri)
+            val localPlayInfo = buildLocalPlayInfo(localUri)
+            _hanimeVideoStateFlow.value = VideoLoadingState.Success(localPlayInfo)
+            _hanimeVideoFlow.value = localPlayInfo
             return
         }
         if (videoIntroUiStateMap[videoCode]?.introRestored == true) return
@@ -229,16 +238,25 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
                 NetworkRepo.getHanimeVideo(videoCode)
             }
             flow.collect { state ->
-                val emitState = if (localUri != null && state is VideoLoadingState.Success) {
-                    val resolution = HanimeResolution()
-                    resolution.parseResolution(
-                        HanimeResolution.RES_1080P,
-                        resLink = localUri,
-                        type = "video/mp4"
-                    )
-                    VideoLoadingState.Success(state.info.copy(videoUrls = resolution.toResolutionLinkMap()))
-                } else {
-                    state
+                val emitState = when {
+                    localUri != null && state is VideoLoadingState.Success -> {
+                        val resolution = HanimeResolution()
+                        resolution.parseResolution(
+                            HanimeResolution.RES_1080P,
+                            resLink = localUri,
+                            type = "video/mp4"
+                        )
+                        VideoLoadingState.Success(
+                            state.info.copy(videoUrls = resolution.toResolutionLinkMap())
+                                .withLocalizedLabels()
+                        )
+                    }
+
+                    state is VideoLoadingState.Success -> {
+                        VideoLoadingState.Success(state.info.withLocalizedLabels())
+                    }
+
+                    else -> state
                 }
                 _hanimeVideoStateFlow.value = emitState
                 if (emitState is VideoLoadingState.Success) {
@@ -250,7 +268,7 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
     }
 
     fun restoreFromCacheIfExists(code: String): Boolean {
-        val cached = videoIntroUiStateMap[code]?.cachedVideo ?: return false
+        val cached = videoIntroUiStateMap[code]?.cachedVideo?.withLocalizedLabels() ?: return false
         updateVideoIntroUiState(code) { copy(introRestored = true) }
         _hanimeVideoFlow.value = cached
         _hanimeVideoStateFlow.value = VideoLoadingState.Success(cached)

@@ -46,7 +46,7 @@ object Parser {
      */
     object Regex {
         val videoSource = Regex("""const source = '(.+)'""")
-        val viewAndUploadTime = Regex("""(觀看次數|观看次数)：(.+)次 *(\d{4}-\d{2}-\d{2})""")
+        val viewAndUploadTime = Regex("""(觀看次數|观看次数)：(.+次) *(\d{4}-\d{2}-\d{2})""")
     }
 
     fun extractTokenFromLoginPage(body: String): String {

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.model.HanimePreview
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.util.TagLocalizer
 import com.yenaly.yenaly_libs.base.YenalyViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,9 +35,10 @@ class PreviewViewModel(application: Application) : YenalyViewModel(application) 
                 return@launch
             }
             NetworkRepo.getHanimePreview(date).collect { preview ->
-                _previewFlow.value = preview
-                if (preview !is WebsiteState.Loading) {
-                    previewCache[date] = preview
+                val localizedPreview = preview.withLocalizedTags()
+                _previewFlow.value = localizedPreview
+                if (localizedPreview !is WebsiteState.Loading) {
+                    previewCache[date] = localizedPreview
                 }
             }
         }
@@ -52,9 +54,23 @@ class PreviewViewModel(application: Application) : YenalyViewModel(application) 
                         .first { it !is WebsiteState.Loading }
                 }
             }.getOrElse { WebsiteState.Error(it) }
-            previewCache[date] = preview
+            previewCache[date] = preview.withLocalizedTags()
         }
     }
 
     fun getCachedPreview(date: String): WebsiteState<HanimePreview>? = previewCache[date]
+
+    private fun WebsiteState<HanimePreview>.withLocalizedTags(): WebsiteState<HanimePreview> {
+        return if (this is WebsiteState.Success) {
+            WebsiteState.Success(info.withLocalizedTags())
+        } else {
+            this
+        }
+    }
+
+    private fun HanimePreview.withLocalizedTags(): HanimePreview {
+        return copy(previewInfo = previewInfo.map { info ->
+            info.copy(tags = TagLocalizer.localizeTags(info.tags))
+        })
+    }
 }

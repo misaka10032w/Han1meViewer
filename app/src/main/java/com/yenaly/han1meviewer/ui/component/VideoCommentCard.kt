@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
@@ -31,6 +32,7 @@ import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
+import com.yenaly.han1meviewer.util.DisplayTextLocalizer
 
 /**
  * 视频评论卡片组件。
@@ -92,7 +94,7 @@ fun VideoCommentCard(
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = comment.date,
+                        text = DisplayTextLocalizer.localizeRelativeTime(comment.date),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -101,17 +103,17 @@ fun VideoCommentCard(
                 IconButton(onClick = onReport, modifier = Modifier.size(36.dp)) {
                     Icon(
                         painter = painterResource(R.drawable.ic_baseline_report_24),
-                        contentDescription = stringResource(R.string.submit_bug),
+                        contentDescription = stringResource(R.string.report_reason_hint),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
-
-            Text(
-                text = comment.content,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-
+            SelectionContainer {
+                Text(
+                    text = comment.content,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically,

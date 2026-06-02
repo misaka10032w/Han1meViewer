@@ -76,7 +76,9 @@ fun RenderVideoIntroductionContent(
             onRetry = { viewModel.getHanimeVideo(videoCode) },
             onOpenVideo = onOpenVideo,
             onOpenArtist = onOpenArtist,
-            onNavigateToSearch = onNavigateToSearch,
+            onNavigateToSearch = { tag ->
+                onNavigateToSearch(viewModel.resolveTagSearchKey(tag))
+            },
             onToggleSubscribe = onToggleSubscribe,
             onToggleFavorite = { video?.let(onToggleFavorite) },
             onManageMyList = { _, selectedStates ->
