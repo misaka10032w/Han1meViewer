@@ -3,7 +3,8 @@
     "lang": {
       "zh-rCN": "最新上市",
       "en": "New Arrival",
-      "zh-rTW": "最新上市"
+      "zh-rTW": "最新上市",
+      "ja": "新着発売"
     },
     "search_key": "最新上市"
   },
@@ -11,7 +12,8 @@
     "lang": {
       "zh-rCN": "最新上傳",
       "en": "New Upload",
-      "zh-rTW": "最新上傳"
+      "zh-rTW": "最新上傳",
+      "ja": "新着アップロード"
     },
     "search_key": "最新上傳"
   },
@@ -19,7 +21,8 @@
     "lang": {
       "zh-rCN": "本日排行",
       "en": "Daily Ranking",
-      "zh-rTW": "本日排行"
+      "zh-rTW": "本日排行",
+      "ja": "本日ランキング"
     },
     "search_key": "本日排行"
   },
@@ -27,7 +30,8 @@
     "lang": {
       "zh-rCN": "本週排行",
       "en": "Weekly Ranking",
-      "zh-rTW": "本週排行"
+      "zh-rTW": "本週排行",
+      "ja": "週間ランキング"
     },
     "search_key": "本週排行"
   },
@@ -35,7 +39,8 @@
     "lang": {
       "zh-rCN": "本月排行",
       "en": "Monthly Ranking",
-      "zh-rTW": "本月排行"
+      "zh-rTW": "本月排行",
+      "ja": "月間ランキング"
     },
     "search_key": "本月排行"
   },
@@ -43,7 +48,8 @@
     "lang": {
       "zh-rCN": "观看次数",
       "en": "View Count",
-      "zh-rTW": "觀看次數"
+      "zh-rTW": "觀看次數",
+      "ja": "視聴回数"
     },
     "search_key": "觀看次數"
   },
@@ -51,7 +57,8 @@
     "lang": {
       "zh-rCN": "点赞比例",
       "en": "Like Ratio",
-      "zh-rTW": "讚好比例"
+      "zh-rTW": "讚好比例",
+      "ja": "高評価率"
     },
     "search_key": "讚好比例"
   },
@@ -59,7 +66,8 @@
     "lang": {
       "zh-rCN": "他们在看",
       "en": "Trending",
-      "zh-rTW": "他們在看"
+      "zh-rTW": "他們在看",
+      "ja": "トレンド"
     },
     "search_key": "他們在看"
   },
@@ -67,7 +75,8 @@
     "lang": {
       "zh-rCN": "时长最长",
       "en": "Longest duration",
-      "zh-rTW": "時長最長"
+      "zh-rTW": "時長最長",
+      "ja": "再生時間が長い"
     },
     "search_key": "時長最長"
   }

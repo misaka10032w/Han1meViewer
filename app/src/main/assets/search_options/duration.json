@@ -3,7 +3,8 @@
     "lang": {
       "zh-rCN": "全部",
       "en": "All",
-      "zh-rTW": "全部"
+      "zh-rTW": "全部",
+      "ja": "すべて"
     },
     "search_key": null
   },
@@ -11,7 +12,8 @@
     "lang": {
       "zh-rCN": "1分钟以上",
       "en": "More than 1 minute",
-      "zh-rTW": "1分鐘以上"
+      "zh-rTW": "1分鐘以上",
+      "ja": "1分以上"
     },
     "search_key": "1 分鐘 +"
   },
@@ -19,7 +21,8 @@
     "lang": {
       "zh-rCN": "5分钟以上",
       "en": "More than 5 minute",
-      "zh-rTW": "5分鐘以上"
+      "zh-rTW": "5分鐘以上",
+      "ja": "5分以上"
     },
     "search_key": "5 分鐘 +"
   },
@@ -27,7 +30,8 @@
     "lang": {
       "zh-rCN": "10分钟以上",
       "en": "More than 10 minutes",
-      "zh-rTW": "10分鐘以上"
+      "zh-rTW": "10分鐘以上",
+      "ja": "10分以上"
     },
     "search_key": "10 分鐘 +"
   },
@@ -35,7 +39,8 @@
     "lang": {
       "zh-rCN": "20分钟以上",
       "en": "More than 20 minutes",
-      "zh-rTW": "20分鐘以上"
+      "zh-rTW": "20分鐘以上",
+      "ja": "20分以上"
     },
     "search_key": "20 分鐘 +"
   },
@@ -43,7 +48,8 @@
     "lang": {
       "zh-rCN": "30分钟以上",
       "en": "More than 30 minutes",
-      "zh-rTW": "30分鐘以上"
+      "zh-rTW": "30分鐘以上",
+      "ja": "30分以上"
     },
     "search_key": "30 分鐘 +"
   },
@@ -51,7 +57,8 @@
     "lang": {
       "zh-rCN": "60分钟以上",
       "en": "More than 60 minutes",
-      "zh-rTW": "60分鐘以上"
+      "zh-rTW": "60分鐘以上",
+      "ja": "60分以上"
     },
     "search_key": "60 分鐘 +"
   },
@@ -59,7 +66,8 @@
     "lang": {
       "zh-rCN": "0~10分钟",
       "en": "0~10 minutes",
-      "zh-rTW": "0~10分鐘"
+      "zh-rTW": "0~10分鐘",
+      "ja": "0〜10分"
     },
     "search_key": "0 - 10 分鐘"
   },
@@ -67,7 +75,8 @@
     "lang": {
       "zh-rCN": "0~20分钟",
       "en": "0~20 minutes",
-      "zh-rTW": "0~20分鐘以上"
+      "zh-rTW": "0~20分鐘以上",
+      "ja": "0〜20分"
     },
     "search_key": "0 - 20 分鐘"
   }

@@ -3,7 +3,8 @@
     "lang": {
       "zh-rCN": "全部",
       "en": "All",
-      "zh-rTW": "全部"
+      "zh-rTW": "全部",
+      "ja": "すべて"
     },
     "search_key": "全部"
   },
@@ -11,7 +12,8 @@
     "lang": {
       "zh-rCN": "里番",
       "en": "Hentai",
-      "zh-rTW": "裏番"
+      "zh-rTW": "裏番",
+      "ja": "裏番"
     },
     "search_key": "裏番"
   },
@@ -19,7 +21,8 @@
     "lang": {
       "zh-rCN": "泡面番",
       "en": "Short Anime",
-      "zh-rTW": "泡麵番"
+      "zh-rTW": "泡麵番",
+      "ja": "ショートアニメ"
     },
     "search_key": "泡麵番"
   },
@@ -27,7 +30,8 @@
     "lang": {
       "zh-rCN": "Motion Anime",
       "en": "Motion Anime",
-      "zh-rTW": "Motion Anime"
+      "zh-rTW": "Motion Anime",
+      "ja": "モーションアニメ"
     },
     "search_key": "Motion Anime"
   },
@@ -35,7 +39,8 @@
     "lang": {
       "zh-rCN": "3D动画",
       "en": "3D Animation",
-      "zh-rTW": "3D動畫"
+      "zh-rTW": "3D動畫",
+      "ja": "3Dアニメ"
     },
     "search_key": "3DCG"
   },
@@ -43,7 +48,8 @@
     "lang": {
       "zh-rCN": "2.5D",
       "en": "2.5D",
-      "zh-rTW": "2.5D"
+      "zh-rTW": "2.5D",
+      "ja": "2.5D"
     },
     "search_key": "2.5D"
   },
@@ -51,7 +57,8 @@
     "lang": {
       "zh-rCN": "2D动画",
       "en": "2D Animation",
-      "zh-rTW": "2D動畫"
+      "zh-rTW": "2D動畫",
+      "ja": "2Dアニメ"
     },
     "search_key": "2D動畫"
   },
@@ -59,7 +66,8 @@
     "lang": {
       "zh-rCN": "AI生成",
       "en": "AI-Generated",
-      "zh-rTW": "AI生成"
+      "zh-rTW": "AI生成",
+      "ja": "AI生成"
     },
     "search_key": "AI生成"
   },
@@ -67,7 +75,8 @@
     "lang": {
       "zh-rCN": "MMD",
       "en": "MMD",
-      "zh-rTW": "MMD"
+      "zh-rTW": "MMD",
+      "ja": "MMD"
     },
     "search_key": "MMD"
   },
@@ -75,7 +84,8 @@
     "lang": {
       "zh-rCN": "Cosplay",
       "en": "Cosplay",
-      "zh-rTW": "Cosplay"
+      "zh-rTW": "Cosplay",
+      "ja": "コスプレ"
     },
     "search_key": "Cosplay"
   }

@@ -3,7 +3,8 @@
     "lang": {
       "zh-rCN": "煽动仇恨或恶意内容",
       "en": "Inciting hatred or malicious content",
-      "zh-rTW": "煽動仇恨或惡意內容"
+      "zh-rTW": "煽動仇恨或惡意內容",
+      "ja": "憎悪や悪意のある内容の扇動"
     },
     "reason_key": "煽動仇恨或惡意內容"
   },
@@ -11,7 +12,8 @@
     "lang": {
       "zh-rCN": "暴力或令人反感的内容",
       "en": "Violent or offensive content",
-      "zh-rTW": "暴力或令人反感的內容"
+      "zh-rTW": "暴力或令人反感的內容",
+      "ja": "暴力的または不快な内容"
     },
     "reason_key": "暴力或令人反感的內容"
   },
@@ -19,7 +21,8 @@
     "lang": {
       "zh-rCN": "广告内容或垃圾内容",
       "en": "Advertising content or spam",
-      "zh-rTW": "廣告內容或垃圾內容"
+      "zh-rTW": "廣告內容或垃圾內容",
+      "ja": "広告またはスパムの内容"
     },
     "reason_key": "廣告內容或垃圾內容"
   },
@@ -27,7 +30,8 @@
     "lang": {
       "zh-rCN": "其他检举理由",
       "en": "Other reporting reasons",
-      "zh-rTW": "其他檢舉理由"
+      "zh-rTW": "其他檢舉理由",
+      "ja": "その他の通報理由"
     },
     "reason_key": "其他檢舉理由"
   }
