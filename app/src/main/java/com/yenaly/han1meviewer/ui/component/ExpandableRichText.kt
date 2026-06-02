@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -70,33 +71,35 @@ fun ExpandableRichText(
                 transitionSpec = { fadeIn() togetherWith fadeOut() },
                 label = "expandable-rich-text",
             ) { isExpanded ->
-                Text(
-                    text = annotatedText,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = if (isExpanded) Int.MAX_VALUE else maxCollapsedLines,
-                    overflow = if (isExpanded) TextOverflow.Clip else TextOverflow.Ellipsis,
-                    onTextLayout = { result ->
-                        layoutResult = result
-                        if (!isExpanded) {
-                            hasOverflow = result.hasVisualOverflow
-                        }
-                    },
-                    modifier = Modifier.pointerInput(annotatedText, layoutResult) {
-                        detectTapGestures { tapOffset ->
-                            val result = layoutResult ?: return@detectTapGestures
-                            val offset = result.getOffsetForPosition(tapOffset)
-                            annotatedText
-                                .getStringAnnotations(UrlAnnotationTag, offset, offset)
-                                .firstOrNull()
-                                ?.item
-                                ?.let { url ->
-                                    if (onLinkClick != null) onLinkClick(url)
-                                    else uriHandler.openUri(url)
-                                }
-                        }
-                    },
-                )
+                SelectionContainer {
+                    Text(
+                        text = annotatedText,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = if (isExpanded) Int.MAX_VALUE else maxCollapsedLines,
+                        overflow = if (isExpanded) TextOverflow.Clip else TextOverflow.Ellipsis,
+                        onTextLayout = { result ->
+                            layoutResult = result
+                            if (!isExpanded) {
+                                hasOverflow = result.hasVisualOverflow
+                            }
+                        },
+                        modifier = Modifier.pointerInput(annotatedText, layoutResult) {
+                            detectTapGestures { tapOffset ->
+                                val result = layoutResult ?: return@detectTapGestures
+                                val offset = result.getOffsetForPosition(tapOffset)
+                                annotatedText
+                                    .getStringAnnotations(UrlAnnotationTag, offset, offset)
+                                    .firstOrNull()
+                                    ?.item
+                                    ?.let { url ->
+                                        if (onLinkClick != null) onLinkClick(url)
+                                        else uriHandler.openUri(url)
+                                    }
+                            }
+                        },
+                    )
+                }
             }
             if (!expanded && hasOverflow) {
                 Text(

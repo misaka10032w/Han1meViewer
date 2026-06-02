@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -842,26 +843,31 @@ private fun TitleSection(video: HanimeVideo, onCopyText: (String) -> Unit) {
     val secondaryTitle = video.title.takeIf { it != primaryTitle }
 
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(
-            text = primaryTitle,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.combinedClickable(
-                onClick = {},
-                onLongClick = { onCopyText(primaryTitle) },
-            )
-        )
-        secondaryTitle?.let {
+        SelectionContainer {
             Text(
-                text = it,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                text = primaryTitle,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.combinedClickable(
                     onClick = {},
-                    onLongClick = { onCopyText(it) },
+                    onLongClick = { },
                 )
             )
+        }
+
+        secondaryTitle?.let {
+            SelectionContainer {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.combinedClickable(
+                        onClick = {},
+                        onLongClick = { },
+                    )
+                )
+            }
         }
     }
 }
