@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.video
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -31,6 +32,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -38,6 +40,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -808,14 +811,24 @@ private fun ArtistSection(
                 )
             }
             artist.post?.let {
-                Button(onClick = onToggleSubscribe) {
-                    Text(
-                        text = if (artist.isSubscribed) {
-                            stringResource(R.string.subscribed)
-                        } else {
-                            stringResource(R.string.subscribe)
-                        }
-                    )
+                if (artist.isSubscribed) {
+                    OutlinedButton(
+                        onClick = onToggleSubscribe,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outlineVariant
+                        )
+                    ) {
+                        Text(text = stringResource(R.string.subscribed))
+                    }
+                } else {
+                    Button(onClick = onToggleSubscribe) {
+                        Text(text = stringResource(R.string.subscribe))
+                    }
                 }
             }
         }
