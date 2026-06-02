@@ -255,8 +255,7 @@ object Parser {
             uploadTime = parts[1].trim()
         }
         val infoBoxes = hanimeSearchItem.selectFirst(".stats-container .stat-item")
-        val fullText = infoBoxes?.text() ?: ""
-        val reviews = fullText.replace("thumb_up", "").trim()
+        val reviews = infoBoxes?.ownText()?.trim() ?: ""
         return HanimeInfo(
             title = title,
             coverUrl = coverUrl,
@@ -406,11 +405,13 @@ object Parser {
                 val cardMobileDuration = cardMobilePanel?.select("div[class*=card-mobile-duration]")
                 val eachDuration = cardMobileDuration?.firstOrNull()?.text()
                 val eachViews = cardMobileDuration?.getOrNull(2)?.text()
-                    ?.substringBefore("次")
                 val playlistEachCoverUrl = eachTitleCover?.absUrl("src")
                     .throwIfParseNull(Parser::hanimeVideoVer2.name, "playlistEachCoverUrl")
                 val playlistEachTitle = eachTitleCover?.attr("alt")
                     .throwIfParseNull(Parser::hanimeVideoVer2.name, "playlistEachTitle")
+                val artist = cardMobilePanel?.selectFirst("a.card-mobile-user")?.text()
+                val infoBoxes = cardMobilePanel?.select("div.card-mobile-duration.card-playlist-large")
+                val reviews = infoBoxes?.firstOrNull()?.ownText()?.trim()
                 playlistVideoList.add(
                     HanimeInfo(
                         title = playlistEachTitle, coverUrl = playlistEachCoverUrl,
@@ -424,7 +425,9 @@ object Parser {
                             "$playlistEachTitle views"
                         ),
                         isPlaying = eachIsPlaying,
-                        itemType = HanimeInfo.NORMAL
+                        itemType = HanimeInfo.NORMAL,
+                        currentArtist = artist,
+                        reviews = reviews
                     )
                 )
             }
@@ -1060,8 +1063,7 @@ object Parser {
                         uploadTime = parts[1].trim()
                     }
                     val infoBoxes = videoCard.selectFirst(".stats-container .stat-item")
-                    val fullText = infoBoxes?.text() ?: ""
-                    val reviews = fullText.replace("thumb_up", "").trim()
+                    val reviews = infoBoxes?.ownText()?.trim() ?: ""
 
                     SubscriptionVideosItem(
                         title = title,
