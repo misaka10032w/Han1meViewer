@@ -5,6 +5,7 @@
         <!--        <item name="android:statusBarColor">?android:colorBackground</item>-->
         <!--        <item name="android:navigationBarColor">?android:colorBackground</item>-->
         <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
     </style>
 
 
@@ -20,10 +21,12 @@
         <item name="android:forceDarkAllowed" tools:targetApi="q">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
         <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
     </style>
 
     <style name="Theme.Hanime" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
 
         <item name="colorPrimary">@color/md_theme_primary</item>
         <item name="colorOnPrimary">@color/md_theme_onPrimary</item>
