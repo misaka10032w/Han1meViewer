@@ -150,6 +150,8 @@
     <string name="copy_">复制</string>
     <string name="h_keyframes_shared_by_other_detected">检测到他人分享的关键H帧</string>
     <string name="h_keyframes_shared_by_other_not_detected">未检测到他人分享的关键H帧</string>
+    <string name="h_keyframes_import_shared">导入分享的关键H帧</string>
+    <string name="h_keyframes_import_shared_hint">粘贴分享内容</string>
     <string name="share_to_others">分享给其他人</string>
     <string name="latest_release">最新上市</string>
     <string name="chinese_subtitle">中文字幕</string>

@@ -31,6 +31,7 @@ import com.yenaly.yenaly_libs.utils.findActivity
 fun SettingsScaffold(
     navController: NavController,
     fallbackDestination: Any,
+    actions: @Composable () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
@@ -63,6 +64,7 @@ fun SettingsScaffold(
                             )
                         }
                     },
+                    actions = { actions() },
                     modifier = Modifier.statusBarsPadding(),
                 )
             }

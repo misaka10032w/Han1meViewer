@@ -150,6 +150,8 @@
     <string name="copy_">コピー</string>
     <string name="h_keyframes_shared_by_other_detected">他のユーザーが共有したキーHフレームを検出</string>
     <string name="h_keyframes_shared_by_other_not_detected">他のユーザーが共有したキーHフレームは見つかりませんでした</string>
+    <string name="h_keyframes_import_shared">共有キーHフレームをインポート</string>
+    <string name="h_keyframes_import_shared_hint">共有内容を貼り付け</string>
     <string name="share_to_others">他の人と共有</string>
     <string name="latest_release">最新作</string>
     <string name="chinese_subtitle">中国語字幕</string>

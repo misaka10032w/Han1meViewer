@@ -1,8 +1,15 @@
 package com.yenaly.han1meviewer.ui.navigation.settings
 
 import android.content.Context
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -25,9 +32,6 @@ import com.yenaly.han1meviewer.ui.viewmodel.SettingsViewModel
 import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.decodeFromStringByBase64
 import com.yenaly.yenaly_libs.utils.showShortToast
-import com.yenaly.yenaly_libs.utils.textFromClipboard
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
 private const val H_KEYFRAMES_ENABLE = "h_keyframes_enable"
@@ -37,28 +41,39 @@ private const val SHARED_H_KEYFRAMES_USE_FIRST = "shared_h_keyframes_use_first"
 private const val WHEN_COUNTDOWN_REMIND = "when_countdown_remind"
 
 @Composable
+fun HKeyframesTopBarActions(onImportClick: () -> Unit) {
+    FilledIconButton(onClick = onImportClick) {
+        Icon(
+            imageVector = Icons.Filled.Add,
+            contentDescription = stringResource(R.string.h_keyframes_import_shared),
+        )
+    }
+}
+
+@Composable
 fun HKeyframesRouteScreen(
     onOpenVideo: (String) -> Unit,
+    showImportDialog: Boolean,
+    onImportDialogDismiss: () -> Unit,
 ) {
     val viewModel: SettingsViewModel = viewModel()
     val items by viewModel.loadAllHKeyframes()
         .collectAsStateWithLifecycle(initialValue = emptyList())
-    val shareRegex = remember { Regex(">>>(.+)<<<") }
     var sharedHKeyframeEntity by remember { mutableStateOf<HKeyframeEntity?>(null) }
 
-    LaunchedEffect(Unit) {
-        val text = textFromClipboard
-        val entity = withContext(Dispatchers.Default) {
-            val matchResult = text?.let(shareRegex::find) ?: return@withContext null
-            val (toBase64) = matchResult.destructured
-            val toJson = toBase64.decodeFromStringByBase64()
-            Json.decodeFromString<HKeyframeEntity>(toJson)
-        }
-        if (entity != null) {
-            sharedHKeyframeEntity = entity
-        } else {
-            showShortToast(R.string.h_keyframes_shared_by_other_not_detected)
-        }
+    if (showImportDialog) {
+        ImportSharedHKeyframeDialog(
+            onDismiss = onImportDialogDismiss,
+            onConfirm = { content ->
+                val entity = parseSharedHKeyframe(content)
+                if (entity != null) {
+                    sharedHKeyframeEntity = entity
+                    onImportDialogDismiss()
+                } else {
+                    showShortToast(R.string.h_keyframes_shared_by_other_not_detected)
+                }
+            },
+        )
     }
 
     HKeyframesScreen(
@@ -104,6 +119,46 @@ fun HKeyframesRouteScreen(
             onDismiss = { sharedHKeyframeEntity = null },
         )
     }
+}
+
+private val shareRegex = Regex(">>>(.+)<<<")
+
+private fun parseSharedHKeyframe(content: String): HKeyframeEntity? {
+    return runCatching {
+        val matchResult = shareRegex.find(content) ?: return@runCatching null
+        val (toBase64) = matchResult.destructured
+        val toJson = toBase64.decodeFromStringByBase64()
+        Json.decodeFromString<HKeyframeEntity>(toJson)
+    }.getOrNull()
+}
+
+@Composable
+private fun ImportSharedHKeyframeDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+) {
+    var content by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.h_keyframes_import_shared)) },
+        text = {
+            OutlinedTextField(
+                value = content,
+                onValueChange = { content = it },
+                label = { Text(stringResource(R.string.h_keyframes_import_shared_hint)) },
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(content) }) {
+                Text(stringResource(R.string.confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+    )
 }
 
 @Composable

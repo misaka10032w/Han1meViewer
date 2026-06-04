@@ -150,6 +150,8 @@
     <string name="copy_">Copy</string>
     <string name="h_keyframes_shared_by_other_detected">Detected H Keyframes shared by others</string>
     <string name="h_keyframes_shared_by_other_not_detected">No H Keyframes shared by others detected</string>
+    <string name="h_keyframes_import_shared">Import shared H Keyframes</string>
+    <string name="h_keyframes_import_shared_hint">Paste shared content</string>
     <string name="share_to_others">Share with Others</string>
     <string name="latest_release">Latest Release</string>
     <string name="chinese_subtitle">Chinese Subtitle</string>
