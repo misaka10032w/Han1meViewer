@@ -69,7 +69,7 @@ enum class SettingsDestinationSpec(
     ),
     HKeyframes(
         routeKey = "h_keyframes",
-        titleRes = R.string.h_keyframe,
+        titleRes = R.string.h_keyframe_manage,
         screenClassName = "HKeyframesScreen",
         routeClass = HKeyframesRoute::class,
     ),

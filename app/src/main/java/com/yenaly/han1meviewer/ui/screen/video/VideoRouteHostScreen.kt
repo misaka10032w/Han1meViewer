@@ -299,6 +299,7 @@ fun VideoRouteHostScreen(
                 onNavigateToSearch = actions::openTagSearch,
                 onToggleSubscribe = actions::toggleArtistSubscription,
                 onToggleFavorite = actions::toggleFavorite,
+                onRateVideo = actions::rateVideo,
                 onManageMyList = actions::updateMyListSelection,
                 onQuickCheckIn = { record ->
                     val normalizedRecord = if (record.sideDishes.contains("\u001E")) {

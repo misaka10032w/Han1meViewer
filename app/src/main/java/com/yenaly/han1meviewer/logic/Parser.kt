@@ -255,8 +255,7 @@ object Parser {
             uploadTime = parts[1].trim()
         }
         val infoBoxes = hanimeSearchItem.selectFirst(".stats-container .stat-item")
-        val fullText = infoBoxes?.text() ?: ""
-        val reviews = fullText.replace("thumb_up", "").trim()
+        val reviews = infoBoxes?.ownText()?.trim() ?: ""
         return HanimeInfo(
             title = title,
             coverUrl = coverUrl,
@@ -336,7 +335,14 @@ object Parser {
         if (!likeStatus.isNullOrEmpty()) {
             likeStatus = "1"
         }
+        var unlikeStatus = parseBody.selectFirst("[name=unlike-status]")
+            ?.attr("value")
+        if (!unlikeStatus.isNullOrEmpty()) {
+            unlikeStatus = "1"
+        }
         val likesCount = parseBody.selectFirst("input[name=likes-count]")
+            ?.attr("value")?.toIntOrNull()
+        val unlikesCount = parseBody.selectFirst("input[name=unlikes-count]")
             ?.attr("value")?.toIntOrNull()
         val videoDetailWrapper = parseBody.selectFirst("div[class=video-details-wrapper]")
         val videoCaptionText = videoDetailWrapper?.selectFirst("div[class^=video-caption-text]")
@@ -406,11 +412,13 @@ object Parser {
                 val cardMobileDuration = cardMobilePanel?.select("div[class*=card-mobile-duration]")
                 val eachDuration = cardMobileDuration?.firstOrNull()?.text()
                 val eachViews = cardMobileDuration?.getOrNull(2)?.text()
-                    ?.substringBefore("次")
                 val playlistEachCoverUrl = eachTitleCover?.absUrl("src")
                     .throwIfParseNull(Parser::hanimeVideoVer2.name, "playlistEachCoverUrl")
                 val playlistEachTitle = eachTitleCover?.attr("alt")
                     .throwIfParseNull(Parser::hanimeVideoVer2.name, "playlistEachTitle")
+                val artist = cardMobilePanel?.selectFirst("a.card-mobile-user")?.text()
+                val infoBoxes = cardMobilePanel?.select("div.card-mobile-duration.card-playlist-large")
+                val reviews = infoBoxes?.firstOrNull()?.ownText()?.trim()
                 playlistVideoList.add(
                     HanimeInfo(
                         title = playlistEachTitle, coverUrl = playlistEachCoverUrl,
@@ -424,7 +432,9 @@ object Parser {
                             "$playlistEachTitle views"
                         ),
                         isPlaying = eachIsPlaying,
-                        itemType = HanimeInfo.NORMAL
+                        itemType = HanimeInfo.NORMAL,
+                        currentArtist = artist,
+                        reviews = reviews
                     )
                 )
             }
@@ -549,6 +559,8 @@ object Parser {
                 artist = artist.logIfParseNull(Parser::hanimeVideoVer2.name, "artist"),
                 favTimes = likesCount,
                 isFav = likeStatus == "1",
+                unlikesCount = unlikesCount,
+                isUnlike = unlikeStatus == "1",
                 csrfToken = csrfToken,
                 currentUserId = currentUserId,
                 originalComic = originalComic
@@ -1060,8 +1072,7 @@ object Parser {
                         uploadTime = parts[1].trim()
                     }
                     val infoBoxes = videoCard.selectFirst(".stats-container .stat-item")
-                    val fullText = infoBoxes?.text() ?: ""
-                    val reviews = fullText.replace("thumb_up", "").trim()
+                    val reviews = infoBoxes?.ownText()?.trim() ?: ""
 
                     SubscriptionVideosItem(
                         title = title,

@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.video
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -30,7 +31,15 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ThumbDown
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.outlined.ThumbDown
+import androidx.compose.material.icons.outlined.ThumbUp
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -117,6 +126,7 @@ fun VideoIntroductionScreen(
     onNavigateToSearch: (String) -> Unit,
     onToggleSubscribe: (HanimeVideo.Artist) -> Unit,
     onToggleFavorite: () -> Unit,
+    onRateVideo: (Boolean) -> Unit,
     onManageMyList: (List<String>, List<Boolean>) -> Unit,
     onQuickCheckIn: (CheckInRecordEntity) -> Unit,
     onPrepareDownload: (String) -> Unit,
@@ -157,6 +167,7 @@ fun VideoIntroductionScreen(
                 onNavigateToSearch = onNavigateToSearch,
                 onToggleSubscribe = onToggleSubscribe,
                 onToggleFavorite = onToggleFavorite,
+                onRateVideo = onRateVideo,
                 onManageMyList = onManageMyList,
                 onQuickCheckIn = onQuickCheckIn,
                 onPrepareDownload = onPrepareDownload,
@@ -210,6 +221,7 @@ private fun VideoIntroductionContent(
     onNavigateToSearch: (String) -> Unit,
     onToggleSubscribe: (HanimeVideo.Artist) -> Unit,
     onToggleFavorite: () -> Unit,
+    onRateVideo: (Boolean) -> Unit,
     onManageMyList: (List<String>, List<Boolean>) -> Unit,
     onQuickCheckIn: (CheckInRecordEntity) -> Unit,
     onPrepareDownload: (String) -> Unit,
@@ -347,7 +359,11 @@ private fun VideoIntroductionContent(
         }
 
         item(key = "meta") {
-            MetaSection(video = video, fromDownload = fromDownload)
+            MetaSection(
+                video = video,
+                fromDownload = fromDownload,
+                onRateVideo = onRateVideo,
+            )
         }
 
         item(key = "intro") {
@@ -874,7 +890,11 @@ private fun TitleSection(video: HanimeVideo, onCopyText: (String) -> Unit) {
 }
 
 @Composable
-private fun MetaSection(video: HanimeVideo, fromDownload: Boolean) {
+private fun MetaSection(
+    video: HanimeVideo,
+    fromDownload: Boolean,
+    onRateVideo: (Boolean) -> Unit,
+) {
     val viewsText = if (fromDownload) {
         stringResource(R.string.s_view_times, "0721")
     } else {
@@ -882,26 +902,150 @@ private fun MetaSection(video: HanimeVideo, fromDownload: Boolean) {
     }
     val uploadTime = video.uploadTime?.format(previewSafeDateFormat).orEmpty()
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    FlowRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text(
+        if (!fromDownload && video.ratingCount != null) {
+            VideoRatingButtons(
+                video = video,
+                onRateVideo = onRateVideo,
+            )
+        }
+        MetaInfoItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.PlayArrow,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                )
+            },
             text = viewsText,
+        )
+
+        MetaInfoItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.Schedule,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                )
+            },
+            text = uploadTime,
+        )
+    }
+}
+
+@Composable
+private fun MetaInfoItem(
+    icon: @Composable () -> Unit,
+    text: String,
+) {
+    Row(
+        modifier = Modifier.height(32.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        icon()
+        Text(
+            text = text,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+    }
+}
+
+@Composable
+private fun VideoRatingButtons(
+    video: HanimeVideo,
+    onRateVideo: (Boolean) -> Unit,
+) {
+    val likeContentColor by animateColorAsState(
+        targetValue = if (video.isFav) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        label = "LikeColor"
+    )
+    val likeContainerColor by animateColorAsState(
+        targetValue = if (video.isFav) {
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.72f)
+        },
+        label = "LikeContainer"
+    )
+
+    val dislikeContentColor by animateColorAsState(
+        targetValue = if (video.isUnlike) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+        label = "DislikeColor"
+    )
+    val dislikeContainerColor by animateColorAsState(
+        targetValue = if (video.isUnlike) {
+            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f)
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.72f)
+        },
+        label = "DislikeContainer"
+    )
+
+    Row(
+        modifier = Modifier
+            .height(32.dp)
+            .clip(RoundedCornerShape(16.dp)),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(
+            modifier = Modifier
+                .height(32.dp)
+                .clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
+                .background(likeContainerColor)
+                .combinedClickable(onClick = { onRateVideo(true) })
+                .padding(start = 10.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector =
+                    if (video.isFav) Icons.Filled.ThumbUp
+                    else Icons.Outlined.ThumbUp,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = likeContentColor,
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = "${video.likeRatio ?: 0}% (${video.ratingCount ?: 0})",
+                style = MaterialTheme.typography.labelMedium,
+                color = likeContentColor,
+            )
+        }
+
         Box(
             modifier = Modifier
-                .size(width = 1.dp, height = 16.dp)
-                .background(MaterialTheme.colorScheme.primary)
+                .width(1.dp)
+                .height(32.dp)
+                .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         )
-        Text(
-            text = uploadTime,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+
+        Box(
+            modifier = Modifier
+                .size(width = 34.dp, height = 32.dp)
+                .clip(RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp))
+                .background(dislikeContainerColor)
+                .combinedClickable(onClick = { onRateVideo(false) }),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector =
+                    if (video.isUnlike) Icons.Filled.ThumbDown
+                    else Icons.Outlined.ThumbDown,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                tint = dislikeContentColor
+            )
+        }
     }
 }
 
@@ -1091,12 +1235,14 @@ internal fun RelatedVideosSection(
     onOpenVideo: (HanimeInfo) -> Unit,
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(SpacingNormal),) {
+        verticalArrangement = Arrangement.spacedBy(SpacingNormal),
+    ) {
         SectionHeader(title = stringResource(R.string.related_video))
 
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             val isNormal = videos.firstOrNull()?.itemType == HanimeInfo.NORMAL
-            val minCardWidth = if (isNormal) VideoNormalCardMinWidth else VideoSimplifiedCardMinWidth
+            val minCardWidth =
+                if (isNormal) VideoNormalCardMinWidth else VideoSimplifiedCardMinWidth
             val spacing = SpacingNormal
             val columns = maxOf(2, ((maxWidth + spacing) / (minCardWidth + spacing)).toInt())
             val itemWidth = ((maxWidth - (spacing * (columns - 1))) / columns) - 0.5.dp
@@ -1179,6 +1325,7 @@ private fun VideoIntroductionScreenPreview() {
             onNavigateToSearch = {},
             onToggleSubscribe = {},
             onToggleFavorite = {},
+            onRateVideo = {},
             onManageMyList = { _, _ -> },
             onQuickCheckIn = {},
             onPrepareDownload = {},
@@ -1219,6 +1366,7 @@ private fun VideoIntroductionScreenLoadingPreview() {
             onNavigateToSearch = {},
             onToggleSubscribe = {},
             onToggleFavorite = {},
+            onRateVideo = {},
             onManageMyList = { _, _ -> },
             onQuickCheckIn = {},
             onPrepareDownload = {},
@@ -1259,6 +1407,7 @@ private fun VideoIntroductionScreenErrorPreview() {
             onNavigateToSearch = {},
             onToggleSubscribe = {},
             onToggleFavorite = {},
+            onRateVideo = {},
             onManageMyList = { _, _ -> },
             onQuickCheckIn = {},
             onPrepareDownload = {},

@@ -37,14 +37,52 @@ data class HanimeVideo(
 
     @Transient val favTimes: Int? = null,
     @Transient val isFav: Boolean = false,
+    @Transient val unlikesCount: Int? = null,
+    @Transient val isUnlike: Boolean = false,
     @Transient val csrfToken: String? = null,
     @Transient val currentUserId: String? = null,
     @Transient val originalComic: String? = null,
 ) {
 
-    fun incFavTime() = copy(favTimes = favTimes?.let { it + 1 }, isFav = true)
+    val ratingCount: Int?
+        get() = if (favTimes != null || unlikesCount != null) {
+            (favTimes ?: 0) + (unlikesCount ?: 0)
+        } else {
+            null
+        }
 
-    fun decFavTime() = copy(favTimes = favTimes?.let { it - 1 }, isFav = false)
+    val likeRatio: Int?
+        get() = ratingCount?.takeIf { it > 0 }?.let { total ->
+            (((favTimes ?: 0) * 100f) / total).toInt()
+        }
+
+    fun rateVideo(isPositive: Boolean): HanimeVideo {
+        val liked = isFav
+        val unliked = isUnlike
+        val likes = favTimes ?: 0
+        val unlikes = unlikesCount ?: 0
+        return when {
+            isPositive && liked -> copy(favTimes = (likes - 1).coerceAtLeast(0), isFav = false)
+            isPositive -> copy(
+                favTimes = likes + 1,
+                unlikesCount = if (unliked) (unlikes - 1).coerceAtLeast(0) else unlikesCount,
+                isFav = true,
+                isUnlike = false,
+            )
+
+            !isPositive && unliked -> copy(
+                unlikesCount = (unlikes - 1).coerceAtLeast(0),
+                isUnlike = false,
+            )
+
+            else -> copy(
+                favTimes = if (liked) (likes - 1).coerceAtLeast(0) else favTimes,
+                unlikesCount = unlikes + 1,
+                isFav = false,
+                isUnlike = true,
+            )
+        }
+    }
 
     // 為保證兼容性，不能直接用天數
     val uploadTimeMillis: Long

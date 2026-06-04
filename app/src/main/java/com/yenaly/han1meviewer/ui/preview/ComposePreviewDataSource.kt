@@ -416,4 +416,5 @@ val fakeVideoIntroduction = HanimeVideo(
     isFav = true,
     currentUserId = "10086",
     originalComic = "https://example.com/comic",
+    favTimes = 999
 )
