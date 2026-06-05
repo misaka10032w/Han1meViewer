@@ -11,6 +11,7 @@ import com.yenaly.han1meviewer.logic.dao.HistoryDatabase
 import com.yenaly.han1meviewer.logic.dao.MiscellanyDatabase
 import com.yenaly.han1meviewer.logic.entity.CheckInRecordEntity
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
+import com.yenaly.han1meviewer.logic.entity.SideDishEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.logic.entity.download.DownloadCategoryEntity
 import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
@@ -38,6 +39,7 @@ object BackupManager {
         val settings: Map<String, PreferenceValue>? = null,
         val hKeyframes: List<HKeyframeEntity>? = null,
         val checkInRecords: List<CheckInRecordEntity>? = null,
+        val sideDishes: List<SideDishEntity>? = null,
         val watchHistories: List<WatchHistoryEntity>? = null,
         val downloadGroups: List<DownloadGroupEntity>? = null,
         val downloads: List<HanimeDownloadEntity>? = null,
@@ -88,6 +90,13 @@ object BackupManager {
             CheckInRecordDatabase.getDatabase(context).checkInDao().apply {
                 deleteAll()
                 insertAll(checkInRecords.map { it.normalizeSideDishes() })
+            }
+        }
+
+        backup.sideDishes?.let { sideDishes ->
+            CheckInRecordDatabase.getDatabase(context).sideDishDao().apply {
+                deleteAll()
+                insertAll(sideDishes)
             }
         }
 
@@ -154,6 +163,7 @@ object BackupManager {
             },
             hKeyframes = MiscellanyDatabase.instance.hKeyframeDao.getAll(),
             checkInRecords = CheckInRecordDatabase.getDatabase(context).checkInDao().getAllRecords(),
+            sideDishes = CheckInRecordDatabase.getDatabase(context).sideDishDao().getAll(),
             watchHistories = HistoryDatabase.instance.watchHistory.getAll(),
             downloadGroups = DownloadDatabase.instance.downloadGroupDao.getAllGroupsOnce(),
             downloads = DownloadDatabase.instance.hanimeDownloadDao.getAll(),

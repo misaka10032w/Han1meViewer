@@ -268,11 +268,12 @@ fun DailyCheckInScreen(
             date = date,
             onLoadRecords = { d, cb -> viewModel.getRecordsByDate(d, cb) },
             onLoadWatchHistory = { limit, cb -> viewModel.getRecentWatchHistory(limit, cb) },
+            onLoadSideDishCoverMap = { records, cb -> viewModel.getSideDishCoverMap(records, cb) },
             onGetCountByDate = { d, cb -> viewModel.getCountByDate(d, cb) },
             onAddRecord = { d, time, type, sideDishes, feeling ->
                 viewModel.addRecord(d, time, type, sideDishes, feeling)
             },
-            onDeleteRecord = { viewModel.deleteRecord(it) },
+            onDeleteRecord = { record, onDone -> viewModel.deleteRecord(record, onDone) },
             onNavigateToVideo = onNavigateToVideo,
             onEasterEgg = { msg -> showEasterEgg = msg },
             onDismiss = { checkInDialogDate = null },

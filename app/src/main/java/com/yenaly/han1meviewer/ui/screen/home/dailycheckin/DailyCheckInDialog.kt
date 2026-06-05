@@ -70,6 +70,7 @@ import java.time.format.DateTimeFormatter
  * @param date 打卡日期
  * @param onLoadRecords 加载该日期已有记录的回调
  * @param onLoadWatchHistory 加载最近观看历史的回调
+ * @param onLoadSideDishCoverMap 加载配菜视频封面映射的回调
  * @param onGetCountByDate 查询该日期打卡次数的回调
  * @param onAddRecord 新增打卡记录的回调
  * @param onDeleteRecord 删除单条记录的回调
@@ -82,20 +83,25 @@ fun CheckInDialog(
     date: LocalDate,
     onLoadRecords: (LocalDate, (List<CheckInRecordEntity>) -> Unit) -> Unit,
     onLoadWatchHistory: (Int, (List<WatchHistoryEntity>) -> Unit) -> Unit,
+    onLoadSideDishCoverMap: (List<CheckInRecordEntity>, (Map<String, String>) -> Unit) -> Unit,
     onGetCountByDate: (LocalDate, (Int) -> Unit) -> Unit,
     onAddRecord: (LocalDate, String, String, String, String) -> Unit,
-    onDeleteRecord: (CheckInRecordEntity) -> Unit,
+    onDeleteRecord: (CheckInRecordEntity, () -> Unit) -> Unit,
     onNavigateToVideo: (String) -> Unit,
     onEasterEgg: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     var existingRecords by remember { mutableStateOf<List<CheckInRecordEntity>>(emptyList()) }
     var watchHistory by remember { mutableStateOf<List<WatchHistoryEntity>>(emptyList()) }
+    var coverUrlMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var todayCount by remember { mutableIntStateOf(0) }
     var loaded by remember { mutableStateOf(false) }
 
     LaunchedEffect(date) {
-        onLoadRecords(date) { existingRecords = it }
+        onLoadRecords(date) { records ->
+            existingRecords = records
+            onLoadSideDishCoverMap(records) { coverUrlMap = it }
+        }
         onLoadWatchHistory(10) { watchHistory = it }
         onGetCountByDate(date) { todayCount = it; loaded = true }
     }
@@ -103,9 +109,6 @@ fun CheckInDialog(
     if (!loaded) return
 
     val canAddMore = todayCount < 20
-    val coverUrlMap = remember(watchHistory) {
-        watchHistory.associate { it.videoCode to it.coverUrl }
-    }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -157,9 +160,13 @@ fun CheckInDialog(
                             coverUrlMap = coverUrlMap,
                             onNavigateToVideo = onNavigateToVideo,
                             onDelete = {
-                                onDeleteRecord(record)
-                                onLoadRecords(date) { existingRecords = it }
-                                onGetCountByDate(date) { todayCount = it }
+                                onDeleteRecord(record) {
+                                    onLoadRecords(date) { records ->
+                                        existingRecords = records
+                                        onLoadSideDishCoverMap(records) { coverUrlMap = it }
+                                    }
+                                    onGetCountByDate(date) { todayCount = it }
+                                }
                             }
                         )
                     }
@@ -414,8 +421,8 @@ fun ExistingRecordItem(
             title to videoCode
         }
     }
-    val coverItems = sideDishItems.filter { (_, code) -> code.isNotBlank() }
-    val customItems = sideDishItems.filter { (_, code) -> code.isBlank() }
+    val coverItems = sideDishItems.filter { (_, code) -> code.isNotBlank() && coverUrlMap[code] != null }
+    val customItems = sideDishItems.filter { (_, code) -> code.isBlank() || coverUrlMap[code] == null }
 
     Card(
         modifier = Modifier
@@ -495,39 +502,37 @@ fun ExistingRecordItem(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     coverItems.forEach { (title, code) ->
-                        val coverUrl = coverUrlMap[code]
-                        if (coverUrl != null) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
+                        val coverUrl = coverUrlMap.getValue(code)
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .weight(1f)
+                                .widthIn(max = 140.dp)
+                        ) {
+                            Card(
+                                shape = RoundedCornerShape(8.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .widthIn(max = 140.dp)
+                                    .fillMaxWidth()
+                                    .heightIn(max = 90.dp)
+                                    .clickable { onNavigateToVideo(code) }
                             ) {
-                                Card(
-                                    shape = RoundedCornerShape(8.dp),
-                                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .heightIn(max = 90.dp)
-                                        .clickable { onNavigateToVideo(code) }
-                                ) {
-                                    AsyncImage(
-                                        model = coverUrl,
-                                        contentDescription = title,
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = title,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    maxLines = 3,
-                                    overflow = TextOverflow.Ellipsis,
-                                    textAlign = TextAlign.Center,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                AsyncImage(
+                                    model = coverUrl,
+                                    contentDescription = title,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
                                 )
                             }
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = title,
+                                style = MaterialTheme.typography.labelSmall,
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis,
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         }
                     }
                 }
@@ -535,11 +540,25 @@ fun ExistingRecordItem(
 
             if (customItems.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = customItems.joinToString(", ") { it.first },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    customItems.forEach { (title, code) ->
+                        val hasVideoCode = code.isNotBlank()
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (hasVideoCode) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                            modifier = if (hasVideoCode) {
+                                Modifier.clickable { onNavigateToVideo(code) }
+                            } else {
+                                Modifier
+                            }
+                        )
+                    }
+                }
             }
 
             if (record.feeling.isNotBlank()) {
