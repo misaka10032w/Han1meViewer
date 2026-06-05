@@ -7,14 +7,16 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.yenaly.han1meviewer.logic.entity.CheckInRecordEntity
+import com.yenaly.han1meviewer.logic.entity.SideDishEntity
 
 @Database(
-    entities = [CheckInRecordEntity::class],
-    version = 3,
+    entities = [CheckInRecordEntity::class, SideDishEntity::class],
+    version = 4,
     exportSchema = false
 )
 abstract class CheckInRecordDatabase : RoomDatabase() {
     abstract fun checkInDao(): CheckInRecordDao
+    abstract fun sideDishDao(): SideDishDao
 
     companion object {
         @Volatile
@@ -58,6 +60,20 @@ abstract class CheckInRecordDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS sidedishes (
+                        videoCode TEXT NOT NULL PRIMARY KEY,
+                        title TEXT NOT NULL,
+                        coverUrl TEXT NOT NULL
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
         fun getDatabase(context: Context): CheckInRecordDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -65,7 +81,7 @@ abstract class CheckInRecordDatabase : RoomDatabase() {
                     CheckInRecordDatabase::class.java,
                     "check_in_records"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .fallbackToDestructiveMigration(true)
                     .build()
                 INSTANCE = instance

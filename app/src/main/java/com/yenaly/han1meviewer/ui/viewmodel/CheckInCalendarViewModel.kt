@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.logic.dao.CheckInRecordDatabase
 import com.yenaly.han1meviewer.logic.dao.HistoryDatabase
 import com.yenaly.han1meviewer.logic.entity.CheckInRecordEntity
+import com.yenaly.han1meviewer.logic.entity.SideDishEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.DailyCheckInUiState
 import com.yenaly.yenaly_libs.utils.application
@@ -67,9 +68,12 @@ class CheckInCalendarViewModel : ViewModel() {
     val yearRecords: StateFlow<Map<LocalDate, Int>> = _yearRecords.asStateFlow()
     val yearStats: StateFlow<MonthlyStats> = _yearStats.asStateFlow()
 
-    private val dao = CheckInRecordDatabase.getDatabase(application).checkInDao()
+    private val database = CheckInRecordDatabase.getDatabase(application)
+    private val dao = database.checkInDao()
+    private val sideDishDao = database.sideDishDao()
 
     init {
+        upgradeSideDishesFromHistory()
         loadMonthRecords(_currentMonth.value)
     }
 
@@ -99,15 +103,17 @@ class CheckInCalendarViewModel : ViewModel() {
                 feeling = feeling
             )
             dao.insert(record)
+            upgradeSideDishesForRecords(listOf(record))
             reloadDateAndStats(date)
         }
     }
 
-    fun deleteRecord(record: CheckInRecordEntity) {
+    fun deleteRecord(record: CheckInRecordEntity, onDone: () -> Unit = {}) {
         viewModelScope.launch {
             dao.delete(record)
             val date = LocalDate.parse(record.date, DateTimeFormatter.ISO_LOCAL_DATE)
             reloadDateAndStats(date)
+            onDone()
         }
     }
 
@@ -122,6 +128,26 @@ class CheckInCalendarViewModel : ViewModel() {
         viewModelScope.launch {
             val result = HistoryDatabase.instance.watchHistory.getRecentWatches(limit)
             onResult(result)
+        }
+    }
+
+    fun getSideDishCoverMap(
+        records: List<CheckInRecordEntity>,
+        onResult: (Map<String, String>) -> Unit
+    ) {
+        viewModelScope.launch {
+            upgradeSideDishesForRecords(records)
+            val videoCodes = records.extractSideDishVideoCodes()
+            val coverMap = if (videoCodes.isEmpty()) {
+                emptyMap()
+            } else {
+                videoCodes.chunked(SQLITE_QUERY_CHUNK_SIZE).flatMap { codes ->
+                    sideDishDao.findByVideoCodes(codes)
+                }
+                    .filter { it.coverUrl.isNotBlank() }
+                    .associate { it.videoCode to it.coverUrl }
+            }
+            onResult(coverMap)
         }
     }
 
@@ -191,7 +217,69 @@ class CheckInCalendarViewModel : ViewModel() {
         }
     }
 
+    private fun upgradeSideDishesFromHistory() {
+        viewModelScope.launch {
+            upgradeSideDishesForRecords(dao.getAllRecords())
+        }
+    }
+
+    private suspend fun upgradeSideDishesForRecords(records: List<CheckInRecordEntity>) {
+        val sideDishTitles = records.extractSideDishTitles()
+        val videoCodes = sideDishTitles.keys.toList()
+        if (videoCodes.isEmpty()) return
+        val existingCodes = videoCodes.chunked(SQLITE_QUERY_CHUNK_SIZE).flatMap { codes ->
+            sideDishDao.findExistingCoverVideoCodes(codes)
+        }.toSet()
+        val missingCodes = videoCodes.filterNot { it in existingCodes }
+        if (missingCodes.isEmpty()) return
+        val histories = missingCodes.chunked(SQLITE_QUERY_CHUNK_SIZE).flatMap { codes ->
+            HistoryDatabase.instance.watchHistory.findByVideoCodes(codes)
+        }
+            .associateBy { it.videoCode }
+        val sideDishes = missingCodes.map { videoCode ->
+            val history = histories[videoCode]
+            SideDishEntity(
+                videoCode = videoCode,
+                title = history?.title?.takeIf { it.isNotBlank() } ?: sideDishTitles.getValue(videoCode),
+                coverUrl = history?.coverUrl.orEmpty(),
+            )
+        }
+        sideDishDao.insertAll(sideDishes)
+    }
+
+    private fun List<CheckInRecordEntity>.extractSideDishTitles(): Map<String, String> {
+        val sep = "\u001E"
+        return asSequence()
+            .flatMap { it.sideDishes.split(",").asSequence() }
+            .mapNotNull { item ->
+                val title: String
+                val videoCode: String
+                if (item.contains(sep)) {
+                    title = item.substringBefore(sep)
+                    videoCode = item.substringAfter(sep)
+                } else if (item.contains("|")) {
+                    title = item.substringBefore("|")
+                    videoCode = item.substringAfter("|", "")
+                } else {
+                    return@mapNotNull null
+                }
+                if (videoCode.isBlank()) {
+                    null
+                } else {
+                    videoCode to title
+                }
+            }
+            .distinctBy { it.first }
+            .toMap()
+    }
+
+    private fun List<CheckInRecordEntity>.extractSideDishVideoCodes(): List<String> {
+        return extractSideDishTitles().keys.toList()
+    }
+
     companion object {
+        private const val SQLITE_QUERY_CHUNK_SIZE = 500
+
         fun computeStats(records: List<CheckInRecordEntity>): MonthlyStats {
             if (records.isEmpty()) return MonthlyStats()
             val sep = "\u001E"
