@@ -40,7 +40,7 @@ data class Announcement(
 
     @Composable
     fun getFormatedContent(linkColor: Color = MaterialTheme.colorScheme.primary): AnnotatedString {
-        val regex = "(https?://[\\w-]+(\\.[\\w-]+)+([/?%&=]*)?)".toRegex()
+        val regex = "(https?://[\\w-]+(\\.[\\w-]+)+[\\w\\-./?%&=#]*)?".toRegex()
 
         return buildAnnotatedString {
             val matches = regex.findAll(content).toList()
