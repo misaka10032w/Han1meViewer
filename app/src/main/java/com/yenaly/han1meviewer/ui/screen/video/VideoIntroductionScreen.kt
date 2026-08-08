@@ -69,7 +69,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -759,7 +758,7 @@ private fun PlaylistBottomSheet(
                             modifier = Modifier
                                 .width(100.dp)
                                 .height(66.dp)
-                                .clip(androidx.compose.foundation.shape.RoundedCornerShape(10.dp)),
+                                .clip(RoundedCornerShape(10.dp)),
                             contentScale = ContentScale.Crop,
                         )
                         Column(modifier = Modifier.weight(1f)) {
@@ -785,6 +784,44 @@ private fun PlaylistBottomSheet(
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = item.duration.orEmpty(),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = if (item.isPlaying) {
+                                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f)
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                    },
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                Text(
+                                    text = item.views.orEmpty(),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = if (item.isPlaying) {
+                                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f)
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                    },
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                Text(
+                                    text = item.uploadTime.orEmpty(),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = if (item.isPlaying) {
+                                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f)
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                    },
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
                         }
                         if (item.isPlaying) {
                             Text(
