@@ -333,17 +333,10 @@ object Parser {
         val title = parseBody.getElementById("shareBtn-title")?.text()
             .throwIfParseNull(Parser::hanimeVideoVer2.name, "title")
 
-        var likeStatus = parseBody.selectFirst("[name=like-status]")
-            ?.attr("value")
-        Log.i("likeStatus", likeStatus.toString())
-        if (!likeStatus.isNullOrEmpty()) {
-            likeStatus = "1"
-        }
-        var unlikeStatus = parseBody.selectFirst("[name=unlike-status]")
-            ?.attr("value")
-        if (!unlikeStatus.isNullOrEmpty()) {
-            unlikeStatus = "1"
-        }
+        // like-status / unlike-status 的 value 可能为 "0" 或 "1"，
+        // 直接保留原始值，下游通过 == "1" 判断即可，避免把 "0" 也当作已点赞。
+        val likeStatus = parseBody.selectFirst("[name=like-status]")?.attr("value")
+        val unlikeStatus = parseBody.selectFirst("[name=unlike-status]")?.attr("value")
         val likesCount = parseBody.selectFirst("input[name=likes-count]")
             ?.attr("value")?.toIntOrNull()
         val unlikesCount = parseBody.selectFirst("input[name=unlikes-count]")
@@ -898,7 +891,8 @@ object Parser {
     @SuppressLint("BuildListAdds")
     fun comments(body: String): WebsiteState<VideoComments> {
         val jsonObject = JSONObject(body)
-        val commentBody = jsonObject.get("comments").toString()
+        // 使用 optString 避免 "comments" 键缺失时 get() 返回 null 导致 NPE
+        val commentBody = jsonObject.optString("comments")
         val parseBody = Jsoup.parse(commentBody).body()
         val csrfToken = parseBody.selectFirst("input[name=_token]")?.attr("value")
         val currentUserId = parseBody.selectFirst("input[name=comment-user-id]")?.attr("value")
@@ -983,7 +977,8 @@ object Parser {
 
     fun commentReply(body: String): WebsiteState<VideoComments> {
         val jsonObject = JSONObject(body)
-        val replyBody = jsonObject.get("replies").toString()
+        // 使用 optString 避免 "replies" 键缺失时 get() 返回 null 导致 NPE
+        val replyBody = jsonObject.optString("replies")
         val replyList = mutableListOf<VideoComments.VideoComment>()
         val parseBody = Jsoup.parse(replyBody).body()
         val replyStart = parseBody.selectFirst("div[id^=reply-start]")

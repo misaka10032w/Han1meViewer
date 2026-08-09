@@ -80,7 +80,18 @@ fun DailyCheckInScreen(
     val yearRecords by viewModel.yearRecords.collectAsStateWithLifecycle()
     val yearStats by viewModel.yearStats.collectAsStateWithLifecycle()
 
-    val today = remember { LocalDate.now() }
+    // 使用 mutableStateOf + 生命周期观察，确保 app 跨午夜或从后台恢复后 today 仍然准确
+    var today by remember { mutableStateOf(LocalDate.now()) }
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                today = LocalDate.now()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     var forgotDialogDate by remember { mutableStateOf<LocalDate?>(null) }
     var suckBackDialogDate by remember { mutableStateOf<LocalDate?>(null) }
@@ -93,6 +104,7 @@ fun DailyCheckInScreen(
     var reportViewMode by remember { mutableStateOf("year") }
     var reportSelectedMonth by remember { mutableIntStateOf(today.monthValue) }
 
+    // anchorMonth 作为分页基准点，保持不变；today 才需要随生命周期刷新
     val anchorMonth = remember { YearMonth.now() }
     val initialPage = Int.MAX_VALUE / 2
     val pagerState = rememberPagerState(initialPage = initialPage) { Int.MAX_VALUE }
@@ -122,6 +134,8 @@ fun DailyCheckInScreen(
             eggVisible = true
             kotlinx.coroutines.delay(1500)
             eggVisible = false
+            // 清空消息，使相同内容的彩蛋再次触发时 LaunchedEffect 能重新执行
+            showEasterEgg = ""
         }
     }
 

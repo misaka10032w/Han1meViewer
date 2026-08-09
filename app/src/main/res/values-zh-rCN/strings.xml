@@ -887,4 +887,11 @@
         <item>搓手手期待ing……</item>
         <item>◝(⑅•ᴗ•⑅)◜..°♡ 传送中……</item>
     </string-array>
+
+    <!-- 通用 fallback 文案 -->
+    <string name="author_label">作者</string>
+    <string name="pause_video">暂停影片</string>
+    <string name="play_video">播放影片</string>
+    <string name="temporarily_unavailable">暂不可用</string>
+    <string name="untitled">无标题</string>
 </resources>

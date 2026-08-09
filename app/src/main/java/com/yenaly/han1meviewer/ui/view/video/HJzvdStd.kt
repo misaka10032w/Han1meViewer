@@ -576,7 +576,8 @@ class HJzvdStd @JvmOverloads constructor(
             jzDataSource.objects = arrayOf(userDefSpeedIndex)
             currentSpeedIndex = userDefSpeedIndex
         } else {
-            currentSpeedIndex = jzDataSource.objects.first() as Int
+            // 修复：objects 可能为空数组或元素非 Int，避免 NoSuchElementException / ClassCastException
+            currentSpeedIndex = jzDataSource.objects.firstOrNull() as? Int ?: userDefSpeedIndex
         }
     }
 
@@ -662,16 +663,17 @@ class HJzvdStd @JvmOverloads constructor(
         val inflater = this.jzvdContext.getSystemService("layout_inflater") as LayoutInflater
         val layout = inflater.inflate(R.layout.layout_jzvd_clarity, null as ViewGroup?) as LinearLayout
         val mQualityListener = OnClickListener { v1: View? ->
-            val index = v1!!.tag as Int
+            val index = (v1?.tag as? Int) ?: return@OnClickListener
             this.jzDataSource.currentUrlIndex = index
             this.changeUrl(this.jzDataSource, this.currentPositionWhenPlaying)
             this.clarity.text = this.jzDataSource.currentKey.toString()
 
             for (j in 0..<layout.size) {
+                val child = layout.getChildAt(j) as? TextView ?: continue
                 if (j == this.jzDataSource.currentUrlIndex) {
-                    (layout.getChildAt(j) as TextView).setTextColor(colorPrimary)
+                    child.setTextColor(colorPrimary)
                 } else {
-                    (layout.getChildAt(j) as TextView).setTextColor("#ffffff".toColorInt())
+                    child.setTextColor("#ffffff".toColorInt())
                 }
             }
             if (this.clarityPopWindow != null) {
@@ -681,11 +683,11 @@ class HJzvdStd @JvmOverloads constructor(
 
         for (j in 0..<this.jzDataSource.urlsMap.size) {
             val key = this.jzDataSource.getKeyFromDataSource(j)
-            val clarityItem = inflate(
+            val clarityItem = (inflate(
                 this.jzvdContext,
                 R.layout.layout_jzvd_clarity_item,
                 null as ViewGroup?
-            ) as TextView
+            ) as? TextView) ?: continue
             clarityItem.text = key
             clarityItem.tag = j
             layout.addView(clarityItem, j)
@@ -842,31 +844,40 @@ class HJzvdStd @JvmOverloads constructor(
 
         if (mChangeVolume) {
             deltaY = -deltaY
-            val max = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-            val deltaV = (max * deltaY * 3 / mScreenHeight).toInt()
-            mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mGestureDownVolume + deltaV, 0)
-            //dialog中显示百分比
-            val volumePercent =
-                (mGestureDownVolume * 100 / max + deltaY * 3 * 100 / mScreenHeight).toInt()
-            showVolumeDialog(-deltaY, volumePercent)
+            val audioManager = mAudioManager
+            // 修复：mAudioManager 可能为 null，mScreenHeight 或 max 可能为 0，导致 NPE 或整数除零崩溃
+            if (audioManager != null) {
+                val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                if (mScreenHeight > 0 && max > 0) {
+                    val deltaV = (max * deltaY * 3 / mScreenHeight).toInt()
+                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mGestureDownVolume + deltaV, 0)
+                    //dialog中显示百分比
+                    val volumePercent =
+                        (mGestureDownVolume * 100 / max + deltaY * 3 * 100 / mScreenHeight).toInt()
+                    showVolumeDialog(-deltaY, volumePercent)
+                }
+            }
         }
 
         if (mChangeBrightness) {
             deltaY = -deltaY
-            val deltaV = (255 * deltaY * 3 / mScreenHeight).toInt()
-            val params = JZUtils.getWindow(context).attributes
-            if ((mGestureDownBrightness + deltaV) / 255 >= 1) { //这和声音有区别，必须自己过滤一下负值
-                params.screenBrightness = 1f
-            } else if ((mGestureDownBrightness + deltaV) / 255 <= 0) {
-                params.screenBrightness = 0.01f
-            } else {
-                params.screenBrightness = (mGestureDownBrightness + deltaV) / 255
+            // 修复：mScreenHeight 可能为 0，导致整数除零崩溃
+            if (mScreenHeight > 0) {
+                val deltaV = (255 * deltaY * 3 / mScreenHeight).toInt()
+                val params = JZUtils.getWindow(context).attributes
+                if ((mGestureDownBrightness + deltaV) / 255 >= 1) { //这和声音有区别，必须自己过滤一下负值
+                    params.screenBrightness = 1f
+                } else if ((mGestureDownBrightness + deltaV) / 255 <= 0) {
+                    params.screenBrightness = 0.01f
+                } else {
+                    params.screenBrightness = (mGestureDownBrightness + deltaV) / 255
+                }
+                JZUtils.getWindow(context).attributes = params
+                //dialog中显示百分比
+                val brightnessPercent =
+                    (mGestureDownBrightness * 100 / 255 + deltaY * 3 * 100 / mScreenHeight).toInt()
+                showBrightnessDialog(brightnessPercent)
             }
-            JZUtils.getWindow(context).attributes = params
-            //dialog中显示百分比
-            val brightnessPercent =
-                (mGestureDownBrightness * 100 / 255 + deltaY * 3 * 100 / mScreenHeight).toInt()
-            showBrightnessDialog(brightnessPercent)
 //            mDownY = y;
         }
     }
@@ -887,7 +898,11 @@ class HJzvdStd @JvmOverloads constructor(
             isAdjustBrightness = false
         }
         // 从 decorView 移除全屏播放器视图
-        val decorView = (JZUtils.scanForActivity(jzvdContext)).window.decorView as ViewGroup
+        val decorView = JZUtils.scanForActivity(jzvdContext)?.window?.decorView as? ViewGroup
+        if (decorView == null) {
+            Log.e(TAG, "scanForActivity returned null or decorView is not ViewGroup")
+            return
+        }
         decorView.removeView(this)
         // 恢复到原始容器
         val originalContainer = CONTAINER_LIST.lastOrNull()
@@ -939,7 +954,11 @@ class HJzvdStd @JvmOverloads constructor(
         // 从原来容器中移除播放器
         vg.removeView(this)
         CONTAINER_LIST.push(vg)
-        val decorView = (JZUtils.scanForActivity(jzvdContext)).window.decorView as ViewGroup
+        val decorView = JZUtils.scanForActivity(jzvdContext)?.window?.decorView as? ViewGroup
+        if (decorView == null) {
+            Log.e(TAG, "scanForActivity returned null or decorView is not ViewGroup")
+            return
+        }
         val fullLayout = LayoutParams(
             LayoutParams.MATCH_PARENT,
             LayoutParams.MATCH_PARENT
@@ -1142,12 +1161,15 @@ class HJzvdStd @JvmOverloads constructor(
         }
         if (state == STATE_PREPARED) { //如果是准备完成视频后第一次播放，先判断是否需要跳转进度。
             Log.d(TAG, "onStatePlaying:STATE_PREPARED ")
-            mAudioManager =
-                applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            val audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
-                .setOnAudioFocusChangeListener(onAudioFocusChangeListener)
-                .build()
-            mAudioManager.requestAudioFocus(audioFocusRequest)
+            // 修复：getSystemService 可能返回 null，避免 NPE
+            val audioManager = applicationContext.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+            if (audioManager != null) {
+                mAudioManager = audioManager
+                val audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+                    .setOnAudioFocusChangeListener(onAudioFocusChangeListener)
+                    .build()
+                audioManager.requestAudioFocus(audioFocusRequest)
+            }
             if (seekToInAdvance != 0L) {
                 mediaInterface.seekTo(seekToInAdvance)
                 seekToInAdvance = 0

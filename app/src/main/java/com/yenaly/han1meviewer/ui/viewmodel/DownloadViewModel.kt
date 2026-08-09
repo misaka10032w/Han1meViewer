@@ -6,7 +6,9 @@ import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
+import com.yenaly.han1meviewer.util.runSuspendCatching
 import com.yenaly.yenaly_libs.base.YenalyViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -41,6 +43,7 @@ class DownloadViewModel(application: Application) : YenalyViewModel(application)
         DatabaseRepo.HanimeDownload.getAllGroups()
             .flowOn(Dispatchers.IO)
             .catch { e ->
+                if (e is CancellationException) throw e
                 e.printStackTrace()
             }
             .stateIn(
@@ -51,7 +54,10 @@ class DownloadViewModel(application: Application) : YenalyViewModel(application)
 
     fun loadAllDownloadingHanime() =
         DatabaseRepo.HanimeDownload.loadAllDownloadingHanime()
-            .catch { e -> e.printStackTrace() }
+            .catch { e ->
+                if (e is CancellationException) throw e
+                e.printStackTrace()
+            }
             .flowOn(Dispatchers.IO)
 
     fun loadAllDownloadedHanime(
@@ -60,7 +66,10 @@ class DownloadViewModel(application: Application) : YenalyViewModel(application)
     ) {
         viewModelScope.launch {
             DatabaseRepo.HanimeDownload.loadAllDownloadedHanime(sortedBy, ascending)
-                .catch { e -> e.printStackTrace() }
+                .catch { e ->
+                    if (e is CancellationException) throw e
+                    e.printStackTrace()
+                }
                 .flowOn(Dispatchers.IO)
                 .collect {
                     _downloaded.value = it
@@ -90,6 +99,7 @@ class DownloadViewModel(application: Application) : YenalyViewModel(application)
      * @param groupName 新分组的名称，不能为空或空白字符串
      */
     fun createNewGroup(groupName: String){
+        if (groupName.isBlank()) return
         viewModelScope.launch {
             DatabaseRepo.HanimeDownload.createNewGroup(groupName)
         }
@@ -108,14 +118,16 @@ class DownloadViewModel(application: Application) : YenalyViewModel(application)
      * updateGroupName(1, "收藏视频")
      */
     fun updateGroupName(groupId: Int, newName: String){
+        if (newName.isBlank()) return
         viewModelScope.launch {
-            try {
+            runSuspendCatching {
                 val oldGroupName = DatabaseRepo.HanimeDownload.getGroupById(groupId)
                 if (oldGroupName != null){
                     val updatedGroup = oldGroupName.copy(name = newName)
                     DatabaseRepo.HanimeDownload.updateGroup(updatedGroup)
                 }
-            }catch (e: Exception){
+            }.onFailure { e ->
+                if (e is CancellationException) throw e
                 e.printStackTrace()
             }
         }

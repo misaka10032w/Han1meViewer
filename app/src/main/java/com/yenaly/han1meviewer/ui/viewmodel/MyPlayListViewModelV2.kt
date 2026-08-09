@@ -158,52 +158,55 @@ class MyPlayListViewModelV2 : ViewModel() {
     fun getPlaylistItems(page: Int = 1, listCode: String, refresh: Boolean = false) {
         Log.i("getPlaylistItems","isLoadingMore:$isLoadingMore,listCode:$listCode,")
         if (isLoadingMore) return
+        if (listCode.isBlank()) return
         isLoadingMore = true
         viewModelScope.launch {
-            if (listCode.isBlank()) return@launch
-            Log.i("getPlaylistItems","page:$page,refresh:$refresh")
-            // 如果是第一页或刷新，重置状态
-            if (page == 1 || refresh) {
-                _playlistFlow.value = emptyList()
-                _playlistDesc.value = null
-                _playlistStateFlow.value = PageLoadingState.Loading
-            } else {
-                _playlistStateFlow.value = PageLoadingState.Loading
-            }
-            NetworkRepo.getMyPlayListItems(page, listCode).collect { state ->
-                Log.i("getPlaylistItems","state:$state")
-                when (state) {
-                    is PageLoadingState.Success -> {
-                        Log.i("getPlaylistItems","list size:${state.info.hanimeInfo.size}")
-                        _playlistDesc.value = state.info.desc
-                        val newList = state.info.hanimeInfo
-                        if (newList.isEmpty()) {
-                            _playlistStateFlow.value = PageLoadingState.NoMoreData
-                        } else {
-                            _playlistFlow.update { prevList ->
-                                val baseList = if (page == 1 || refresh) emptyList() else prevList
-                                (baseList + newList).distinctBy(HanimeInfo::videoCode)
+            try {
+                Log.i("getPlaylistItems","page:$page,refresh:$refresh")
+                // 如果是第一页或刷新，重置状态
+                if (page == 1 || refresh) {
+                    _playlistFlow.value = emptyList()
+                    _playlistDesc.value = null
+                    _playlistStateFlow.value = PageLoadingState.Loading
+                } else {
+                    _playlistStateFlow.value = PageLoadingState.Loading
+                }
+                NetworkRepo.getMyPlayListItems(page, listCode).collect { state ->
+                    Log.i("getPlaylistItems","state:$state")
+                    when (state) {
+                        is PageLoadingState.Success -> {
+                            Log.i("getPlaylistItems","list size:${state.info.hanimeInfo.size}")
+                            _playlistDesc.value = state.info.desc
+                            val newList = state.info.hanimeInfo
+                            if (newList.isEmpty()) {
+                                _playlistStateFlow.value = PageLoadingState.NoMoreData
+                            } else {
+                                _playlistFlow.update { prevList ->
+                                    val baseList = if (page == 1 || refresh) emptyList() else prevList
+                                    (baseList + newList).distinctBy(HanimeInfo::videoCode)
+                                }
+                                _playlistStateFlow.value = PageLoadingState.Success(state.info)
                             }
-                            _playlistStateFlow.value = PageLoadingState.Success(state.info)
                         }
-                    }
 
-                    is PageLoadingState.Error -> {
-                        _playlistStateFlow.value = PageLoadingState.Error(state.throwable)
-                    }
-
-                    is PageLoadingState.Loading -> {
-                        if (page == 1 || refresh) {
-                            _playlistFlow.value = emptyList()
+                        is PageLoadingState.Error -> {
+                            _playlistStateFlow.value = PageLoadingState.Error(state.throwable)
                         }
-                    }
 
-                    is PageLoadingState.NoMoreData -> {
-                        _playlistStateFlow.value = PageLoadingState.NoMoreData
+                        is PageLoadingState.Loading -> {
+                            if (page == 1 || refresh) {
+                                _playlistFlow.value = emptyList()
+                            }
+                        }
+
+                        is PageLoadingState.NoMoreData -> {
+                            _playlistStateFlow.value = PageLoadingState.NoMoreData
+                        }
                     }
                 }
+            } finally {
+                isLoadingMore = false
             }
-            isLoadingMore = false
         }
     }
 
@@ -216,7 +219,8 @@ class MyPlayListViewModelV2 : ViewModel() {
                 _deleteFromPlaylistFlow.emit(it)
                 _playlistFlow.update { prevList ->
                     if (it is WebsiteState.Success) {
-                        prevList.toMutableList().apply { removeAt(position) }
+                        // 按 videoCode 删除，避免在并发删除时 position 失效导致越界或删错项
+                        prevList.filterNot { item -> item.videoCode == videoCode }
                     } else prevList
                 }
             }

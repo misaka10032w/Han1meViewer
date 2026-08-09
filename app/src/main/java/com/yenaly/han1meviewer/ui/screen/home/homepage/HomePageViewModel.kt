@@ -23,6 +23,7 @@ import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.yenaly_libs.utils.getSpValue
 import com.yenaly.yenaly_libs.utils.putSpValue
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -169,7 +170,10 @@ class HomePageViewModel: ViewModel() {
 
     fun loadAllWatchHistories() =
         DatabaseRepo.WatchHistory.loadAll()
-            .catch { e -> e.printStackTrace() }
+            .catch { e ->
+                if (e is CancellationException) throw e
+                e.printStackTrace()
+            }
             .flowOn(Dispatchers.IO)
     private val _modifyHKeyframeFlow = MutableSharedFlow<Boolean>()
     fun removeHKeyframe(videoCode: String, hKeyframe: HKeyframeEntity.Keyframe) {

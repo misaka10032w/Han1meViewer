@@ -97,4 +97,16 @@ abstract class HanimeDownloadDao {
     @Query("UPDATE HanimeDownloadEntity SET groupId = :newGroupId WHERE videoCode = :videoCode")
     abstract suspend fun updateVideoGroup(videoCode: String, newGroupId: Int)
 
+    /**
+     * 仅更新封面本地地址，避免全行 update 时覆盖进度等字段（修复并发更新丢失问题）。
+     */
+    @Query("UPDATE HanimeDownloadEntity SET coverUri = :coverUri WHERE videoCode = :videoCode AND quality = :quality")
+    abstract suspend fun updateCoverUri(videoCode: String, quality: String, coverUri: String)
+
+    /**
+     * 仅更新已下载长度与状态，避免覆盖封面等字段。
+     */
+    @Query("UPDATE HanimeDownloadEntity SET downloadedLength = :downloadedLength, state = :stateMask WHERE videoCode = :videoCode AND quality = :quality")
+    abstract suspend fun updateProgress(videoCode: String, quality: String, downloadedLength: Long, stateMask: Int)
+
 }

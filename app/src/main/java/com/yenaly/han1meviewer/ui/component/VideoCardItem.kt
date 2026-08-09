@@ -212,7 +212,7 @@ fun VideoCardItem(
                     .padding(horizontal = 8.dp),
             )
             Text(
-                text = videoItem.currentArtist ?: "作者",
+                text = videoItem.currentArtist ?: stringResource(R.string.author_label),
                 maxLines = 1,
                 style = MaterialTheme.typography.labelSmall,
                 overflow = TextOverflow.Ellipsis,
@@ -245,9 +245,10 @@ fun VideoCardItem(
                     )
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                if (!videoItem.uploadTime.isNullOrEmpty()) {
+                val uploadTime = videoItem.uploadTime
+                if (!uploadTime.isNullOrEmpty()) {
                     Text(
-                        text = DisplayTextLocalizer.localizeRelativeTime(videoItem.uploadTime!!),
+                        text = DisplayTextLocalizer.localizeRelativeTime(uploadTime),
                         fontSize = 11.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

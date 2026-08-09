@@ -887,4 +887,11 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
         <item>ワクワクしながら待機中……</item>
         <item>◝(⑅•ᴗ•⑅)◜..°♡ 転送中……</item>
     </string-array>
+
+    <!-- 共通フォールバックラベル -->
+    <string name="author_label">作者</string>
+    <string name="pause_video">動画を一時停止</string>
+    <string name="play_video">動画を再生</string>
+    <string name="temporarily_unavailable">一時的に利用できません</string>
+    <string name="untitled">無題</string>
 </resources>

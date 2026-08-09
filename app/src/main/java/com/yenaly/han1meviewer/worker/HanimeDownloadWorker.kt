@@ -61,7 +61,6 @@ import java.net.UnknownHostException
 import java.net.SocketException
 import java.util.concurrent.CancellationException
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
 /**
  * @project Han1meViewer
@@ -173,7 +172,8 @@ class HanimeDownloadWorker(
     private val shouldRedownload by inputData(REDOWNLOAD, false)
     private val isInWaitingQueue by inputData(IN_WAITING_QUEUE, false)
 
-    private val downloadId = Random.nextInt()
+    // 使用基于 videoCode 的稳定 ID，避免 WorkManager retry 时生成新实例导致旧通知无法取消
+    private val downloadId = videoCode.hashCode() and 0x7FFFFFFF
 
     private val mainScope = CoroutineScope(Dispatchers.Main.immediate)
     private val dbScope = CoroutineScope(Dispatchers.IO)
@@ -314,7 +314,12 @@ class HanimeDownloadWorker(
             }
 
             if (entity.downloadedLength >= entity.length && entity.length > 0) {
-                DatabaseRepo.HanimeDownload.update(entity.copy(state = DownloadState.Finished))
+                DatabaseRepo.HanimeDownload.updateProgress(
+                    videoCode = videoCode,
+                    quality = quality,
+                    downloadedLength = entity.downloadedLength,
+                    stateMask = DownloadState.Finished.mask,
+                )
                 showSuccessNotification()
                 return@withContext Result.success(
                     workDataOf(DownloadState.STATE to DownloadState.Finished.mask)
@@ -399,13 +404,17 @@ class HanimeDownloadWorker(
                             downloadedLength += len
 
                             if (System.currentTimeMillis() - delayTime > RESPONSE_INTERVAL) {
-                                val progress = (downloadedLength * 100 / entity.length).coerceAtMost(100)
+                                val progress = if (entity.length > 0) {
+                                    (downloadedLength * 100 / entity.length).coerceAtMost(100)
+                                } else 0
                                 setProgress(workDataOf(PROGRESS to progress.toInt()))
                                 updateDownloadNotification(progress.toInt())
-                                DatabaseRepo.HanimeDownload.update(
-                                    entity.copy(downloadedLength = downloadedLength,
-                                        state = DownloadState.Downloading
-                                    )
+                                // 使用定向 update，避免覆盖封面等字段（修复并发更新丢失）
+                                DatabaseRepo.HanimeDownload.updateProgress(
+                                    videoCode = videoCode,
+                                    quality = quality,
+                                    downloadedLength = downloadedLength,
+                                    stateMask = DownloadState.Downloading.mask,
                                 )
                                 delayTime = System.currentTimeMillis()
                             }
@@ -467,11 +476,13 @@ class HanimeDownloadWorker(
                 val state = DownloadState.from(
                     result.outputData.getInt(DownloadState.STATE, DownloadState.Unknown.mask)
                 )
-                DatabaseRepo.HanimeDownload.update(
-                    entity.copy(
-                        state = if (shouldRetry) DownloadState.Queued else state,
-                        downloadedLength = downloadedLength
-                    )
+                val finalState = if (shouldRetry) DownloadState.Queued else state
+                // 使用定向 update，避免覆盖封面等字段
+                DatabaseRepo.HanimeDownload.updateProgress(
+                    videoCode = videoCode,
+                    quality = quality,
+                    downloadedLength = downloadedLength,
+                    stateMask = finalState.mask,
                 )
                 raf?.closeQuietly()
                 safChannel?.closeQuietly()
@@ -553,8 +564,11 @@ class HanimeDownloadWorker(
             if (isSuccess && uri != null) {
                 val coverUriStr = uri.toString()
                 withContext(Dispatchers.IO) {
-                    DatabaseRepo.HanimeDownload.update(
-                        entity.copy(coverUri = coverUriStr)
+                    // 使用定向 update 仅更新 coverUri，避免覆盖下载进度等字段（修复并发更新丢失）
+                    DatabaseRepo.HanimeDownload.updateCoverUri(
+                        videoCode = entity.videoCode,
+                        quality = entity.quality,
+                        coverUri = coverUriStr,
                     )
                 }
                 entity.coverUri = coverUriStr

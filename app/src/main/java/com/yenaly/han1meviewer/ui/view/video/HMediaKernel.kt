@@ -202,11 +202,14 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
         handler.post {
             jzvd.onVideoSizeChanged(realWidth.toInt(), realHeight)
         }
-        val ratio = realWidth / realHeight // > 1 橫屏， < 1 竖屏
-        if (ratio > 1) {
-            Jzvd.FULLSCREEN_ORIENTATION = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-        } else {
-            Jzvd.FULLSCREEN_ORIENTATION = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        // 修复：realHeight 可能为 0（初始/异常视频尺寸事件），导致 NaN 逻辑错误
+        if (realHeight > 0) {
+            val ratio = realWidth / realHeight // > 1 橫屏， < 1 竖屏
+            if (ratio > 1) {
+                Jzvd.FULLSCREEN_ORIENTATION = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            } else {
+                Jzvd.FULLSCREEN_ORIENTATION = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
         }
     }
 
@@ -245,12 +248,13 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
     }
 
     override fun release() {
-        if (mMediaHandler != null && mMediaHandlerThread != null && _exoPlayer != null) { //不知道有没有妖孽
+        // 直接使用 _exoPlayer 的局部智能转换，避免 exoPlayer getter 的 !! NPE 风险
+        val tmpExoPlayer = _exoPlayer
+        if (mMediaHandler != null && mMediaHandlerThread != null && tmpExoPlayer != null) { //不知道有没有妖孽
             val tmpHandlerThread = mMediaHandlerThread
-            val tmpMediaPlayer = exoPlayer
             SAVED_SURFACE = null
             mMediaHandler?.post {
-                tmpMediaPlayer.release() //release就不能放到主线程里，界面会卡顿
+                tmpExoPlayer.release() //release就不能放到主线程里，界面会卡顿
                 tmpHandlerThread.quit()
                 _exoPlayer = null
             }
@@ -471,6 +475,8 @@ class SystemMediaKernel(jzvd: Jzvd) : JZMediaSystem(jzvd), HMediaKernel {
 
     override fun onVideoSizeChanged(mediaPlayer: MediaPlayer?, width: Int, height: Int) {
         super.onVideoSizeChanged(mediaPlayer, width, height)
+        // 修复：height 可能为 0，导致 Infinity 并错误进入横屏分支
+        if (height <= 0) return
         val ratio = width.toFloat() / height // > 1 橫屏， < 1 竖屏
         if (ratio > 1) {
             Jzvd.FULLSCREEN_ORIENTATION = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE

@@ -8,6 +8,7 @@ import com.yenaly.han1meviewer.logic.model.MySubscriptions
 import com.yenaly.han1meviewer.logic.model.SubscriptionItem
 import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -31,9 +32,12 @@ class MySubscriptionsViewModel : ViewModel() {
     private val _refreshCompleted = MutableSharedFlow<Unit>()
     val refreshCompleted: SharedFlow<Unit> = _refreshCompleted
 
-    private var hasLoaded = false
     fun reset() {
-        hasLoaded = false
+        currentPage = 1
+        hasMore = true
+        isLoadingMore = false
+        cachedVideos.clear()
+        cachedArtists.clear()
         _subscriptionsState.value = WebsiteState.Loading
     }
 
@@ -55,6 +59,7 @@ class MySubscriptionsViewModel : ViewModel() {
                     }
                 }
                 .catch { e ->
+                    if (e is CancellationException) throw e
                     _subscriptionsState.value = WebsiteState.Error(e)
                     _refreshCompleted.emit(Unit)
                     isLoadingMore = false
@@ -66,9 +71,23 @@ class MySubscriptionsViewModel : ViewModel() {
                         if (currentPage == 1) {
                             cachedArtists.clear()
                             cachedArtists.addAll(info.subscriptions)
+                        } else if (info.subscriptions.isNotEmpty()) {
+                            // 后续页若返回新的订阅作者，按 artistName 去重后合并，避免缓存长期失效
+                            val existingNames = cachedArtists.map { it.artistName }.toMutableSet()
+                            info.subscriptions.forEach { item ->
+                                if (existingNames.add(item.artistName)) {
+                                    cachedArtists.add(item)
+                                }
+                            }
                         }
                         if (info.subscriptionsVideos.isNotEmpty()) {
-                            cachedVideos.addAll(info.subscriptionsVideos)
+                            // 按 videoCode 去重，避免分页返回重叠导致列表出现重复项
+                            val existingCodes = cachedVideos.map { it.videoCode }.toMutableSet()
+                            info.subscriptionsVideos.forEach { item ->
+                                if (existingCodes.add(item.videoCode)) {
+                                    cachedVideos.add(item)
+                                }
+                            }
                             currentPage++
                             Log.i("getMySubscriptions","currentPage:$currentPage")
                         } else {
