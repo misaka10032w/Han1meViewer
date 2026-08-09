@@ -52,5 +52,7 @@ object HanimeNetwork {
         getchuService = _getchuService
         commentService = _commentService
         myListService = _myListService
+        // 修复：此前漏掉了 subscriptionService，导致网络设置变更后订阅服务仍使用旧的 client
+        subscriptionService = _subscriptionService
     }
 }

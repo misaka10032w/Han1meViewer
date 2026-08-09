@@ -303,11 +303,9 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
                 videoCode, likeStatus, currentUserId, csrfToken
             ).collect { state ->
                 _addToFavVideoFlow.emit(state)
-                if (likeStatus) {
-                    _hanimeVideoFlow.update { it?.rateVideo(isPositive = true) }
-                } else {
-                    _hanimeVideoFlow.update { it?.rateVideo(isPositive = true) }
-                }
+                // likeStatus 表示当前已收藏状态，rateVideo(isPositive = true) 会切换收藏态，
+                // 因此无论添加还是移除都调用一次即可正确切换本地 UI 状态。
+                _hanimeVideoFlow.update { it?.rateVideo(isPositive = true) }
             }
         }
     }
@@ -345,9 +343,11 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
             NetworkRepo.addToMyList(listCode, videoCode, isChecked, position, csrfToken).collect {
                 _modifyMyListFlow.emit(it)
                 _hanimeVideoFlow.update { prev ->
-                    val myList = prev?.myList?.myListInfo.orEmpty().toMutableList()
+                    if (prev == null) return@update prev
+                    val myList = prev.myList?.myListInfo.orEmpty().toMutableList()
+                    if (position !in myList.indices) return@update prev
                     myList[position] = myList[position].copy(isSelected = isChecked)
-                    prev?.copy(myList = prev.myList?.copy(myListInfo = myList))
+                    prev.copy(myList = prev.myList?.copy(myListInfo = myList))
                 }
             }
         }

@@ -38,6 +38,7 @@ import cn.mucute.compose.avatar.cropper.CropShape
 import cn.mucute.compose.avatar.cropper.rememberCropState
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -71,6 +72,7 @@ fun AvatarCropScreen(
                 }
                 originalImageBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true).asImageBitmap()
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 e.printStackTrace()
                 withContext(Dispatchers.Main) { onBack() }
             }
@@ -124,8 +126,13 @@ fun AvatarCropScreen(
                                 scope.launch {
                                     val croppedResult = cropState.crop(bitmap)
 
+                                    if (croppedResult == null) {
+                                        isProcessing = false
+                                        return@launch
+                                    }
+
                                     val file = withContext(Dispatchers.IO) {
-                                        saveImageBitmapToFile(context, croppedResult!!)
+                                        saveImageBitmapToFile(context, croppedResult)
                                     }
 
                                     if (file != null) {

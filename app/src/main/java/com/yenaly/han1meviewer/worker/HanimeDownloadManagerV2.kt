@@ -88,6 +88,12 @@ object HanimeDownloadManagerV2 {
          * 处理下一个任务
          */
         data object ProcessNext : DownloadMsg()
+
+        /**
+         * 任务已完成（成功/失败/取消），需要从 activeDownloads 移除并尝试启动下一个任务。
+         * 通过 channel 路由，保证所有 activeDownloads 的修改都在同一个消费者协程中执行。
+         */
+        data class Completed(val videoCode: String) : DownloadMsg()
     }
 
     private val downloadChannel = Channel<DownloadMsg>(capacity = Channel.UNLIMITED)
@@ -173,6 +179,12 @@ object HanimeDownloadManagerV2 {
                     }
 
                     DownloadMsg.ProcessNext -> processNext()
+
+                    is DownloadMsg.Completed -> {
+                        activeDownloads.remove(msg.videoCode)
+                        Log.d(TAG, "任务完成，从 activeDownloads 移除：${msg.videoCode}")
+                        processNext()
+                    }
                 }
             }
         }
@@ -260,10 +272,10 @@ object HanimeDownloadManagerV2 {
                     // 阻塞等待 WorkManager 任务完成
                     awaitWorkCompletion(args.videoCode, workId.toString())
                 }
-                // 下载完成或取消后，从 active 中移除，并尝试启动下一个任务
-                activeDownloads.remove(args.videoCode)
+                // 下载完成或取消后，通过 channel 路由移除并启动下一个任务，
+                // 保证 activeDownloads 的所有修改都在同一个消费者协程中执行，避免数据竞争
                 Log.d(TAG, "launchDownload (end): ${args.videoCode}")
-                downloadChannel.send(DownloadMsg.ProcessNext)
+                downloadChannel.send(DownloadMsg.Completed(args.videoCode))
             }
         }
     }

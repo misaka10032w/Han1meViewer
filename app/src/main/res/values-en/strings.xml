@@ -882,4 +882,11 @@ Recommendations are as follows:\n
         <item>Excitedly rubbing hands together in anticipation…</item>
         <item>◝(⑅•ᴗ•⑅)◜..°♡ Teleporting…</item>
     </string-array>
+
+    <!-- Common fallback labels -->
+    <string name="author_label">Author</string>
+    <string name="pause_video">Pause Video</string>
+    <string name="play_video">Play Video</string>
+    <string name="temporarily_unavailable">Temporarily unavailable</string>
+    <string name="untitled">Untitled</string>
 </resources>

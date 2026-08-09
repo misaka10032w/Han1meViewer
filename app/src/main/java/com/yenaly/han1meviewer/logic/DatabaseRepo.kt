@@ -245,6 +245,16 @@ object DatabaseRepo {
         suspend fun update(entity: HanimeDownloadEntity) =
             hanimeDownloadDao.update(entity)
 
+        suspend fun updateCoverUri(videoCode: String, quality: String, coverUri: String) =
+            hanimeDownloadDao.updateCoverUri(videoCode, quality, coverUri)
+
+        suspend fun updateProgress(
+            videoCode: String,
+            quality: String,
+            downloadedLength: Long,
+            stateMask: Int,
+        ) = hanimeDownloadDao.updateProgress(videoCode, quality, downloadedLength, stateMask)
+
         suspend fun find(videoCode: String, quality: String) =
             hanimeDownloadDao.find(videoCode, quality)
 

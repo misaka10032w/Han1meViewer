@@ -140,11 +140,16 @@ fun VideoRouteHostScreen(
             viewModel = viewModel,
             genres = genres,
             requestStoragePermission = { onGranted, onDenied, onPermanentlyDenied ->
-                (activity as PermissionRequester).requestStoragePermission(
-                    onGranted = onGranted,
-                    onDenied = onDenied,
-                    onPermanentlyDenied = onPermanentlyDenied,
-                )
+                val requester = activity as? PermissionRequester
+                if (requester != null) {
+                    requester.requestStoragePermission(
+                        onGranted = onGranted,
+                        onDenied = onDenied,
+                        onPermanentlyDenied = onPermanentlyDenied,
+                    )
+                } else {
+                    onPermanentlyDenied()
+                }
             },
             onPendingDownloadPromptChange = { pendingDownloadPrompt = it },
             getCheckedQuality = { checkedQuality },
@@ -177,7 +182,7 @@ fun VideoRouteHostScreen(
         } else {
             Icon.createWithResource(activity, R.drawable.ic_pip_play_arrow_24)
         }
-        val title = if (isPlaying) "Pause Video" else "Play Video"
+        val title = if (isPlaying) activity.getString(R.string.pause_video) else activity.getString(R.string.play_video)
         val intent = PendingIntent.getBroadcast(
             activity,
             0,
@@ -401,7 +406,7 @@ fun VideoRouteHostScreen(
             val mediaInterface: JZMediaInterface? = player.mediaInterface
             if (mediaInterface != null && !mediaInterface.isPlaying) {
                 val currentPosition = player.currentPositionWhenPlaying
-                showAddHKeyframeDialog = Pair(currentPosition, videoTitle ?: "Untitled")
+                showAddHKeyframeDialog = Pair(currentPosition, videoTitle ?: activity.getString(R.string.untitled))
             } else {
                 showShortToast(R.string.pause_then_long_press)
             }

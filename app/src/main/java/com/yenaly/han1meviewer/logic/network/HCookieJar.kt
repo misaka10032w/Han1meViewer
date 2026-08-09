@@ -7,6 +7,7 @@ import com.yenaly.han1meviewer.util.toLoginCookieList
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * 用於管理 Cookie。
@@ -21,14 +22,18 @@ import okhttp3.HttpUrl
 class HCookieJar : CookieJar {
 
     companion object {
+        // 使用 ConcurrentHashMap 保证 OkHttp 多线程并发请求时的线程安全
         @JvmStatic
-        val cookieMap: MutableMap<String, MutableList<Cookie>> = mutableMapOf()
+        val cookieMap: MutableMap<String, MutableList<Cookie>> = ConcurrentHashMap()
     }
 
     override fun loadForRequest(url: HttpUrl): List<Cookie> {
         val host = url.host
         val cookies = mutableListOf<Cookie>()
-        cookieMap[host]?.let { cookies.addAll(it) }
+        // 读取时加锁，避免与 saveFromResponse 的写入产生 ConcurrentModificationException
+        cookieMap[host]?.let { list ->
+            synchronized(list) { cookies.addAll(list) }
+        }
 
         cookies.addAll(Preferences.loginCookieStateFlow.value.toLoginCookieList(host))
         cookies.addAll(Preferences.cloudFlareCookieStateFlow.value.toLoginCookieList(host))
@@ -39,8 +44,26 @@ class HCookieJar : CookieJar {
     }
 
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
-        cookieMap[url.host] = cookies.toMutableList().also {
-            it += Preferences.loginCookieStateFlow.value.toLoginCookieList(url.host)
+        val host = url.host
+        // 使用 putIfAbsent 保证只创建一次列表，避免两个线程同时判定 existing == null 后互相覆盖
+        val existing = cookieMap.putIfAbsent(host, mutableListOf())
+        if (existing == null) {
+            // 首次写入：合并响应 cookie 与偏好/登录 cookie
+            val merged = cookieMap[host] ?: mutableListOf()
+            synchronized(merged) {
+                merged.addAll(cookies)
+                merged += Preferences.loginCookieStateFlow.value.toLoginCookieList(host)
+            }
+            return
+        }
+        // 已有 cookie：按 name 合并更新（RFC 6265 语义），避免覆盖未在本次响应中返回的 cookie
+        synchronized(existing) {
+            val byName = existing.associateBy { it.name }.toMutableMap()
+            cookies.forEach { incoming -> byName[incoming.name] = incoming }
+            val preferencesList = Preferences.loginCookieStateFlow.value.toLoginCookieList(host)
+            preferencesList.forEach { pref -> byName[pref.name] = pref }
+            existing.clear()
+            existing.addAll(byName.values)
         }
     }
 }

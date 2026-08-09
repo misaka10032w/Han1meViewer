@@ -35,7 +35,6 @@ import com.yenaly.han1meviewer.util.updateFile
 import com.yenaly.yenaly_libs.utils.showShortToast
 import java.io.File
 import java.util.Locale
-import kotlin.random.Random
 
 /**
  * @project Han1meViewer
@@ -52,6 +51,8 @@ class HUpdateWorker(
         const val DOWNLOAD_LINK = "download_link"
         const val NODE_ID = "node_id"
         const val UPDATE_APK = "update_apk"
+        // 更新任务专用通知 ID（同时刻仅一个更新任务）
+        private const val UPDATE_NOTIFICATION_ID = 0x7E71
 
         /**
          * This function is used to enqueue a download task
@@ -104,7 +105,8 @@ class HUpdateWorker(
 
     private val downloadLink by inputData(DOWNLOAD_LINK, EMPTY_STRING)
     private val nodeId by inputData(NODE_ID, EMPTY_STRING)
-    private val downloadId = Random.nextInt()
+    // 使用固定 ID，避免 retry 时生成新实例导致旧通知无法取消（更新任务同一时刻只会有一个）
+    private val downloadId = UPDATE_NOTIFICATION_ID
 
     override suspend fun doWork(): Result {
         val foregroundInfo = createForegroundInfo()

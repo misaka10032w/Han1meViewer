@@ -36,13 +36,13 @@ import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -89,17 +89,20 @@ fun PlaylistBottomSheet(
     vm: MyPlayListViewModelV2,
     context: Context,
 ) {
-    val playlistState by vm.playlistStateFlow.collectAsState()
-    val playlist by vm.playlistFlow.collectAsState()
+    val playlistState by vm.playlistStateFlow.collectAsStateWithLifecycle()
+    val playlist by vm.playlistFlow.collectAsStateWithLifecycle()
     val sheetState = rememberBottomSheetState(
         initialValue = SheetValue.Hidden,
         enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
     )
-    if (listCode.isNotEmpty()) {
-        vm.setListInfo(listCode, playListTitle)
+    // 使用 LaunchedEffect 避免在 composition 中直接调用 ViewModel 方法产生副作用
+    LaunchedEffect(listCode, playListTitle) {
+        if (listCode.isNotEmpty()) {
+            vm.setListInfo(listCode, playListTitle)
+        }
     }
 
-    val listInfo by vm.currentListInfo.collectAsState()
+    val listInfo by vm.currentListInfo.collectAsStateWithLifecycle()
     val currentCode = listInfo?.first ?: ""
     val currentTitle = listInfo?.second ?: ""
     val savedScrollState = remember(currentCode, vm) {
@@ -216,7 +219,7 @@ private fun PlaylistSheetContent(
 ) {
     var showDeletePlaylistConfirm by remember { mutableStateOf(false) }
     var showDeleteItemConfirm by remember { mutableStateOf<Triple<String, String, Int>?>(null) }
-    val desc by playlistDesc.collectAsState()
+    val desc by playlistDesc.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
         Box(Modifier

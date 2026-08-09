@@ -20,7 +20,6 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.PullRefreshOverlay
@@ -62,8 +62,8 @@ fun PlaylistScreen(
     onClickItem: (String) -> Unit,
     onLongClickItem: (String, String) -> Unit,
 ) {
-    val state by viewModel.myPlaylistsFlow.collectAsState()
-    val uiState by viewModel.mainUiState.collectAsState()
+    val state by viewModel.myPlaylistsFlow.collectAsStateWithLifecycle()
+    val uiState by viewModel.mainUiState.collectAsStateWithLifecycle()
     val scrollBehavior = pinnedScrollBehavior(rememberTopAppBarState())
     var isRefreshing by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()

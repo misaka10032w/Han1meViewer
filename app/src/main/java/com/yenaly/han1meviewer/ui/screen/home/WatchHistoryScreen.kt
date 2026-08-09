@@ -39,7 +39,6 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -110,11 +109,11 @@ fun WatchHistoryTabScreen(
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 2 })
     val localHistories by localHistoriesFlow.collectAsStateWithLifecycle(initialValue = emptyList())
-    val currentOnlineItems by onlineItems.collectAsState()
-    val currentOnlineState by onlineState.collectAsState()
-    val currentOnlineSort by onlineSort.collectAsState()
-    val currentOnlineLoadedPageCount by onlineLoadedPageCount.collectAsState()
-    val currentOnlineIsLoadingMore by onlineIsLoadingMore.collectAsState()
+    val currentOnlineItems by onlineItems.collectAsStateWithLifecycle()
+    val currentOnlineState by onlineState.collectAsStateWithLifecycle()
+    val currentOnlineSort by onlineSort.collectAsStateWithLifecycle()
+    val currentOnlineLoadedPageCount by onlineLoadedPageCount.collectAsStateWithLifecycle()
+    val currentOnlineIsLoadingMore by onlineIsLoadingMore.collectAsStateWithLifecycle()
     var showHelpDialog by rememberSaveable { mutableStateOf(false) }
     var showDeleteAllLocalDialog by rememberSaveable { mutableStateOf(false) }
 

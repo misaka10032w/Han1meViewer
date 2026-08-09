@@ -72,15 +72,15 @@ fun CreateGroupDialog(
     var name by remember { mutableStateOf("") }
     var pendingDeleteGroup by remember { mutableStateOf<DownloadGroupEntity?>(null) }
 
-    if (pendingDeleteGroup != null) {
+    pendingDeleteGroup?.let { group ->
         ConfirmDialog(
             visible = true,
             title = stringResource(R.string.delete_group),
-            message = stringResource(R.string.delete_group_confirm, pendingDeleteGroup!!.name),
+            message = stringResource(R.string.delete_group_confirm, group.name),
             confirmText = stringResource(R.string.confirm),
             dismissText = stringResource(R.string.cancel),
             onConfirm = {
-                pendingDeleteGroup?.let { onDeleteGroup(it) }
+                onDeleteGroup(group)
                 pendingDeleteGroup = null
             },
             onDismiss = { pendingDeleteGroup = null },
