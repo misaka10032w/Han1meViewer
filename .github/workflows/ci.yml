@@ -24,24 +24,102 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Check required secrets
+        id: check_secrets
+        run: |
+          HAS_GOOGLE_SERVICES=false
+          HAS_KEYSTORE=false
+          HAS_KEY_ALIAS=false
+          HAS_KEYSTORE_PASSWORD=false
+
+          if [ -n "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" ]; then
+            HAS_GOOGLE_SERVICES=true
+          fi
+          if [ -n "${{ secrets.YOUR_KEYSTORE_BASE64 }}" ]; then
+            HAS_KEYSTORE=true
+          fi
+          if [ -n "${{ secrets.KEY_ALIAS }}" ]; then
+            HAS_KEY_ALIAS=true
+          fi
+          if [ -n "${{ secrets.YOUR_KEYSTORE_PASSWORD }}" ]; then
+            HAS_KEYSTORE_PASSWORD=true
+          fi
+
+          echo "HAS_GOOGLE_SERVICES=$HAS_GOOGLE_SERVICES" >> $GITHUB_OUTPUT
+          echo "HAS_KEYSTORE=$HAS_KEYSTORE" >> $GITHUB_OUTPUT
+          echo "HAS_KEY_ALIAS=$HAS_KEY_ALIAS" >> $GITHUB_OUTPUT
+          echo "HAS_KEYSTORE_PASSWORD=$HAS_KEYSTORE_PASSWORD" >> $GITHUB_OUTPUT
+
+          echo "::group::Secrets Status"
+          echo "GOOGLE_SERVICES_JSON_BASE64: $HAS_GOOGLE_SERVICES"
+          echo "YOUR_KEYSTORE_BASE64:        $HAS_KEYSTORE"
+          echo "KEY_ALIAS:                   $HAS_KEY_ALIAS"
+          echo "YOUR_KEYSTORE_PASSWORD:      $HAS_KEYSTORE_PASSWORD"
+          echo "::endgroup::"
+
+          if [ "$HAS_KEYSTORE" = "false" ] || [ "$HAS_KEY_ALIAS" = "false" ] || [ "$HAS_KEYSTORE_PASSWORD" = "false" ]; then
+            echo "::warning::Signing secrets (YOUR_KEYSTORE_BASE64, KEY_ALIAS, YOUR_KEYSTORE_PASSWORD) are not fully configured. Release APK will be built without signing."
+          fi
+          if [ "$HAS_GOOGLE_SERVICES" = "false" ]; then
+            echo "::warning::GOOGLE_SERVICES_JSON_BASE64 is not configured. Build may fail or Firebase features will be disabled."
+          fi
+
       - name: Load Google Services File
+        if: steps.check_secrets.outputs.HAS_GOOGLE_SERVICES == 'true'
         env:
           DATA: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
         run: echo $DATA | base64 -di > app/google-services.json
+
+      - name: Generate dummy Google Services (if secret not configured)
+        if: steps.check_secrets.outputs.HAS_GOOGLE_SERVICES != 'true'
+        run: |
+          cat > app/google-services.json << 'DUMMYEOF'
+          {
+            "project_info": {
+              "project_number": "0",
+              "project_id": "dummy-project",
+              "storage_bucket": "dummy-project.appspot.com"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:0:android:dummy",
+                  "android_client_info": {
+                    "package_name": "com.yenaly.han1meviewer"
+                  }
+                },
+                "oauth_client": [],
+                "api_key": [
+                  {
+                    "current_key": "dummy_key"
+                  }
+                ],
+                "services": {
+                  "appinvite_service": {
+                    "other_platform_oauth_client": []
+                  }
+                }
+              }
+            ],
+            "configuration_version": "1"
+          }
+          DUMMYEOF
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Decode keystore
+        if: steps.check_secrets.outputs.HAS_KEYSTORE == 'true'
         run: |
           echo "${{ secrets.YOUR_KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
 
       - name: Set up keystore for signing
+        if: steps.check_secrets.outputs.HAS_KEYSTORE == 'true'
         run: |
           mkdir -p $HOME/.android
           mv keystore.jks $HOME/.android/keystore.jks
 
-      - name: Build and sign APK with Gradle
+      - name: Build APK with Gradle
         run: ./gradlew assembleRelease
         env:
           KEYSTORE_PASSWORD: ${{ secrets.YOUR_KEYSTORE_PASSWORD }}

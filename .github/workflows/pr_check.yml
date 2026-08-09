@@ -24,10 +24,57 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Check Google Services secret
+        id: check_secrets
+        run: |
+          if [ -n "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" ]; then
+            echo "HAS_GOOGLE_SERVICES=true" >> $GITHUB_OUTPUT
+            echo "GOOGLE_SERVICES_JSON_BASE64 is configured."
+          else
+            echo "HAS_GOOGLE_SERVICES=false" >> $GITHUB_OUTPUT
+            echo "::warning::GOOGLE_SERVICES_JSON_BASE64 is not configured. Using dummy google-services.json."
+          fi
+
       - name: Load Google Services File
+        if: steps.check_secrets.outputs.HAS_GOOGLE_SERVICES == 'true'
         env:
           DATA: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
         run: echo $DATA | base64 -di > app/google-services.json
+
+      - name: Generate dummy Google Services (if secret not configured)
+        if: steps.check_secrets.outputs.HAS_GOOGLE_SERVICES != 'true'
+        run: |
+          cat > app/google-services.json << 'DUMMYEOF'
+          {
+            "project_info": {
+              "project_number": "0",
+              "project_id": "dummy-project",
+              "storage_bucket": "dummy-project.appspot.com"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:0:android:dummy",
+                  "android_client_info": {
+                    "package_name": "com.yenaly.han1meviewer"
+                  }
+                },
+                "oauth_client": [],
+                "api_key": [
+                  {
+                    "current_key": "dummy_key"
+                  }
+                ],
+                "services": {
+                  "appinvite_service": {
+                    "other_platform_oauth_client": []
+                  }
+                }
+              }
+            ],
+            "configuration_version": "1"
+          }
+          DUMMYEOF
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
