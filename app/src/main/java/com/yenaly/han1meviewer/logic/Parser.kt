@@ -830,7 +830,7 @@ object Parser {
                 card.selectFirst("img.main-thumb")?.attr("src")
             } ?: return@mapNotNull null
             val duration = card.selectFirst("div.duration")?.text()?.trim()
-            val subtitleText = card.selectFirst("div.subtitle a")?.text()?.trim().orEmpty()
+            val subtitleText = card.selectFirst("div.subtitle")?.text()?.trim().orEmpty()
             val artist = subtitleText.substringBefore("•").trim().ifBlank { null }
             val uploadTime = subtitleText.substringAfter("•", "").trim().ifBlank { null }
             val remoteVideoUrl = link.attr("href")
@@ -1118,13 +1118,17 @@ object Parser {
                     val durationAndViews = videoCard.select("div[class^=thumb-container]")
                     val duration = durationAndViews.select("div[class^=duration]").text()
                     val views = durationAndViews.select("div[class^=stat-item]").getOrNull(1)?.text()
-                    val artistAndUploadTime = videoCard.select("div.subtitle a").text().trim()
+                    val subtitleElement = videoCard.selectFirst("div.subtitle")
+                    val artistAndUploadTime = subtitleElement?.text()?.trim().orEmpty()
                     var artist = ""
                     var uploadTime = ""
                     if (artistAndUploadTime.contains("•")) {
                         val parts = artistAndUploadTime.split("•").map { it.trim() }
-                        artist = parts[0].trim()
-                        uploadTime = parts[1].trim()
+                        artist = parts.getOrNull(0).orEmpty()
+                        uploadTime = parts.getOrNull(1).orEmpty()
+                    } else {
+                        artist = subtitleElement?.selectFirst("a")?.text()?.trim().orEmpty()
+                        uploadTime = subtitleElement?.selectFirst("span.subtitle-time, span")?.text()?.trim().orEmpty()
                     }
                     val infoBoxes = videoCard.selectFirst(".stats-container .stat-item")
                     val reviews = infoBoxes?.ownText()?.trim() ?: ""
