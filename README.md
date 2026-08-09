@@ -2,9 +2,7 @@
 
 本软件不接受任何形式的公开宣传。若出现公开宣传、搬运或引流，仓库维护者可能随时归档或隐藏仓库，并删除已编译的发行版。
 
-# 🌸 Han1meViewer
-
-🔞 R-18 警告：未满 18 岁禁止下载和使用。
+# 🔞 R-18 警告：未满 18 岁禁止下载和使用。
 
 EZ Han1me 是一个使用 Kotlin 开发的 Android 客户端，用于浏览、搜索、播放和管理 hanime 相关公开视频页面内容。当前项目以 Jetpack Compose、Navigation Compose、ViewModel、StateFlow、Retrofit、Jsoup、Room、WorkManager、Media3/JZVD/MPV 为主要技术栈，围绕视频浏览、详情播放、搜索、用户列表、下载管理、评论、订阅、设置和隐私保护等功能组织。
 
@@ -12,8 +10,8 @@ EZ Han1me 是一个使用 Kotlin 开发的 Android 客户端，用于浏览、�
 
 ## 📜 项目来源与许可
 
-此项目 Fork 自
-此项目最初 Fork 自 [YenalyLiew/Han1meViewer](https://github.com/YenalyLiew/Han1meViewer)，感谢原作者的贡献。原项目采用 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)。
+此项目 Fork 自[misaka10032w/Han1meViewer](https://github.com/misaka10032w/Han1meViewer)
+而[misaka10032w/Han1meViewer]最初 Fork 自 [YenalyLiew/Han1meViewer](https://github.com/YenalyLiew/Han1meViewer)，感谢原作者的贡献。原项目采用 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)。
 
 根据 Apache 2.0 许可证要求：
 
@@ -21,7 +19,8 @@ EZ Han1me 是一个使用 Kotlin 开发的 Android 客户端，用于浏览、�
 - 包含许可证文件副本。
 - 说明修改内容。
 
-原始仓库：[YenalyLiew/Han1meViewer](https://github.com/YenalyLiew/Han1meViewer)
+原始仓库：[misaka10032w/Han1meViewer](https://github.com/misaka10032w/Han1meViewer)
+[YenalyLiew/Han1meViewer](https://github.com/YenalyLiew/Han1meViewer)
 
 许可证文件：[LICENSE](LICENSE)
 
@@ -54,13 +53,13 @@ EZ Han1me 是一个使用 Kotlin 开发的 Android 客户端，用于浏览、�
 
 若 `https://hanime1.me/` 认为本应用行为不当，可通过 GitHub 仓库内置功能联系维护者。
 
-🔄 最后更新日期：`2026-05-23`
+🔄 最后更新日期：`2026-08-09`
 
 ℹ️ 建议通过官方渠道支持原站内容，并点击广告以支持网站运营者。
 
 ## 💬 参与讨论
 
-Telegram 群组：[https://t.me/Han1meViewer](https://t.me/Han1meViewer)
+暂无
 
 ## ✨ 功能概览
 
