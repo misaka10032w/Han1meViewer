@@ -183,7 +183,7 @@
     <string name="custom_mirror_api_path_root">ルートドメインを使用</string>
     <string name="custom_mirror_api_path_root_summary">例: https://www.example.com/search。ホームページは常に上の入力どおりにリクエストされます</string>
     <string name="test_connection">接続テスト</string>
-    <string name="custom_mirror_site_testing">接続をテストしています...</string>
+    <string name="custom_mirror_site_testing">接続をテストしています…</string>
     <string name="custom_mirror_site_test_success">テスト成功\nホームページ: %1$s\n他のAPIテスト: %2$ssearch</string>
     <string name="custom_mirror_site_test_partial_success">ホームページのテストは成功しましたが、他のAPIテストに失敗しました\nホームページ: %1$s\n他のAPIベース: %2$s\n理由: %3$s</string>
     <string name="custom_mirror_site_test_failed">テスト失敗: %1$s</string>
@@ -870,6 +870,13 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="home_category_layout_summary">%1$d / %2$d 件を表示中</string>
     <string name="home_category_layout_dialog_summary">項目を長押ししてドラッグすると順序を変更できます。スイッチをオフにすると非表示になります。</string>
     <string name="debug">デバッグ</string>
+    <string name="crash_title">ちょっとした問題が…</string>
+    <string name="crash_message">アプリが予期せぬエラーに遭遇しました。興奮しすぎたかも🥵\n再起動するか、開発者に報告してください～</string>
+    <string name="crash_restart">再起動！</string>
+    <string name="crash_close">ちょっと休憩</string>
+    <string name="crash_details">エラーの詳細</string>
+    <string name="crash_report">エラーを報告</string>
+    <string name="crash_copy">エラー内容をコピー</string>
     <string-array name="loading_hints">
         <item>ふん、べ、別に待たせてなんかいないわよ！ちょっとデータが走るの遅いだけなんだから！</item>
         <item>バカ！見つめたって早くならないわよ！……もう、あと3秒だけ待ちなさいよね！</item>

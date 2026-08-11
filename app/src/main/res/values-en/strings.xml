@@ -183,7 +183,7 @@ Some mirrors may not support login, may not share cookies, may fail verification
     <string name="custom_mirror_api_path_root">Use root domain</string>
     <string name="custom_mirror_api_path_root_summary">Example: https://www.example.com/search. The homepage is always requested exactly as entered above</string>
     <string name="test_connection">Test connection</string>
-    <string name="custom_mirror_site_testing">Testing connection...</string>
+    <string name="custom_mirror_site_testing">Testing connection…</string>
     <string name="custom_mirror_site_test_success">Test succeeded\nHomepage: %1$s\nOther API test: %2$ssearch</string>
     <string name="custom_mirror_site_test_partial_success">Homepage test succeeded, but other API test failed\nHomepage: %1$s\nOther API base: %2$s\nReason: %3$s</string>
     <string name="custom_mirror_site_test_failed">Test failed: %1$s</string>
@@ -865,6 +865,13 @@ Recommendations are as follows:\n
     <string name="home_category_layout_summary">Showing %1$d / %2$d sections</string>
     <string name="home_category_layout_dialog_summary">Long press and drag a section to reorder it. Turn off the switch to hide a section.</string>
     <string name="debug">Debug</string>
+    <string name="crash_title">Something went wrong…</string>
+    <string name="crash_message">The app encountered an unexpected issue. Maybe it got too excited 🥵\nPlease restart or report to the developer~</string>
+    <string name="crash_restart">Restart!</string>
+    <string name="crash_close">Take a break</string>
+    <string name="crash_details">What went wrong?</string>
+    <string name="crash_report">Report error</string>
+    <string name="crash_copy">Copy error details</string>
     <string-array name="loading_hints">
         <item>Hmph! I-it\'s not like I kept you waiting or anything! The data is just running a tiny bit slow!</item>
         <item>Idiot! Staring at it won\'t make it go any faster! …Fine, just give me three more seconds!</item>
