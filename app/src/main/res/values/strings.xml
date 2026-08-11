@@ -192,7 +192,7 @@
     <string name="custom_mirror_api_path_root">使用根域名</string>
     <string name="custom_mirror_api_path_root_summary">例如：https://www.example.com/search。首頁始終按上方輸入原樣請求</string>
     <string name="test_connection">測試連接</string>
-    <string name="custom_mirror_site_testing">正在測試連接...</string>
+    <string name="custom_mirror_site_testing">正在測試連接…</string>
     <string name="custom_mirror_site_test_success">測試成功\n首頁：%1$s\n其他接口測試：%2$ssearch</string>
     <string name="custom_mirror_site_test_partial_success">首頁測試成功，但其他接口測試失敗\n首頁：%1$s\n其他接口基址：%2$s\n原因：%3$s</string>
     <string name="custom_mirror_site_test_failed">測試失敗：%1$s</string>
@@ -919,6 +919,13 @@
     <string name="home_category_layout_summary">目前顯示 %1$d / %2$d 個欄目</string>
     <string name="home_category_layout_dialog_summary">長按並拖動欄目可調整順序，關閉開關即可隱藏欄目。</string>
     <string name="debug">除錯</string>
+    <string name="crash_title">出了點小問題…</string>
+    <string name="crash_message">程式遇到了意外狀況，可能是太興奮了🥵\n請重新啟動，或是回報給開發者～</string>
+    <string name="crash_restart">重新啟動！</string>
+    <string name="crash_close">先休息一下</string>
+    <string name="crash_details">看看哪裡出錯了</string>
+    <string name="crash_report">回報錯誤</string>
+    <string name="crash_copy">複製錯誤訊息</string>
     <string-array name="loading_hints">
         <item>哼，才、才沒有讓你久等呢！只是數據跑得慢了一點點而已！</item>
         <item>笨蛋！盯著看它也不會變快啦！……好啦，再等我三秒鐘！</item>

@@ -37,7 +37,7 @@ android {
         applicationId = "com.yenaly.han1meviewer"
         minSdk = property("min.sdk")?.toString()?.toIntOrNull()
         targetSdk = property("target.sdk")?.toString()?.toIntOrNull()
-        val (code, name) = createVersion(major = 1, minor = 0, patch = 1)
+        val (code, name) = createVersion(major = 1, minor = 0, patch = 2)
         versionCode = code
         versionName = name
 
@@ -218,6 +218,7 @@ dependencies {
     androidTestImplementation(libs.test.junit)
     androidTestImplementation(libs.test.espresso.core)
 
+    implementation(libs.crashx)
     // debugImplementation(libs.leak.canary)
 }
 

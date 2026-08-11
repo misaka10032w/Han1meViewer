@@ -6,6 +6,7 @@ biometric = "1.1.0"
 coilCompose = "3.4.0"
 composeAvatarCropper = "1.0.0"
 coreSplashscreen = "1.2.0"
+crashx = "7.0.1"
 kotlin = "2.3.21"
 materialIconsCore = "1.7.8"
 serializationPlugin = "2.3.21"
@@ -78,6 +79,7 @@ coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version
 compose-avatar-cropper = { module = "cn.mucute:compose-avatar-cropper", version.ref = "composeAvatarCropper" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+crashx = { module = "io.github.tutorialsandroid:crashx", version.ref = "crashx" }
 firebase-database = { module = "com.google.firebase:firebase-database" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutinesAndroid" }
