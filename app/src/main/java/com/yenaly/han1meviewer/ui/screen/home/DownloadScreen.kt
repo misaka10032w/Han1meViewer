@@ -32,6 +32,7 @@ import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.logic.model.DownloadHeaderNode
+import com.yenaly.han1meviewer.logic.model.DownloadItemNode
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
@@ -156,15 +157,12 @@ fun DownloadScreen(
                 }
             }
             is DownloadEvent.OnSelectAllCurrentGroup -> {
-                val groupHeader = downloadedHeaderNodes.firstOrNull { it.groupId == event.groupId }
-                if (groupHeader != null) {
-                    val groupVideos = downloadedNodes.filterIsInstance<com.yenaly.han1meviewer.logic.model.DownloadItemNode>()
-                        .filter { it.parentKey == groupHeader.groupKey }
-                    selectedVideoIds = if (event.select) {
-                        selectedVideoIds + groupVideos.map { it.data.video.id }.toSet()
-                    } else {
-                        selectedVideoIds - groupVideos.map { it.data.video.id }.toSet()
-                    }
+                val groupVideos = downloadedNodes.filterIsInstance<DownloadItemNode>()
+                    .filter { it.parentKey == event.groupId }
+                selectedVideoIds = if (event.select) {
+                    selectedVideoIds + groupVideos.map { it.data.video.id }.toSet()
+                } else {
+                    selectedVideoIds - groupVideos.map { it.data.video.id }.toSet()
                 }
             }
             is DownloadEvent.OnBatchMoveRequest -> { pendingBatchMove = true }

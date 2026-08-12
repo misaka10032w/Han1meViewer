@@ -24,5 +24,5 @@ data class DownloadHeaderNode(
 
 data class DownloadItemNode(
     val data: VideoWithCategories,
-    val parentKey: String
+    val parentKey: Int
 ) : DownloadedNode()

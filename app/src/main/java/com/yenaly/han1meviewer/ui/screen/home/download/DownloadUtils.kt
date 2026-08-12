@@ -47,7 +47,7 @@ fun List<DownloadHeaderNode>.toFlatNodeList(): List<DownloadedNode> {
         flatList.add(header)
         if (header.isExpanded) {
             header.originalVideos.forEach { video ->
-                flatList.add(DownloadItemNode(video, header.groupKey))
+                flatList.add(DownloadItemNode(video, header.groupId))
             }
         }
     }
