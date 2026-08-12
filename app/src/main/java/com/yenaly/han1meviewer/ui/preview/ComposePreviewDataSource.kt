@@ -403,6 +403,7 @@ val fakeDownloadedVideos = fakeHomePageVideos.take(3).mapIndexed { index, item -
 val fakeDownloadedGroups = listOf(DownloadGroupEntity(name = "未分组", orderIndex = 0, id = 1))
 val fakeDownloadedNodes = listOf(
     DownloadHeaderNode(
+        groupId = 1,
         groupKey = "未分组",
         originalVideos = fakeDownloadedVideos,
         isExpanded = true
@@ -410,6 +411,7 @@ val fakeDownloadedNodes = listOf(
     DownloadItemNode(fakeDownloadedVideos[0], "未分组"),
     DownloadItemNode(fakeDownloadedVideos[1], "未分组"),
     DownloadHeaderNode(
+        groupId = 2,
         groupKey = "分组1",
         originalVideos = fakeDownloadedVideos,
         isExpanded = true

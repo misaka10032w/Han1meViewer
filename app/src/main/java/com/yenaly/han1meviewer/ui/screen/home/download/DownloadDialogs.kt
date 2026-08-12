@@ -199,7 +199,7 @@ fun GroupRenameDialog(
 ) {
     if (header == null) return
     var name by remember(header.groupKey) { mutableStateOf(header.groupKey) }
-    val group = groups.find { it.name == header.groupKey }
+    val group = groups.find { it.id == header.groupId }
 
     BasicAlertDialog(onDismissRequest = onDismiss) {
         ElevatedCard(shape = RoundedCornerShape(28.dp)) {

@@ -79,7 +79,7 @@ fun DownloadScreen(
     val downloadedItems by downloadedFlow.collectAsStateWithLifecycle()
     val downloadedGroups by downloadedGroupsFlow.collectAsStateWithLifecycle()
     val pagerState = rememberPagerState(pageCount = { 2 })
-    var downloadedGroupExpandedState by rememberSaveable(stateSaver = stringBooleanMapSaver()) {
+    var downloadedGroupExpandedState by rememberSaveable(stateSaver = intBooleanMapSaver()) {
         mutableStateOf(emptyMap())
     }
     val downloadedLazyListState = rememberSaveable(saver = LazyListState.Saver) {
@@ -106,8 +106,8 @@ fun DownloadScreen(
                     downloadedItems.toNodeList(groupIdToNameMap, collapseDownloadedGroup)
                 downloadedHeaderNodes = newHeaders.map { newHeader ->
                     newHeader.copy(
-                        isExpanded = downloadedGroupExpandedState[newHeader.groupKey]
-                            ?: downloadedHeaderNodes.firstOrNull { it.groupKey == newHeader.groupKey }?.isExpanded
+                        isExpanded = downloadedGroupExpandedState[newHeader.groupId]
+                            ?: downloadedHeaderNodes.firstOrNull { it.groupId == newHeader.groupId }?.isExpanded
                             ?: !collapseDownloadedGroup
                     )
                 }
@@ -130,9 +130,9 @@ fun DownloadScreen(
             // 本地 UI 事件：Screen 自行处理
             is DownloadEvent.OnToggleGroup -> {
                 downloadedHeaderNodes = downloadedHeaderNodes.map {
-                    if (it.groupKey == event.groupKey) {
+                    if (it.groupId == event.groupId) {
                         val expanded = !it.isExpanded
-                        downloadedGroupExpandedState = downloadedGroupExpandedState + (it.groupKey to expanded)
+                        downloadedGroupExpandedState = downloadedGroupExpandedState + (it.groupId to expanded)
                         it.copy(isExpanded = expanded)
                     } else {
                         it
@@ -156,12 +156,15 @@ fun DownloadScreen(
                 }
             }
             is DownloadEvent.OnSelectAllCurrentGroup -> {
-                val groupVideos = downloadedNodes.filterIsInstance<com.yenaly.han1meviewer.logic.model.DownloadItemNode>()
-                    .filter { it.parentKey == event.groupKey }
-                selectedVideoIds = if (event.select) {
-                    selectedVideoIds + groupVideos.map { it.data.video.id }.toSet()
-                } else {
-                    selectedVideoIds - groupVideos.map { it.data.video.id }.toSet()
+                val groupHeader = downloadedHeaderNodes.firstOrNull { it.groupId == event.groupId }
+                if (groupHeader != null) {
+                    val groupVideos = downloadedNodes.filterIsInstance<com.yenaly.han1meviewer.logic.model.DownloadItemNode>()
+                        .filter { it.parentKey == groupHeader.groupKey }
+                    selectedVideoIds = if (event.select) {
+                        selectedVideoIds + groupVideos.map { it.data.video.id }.toSet()
+                    } else {
+                        selectedVideoIds - groupVideos.map { it.data.video.id }.toSet()
+                    }
                 }
             }
             is DownloadEvent.OnBatchMoveRequest -> { pendingBatchMove = true }
@@ -322,14 +325,15 @@ private fun DownloadScreenPreview() {
     }
 }
 
-private fun stringBooleanMapSaver(): Saver<Map<String, Boolean>, ArrayList<String>> {
+private fun intBooleanMapSaver(): Saver<Map<Int, Boolean>, ArrayList<String>> {
     return Saver(
         save = { state -> ArrayList(state.map { (key, value) -> "$key=$value" }) },
         restore = { saved ->
             saved.mapNotNull { item ->
                 val separatorIndex = item.lastIndexOf('=')
                 if (separatorIndex <= 0) return@mapNotNull null
-                val key = item.substring(0, separatorIndex)
+                val key = item.substring(0, separatorIndex).toIntOrNull()
+                    ?: return@mapNotNull null
                 val value = item.substring(separatorIndex + 1).toBooleanStrictOrNull()
                     ?: return@mapNotNull null
                 key to value

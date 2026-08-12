@@ -26,6 +26,7 @@ fun List<VideoWithCategories>.toNodeList(
         for ((groupId, videos) in groupedData) {
             add(
                 DownloadHeaderNode(
+                    groupId = groupId,
                     groupKey = groupIdToNameMap[groupId] ?: "ID: $groupId",
                     originalVideos = videos,
                     isExpanded = !collapseDownloadedGroup,
