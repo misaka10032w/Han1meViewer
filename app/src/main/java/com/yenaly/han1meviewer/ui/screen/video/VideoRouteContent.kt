@@ -71,7 +71,12 @@ fun VideoRouteContent(
             onSelectedTabChange = { videoViewModel.setSelectedTabIndex(videoCode, it) },
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = with(LocalDensity.current) { hostUiState.appBarBottomInsetPx.toDp() }),
+                .padding(
+                    bottom = with(LocalDensity.current)
+                    {
+                        hostUiState.appBarBottomInsetPx.coerceAtLeast(0).toDp()
+                    }
+                ),
         ) { page ->
             if (page == 0) {
                 RenderVideoIntroductionContent(
