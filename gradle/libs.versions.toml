@@ -1,7 +1,7 @@
 [versions]
 # Plugins
 aboutlibraries = "14.2.0"
-androidGradle = "9.2.1"
+androidGradle = "9.3.1"
 biometric = "1.1.0"
 coilCompose = "3.4.0"
 composeAvatarCropper = "1.0.0"
@@ -10,7 +10,7 @@ crashx = "7.0.1"
 kotlin = "2.3.21"
 materialIconsCore = "1.7.8"
 serializationPlugin = "2.3.21"
-ksp = "2.3.2"
+ksp = "2.3.11"
 drawerlayout = "1.2.0"
 safeargs = "2.9.8"
 # Dependencies
