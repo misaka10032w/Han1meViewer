@@ -8,7 +8,7 @@ plugins {
     alias(libs.plugins.com.google.firebase.crashlytics) apply false
     alias(libs.plugins.com.google.firebase.firebase.pref) apply false
     alias(libs.plugins.compose.compiler) apply false
-    id("com.mikepenz.aboutlibraries.plugin") version "14.2.0" apply false
+    id("com.mikepenz.aboutlibraries.plugin") version "14.2.1" apply false
 }
 
 tasks.register<Delete>("clean") {
