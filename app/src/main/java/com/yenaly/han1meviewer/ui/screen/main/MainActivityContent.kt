@@ -34,6 +34,7 @@ import com.yenaly.han1meviewer.logic.state.PageState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.UpdateDialog
 import com.yenaly.han1meviewer.ui.component.GlobalDialogHost
+import com.yenaly.han1meviewer.ui.component.GlobalToastHost
 import com.yenaly.han1meviewer.ui.component.UsageNoticeDialog
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
 import com.yenaly.han1meviewer.ui.navigation.main.MainNavHost
@@ -204,6 +205,7 @@ fun MainActivityContent(
                     },
                     onDeclined = { activity.finish() },
                 )
+                GlobalToastHost()
             }
         }
 
