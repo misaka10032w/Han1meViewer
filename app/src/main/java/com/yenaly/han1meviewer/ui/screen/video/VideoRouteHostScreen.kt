@@ -62,6 +62,7 @@ import com.yenaly.han1meviewer.logic.exception.ParseException
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
+import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
@@ -586,6 +587,26 @@ fun VideoRouteHostScreen(
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
             viewModel.modifyHKeyframeFlow.collect { (_, reason) ->
                 GlobalToasts.show(reason, level = GlobalToasts.ToastLevel.ERROR)
+            }
+        }
+    }
+
+    LaunchedEffect(viewModel) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+            viewModel.modifyMyListFlow.collect { state ->
+                when (state) {
+                    is WebsiteState.Error -> GlobalToasts.show(
+                        activity.getString(R.string.add_failed),
+                        level = GlobalToasts.ToastLevel.ERROR,
+                    )
+
+                    is WebsiteState.Success -> GlobalToasts.show(
+                        activity.getString(R.string.add_success),
+                        level = GlobalToasts.ToastLevel.SUCCESS,
+                    )
+
+                    WebsiteState.Loading -> Unit
+                }
             }
         }
     }

@@ -202,6 +202,10 @@ class VideoRouteActions(
             ),
             redownload = redownload,
         )
+        GlobalToasts.show(
+            context.getString(R.string.added_to_download_queue),
+            level = GlobalToasts.ToastLevel.SUCCESS,
+        )
     }
 
     fun openDownloadPermissionSettings() {
