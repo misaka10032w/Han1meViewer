@@ -55,6 +55,7 @@ import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.TextInputDialog
 import com.yenaly.han1meviewer.ui.component.TextInputField
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
@@ -64,7 +65,6 @@ import com.yenaly.han1meviewer.ui.screen.RetryableImage
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
 import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
-import com.yenaly.yenaly_libs.utils.showShortToast
 
 /**
  * 播放列表详情底部弹窗。
@@ -90,6 +90,11 @@ fun PlaylistBottomSheet(
 ) {
     val playlistState by vm.playlistStateFlow.collectAsState()
     val playlist by vm.playlistFlow.collectAsState()
+    val unknownError = stringResource(R.string.unknown_error)
+    val modifyFailed = stringResource(R.string.modify_failed)
+    val deleteSuccess = stringResource(R.string.delete_success)
+    val modifySuccess = stringResource(R.string.modify_success)
+    val deleteFailed = stringResource(R.string.delete_failed)
     val sheetState = rememberBottomSheetState(
         initialValue = SheetValue.Hidden,
         enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
@@ -117,7 +122,7 @@ fun PlaylistBottomSheet(
                 vm.getPlaylistItems(1, currentCode, true)
             }
         } else {
-            showShortToast(R.string.unknown_error)
+            GlobalToasts.show(unknownError, level = GlobalToasts.ToastLevel.ERROR)
         }
     }
 
@@ -166,17 +171,17 @@ fun PlaylistBottomSheet(
     LaunchedEffect(Unit) {
         vm.modifyPlaylistFlow.collect { result ->
             when (result) {
-                is WebsiteState.Error -> showShortToast(R.string.modify_failed)
+                is WebsiteState.Error -> GlobalToasts.show(modifyFailed, level = GlobalToasts.ToastLevel.ERROR)
                 WebsiteState.Loading -> {}
                 is WebsiteState.Success -> {
                     if (result.info.isDeleted) {
                         sheetState.hide()
                         onDismiss()
-                        showShortToast(R.string.delete_success)
+                        GlobalToasts.show(deleteSuccess, level = GlobalToasts.ToastLevel.SUCCESS)
                         vm.loadMyPlayList()
                         return@collect
                     }
-                    showShortToast(R.string.modify_success)
+                    GlobalToasts.show(modifySuccess, level = GlobalToasts.ToastLevel.SUCCESS)
                     vm.getPlaylistItems(1, currentCode, true)
                     vm.loadMyPlayList()
                 }
@@ -187,10 +192,10 @@ fun PlaylistBottomSheet(
     LaunchedEffect(Unit) {
         vm.deleteFromPlaylistFlow.collect { result ->
             when (result) {
-                is WebsiteState.Error -> showShortToast(R.string.delete_failed)
+                is WebsiteState.Error -> GlobalToasts.show(deleteFailed, level = GlobalToasts.ToastLevel.ERROR)
                 is WebsiteState.Loading -> {}
                 is WebsiteState.Success -> {
-                    showShortToast(R.string.delete_success)
+                    GlobalToasts.show(deleteSuccess, level = GlobalToasts.ToastLevel.SUCCESS)
                     vm.loadMyPlayList()
                 }
             }

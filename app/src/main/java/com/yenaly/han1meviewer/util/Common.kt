@@ -3,9 +3,8 @@ package com.yenaly.han1meviewer.util
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
-import android.util.Log
 import com.yenaly.han1meviewer.R
-import com.yenaly.yenaly_libs.utils.showShortToast
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import java.security.MessageDigest
 
 fun isLegalBuild(context: Context, sha: String): Boolean {
@@ -51,16 +50,16 @@ fun getSha(context: Context, res: Int): String {
 fun checkBadGuy(context: Context, res: Int): IntArray {
     try {
         val sha = getSha(context, res)
-        if (!isLegalBuild(context, sha)){
-//            Preferences.preferenceSp.edit {
-//                putString(NetworkSettingsFragment.DOMAIN_NAME,"http://hanime.c0m")
-//            }
-            return intArrayOf(R.string.app_tampered, R.string.app_tampered)
+        return if (!isLegalBuild(context, sha)){
+    //            Preferences.preferenceSp.edit {
+    //                putString(NetworkSettingsFragment.DOMAIN_NAME,"http://hanime.c0m")
+    //            }
+            intArrayOf(R.string.app_tampered, R.string.app_tampered)
         } else {
-            return intArrayOf(R.string.introduction, R.string.comment)
+            intArrayOf(R.string.introduction, R.string.comment)
         }
     } catch (e: java.lang.Exception){
-        showShortToast("${e.message}")
+        GlobalToasts.show("${e.message}", level = GlobalToasts.ToastLevel.ERROR)
         return intArrayOf(R.string.introduction, R.string.comment)
     }
 }

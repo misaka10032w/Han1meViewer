@@ -12,9 +12,9 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.GlobalDialogs
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.TextInputField
 import com.yenaly.yenaly_libs.utils.findActivityOrNull
-import com.yenaly.yenaly_libs.utils.showShortToast
 
 /**
  * @project Han1meViewer
@@ -114,7 +114,7 @@ class HKeyframeRvAdapter(
                                             prompt = prompt
                                         )
                                     )
-                                    showShortToast(R.string.modify_success)
+                                    GlobalToasts.show(context.getString(R.string.modify_success), level = GlobalToasts.ToastLevel.SUCCESS)
                                 }
                             },
                         )
@@ -134,7 +134,7 @@ class HKeyframeRvAdapter(
                             onConfirm = {
                                 context.findActivityOrNull<MainActivity>()?.let { activity ->
                                     activity.viewModel.removeHKeyframe(videoCode, item)
-                                    showShortToast(R.string.delete_success)
+                                    GlobalToasts.show(context.getString(R.string.delete_success), level = GlobalToasts.ToastLevel.SUCCESS)
                                 }
                             },
                         )

@@ -1,6 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.home.homepage
 
-import android.widget.Toast
+import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
@@ -31,6 +31,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.PageState
 import com.yenaly.han1meviewer.logic.state.dataOrNull
 import com.yenaly.han1meviewer.ui.component.PageContent
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.PullRefreshOverlay
 import com.yenaly.han1meviewer.ui.component.isFirstPageEmpty
 import com.yenaly.han1meviewer.ui.component.isFirstPageError
@@ -46,6 +47,7 @@ import com.yenaly.han1meviewer.util.toNetworkErrorMessageRes
  * @param isDrawerOpen 侧边抽屉是否已打开。
  * @param modifier 作用于屏幕根布局的修饰符。
  */
+@SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomePageScreen(
@@ -74,11 +76,10 @@ fun HomePageScreen(
     LaunchedEffect(pageState) {
         val errorState = pageState as? PageState.Error
         if (wasRefreshing && errorState?.cachedInfo != null) {
-            Toast.makeText(
-                context,
-                errorState.throwable.toNetworkErrorMessageRes(),
-                Toast.LENGTH_SHORT
-            ).show()
+            GlobalToasts.show(
+                context.getString(errorState.throwable.toNetworkErrorMessageRes()),
+                level = GlobalToasts.ToastLevel.ERROR,
+            )
         }
         wasRefreshing = isCurrentlyRefreshing
     }

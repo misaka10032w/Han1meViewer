@@ -32,7 +32,7 @@ import com.yenaly.han1meviewer.logic.network.HUpdater
 import com.yenaly.han1meviewer.util.installApkPackage
 import com.yenaly.han1meviewer.util.runSuspendCatching
 import com.yenaly.han1meviewer.util.updateFile
-import com.yenaly.yenaly_libs.utils.showShortToast
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import java.io.File
 import java.util.Locale
 import kotlin.random.Random
@@ -91,7 +91,7 @@ class HUpdateWorker(
                         }
 
                         WorkInfo.State.FAILED -> {
-                            showShortToast(R.string.update_failed)
+                            GlobalToasts.show(context.getString(R.string.update_failed), level = GlobalToasts.ToastLevel.ERROR)
                         }
 
                         else -> Unit

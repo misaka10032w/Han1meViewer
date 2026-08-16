@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.component
 
+import android.view.WindowManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.fadeIn
@@ -8,7 +9,6 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +35,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -44,9 +45,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
+import androidx.core.graphics.drawable.toDrawable
+import com.yenaly.han1meviewer.ui.component.GlobalToasts.MAX_VISIBLE_COUNT
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -57,6 +64,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * 全局 Toast 单例，用于替换传统 Toast。
@@ -160,7 +168,7 @@ object GlobalToasts {
         dismissJobs.remove(id)?.cancel()
         if (durationMillis <= 0L) return
         dismissJobs[id] = scope.launch {
-            delay(durationMillis)
+            delay(durationMillis.milliseconds)
             dismiss(id)
             dismissJobs.remove(id)
         }
@@ -184,31 +192,58 @@ fun GlobalToastHost(modifier: Modifier = Modifier) {
 
     val activeIds = remember(toasts) { toasts.mapTo(mutableSetOf()) { it.id } }
 
-    Box(modifier = modifier.fillMaxSize()) {
-        ToastColumn(
-            toasts = rendered.filter { it.position == GlobalToasts.ToastPosition.TOP },
-            activeIds = activeIds,
-            onExitFinished = { id -> rendered.removeAll { it.id == id } },
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .padding(top = 12.dp),
-        )
-        ToastColumn(
-            toasts = rendered.filter { it.position == GlobalToasts.ToastPosition.CENTER },
-            activeIds = activeIds,
-            onExitFinished = { id -> rendered.removeAll { it.id == id } },
-            modifier = Modifier.align(Alignment.Center),
-        )
-        ToastColumn(
-            toasts = rendered.filter { it.position == GlobalToasts.ToastPosition.BOTTOM },
-            activeIds = activeIds,
-            onExitFinished = { id -> rendered.removeAll { it.id == id } },
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .windowInsetsPadding(WindowInsets.navigationBars)
-                .padding(bottom = 12.dp),
-        )
+    Dialog(
+        onDismissRequest = {},
+        properties = DialogProperties(
+            dismissOnClickOutside = false,
+            dismissOnBackPress = false,
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false,
+        ),
+    ) {
+        val window = (LocalView.current.parent as? DialogWindowProvider)?.window
+        SideEffect {
+            window?.apply {
+                setLayout(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                )
+                addFlags(
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                )
+                clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+                setDimAmount(0f)
+                setBackgroundDrawable(android.graphics.Color.TRANSPARENT.toDrawable())
+            }
+        }
+
+        Box(modifier = modifier.fillMaxSize()) {
+            ToastColumn(
+                toasts = rendered.filter { it.position == GlobalToasts.ToastPosition.TOP },
+                activeIds = activeIds,
+                onExitFinished = { id -> rendered.removeAll { it.id == id } },
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .windowInsetsPadding(WindowInsets.statusBars)
+                    .padding(top = 60.dp),
+            )
+            ToastColumn(
+                toasts = rendered.filter { it.position == GlobalToasts.ToastPosition.CENTER },
+                activeIds = activeIds,
+                onExitFinished = { id -> rendered.removeAll { it.id == id } },
+                modifier = Modifier.align(Alignment.Center),
+            )
+            ToastColumn(
+                toasts = rendered.filter { it.position == GlobalToasts.ToastPosition.BOTTOM },
+                activeIds = activeIds,
+                onExitFinished = { id -> rendered.removeAll { it.id == id } },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(bottom = 60.dp),
+            )
+        }
     }
 }
 
@@ -277,7 +312,6 @@ private fun ToastItem(toast: GlobalToasts.Toast) {
     val (container, content) = toastColors(toast.level)
 
     Surface(
-        onClick = { GlobalToasts.dismiss(toast.id) },
         shape = RoundedCornerShape(50),
         color = container.copy(alpha = 0.8f),
         contentColor = content,

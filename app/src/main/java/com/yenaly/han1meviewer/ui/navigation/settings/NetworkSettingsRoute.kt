@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.navigation.settings
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -31,13 +32,13 @@ import com.yenaly.han1meviewer.logic.network.ServiceCreator
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.screen.settings.DelayResultUi
 import com.yenaly.han1meviewer.ui.screen.settings.DohTestResultUi
 import com.yenaly.han1meviewer.ui.screen.settings.NetworkSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.NetworkSettingsUiState
 import com.yenaly.yenaly_libs.ActivityManager
 import com.yenaly.yenaly_libs.utils.applicationContext
-import com.yenaly.yenaly_libs.utils.showShortToast
 import okhttp3.Request
 import java.net.InetAddress
 import java.util.concurrent.Executors
@@ -63,6 +64,7 @@ private enum class DohConflictTarget {
     EnableBuiltInHosts,
 }
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun NetworkSettingsRouteScreen() {
     val context = LocalContext.current
@@ -96,6 +98,7 @@ fun NetworkSettingsRouteScreen() {
     val executor = remember { Executors.newCachedThreadPool() }
     val uiState = remember(refreshKey, context) { buildNetworkSettingsUiState(context) }
     val networkTimeoutText = stringResource(R.string.network_timeout_text)
+    val invalidIpOrPort = stringResource(R.string.invalid_ip_or_port)
     fun stopDelayTest() {
         isDelayTesting = false
         delayHandler.removeCallbacksAndMessages(null)
@@ -326,7 +329,7 @@ fun NetworkSettingsRouteScreen() {
                 else -> false
             }
             if (!valid) {
-                showShortToast(R.string.invalid_ip_or_port)
+                GlobalToasts.show(invalidIpOrPort, level = GlobalToasts.ToastLevel.WARNING)
                 return@NetworkSettingsScreen
             }
             if (type == HProxySelector.TYPE_SOCKS) {

@@ -1,7 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.home
 
 import android.app.Activity
-import android.widget.Toast
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -28,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.CheckInDialog
 import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.ContributionReportDialog
@@ -42,6 +42,7 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * 打卡日历页面 Screen 层。
@@ -65,6 +66,7 @@ fun DailyCheckInScreen(
 ) {
     var showReport by rememberSaveable { mutableStateOf(false) }
     var isReportFullscreen by rememberSaveable { mutableStateOf(false) }
+    val suckBackDone = stringResource(R.string.suck_back_done)
 
     LaunchedEffect(activity, isReportFullscreen) {
         activity.updateReportWindowMode(isReportFullscreen)
@@ -120,7 +122,7 @@ fun DailyCheckInScreen(
     LaunchedEffect(showEasterEgg) {
         if (showEasterEgg.isNotEmpty()) {
             eggVisible = true
-            kotlinx.coroutines.delay(1500)
+            kotlinx.coroutines.delay(1500.milliseconds)
             eggVisible = false
         }
     }
@@ -252,11 +254,7 @@ fun DailyCheckInScreen(
         onConfirm = {
             suckBackDialogDate?.let {
                 viewModel.clearCheckIn(it)
-                Toast.makeText(
-                    context,
-                    R.string.suck_back_done,
-                    Toast.LENGTH_SHORT
-                ).show()
+                GlobalToasts.show(suckBackDone, level = GlobalToasts.ToastLevel.SUCCESS)
             }
             suckBackDialogDate = null
         },

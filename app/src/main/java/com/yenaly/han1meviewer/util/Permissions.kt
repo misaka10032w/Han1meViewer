@@ -10,9 +10,9 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.GlobalDialogs
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.yenaly_libs.utils.awaitActivityResult
 import com.yenaly.yenaly_libs.utils.requestPermission
-import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import androidx.core.net.toUri
@@ -36,7 +36,7 @@ suspend fun Context.requestPostNotificationPermission(): Boolean {
         if (!granted) {
             val allow = showPostNotificationPermissionDialog()
             if (!allow) {
-                showShortToast(R.string.msg_deny_download_notification)
+                GlobalToasts.show(getString(R.string.msg_deny_download_notification), level = GlobalToasts.ToastLevel.WARNING)
                 return false
             }
             requestPermission(Manifest.permission.POST_NOTIFICATIONS)

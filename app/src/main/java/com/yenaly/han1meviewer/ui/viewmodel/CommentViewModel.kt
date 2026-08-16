@@ -13,9 +13,10 @@ import com.yenaly.han1meviewer.logic.model.VideoComments
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.screen.video.CommentSortType
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.util.loadAssetAs
 import com.yenaly.yenaly_libs.base.YenalyViewModel
-import com.yenaly.yenaly_libs.utils.showShortToast
+import com.yenaly.yenaly_libs.utils.applicationContext
 import com.yenaly.yenaly_libs.utils.unsafeLazy
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -254,15 +255,15 @@ class CommentViewModel(application: Application) : YenalyViewModel(application) 
     fun handleCommentLike(args: VideoCommentArgs) {
         if (args.isPositive) {
             if (args.comment.post.likeCommentStatus) {
-                showShortToast(R.string.cancel_thumb_up_success)
+                GlobalToasts.show(applicationContext.getString(R.string.cancel_thumb_up_success), level = GlobalToasts.ToastLevel.SUCCESS)
             } else {
-                showShortToast(R.string.thumb_up_success)
+                GlobalToasts.show(applicationContext.getString(R.string.thumb_up_success), level = GlobalToasts.ToastLevel.SUCCESS)
             }
         } else {
             if (args.comment.post.unlikeCommentStatus) {
-                showShortToast(R.string.cancel_thumb_down_success)
+                GlobalToasts.show(applicationContext.getString(R.string.cancel_thumb_down_success), level = GlobalToasts.ToastLevel.SUCCESS)
             } else {
-                showShortToast(R.string.thumb_down_success)
+                GlobalToasts.show(applicationContext.getString(R.string.thumb_down_success), level = GlobalToasts.ToastLevel.SUCCESS)
             }
         }
     }

@@ -35,12 +35,12 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.PullRefreshOverlay
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.TextInputDialog
 import com.yenaly.han1meviewer.ui.component.TextInputField
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
-import com.yenaly.yenaly_libs.utils.showShortToast
 
 /**
  * 播放列表页面 Screen 层。
@@ -70,6 +70,8 @@ fun PlaylistScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     var temporarilyHideSheetForNavigation by rememberSaveable { mutableStateOf(false) }
     var showCreatePlaylistDialog by rememberSaveable { mutableStateOf(false) }
+    val addFailed = stringResource(R.string.add_failed)
+    val addSuccess = stringResource(R.string.add_success)
 
     LaunchedEffect(Unit) {
         viewModel.refreshCompleted.collect { isRefreshing = false }
@@ -92,10 +94,10 @@ fun PlaylistScreen(
     LaunchedEffect(Unit) {
         viewModel.createPlaylistFlow.collect { result ->
             when (result) {
-                is WebsiteState.Error -> showShortToast(R.string.add_failed)
+                is WebsiteState.Error -> GlobalToasts.show(addFailed, level = GlobalToasts.ToastLevel.ERROR)
                 is WebsiteState.Loading -> Unit
                 is WebsiteState.Success -> {
-                    showShortToast(R.string.add_success)
+                    GlobalToasts.show(addSuccess, level = GlobalToasts.ToastLevel.SUCCESS)
                     viewModel.loadMyPlayList()
                 }
             }

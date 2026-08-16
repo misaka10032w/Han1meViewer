@@ -34,6 +34,7 @@ import com.yenaly.han1meviewer.logic.state.PageState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.UpdateDialog
 import com.yenaly.han1meviewer.ui.component.GlobalDialogHost
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.GlobalToastHost
 import com.yenaly.han1meviewer.ui.component.UsageNoticeDialog
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
@@ -47,7 +48,6 @@ import com.yenaly.han1meviewer.util.getUpdateIfExists
 import com.yenaly.han1meviewer.util.installApkPackage
 import com.yenaly.han1meviewer.util.requestPostNotificationPermission
 import com.yenaly.han1meviewer.worker.HUpdateWorker
-import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
@@ -77,6 +77,8 @@ fun MainActivityContent(
         var currentMainDestination by remember { mutableStateOf(MainDestinationSpec.Home) }
         var pendingUpdate by remember { mutableStateOf<Latest?>(null) }
         var showUsageNotice by remember { mutableStateOf(!Preferences.usageNoticeAccepted) }
+        val loginFirst = stringResource(R.string.login_first)
+        val updateDownloadBackground = stringResource(R.string.update_download_background)
         val isDrawerOpen =
             drawerState.currentValue == DrawerValue.Open || drawerState.targetValue == DrawerValue.Open
 
@@ -111,7 +113,11 @@ fun MainActivityContent(
         }
         LaunchedEffect(viewModel) {
             viewModel.sessionExpiredMessage.collect { event ->
-                event.message?.let(::showShortToast) ?: showShortToast(event.fallbackResId)
+                if (event.message != null) {
+                    GlobalToasts.show(event.message, level = GlobalToasts.ToastLevel.WARNING)
+                } else {
+                    GlobalToasts.show(activity.getString(event.fallbackResId), level = GlobalToasts.ToastLevel.WARNING)
+                }
             }
         }
         LaunchedEffect(homeState) {
@@ -147,7 +153,7 @@ fun MainActivityContent(
                 val handled = composeNavController.navigateDrawerDestination(
                     destination = destination,
                     isLoggedIn = isLoggedIn,
-                    onRequireLogin = { showShortToast(R.string.login_first) },
+                    onRequireLogin = { GlobalToasts.show(loginFirst, level = GlobalToasts.ToastLevel.WARNING) },
                 )
                 if (handled) {
                     scope.launch { drawerState.close() }
@@ -190,7 +196,7 @@ fun MainActivityContent(
                                 } else {
                                     if (activity.requestPostNotificationPermission()) {
                                         HUpdateWorker.enqueue(activity.applicationContext, latest)
-                                        showShortToast(R.string.update_download_background)
+                                        GlobalToasts.show(updateDownloadBackground, level = GlobalToasts.ToastLevel.INFO)
                                     }
                                 }
                             }
@@ -205,7 +211,6 @@ fun MainActivityContent(
                     },
                     onDeclined = { activity.finish() },
                 )
-                GlobalToastHost()
             }
         }
 
@@ -244,5 +249,6 @@ fun MainActivityContent(
         }
 
         GlobalDialogHost()
+        GlobalToastHost()
     }
 }

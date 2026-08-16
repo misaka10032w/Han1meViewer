@@ -37,14 +37,13 @@ import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
 import com.yenaly.han1meviewer.logic.network.interceptor.SpeedLimitInterceptor
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.TripleButtonDialog
 import com.yenaly.han1meviewer.ui.screen.settings.DownloadSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.DownloadSettingsUiState
 import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.util.SafFileManager.KEY_TREE_URI
-import com.yenaly.han1meviewer.util.showToast
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
-import com.yenaly.yenaly_libs.utils.showLongToast
 
 private const val DOWNLOAD_COUNT_LIMIT = "download_count_limit"
 private const val DOWNLOAD_SPEED_LIMIT = "download_speed_limit"
@@ -67,16 +66,22 @@ fun DownloadSettingsRouteScreen(
     val dao = remember { DownloadDatabase.instance.hanimeDownloadDao }
     val uiState = remember(refreshKey, context) { buildDownloadSettingsUiState(context) }
 
+    val noDirectorySelected = stringResource(R.string.no_directory_selected)
+    val storagePermissionDenied = stringResource(R.string.storage_permission_denied_toast)
+    val defaultPathRestored = stringResource(R.string.default_path_restored)
+    val noExportableFiles = stringResource(R.string.no_exportable_files)
+    val permissionError = stringResource(R.string.permission_error)
+
     val openDirectoryPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
             SafFileManager.persistUriPermission(context, result.data)
             Preferences.preferenceSp.edit { putBoolean(DOWNLOAD_USE_PRIVATE_STORAGE, false) }
-            context.showToast(R.string.directory_saved, result.data.toString())
+            GlobalToasts.show(context.getString(R.string.directory_saved, result.data.toString()), level = GlobalToasts.ToastLevel.SUCCESS)
             refreshKey++
         } else {
-            context.showToast(R.string.no_directory_selected)
+            GlobalToasts.show(noDirectorySelected, level = GlobalToasts.ToastLevel.INFO)
         }
     }
 
@@ -86,7 +91,7 @@ fun DownloadSettingsRouteScreen(
         if (granted) return@rememberLauncherForActivityResult
         val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
         if (activity.shouldShowRequestPermissionRationale(permission)) {
-            context.showToast(R.string.storage_permission_denied_toast)
+            GlobalToasts.show(storagePermissionDenied, level = GlobalToasts.ToastLevel.WARNING)
         } else {
             showStoragePermissionDialog = true
         }
@@ -179,7 +184,7 @@ fun DownloadSettingsRouteScreen(
             }
             refreshKey++
             showRestoreDefaultConfirm = false
-            context.showToast(R.string.default_path_restored)
+            GlobalToasts.show(defaultPathRestored, level = GlobalToasts.ToastLevel.SUCCESS)
         },
         onDismiss = { showRestoreDefaultConfirm = false },
     )
@@ -215,12 +220,12 @@ fun DownloadSettingsRouteScreen(
                 when (total) {
                     0 -> {
                         showImportProgress = false
-                        showLongToast(context.getString(R.string.no_exportable_files))
+                        GlobalToasts.show(noExportableFiles, level = GlobalToasts.ToastLevel.INFO)
                     }
 
                     -1 -> {
                         showImportProgress = false
-                        showLongToast(context.getString(R.string.permission_error))
+                        GlobalToasts.show(permissionError, level = GlobalToasts.ToastLevel.ERROR)
                     }
 
                     else -> {
@@ -228,7 +233,7 @@ fun DownloadSettingsRouteScreen(
                         importTotal = total
                         if (migrated == total) {
                             showImportProgress = false
-                            showLongToast(context.getString(R.string.import_complete, total))
+                            GlobalToasts.show(context.getString(R.string.import_complete, total), level = GlobalToasts.ToastLevel.SUCCESS)
                             refreshKey++
                         }
                     }

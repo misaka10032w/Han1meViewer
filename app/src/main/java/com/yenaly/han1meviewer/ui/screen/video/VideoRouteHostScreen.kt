@@ -17,7 +17,6 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
@@ -66,6 +65,7 @@ import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.PermissionRequester
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.view.video.ExoMediaKernel
@@ -82,7 +82,6 @@ import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.dp
 import com.yenaly.yenaly_libs.utils.shareText
-import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.startActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -318,7 +317,7 @@ fun VideoRouteHostScreen(
                         CheckInRecordDatabase.getDatabase(activity).checkInDao()
                             .insert(normalizedRecord)
                         withContext(Dispatchers.Main) {
-                            Toast.makeText(activity, R.string.checkin, Toast.LENGTH_SHORT).show()
+                            GlobalToasts.show(activity.getString(R.string.checkin), level = GlobalToasts.ToastLevel.SUCCESS)
                         }
                     }
                 },
@@ -336,7 +335,7 @@ fun VideoRouteHostScreen(
                 onOpenShare = { content, title -> shareText(content, title) },
                 onCopyText = {
                     it.copyToClipboard()
-                    showShortToast(R.string.copy_to_clipboard)
+                    GlobalToasts.show(activity.getString(R.string.copy_to_clipboard), level = GlobalToasts.ToastLevel.INFO)
                 },
                 onIntroductionLinkClick = actions::openIntroductionLink,
                 stringLongPressShare = stringLongPressShare,
@@ -449,7 +448,7 @@ fun VideoRouteHostScreen(
                 val currentPosition = player.currentPositionWhenPlaying
                 showAddHKeyframeDialog = Pair(currentPosition, videoTitle ?: "Untitled")
             } else {
-                showShortToast(R.string.pause_then_long_press)
+                GlobalToasts.show(activity.getString(R.string.pause_then_long_press), level = GlobalToasts.ToastLevel.WARNING)
             }
         }
         player.onVideoStateChanged = { state ->
@@ -525,7 +524,7 @@ fun VideoRouteHostScreen(
             viewModel.hanimeVideoStateFlow.collect { state ->
                 when (state) {
                     is VideoLoadingState.Error -> {
-                        state.throwable.localizedMessage?.let { showShortToast(it) }
+                        state.throwable.localizedMessage?.let { GlobalToasts.show(it, level = GlobalToasts.ToastLevel.ERROR) }
                         if (state.throwable is ParseException) {
                             activity.browse(getHanimeVideoLink(route.videoCode))
                         }
@@ -537,7 +536,7 @@ fun VideoRouteHostScreen(
                         videoTitle = state.info.title
                         if (state.info.videoUrls.isEmpty()) {
                             player.startButton.setOnClickListener {
-                                showShortToast(R.string.fail_to_get_video_link)
+                                GlobalToasts.show(activity.getString(R.string.fail_to_get_video_link), level = GlobalToasts.ToastLevel.ERROR)
                                 activity.browse(getHanimeVideoLink(route.videoCode))
                             }
                         } else {
@@ -566,7 +565,7 @@ fun VideoRouteHostScreen(
                     }
 
                     is VideoLoadingState.NoContent -> {
-                        showShortToast(R.string.video_might_not_exist)
+                        GlobalToasts.show(activity.getString(R.string.video_might_not_exist), level = GlobalToasts.ToastLevel.ERROR)
                     }
                 }
             }
@@ -586,7 +585,7 @@ fun VideoRouteHostScreen(
     LaunchedEffect(viewModel) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
             viewModel.modifyHKeyframeFlow.collect { (_, reason) ->
-                showShortToast(reason)
+                GlobalToasts.show(reason, level = GlobalToasts.ToastLevel.ERROR)
             }
         }
     }

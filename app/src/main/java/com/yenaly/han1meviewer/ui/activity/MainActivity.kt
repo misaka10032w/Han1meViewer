@@ -15,7 +15,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -46,6 +45,7 @@ import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
 import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageViewModel
 import com.yenaly.han1meviewer.ui.screen.main.MainActivityContent
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.videoUrlRegex
 import com.yenaly.yenaly_libs.ActivityManager
 import com.yenaly.yenaly_libs.base.frame.FrameActivity
@@ -142,7 +142,7 @@ class MainActivity : FrameActivity(), PermissionRequester {
                 )
             } else {
                 // Android 7~8，不支持 BiometricPrompt
-                Toast.makeText(this, R.string.not_compact_lock_screen, Toast.LENGTH_SHORT).show()
+                GlobalToasts.show(getString(R.string.not_compact_lock_screen), level = GlobalToasts.ToastLevel.WARNING)
                 hasAuthenticated = true
                 showAuthGuard = false
                 initData()
