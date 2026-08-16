@@ -357,7 +357,6 @@ object NetworkRepo {
         listCode: String,
         videoCode: String,
         isChecked: Boolean,
-        position: Int,
         csrfToken: String?,
     ) = websiteIOFlow(
         request = {
@@ -367,7 +366,7 @@ object NetworkRepo {
         }
     ) {
         Log.d("add_to_playlist_body", it)
-        return@websiteIOFlow WebsiteState.Success(position)
+        return@websiteIOFlow WebsiteState.Success(Unit)
     }
 
     fun modifyPlaylist(

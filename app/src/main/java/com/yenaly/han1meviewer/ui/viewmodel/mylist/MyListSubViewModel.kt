@@ -9,6 +9,7 @@ import com.yenaly.han1meviewer.logic.model.MyListType
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.yenaly_libs.base.YenalyViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -67,9 +68,9 @@ abstract class MyListSubViewModel(application: Application) : YenalyViewModel(ap
     }
 
     protected fun <T, R> deleteItem(
-        deleteCall: suspend () -> kotlinx.coroutines.flow.Flow<WebsiteState<T>>,
+        deleteCall: suspend () -> Flow<WebsiteState<T>>,
         emitTo: MutableSharedFlow<WebsiteState<R>>,
-        position: Int,
+        identifier: String,
         mapState: (WebsiteState<T>) -> WebsiteState<R>,
         isSuccess: (WebsiteState<T>) -> Boolean = { it is WebsiteState.Success },
     ) {
@@ -78,7 +79,7 @@ abstract class MyListSubViewModel(application: Application) : YenalyViewModel(ap
                 emitTo.emit(mapState(deleteState))
                 itemsFlow.update { list ->
                     if (isSuccess(deleteState)) {
-                        list.toMutableList().apply { removeAt(position) }
+                        list.filter { it.videoCode != identifier }
                     } else list
                 }
             }

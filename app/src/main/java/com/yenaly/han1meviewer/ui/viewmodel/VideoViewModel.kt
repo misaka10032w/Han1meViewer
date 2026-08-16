@@ -332,8 +332,7 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
         }
     }
 
-    private val _modifyMyListFlow = MutableSharedFlow<WebsiteState<Int>>()
-    val modifyMyListFlow = _modifyMyListFlow.asSharedFlow()
+    private val _modifyMyListFlow = MutableSharedFlow<WebsiteState<Unit>>()
 
     fun modifyMyList(
         listCode: String,
@@ -342,7 +341,7 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
         position: Int,
     ) {
         viewModelScope.launch {
-            NetworkRepo.addToMyList(listCode, videoCode, isChecked, position, csrfToken).collect {
+            NetworkRepo.addToMyList(listCode, videoCode, isChecked, csrfToken).collect {
                 _modifyMyListFlow.emit(it)
                 _hanimeVideoFlow.update { prev ->
                     val myList = prev?.myList?.myListInfo.orEmpty().toMutableList()
