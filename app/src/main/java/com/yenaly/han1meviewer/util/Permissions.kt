@@ -50,7 +50,7 @@ suspend fun Context.requestPostNotificationPermission(): Boolean {
  */
 private suspend fun Context.showPostNotificationPermissionDialog(): Boolean =
     suspendCancellableCoroutine { cont ->
-        GlobalDialogs.show(
+        val id = GlobalDialogs.show(
             GlobalDialogs.ConfirmRequest(
                 title = getString(R.string.allow_post_notification),
                 message = getString(R.string.reason_for_download_notification),
@@ -61,28 +61,31 @@ private suspend fun Context.showPostNotificationPermissionDialog(): Boolean =
                 onDismissRequest = { cont.resume(false) },
             )
         )
-        cont.invokeOnCancellation { GlobalDialogs.dismiss() }
+        cont.invokeOnCancellation { GlobalDialogs.dismiss(id) }
     }
 
 /**
  * 请求安装权限
  */
 suspend fun Context.requestInstallPermission(): Boolean {
-    if (packageManager.canRequestPackageInstalls()) return true
-    val granted = requestPermission(Manifest.permission.REQUEST_INSTALL_PACKAGES)
-    if (!granted) {
-        val goToSettings = showInstallPermissionDialog()
-        if (!goToSettings) return false
-        awaitActivityResult(
-            ActivityResultContracts.StartActivityForResult(),
-            Intent(
-                Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                "package:$packageName".toUri(),
-            ),
-        )
-        requestPermission(Manifest.permission.REQUEST_INSTALL_PACKAGES)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (packageManager.canRequestPackageInstalls()) return true
+        val granted = requestPermission(Manifest.permission.REQUEST_INSTALL_PACKAGES)
+        if (!granted) {
+            val goToSettings = showInstallPermissionDialog()
+            if (!goToSettings) return false
+            awaitActivityResult(
+                ActivityResultContracts.StartActivityForResult(),
+                Intent(
+                    Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                    "package:$packageName".toUri(),
+                ),
+            )
+            requestPermission(Manifest.permission.REQUEST_INSTALL_PACKAGES)
+        }
+        return packageManager.canRequestPackageInstalls()
     }
-    return packageManager.canRequestPackageInstalls()
+    return true
 }
 
 /**
@@ -90,7 +93,7 @@ suspend fun Context.requestInstallPermission(): Boolean {
  */
 private suspend fun Context.showInstallPermissionDialog(): Boolean =
     suspendCancellableCoroutine { cont ->
-        GlobalDialogs.show(
+        val id = GlobalDialogs.show(
             GlobalDialogs.ConfirmRequest(
                 title = getString(R.string.allow_install_from_unknown_app_sources),
                 message = getString(R.string.reason_for_allow_install_from_unknown_app_sources),
@@ -101,5 +104,5 @@ private suspend fun Context.showInstallPermissionDialog(): Boolean =
                 onDismissRequest = { cont.resume(false) },
             )
         )
-        cont.invokeOnCancellation { GlobalDialogs.dismiss() }
+        cont.invokeOnCancellation { GlobalDialogs.dismiss(id) }
     }

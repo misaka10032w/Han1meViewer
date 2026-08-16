@@ -7,11 +7,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * 全局弹窗宿主，用于非 Compose 上下文（RecyclerView 适配器、播放器 View、挂起函数等）
  * 触发 Compose 主题弹窗，避免回退到 themes.xml 的传统配色。
+ *
+ * 弹窗以队列形式串行展示：多次 [show] 会按顺序逐个弹出，互不覆盖。
  */
 object GlobalDialogs {
 
@@ -38,33 +41,45 @@ object GlobalDialogs {
         val onDismiss: () -> Unit = {},
     ) : Request
 
-    private val _request = MutableStateFlow<Request?>(null)
-    val request = _request.asStateFlow()
+    data class QueuedRequest(
+        val id: Long,
+        val request: Request,
+    )
 
-    fun show(request: Request) {
-        _request.value = request
+    private var nextId = 0L
+    private val _queue = MutableStateFlow<List<QueuedRequest>>(emptyList())
+    val queue: StateFlow<List<QueuedRequest>> = _queue.asStateFlow()
+
+    /**
+     * 入队一个弹窗，返回其唯一 id，可用 [dismiss] 按 id 移除。
+     */
+    fun show(request: Request): Long {
+        val id = ++nextId
+        _queue.value = _queue.value + QueuedRequest(id, request)
+        return id
     }
 
-    fun dismiss() {
-        _request.value = null
+    fun dismiss(id: Long) {
+        _queue.value = _queue.value.filterNot { it.id == id }
     }
 }
 
 @Composable
 fun GlobalDialogHost() {
-    val request by GlobalDialogs.request.collectAsState()
-    when (val req = request) {
+    val queue by GlobalDialogs.queue.collectAsState()
+    val head = queue.firstOrNull() ?: return
+    when (val req = head.request) {
         is GlobalDialogs.ConfirmRequest -> {
             AlertDialog(
                 onDismissRequest = {
-                    GlobalDialogs.dismiss()
+                    GlobalDialogs.dismiss(head.id)
                     req.onDismissRequest()
                 },
                 title = { Text(req.title) },
                 text = req.message?.let { { Text(it) } },
                 confirmButton = {
                     TextButton(onClick = {
-                        GlobalDialogs.dismiss()
+                        GlobalDialogs.dismiss(head.id)
                         req.onConfirm()
                     }) {
                         Text(req.confirmText)
@@ -73,7 +88,7 @@ fun GlobalDialogHost() {
                 dismissButton = req.dismissText?.let { dismissText ->
                     {
                         TextButton(onClick = {
-                            GlobalDialogs.dismiss()
+                            GlobalDialogs.dismiss(head.id)
                             req.onCancel()
                         }) {
                             Text(dismissText)
@@ -91,16 +106,14 @@ fun GlobalDialogHost() {
                 confirmText = req.confirmText,
                 dismissText = req.dismissText,
                 onConfirm = { values ->
-                    GlobalDialogs.dismiss()
+                    GlobalDialogs.dismiss(head.id)
                     req.onConfirm(values)
                 },
                 onDismiss = {
-                    GlobalDialogs.dismiss()
+                    GlobalDialogs.dismiss(head.id)
                     req.onDismiss()
                 },
             )
         }
-
-        null -> Unit
     }
 }
