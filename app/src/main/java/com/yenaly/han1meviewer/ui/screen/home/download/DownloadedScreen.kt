@@ -82,13 +82,13 @@ fun DownloadedScreen(
         groups = uiState.displayGroups,
         onDismiss = { pendingRename = null },
         onConfirm = { header, newName ->
-            uiState.displayGroups.find { it.name == header.groupKey }?.let { group ->
+            uiState.displayGroups.find { it.id == header.groupId }?.let { group ->
                 onEvent(DownloadEvent.OnRenameGroup(group.id, newName))
             }
             pendingRename = null
         },
         onDelete = { header ->
-            uiState.displayGroups.find { it.name == header.groupKey }
+            uiState.displayGroups.find { it.id == header.groupId }
                 ?.let { onEvent(DownloadEvent.OnDeleteGroup(it)) }
             pendingRename = null
         },
@@ -123,7 +123,7 @@ fun DownloadedScreen(
         ) {
             items(uiState.downloadedNodes, key = {
                 when (it) {
-                    is DownloadHeaderNode -> "header-${it.groupKey}"
+                    is DownloadHeaderNode -> "header-${it.groupId}"
                     is DownloadItemNode -> "item-${it.parentKey}-${it.data.video.id}"
                 }
             }) { node ->
@@ -131,10 +131,9 @@ fun DownloadedScreen(
                     is DownloadHeaderNode -> {
                         DownloadGroupHeader(
                             header = node,
-                            onToggle = { onEvent(DownloadEvent.OnToggleGroup(node.groupKey)) },
+                            onToggle = { onEvent(DownloadEvent.OnToggleGroup(node.groupId)) },
                             onRename = {
-                                val group = uiState.displayGroups.find { it.name == node.groupKey }
-                                if (group?.id == DownloadGroupEntity.DEFAULT_GROUP_ID) {
+                                if (node.groupId == DownloadGroupEntity.DEFAULT_GROUP_ID) {
                                     // 默认分组不可重命名
                                 } else if (!uiState.multiSelectMode) {
                                     pendingRename = node

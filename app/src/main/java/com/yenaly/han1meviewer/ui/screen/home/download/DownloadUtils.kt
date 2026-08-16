@@ -26,6 +26,7 @@ fun List<VideoWithCategories>.toNodeList(
         for ((groupId, videos) in groupedData) {
             add(
                 DownloadHeaderNode(
+                    groupId = groupId,
                     groupKey = groupIdToNameMap[groupId] ?: "ID: $groupId",
                     originalVideos = videos,
                     isExpanded = !collapseDownloadedGroup,
@@ -46,7 +47,7 @@ fun List<DownloadHeaderNode>.toFlatNodeList(): List<DownloadedNode> {
         flatList.add(header)
         if (header.isExpanded) {
             header.originalVideos.forEach { video ->
-                flatList.add(DownloadItemNode(video, header.groupKey))
+                flatList.add(DownloadItemNode(video, header.groupId))
             }
         }
     }

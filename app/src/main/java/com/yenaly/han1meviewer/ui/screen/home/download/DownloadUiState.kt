@@ -71,7 +71,7 @@ sealed interface DownloadEvent {
     data class OnDeleteGroup(val group: DownloadGroupEntity) : DownloadEvent
 
     /** 切换分组展开/折叠 */
-    data class OnToggleGroup(val groupKey: String) : DownloadEvent
+    data class OnToggleGroup(val groupId: Int) : DownloadEvent
 
     /** 新建分组对话框状态变化 */
     data class OnCreateGroupDialogChange(val visible: Boolean) : DownloadEvent
@@ -86,7 +86,7 @@ sealed interface DownloadEvent {
     data class OnToggleVideoSelection(val videoId: Int) : DownloadEvent
 
     /** 全选/取消全选当前分组 */
-    data class OnSelectAllCurrentGroup(val groupKey: String, val select: Boolean) : DownloadEvent
+    data class OnSelectAllCurrentGroup(val groupId: Int, val select: Boolean) : DownloadEvent
 
     /** 批量删除选中视频 */
     data class OnBatchDelete(val videos: List<VideoWithCategories>) : DownloadEvent
