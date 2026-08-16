@@ -35,7 +35,6 @@ import com.yenaly.han1meviewer.ui.screen.settings.DelayResultUi
 import com.yenaly.han1meviewer.ui.screen.settings.DohTestResultUi
 import com.yenaly.han1meviewer.ui.screen.settings.NetworkSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.NetworkSettingsUiState
-import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.ActivityManager
 import com.yenaly.yenaly_libs.utils.applicationContext
 import com.yenaly.yenaly_libs.utils.showShortToast
@@ -79,6 +78,7 @@ fun NetworkSettingsRouteScreen() {
     var showCustomMirrorValidationError by remember { mutableStateOf(false) }
     var showCustomMirrorWarningConfirm by remember { mutableStateOf(false) }
     var showDohConflictConfirm by remember { mutableStateOf(false) }
+    var showSocks5Warning by remember { mutableStateOf(false) }
     var pendingDomainValue by remember { mutableStateOf("") }
     var pendingUseCustomMirrorSite by remember { mutableStateOf(Preferences.useCustomMirrorSite) }
     var pendingCustomMirrorSite by remember { mutableStateOf(Preferences.customMirrorSite) }
@@ -330,11 +330,7 @@ fun NetworkSettingsRouteScreen() {
                 return@NetworkSettingsScreen
             }
             if (type == HProxySelector.TYPE_SOCKS) {
-                context.showAlertDialog {
-                    setTitle(R.string.warning)
-                    setMessage(R.string.mpv_socks5_warning)
-                    setPositiveButton(R.string.confirm) { _, _ -> }
-                }
+                showSocks5Warning = true
             }
             Preferences.preferenceSp.edit(commit = true) {
                 putInt(NETWORK_PROXY_TYPE, type)
@@ -464,6 +460,19 @@ fun NetworkSettingsRouteScreen() {
         },
         onDismiss = { showDohConflictConfirm = false },
     )
+
+    if (showSocks5Warning) {
+        AlertDialog(
+            onDismissRequest = { showSocks5Warning = false },
+            title = { Text(stringResource(R.string.warning)) },
+            text = { Text(stringResource(R.string.mpv_socks5_warning)) },
+            confirmButton = {
+                TextButton(onClick = { showSocks5Warning = false }) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+        )
+    }
 }
 
 private fun buildNetworkSettingsUiState(context: Context): NetworkSettingsUiState {

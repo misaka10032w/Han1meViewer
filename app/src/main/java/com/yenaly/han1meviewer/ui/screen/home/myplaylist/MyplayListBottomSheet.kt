@@ -1,8 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.home.myplaylist
 
 import android.content.Context
-import android.view.LayoutInflater
-import android.widget.EditText
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.background
@@ -57,6 +55,8 @@ import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
+import com.yenaly.han1meviewer.ui.component.TextInputDialog
+import com.yenaly.han1meviewer.ui.component.TextInputField
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
@@ -64,7 +64,6 @@ import com.yenaly.han1meviewer.ui.screen.RetryableImage
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
 import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
-import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.showShortToast
 
 /**
@@ -216,6 +215,7 @@ private fun PlaylistSheetContent(
 ) {
     var showDeletePlaylistConfirm by remember { mutableStateOf(false) }
     var showDeleteItemConfirm by remember { mutableStateOf<Triple<String, String, Int>?>(null) }
+    var showEditPlaylistDialog by remember { mutableStateOf(false) }
     val desc by playlistDesc.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -289,27 +289,7 @@ private fun PlaylistSheetContent(
                     }
                     Spacer(Modifier.width(8.dp))
                     Button(
-                        onClick = {
-                            context.showAlertDialog {
-                                setTitle(R.string.modify_title_or_desc)
-                                val etView = LayoutInflater.from(context)
-                                    .inflate(R.layout.dialog_playlist_modify_edit_text, null)
-                                val etTitle = etView.findViewById<EditText>(R.id.et_title)
-                                val etDesc = etView.findViewById<EditText>(R.id.et_desc)
-                                etTitle.setText(playListTitle)
-                                etDesc.setText(desc)
-                                setView(etView)
-                                setPositiveButton(R.string.confirm) { _, _ ->
-                                    vm.modifyPlaylist(
-                                        listCode,
-                                        etTitle.text.toString(),
-                                        etDesc.text.toString(),
-                                        false
-                                    )
-                                }
-                                setNegativeButton(R.string.cancel, null)
-                            }
-                        },
+                        onClick = { showEditPlaylistDialog = true },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.7f)),
                         modifier = Modifier.size(40.dp),
                         contentPadding = PaddingValues(0.dp)
@@ -429,6 +409,33 @@ private fun PlaylistSheetContent(
                     ); showDeletePlaylistConfirm = false
                 },
                 onDismiss = { showDeletePlaylistConfirm = false },
+            )
+
+            TextInputDialog(
+                visible = showEditPlaylistDialog,
+                title = context.getString(R.string.modify_title_or_desc),
+                fields = listOf(
+                    TextInputField(
+                        label = context.getString(R.string.playlist_title),
+                        initialValue = playListTitle,
+                    ),
+                    TextInputField(
+                        label = context.getString(R.string.playlist_description),
+                        initialValue = desc.orEmpty(),
+                    ),
+                ),
+                confirmText = context.getString(R.string.confirm),
+                dismissText = context.getString(R.string.cancel),
+                onConfirm = { values ->
+                    showEditPlaylistDialog = false
+                    vm.modifyPlaylist(
+                        listCode,
+                        values.getOrElse(0) { playListTitle },
+                        values.getOrElse(1) { desc.orEmpty() },
+                        false
+                    )
+                },
+                onDismiss = { showEditPlaylistDialog = false },
             )
         }
     }

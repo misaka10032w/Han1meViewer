@@ -119,7 +119,11 @@ fun MainActivityScaffold(
             }
         },
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()

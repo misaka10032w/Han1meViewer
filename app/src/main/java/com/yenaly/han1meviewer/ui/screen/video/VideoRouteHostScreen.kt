@@ -20,6 +20,9 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -57,6 +60,7 @@ import com.yenaly.han1meviewer.logic.dao.CheckInRecordDatabase
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.logic.exception.ParseException
+import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
@@ -132,6 +136,8 @@ fun VideoRouteHostScreen(
     var videoTitle by remember(route.videoCode, route.localUri) { mutableStateOf<String?>(null) }
     var isSideRelatedCollapsed by remember { mutableStateOf(false) }
     var showAddHKeyframeDialog by remember { mutableStateOf<Pair<Long, String>?>(null) }
+    var unsubscribeArtist by remember { mutableStateOf<HanimeVideo.Artist?>(null) }
+    var showDownloadPermissionDialog by remember { mutableStateOf(false) }
 
     val actions = remember(activity, scope, viewModel, genres) {
         VideoRouteActions(
@@ -150,7 +156,8 @@ fun VideoRouteHostScreen(
             getCheckedQuality = { checkedQuality },
             setCheckedQuality = { checkedQuality = it },
             onStoragePermissionDenied = { activity.navController.popBackStack() },
-            onDownloadPermissionDialogCancelled = { activity.navController.popBackStack() },
+            onRequestUnsubscribeConfirm = { artist -> unsubscribeArtist = artist },
+            onRequestDownloadPermissionSettings = { showDownloadPermissionDialog = true },
         )
     }
 
@@ -335,6 +342,45 @@ fun VideoRouteHostScreen(
                 stringLongPressShare = stringLongPressShare,
                 pageHost = pageHost,
             )
+
+            unsubscribeArtist?.let { artist ->
+                ConfirmDialog(
+                    visible = true,
+                    title = activity.getString(R.string.unsubscribe_artist),
+                    message = activity.getString(R.string.sure_to_unsubscribe),
+                    confirmText = activity.getString(R.string.sure),
+                    dismissText = activity.getString(R.string.no),
+                    onConfirm = {
+                        unsubscribeArtist = null
+                        actions.confirmUnsubscribe(artist)
+                    },
+                    onDismiss = { unsubscribeArtist = null },
+                )
+            }
+
+            if (showDownloadPermissionDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDownloadPermissionDialog = false },
+                    title = { Text(activity.getString(R.string.permission_permanently_denied_title)) },
+                    text = { Text(activity.getString(R.string.storage_permission_settings_message)) },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showDownloadPermissionDialog = false
+                            actions.goToDownloadPermissionSettings()
+                        }) {
+                            Text(activity.getString(R.string.go_to_settings))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            showDownloadPermissionDialog = false
+                            activity.navController.popBackStack()
+                        }) {
+                            Text(activity.getString(R.string.cancel))
+                        }
+                    },
+                )
+            }
         }
         onDispose {
             activity.registerCurrentVideoHost(null)

@@ -18,7 +18,6 @@ import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.main.SearchRoute
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.requestPostNotificationPermission
-import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import com.yenaly.han1meviewer.worker.HanimeDownloadWorker
 import com.yenaly.yenaly_libs.utils.browse
@@ -44,8 +43,9 @@ class VideoRouteActions(
     private val onPendingDownloadPromptChange: (DownloadPromptState?) -> Unit,
     private val getCheckedQuality: () -> String?,
     private val setCheckedQuality: (String?) -> Unit,
-    private val onStoragePermissionDenied: () -> Unit = {},
-    private val onDownloadPermissionDialogCancelled: () -> Unit = {},
+    private val onStoragePermissionDenied: () -> Unit,
+    private val onRequestUnsubscribeConfirm: (HanimeVideo.Artist) -> Unit,
+    private val onRequestDownloadPermissionSettings: () -> Unit,
 ) {
     fun openArtistSearch(artist: HanimeVideo.Artist) {
         val searchKey = genres.firstOrNull { option ->
@@ -81,17 +81,15 @@ class VideoRouteActions(
             return
         }
         if (artist.isSubscribed) {
-            context.showAlertDialog {
-                setTitle(R.string.unsubscribe_artist)
-                setMessage(R.string.sure_to_unsubscribe)
-                setPositiveButton(R.string.sure) { _, _ ->
-                    viewModel.unsubscribeArtist(post.userId, post.artistId)
-                }
-                setNegativeButton(R.string.no, null)
-            }
+            onRequestUnsubscribeConfirm(artist)
         } else {
             viewModel.subscribeArtist(post.userId, post.artistId)
         }
+    }
+
+    fun confirmUnsubscribe(artist: HanimeVideo.Artist) {
+        val post = artist.post ?: return
+        viewModel.unsubscribeArtist(post.userId, post.artistId)
     }
 
     fun toggleFavorite(video: HanimeVideo) {
@@ -213,17 +211,12 @@ class VideoRouteActions(
     }
 
     fun openDownloadPermissionSettings() {
-        androidx.appcompat.app.AlertDialog.Builder(context)
-            .setTitle(R.string.permission_permanently_denied_title)
-            .setMessage(R.string.storage_permission_settings_message)
-            .setPositiveButton(R.string.go_to_settings) { _, _ ->
-                context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = "package:${context.packageName}".toUri()
-                })
-            }
-            .setNegativeButton(R.string.cancel) { _, _ ->
-                onDownloadPermissionDialogCancelled()
-            }
-            .show()
+        onRequestDownloadPermissionSettings()
+    }
+
+    fun goToDownloadPermissionSettings() {
+        context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = "package:${context.packageName}".toUri()
+        })
     }
 }

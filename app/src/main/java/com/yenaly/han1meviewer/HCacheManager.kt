@@ -4,10 +4,10 @@ import android.content.Context
 import android.os.Looper
 import android.util.Log
 import androidx.annotation.WorkerThread
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.edit
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
+import com.yenaly.han1meviewer.ui.component.GlobalDialogs
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
 import com.yenaly.han1meviewer.util.SafFileManager
 import kotlinx.coroutines.Dispatchers
@@ -95,11 +95,14 @@ object HCacheManager {
         }
     }
     private fun showSwitchDialog(context: Context) {
-        AlertDialog.Builder(context)
-            .setTitle(context.getString(R.string.save_failed_title))
-            .setMessage(context.getString(R.string.save_failed_message))
-            .setPositiveButton(context.getString(R.string.understood), null)
-            .show()
+        GlobalDialogs.show(
+            GlobalDialogs.ConfirmRequest(
+                title = context.getString(R.string.save_failed_title),
+                message = context.getString(R.string.save_failed_message),
+                confirmText = context.getString(R.string.understood),
+                onConfirm = {},
+            )
+        )
     }
 
     // 缓解写入冲突 (仅 File 模式下用)

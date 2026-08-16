@@ -2,7 +2,6 @@ package com.yenaly.han1meviewer.ui.navigation.settings
 
 import android.Manifest
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -10,6 +9,13 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -17,8 +23,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
@@ -36,6 +44,7 @@ import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.util.SafFileManager.KEY_TREE_URI
 import com.yenaly.han1meviewer.util.showToast
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
+import com.yenaly.yenaly_libs.utils.showLongToast
 
 private const val DOWNLOAD_COUNT_LIMIT = "download_count_limit"
 private const val DOWNLOAD_SPEED_LIMIT = "download_speed_limit"
@@ -49,6 +58,12 @@ fun DownloadSettingsRouteScreen(
     var refreshKey by remember { mutableIntStateOf(0) }
     var showDownloadPathDialog by remember { mutableStateOf(false) }
     var showRestoreDefaultConfirm by remember { mutableStateOf(false) }
+    var showStoragePermissionDialog by remember { mutableStateOf(false) }
+    var showImportConfirm by remember { mutableStateOf(false) }
+    var showImportPathHint by remember { mutableStateOf(false) }
+    var showImportProgress by remember { mutableStateOf(false) }
+    var importMigrated by remember { mutableIntStateOf(0) }
+    var importTotal by remember { mutableIntStateOf(0) }
     val dao = remember { DownloadDatabase.instance.hanimeDownloadDao }
     val uiState = remember(refreshKey, context) { buildDownloadSettingsUiState(context) }
 
@@ -73,17 +88,7 @@ fun DownloadSettingsRouteScreen(
         if (activity.shouldShowRequestPermissionRationale(permission)) {
             context.showToast(R.string.storage_permission_denied_toast)
         } else {
-            AlertDialog.Builder(context)
-                .setTitle(R.string.permission_permanently_denied_title)
-                .setMessage(R.string.storage_permission_settings_message)
-                .setPositiveButton(R.string.go_to_settings) { _, _ ->
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = "package:${context.packageName}".toUri()
-                    }
-                    context.startActivity(intent)
-                }
-                .setNegativeButton(R.string.cancel, null)
-                .show()
+            showStoragePermissionDialog = true
         }
     }
 
@@ -107,7 +112,14 @@ fun DownloadSettingsRouteScreen(
         onOpenDownloadPath = { showDownloadPathDialog = true },
         onRestoreDefaultPath = { },
         onImportDownloadedFiles = {
-            importDownloadedFiles(context, activity, dao, onCompleted = { refreshKey++ })
+            if (!Preferences.isUsePrivateStorage &&
+                !Preferences.safDownloadPath.isNullOrBlank() &&
+                SafFileManager.checkSafPermissions(context)
+            ) {
+                showImportConfirm = true
+            } else {
+                showImportPathHint = true
+            }
         },
         onDownloadCountLimitChange = { value ->
             Preferences.preferenceSp.edit { putInt(DOWNLOAD_COUNT_LIMIT, value) }
@@ -171,6 +183,97 @@ fun DownloadSettingsRouteScreen(
         },
         onDismiss = { showRestoreDefaultConfirm = false },
     )
+
+    ConfirmDialog(
+        visible = showStoragePermissionDialog,
+        title = stringResource(R.string.permission_permanently_denied_title),
+        message = stringResource(R.string.storage_permission_settings_message),
+        confirmText = stringResource(R.string.go_to_settings),
+        dismissText = stringResource(R.string.cancel),
+        onConfirm = {
+            showStoragePermissionDialog = false
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = "package:${context.packageName}".toUri()
+            }
+            context.startActivity(intent)
+        },
+        onDismiss = { showStoragePermissionDialog = false },
+    )
+
+    ConfirmDialog(
+        visible = showImportConfirm,
+        title = stringResource(R.string.confirm_import),
+        message = stringResource(R.string.import_warning),
+        confirmText = stringResource(R.string.ok),
+        dismissText = stringResource(R.string.cancel),
+        onConfirm = {
+            showImportConfirm = false
+            showImportProgress = true
+            importMigrated = 0
+            importTotal = 0
+            SafFileManager.migratePrivateToSaf(context, dao) { migrated, total ->
+                when (total) {
+                    0 -> {
+                        showImportProgress = false
+                        showLongToast(context.getString(R.string.no_exportable_files))
+                    }
+
+                    -1 -> {
+                        showImportProgress = false
+                        showLongToast(context.getString(R.string.permission_error))
+                    }
+
+                    else -> {
+                        importMigrated = migrated
+                        importTotal = total
+                        if (migrated == total) {
+                            showImportProgress = false
+                            showLongToast(context.getString(R.string.import_complete, total))
+                            refreshKey++
+                        }
+                    }
+                }
+            }
+        },
+        onDismiss = { showImportConfirm = false },
+    )
+
+    if (showImportPathHint) {
+        AlertDialog(
+            onDismissRequest = { showImportPathHint = false },
+            title = { Text(stringResource(R.string.specify_path_first)) },
+            text = { Text(stringResource(R.string.path_permission_message)) },
+            confirmButton = {
+                TextButton(onClick = { showImportPathHint = false }) {
+                    Text(stringResource(R.string.understood))
+                }
+            },
+        )
+    }
+
+    if (showImportProgress) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text(stringResource(R.string.import_progress)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.importing))
+                    LinearProgressIndicator(
+                        progress = {
+                            if (importTotal > 0) importMigrated.toFloat() / importTotal else 0f
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    val percent = if (importTotal > 0) importMigrated * 100 / importTotal else 0
+                    Text(
+                        stringResource(R.string.import_progress_format)
+                            .format(importMigrated, importTotal, percent)
+                    )
+                }
+            },
+            confirmButton = {},
+        )
+    }
 }
 
 private fun buildDownloadSettingsUiState(context: Context): DownloadSettingsUiState {
