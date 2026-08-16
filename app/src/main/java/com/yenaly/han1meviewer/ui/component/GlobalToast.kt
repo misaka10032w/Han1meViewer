@@ -26,7 +26,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
@@ -53,7 +53,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.graphics.drawable.toDrawable
-import com.yenaly.han1meviewer.ui.component.GlobalToasts.MAX_VISIBLE_COUNT
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -345,7 +344,7 @@ private val GlobalToasts.ToastLevel.defaultIcon: ImageVector
         GlobalToasts.ToastLevel.INFO -> Icons.Default.Info
         GlobalToasts.ToastLevel.SUCCESS -> Icons.Default.Check
         GlobalToasts.ToastLevel.WARNING -> Icons.Default.Warning
-        GlobalToasts.ToastLevel.ERROR -> Icons.Default.Close
+        GlobalToasts.ToastLevel.ERROR -> Icons.Default.Error
     }
 
 @Composable
