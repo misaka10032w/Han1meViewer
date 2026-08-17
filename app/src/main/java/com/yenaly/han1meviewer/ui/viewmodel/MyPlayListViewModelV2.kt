@@ -210,9 +210,9 @@ class MyPlayListViewModelV2 : ViewModel() {
     private val _deleteFromPlaylistFlow = MutableSharedFlow<WebsiteState<Int>>()
     val deleteFromPlaylistFlow = _deleteFromPlaylistFlow.asSharedFlow()
     // 从详情页删除某视频
-    fun deleteFromPlaylist(listCode: String, videoCode: String, position: Int) {
+    fun deleteFromPlaylist(itemId: String, position: Int) {
         viewModelScope.launch {
-            NetworkRepo.deleteMyListItems(listCode, videoCode, position, csrfToken).collect {
+            NetworkRepo.deleteMyListItems(itemId, position, csrfToken).collect {
                 _deleteFromPlaylistFlow.emit(it)
                 _playlistFlow.update { prevList ->
                     if (it is WebsiteState.Success) {

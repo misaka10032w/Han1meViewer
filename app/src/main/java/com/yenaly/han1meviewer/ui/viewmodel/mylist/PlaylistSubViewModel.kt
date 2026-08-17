@@ -69,9 +69,9 @@ class PlaylistSubViewModel(application: Application) : YenalyViewModel(applicati
     private val _deleteFromPlaylistFlow = MutableSharedFlow<WebsiteState<Int>>()
     val deleteFromPlaylistFlow = _deleteFromPlaylistFlow.asSharedFlow()
 
-    fun deleteFromPlaylist(listCode: String, videoCode: String, position: Int) {
+    fun deleteFromPlaylist(itemId: String, position: Int) {
         viewModelScope.launch {
-            NetworkRepo.deleteMyListItems(listCode, videoCode, position, csrfToken).collect {
+            NetworkRepo.deleteMyListItems(itemId, position, csrfToken).collect {
                 _deleteFromPlaylistFlow.emit(it)
                 _playlistFlow.update { prevList ->
                     if (it is WebsiteState.Success) {

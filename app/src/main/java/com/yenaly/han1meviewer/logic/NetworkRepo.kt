@@ -254,37 +254,24 @@ object NetworkRepo {
     }
 
     fun deleteMyListItems(
-        typeOrCode: Any,
-        videoCode: String,
+        itemId: String,
         position: Int,
         token: String?,
     ) = websiteIOFlow(
         request = {
-            when (typeOrCode) {
-                is String ->
-                    HanimeNetwork.myListService.deleteMyListItems(
-                        typeOrCode, videoCode,
-                        csrfToken = token
-                    )
-
-                is MyListType ->
-                    HanimeNetwork.myListService.deleteMyListItems(
-                        typeOrCode.value, videoCode,
-                        csrfToken = token
-                    )
-
-                else ->
-                    throw IllegalArgumentException("typeOrId must be String or MyListType")
-            }
-        }
+            HanimeNetwork.myListService.deleteMyListItems(
+                itemId = itemId,
+                csrfToken = token
+            )
+        },
     ) { deleteBody ->
         val jsonObject = JSONObject(deleteBody)
-        val returnVideoCode = jsonObject.get("video_id").toString()
-        if (videoCode == returnVideoCode) {
-            return@websiteIOFlow WebsiteState.Success(position)
+        val success = jsonObject.optBoolean("success", false)
+        if (success) {
+            WebsiteState.Success(position)
+        } else {
+            WebsiteState.Error(IllegalStateException("cannot delete it ?!"))
         }
-
-        return@websiteIOFlow WebsiteState.Error(IllegalStateException("cannot delete it ?!"))
     }
 
     fun getPlaylists(page: Int, userId: String ) = websiteIOFlow(

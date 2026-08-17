@@ -326,8 +326,10 @@ private fun PlaylistSheetContent(
                         videoItem = item,
                         isHorizontalCard = true,
                         onClickVideosItem = onClickItem
-                    ) { videoCode, _ ->
-                        showDeleteItemConfirm = Triple(listCode, videoCode, index)
+                    ) { _, _ ->
+                        item.playlistItemId?.let { itemId ->
+                            showDeleteItemConfirm = Triple(itemId, item.title, index)
+                        }
                     }
                 }
 
@@ -380,18 +382,16 @@ private fun PlaylistSheetContent(
                 }
             }
 
-            showDeleteItemConfirm?.let { (code, videoCode, index) ->
-                val item = playlist.find { it.videoCode == videoCode }
+            showDeleteItemConfirm?.let { (itemId, title, index) ->
                 ConfirmDialog(
                     visible = true,
                     title = context.getString(R.string.delete_playlist),
-                    message = context.getString(R.string.sure_to_delete_s, item?.title ?: ""),
+                    message = context.getString(R.string.sure_to_delete_s, title),
                     confirmText = context.getString(R.string.confirm),
                     dismissText = context.getString(R.string.cancel),
                     onConfirm = {
                         vm.deleteFromPlaylist(
-                            code,
-                            videoCode,
+                            itemId,
                             index
                         ); showDeleteItemConfirm = null
                     },
