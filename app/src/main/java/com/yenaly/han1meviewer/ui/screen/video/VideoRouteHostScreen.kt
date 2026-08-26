@@ -585,8 +585,13 @@ fun VideoRouteHostScreen(
 
     LaunchedEffect(viewModel) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
-            viewModel.modifyHKeyframeFlow.collect { (_, reason) ->
-                GlobalToasts.show(reason, level = GlobalToasts.ToastLevel.ERROR)
+            viewModel.modifyHKeyframeFlow.collect { (success, reason) ->
+                val level = if (success) {
+                    GlobalToasts.ToastLevel.SUCCESS
+                } else {
+                    GlobalToasts.ToastLevel.ERROR
+                }
+                GlobalToasts.show(reason, level = level)
             }
         }
     }
