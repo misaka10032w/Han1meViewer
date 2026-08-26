@@ -197,7 +197,7 @@ fun GlobalToastHost(modifier: Modifier = Modifier) {
             dismissOnClickOutside = false,
             dismissOnBackPress = false,
             usePlatformDefaultWidth = false,
-            decorFitsSystemWindows = false,
+            decorFitsSystemWindows = true,
         ),
     ) {
         val window = (LocalView.current.parent as? DialogWindowProvider)?.window
