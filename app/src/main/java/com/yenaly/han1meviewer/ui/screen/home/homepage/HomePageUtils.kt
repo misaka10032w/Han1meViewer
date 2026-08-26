@@ -6,12 +6,12 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
-import android.widget.Toast
 import coil3.SingletonImageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import coil3.toBitmap
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -71,7 +71,7 @@ internal suspend fun saveImageToGallery(context: Context, imageUrl: String) {
     }
     fos?.use { bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it) }
     withContext(Dispatchers.Main) {
-        Toast.makeText(context, context.getString(R.string.saved), Toast.LENGTH_SHORT).show()
+        GlobalToasts.show(context.getString(R.string.saved), level = GlobalToasts.ToastLevel.SUCCESS)
     }
 }
 

@@ -15,7 +15,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -46,7 +45,7 @@ import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
 import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageViewModel
 import com.yenaly.han1meviewer.ui.screen.main.MainActivityContent
-import com.yenaly.han1meviewer.util.showAlertDialog
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.videoUrlRegex
 import com.yenaly.yenaly_libs.ActivityManager
 import com.yenaly.yenaly_libs.base.frame.FrameActivity
@@ -68,6 +67,12 @@ class MainActivity : FrameActivity(), PermissionRequester {
     private var showAuthGuard by mutableStateOf(true)
     private val pendingNavigationRequests = MutableSharedFlow<Intent>(extraBufferCapacity = 1)
     private var currentVideoHost: VideoPageHost? = null
+
+    var showSiteSwitchConfirm by mutableStateOf(false)
+        private set
+    var showLogoutConfirm by mutableStateOf(false)
+        private set
+    private var logoutCloseCurrentPage = false
 
     companion object {
         private const val REQUEST_WRITE_EXTERNAL_STORAGE = 1234
@@ -102,9 +107,9 @@ class MainActivity : FrameActivity(), PermissionRequester {
                 pendingNavigationRequests = pendingNavigationRequests,
                 showAuthGuard = showAuthGuard,
                 onOpenAccount = { navController.navigateSafely(AccountRoute) },
-                onLogoutClick = { showLogoutConfirmDialog() },
+                onLogoutClick = { requestLogout(false) },
                 onRequireLogin = { gotoLoginActivity() },
-                onSwitchSiteClick = { showSiteSwitchDialog() },
+                onSwitchSiteClick = { requestSiteSwitch() },
                 onNavigateControllerReady = { controller -> navController = controller },
             )
         }
@@ -137,7 +142,7 @@ class MainActivity : FrameActivity(), PermissionRequester {
                 )
             } else {
                 // Android 7~8，不支持 BiometricPrompt
-                Toast.makeText(this, R.string.not_compact_lock_screen, Toast.LENGTH_SHORT).show()
+                GlobalToasts.show(getString(R.string.not_compact_lock_screen), level = GlobalToasts.ToastLevel.WARNING)
                 hasAuthenticated = true
                 showAuthGuard = false
                 initData()
@@ -266,30 +271,33 @@ class MainActivity : FrameActivity(), PermissionRequester {
         }
     }
 
-    private fun showSiteSwitchDialog() {
+    fun requestSiteSwitch() {
+        showSiteSwitchConfirm = true
+    }
+
+    fun dismissSiteSwitch() {
+        showSiteSwitchConfirm = false
+    }
+
+    fun confirmSiteSwitch() {
+        showSiteSwitchConfirm = false
         val currentSite = Preferences.baseUrl
-        showAlertDialog {
-            setTitle(R.string.confirm_switch_site)
-            setPositiveButton(R.string.sure) { _, _ ->
-                val avSite = HANIME_URL[3]
-                val selectedBaseUrl = Preferences.selectedBaseUrl
-                if (currentSite in ANIME_URL) {
-                    Preferences.preferenceSp.edit(true) {
-                        putString(SettingsPreferenceKeys.SELECTED_BASE_URL, currentSite)
-                        putString(SettingsPreferenceKeys.DOMAIN_NAME, avSite)
-                    }
-                } else {
-                    Preferences.preferenceSp.edit(true) {
-                        putString(SettingsPreferenceKeys.SELECTED_BASE_URL, selectedBaseUrl)
-                        putString(SettingsPreferenceKeys.DOMAIN_NAME, selectedBaseUrl)
-                    }
-                }
-                Handler(Looper.getMainLooper()).postDelayed({
-                    ActivityManager.restart(killProcess = true)
-                }, 500)
+        val avSite = HANIME_URL[3]
+        val selectedBaseUrl = Preferences.selectedBaseUrl
+        if (currentSite in ANIME_URL) {
+            Preferences.preferenceSp.edit(true) {
+                putString(SettingsPreferenceKeys.SELECTED_BASE_URL, currentSite)
+                putString(SettingsPreferenceKeys.DOMAIN_NAME, avSite)
             }
-            setNegativeButton(R.string.no, null)
+        } else {
+            Preferences.preferenceSp.edit(true) {
+                putString(SettingsPreferenceKeys.SELECTED_BASE_URL, selectedBaseUrl)
+                putString(SettingsPreferenceKeys.DOMAIN_NAME, selectedBaseUrl)
+            }
         }
+        Handler(Looper.getMainLooper()).postDelayed({
+            ActivityManager.restart(killProcess = true)
+        }, 500)
     }
 
     fun gotoLoginActivity() {
@@ -297,17 +305,21 @@ class MainActivity : FrameActivity(), PermissionRequester {
         loginDataLauncher.launch(intent)
     }
 
-    fun showLogoutConfirmDialog(closeCurrentPageOnConfirm: Boolean = false) {
-        showAlertDialog {
-            setTitle(R.string.sure_to_logout)
-            setPositiveButton(R.string.sure) { _, _ ->
-                if (closeCurrentPageOnConfirm) {
-                    navController.popBackStack()
-                }
-                logoutWithRefresh()
-            }
-            setNegativeButton(R.string.no, null)
+    fun requestLogout(closeCurrentPageOnConfirm: Boolean) {
+        logoutCloseCurrentPage = closeCurrentPageOnConfirm
+        showLogoutConfirm = true
+    }
+
+    fun dismissLogoutConfirm() {
+        showLogoutConfirm = false
+    }
+
+    fun confirmLogout() {
+        showLogoutConfirm = false
+        if (logoutCloseCurrentPage) {
+            navController.popBackStack()
         }
+        logoutWithRefresh()
     }
 
     fun logoutWithRefresh() {

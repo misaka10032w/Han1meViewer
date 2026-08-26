@@ -296,6 +296,9 @@ fun MoveGroupDialog(
                     ) {
                         items(items = groups, key = { it.id }) { group ->
                             ListItem(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onConfirm(video, group.id) },
                                 leadingContent = {
                                     Icon(
                                         imageVector = Icons.Sharp.Create,
@@ -303,18 +306,15 @@ fun MoveGroupDialog(
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 },
-                                headlineContent = {
+                                colors = ListItemDefaults.colors(
+                                    containerColor = Color.Transparent
+                                ),
+                                content = {
                                     Text(
                                         text = group.name,
                                         style = MaterialTheme.typography.bodyLarge
                                     )
                                 },
-                                colors = ListItemDefaults.colors(
-                                    containerColor = Color.Transparent
-                                ),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { onConfirm(video, group.id) }
                             )
                         }
                     }

@@ -318,6 +318,7 @@
     <string name="fav_failed">お気に入り登録失敗</string>
     <string name="cancel_fav">お気に入り解除</string>
     <string name="already_in_queue">キューに存在</string>
+    <string name="added_to_download_queue">ダウンロードキューに追加しました</string>
     <string name="s_view_times">%1$s回</string>
     <string name="liked">いいね済み</string>
     <string name="cannot_download_here">ここからはダウンロードできません！</string>

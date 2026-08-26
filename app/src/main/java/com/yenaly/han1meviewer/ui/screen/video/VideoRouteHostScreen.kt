@@ -17,9 +17,11 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -57,11 +59,14 @@ import com.yenaly.han1meviewer.logic.dao.CheckInRecordDatabase
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.logic.exception.ParseException
+import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
+import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.PermissionRequester
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.view.video.ExoMediaKernel
@@ -78,7 +83,6 @@ import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.dp
 import com.yenaly.yenaly_libs.utils.shareText
-import com.yenaly.yenaly_libs.utils.showShortToast
 import com.yenaly.yenaly_libs.utils.startActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -132,6 +136,8 @@ fun VideoRouteHostScreen(
     var videoTitle by remember(route.videoCode, route.localUri) { mutableStateOf<String?>(null) }
     var isSideRelatedCollapsed by remember { mutableStateOf(false) }
     var showAddHKeyframeDialog by remember { mutableStateOf<Pair<Long, String>?>(null) }
+    var unsubscribeArtist by remember { mutableStateOf<HanimeVideo.Artist?>(null) }
+    var showDownloadPermissionDialog by remember { mutableStateOf(false) }
 
     val actions = remember(activity, scope, viewModel, genres) {
         VideoRouteActions(
@@ -150,7 +156,8 @@ fun VideoRouteHostScreen(
             getCheckedQuality = { checkedQuality },
             setCheckedQuality = { checkedQuality = it },
             onStoragePermissionDenied = { activity.navController.popBackStack() },
-            onDownloadPermissionDialogCancelled = { activity.navController.popBackStack() },
+            onRequestUnsubscribeConfirm = { artist -> unsubscribeArtist = artist },
+            onRequestDownloadPermissionSettings = { showDownloadPermissionDialog = true },
         )
     }
 
@@ -311,7 +318,7 @@ fun VideoRouteHostScreen(
                         CheckInRecordDatabase.getDatabase(activity).checkInDao()
                             .insert(normalizedRecord)
                         withContext(Dispatchers.Main) {
-                            Toast.makeText(activity, R.string.checkin, Toast.LENGTH_SHORT).show()
+                            GlobalToasts.show(activity.getString(R.string.checkin), level = GlobalToasts.ToastLevel.SUCCESS)
                         }
                     }
                 },
@@ -329,12 +336,51 @@ fun VideoRouteHostScreen(
                 onOpenShare = { content, title -> shareText(content, title) },
                 onCopyText = {
                     it.copyToClipboard()
-                    showShortToast(R.string.copy_to_clipboard)
+                    GlobalToasts.show(activity.getString(R.string.copy_to_clipboard), level = GlobalToasts.ToastLevel.INFO)
                 },
                 onIntroductionLinkClick = actions::openIntroductionLink,
                 stringLongPressShare = stringLongPressShare,
                 pageHost = pageHost,
             )
+
+            unsubscribeArtist?.let { artist ->
+                ConfirmDialog(
+                    visible = true,
+                    title = activity.getString(R.string.unsubscribe_artist),
+                    message = activity.getString(R.string.sure_to_unsubscribe),
+                    confirmText = activity.getString(R.string.sure),
+                    dismissText = activity.getString(R.string.no),
+                    onConfirm = {
+                        unsubscribeArtist = null
+                        actions.confirmUnsubscribe(artist)
+                    },
+                    onDismiss = { unsubscribeArtist = null },
+                )
+            }
+
+            if (showDownloadPermissionDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDownloadPermissionDialog = false },
+                    title = { Text(activity.getString(R.string.permission_permanently_denied_title)) },
+                    text = { Text(activity.getString(R.string.storage_permission_settings_message)) },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showDownloadPermissionDialog = false
+                            actions.goToDownloadPermissionSettings()
+                        }) {
+                            Text(activity.getString(R.string.go_to_settings))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            showDownloadPermissionDialog = false
+                            activity.navController.popBackStack()
+                        }) {
+                            Text(activity.getString(R.string.cancel))
+                        }
+                    },
+                )
+            }
         }
         onDispose {
             activity.registerCurrentVideoHost(null)
@@ -403,7 +449,7 @@ fun VideoRouteHostScreen(
                 val currentPosition = player.currentPositionWhenPlaying
                 showAddHKeyframeDialog = Pair(currentPosition, videoTitle ?: "Untitled")
             } else {
-                showShortToast(R.string.pause_then_long_press)
+                GlobalToasts.show(activity.getString(R.string.pause_then_long_press), level = GlobalToasts.ToastLevel.WARNING)
             }
         }
         player.onVideoStateChanged = { state ->
@@ -479,7 +525,7 @@ fun VideoRouteHostScreen(
             viewModel.hanimeVideoStateFlow.collect { state ->
                 when (state) {
                     is VideoLoadingState.Error -> {
-                        state.throwable.localizedMessage?.let { showShortToast(it) }
+                        state.throwable.localizedMessage?.let { GlobalToasts.show(it, level = GlobalToasts.ToastLevel.ERROR) }
                         if (state.throwable is ParseException) {
                             activity.browse(getHanimeVideoLink(route.videoCode))
                         }
@@ -491,7 +537,7 @@ fun VideoRouteHostScreen(
                         videoTitle = state.info.title
                         if (state.info.videoUrls.isEmpty()) {
                             player.startButton.setOnClickListener {
-                                showShortToast(R.string.fail_to_get_video_link)
+                                GlobalToasts.show(activity.getString(R.string.fail_to_get_video_link), level = GlobalToasts.ToastLevel.ERROR)
                                 activity.browse(getHanimeVideoLink(route.videoCode))
                             }
                         } else {
@@ -520,7 +566,7 @@ fun VideoRouteHostScreen(
                     }
 
                     is VideoLoadingState.NoContent -> {
-                        showShortToast(R.string.video_might_not_exist)
+                        GlobalToasts.show(activity.getString(R.string.video_might_not_exist), level = GlobalToasts.ToastLevel.ERROR)
                     }
                 }
             }
@@ -539,8 +585,33 @@ fun VideoRouteHostScreen(
 
     LaunchedEffect(viewModel) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
-            viewModel.modifyHKeyframeFlow.collect { (_, reason) ->
-                showShortToast(reason)
+            viewModel.modifyHKeyframeFlow.collect { (success, reason) ->
+                val level = if (success) {
+                    GlobalToasts.ToastLevel.SUCCESS
+                } else {
+                    GlobalToasts.ToastLevel.ERROR
+                }
+                GlobalToasts.show(reason, level = level)
+            }
+        }
+    }
+
+    LaunchedEffect(viewModel) {
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+            viewModel.modifyMyListFlow.collect { state ->
+                when (state) {
+                    is WebsiteState.Error -> GlobalToasts.show(
+                        activity.getString(R.string.add_failed),
+                        level = GlobalToasts.ToastLevel.ERROR,
+                    )
+
+                    is WebsiteState.Success -> GlobalToasts.show(
+                        activity.getString(R.string.add_success),
+                        level = GlobalToasts.ToastLevel.SUCCESS,
+                    )
+
+                    WebsiteState.Loading -> Unit
+                }
             }
         }
     }

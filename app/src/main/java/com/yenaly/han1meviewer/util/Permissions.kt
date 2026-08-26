@@ -8,12 +8,14 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.GlobalDialogs
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.yenaly_libs.utils.awaitActivityResult
 import com.yenaly.yenaly_libs.utils.requestPermission
-import com.yenaly.yenaly_libs.utils.requireComponentActivity
-import com.yenaly.yenaly_libs.utils.showShortToast
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import androidx.core.net.toUri
 
 
 /**
@@ -32,9 +34,9 @@ suspend fun Context.requestPostNotificationPermission(): Boolean {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         val granted = requestPermission(Manifest.permission.POST_NOTIFICATIONS)
         if (!granted) {
-            val res = showPostNotificationPermissionDialog()
-            if (res == AlertDialog.BUTTON_NEGATIVE) {
-                showShortToast(R.string.msg_deny_download_notification)
+            val allow = showPostNotificationPermissionDialog()
+            if (!allow) {
+                GlobalToasts.show(getString(R.string.msg_deny_download_notification), level = GlobalToasts.ToastLevel.WARNING)
                 return false
             }
             requestPermission(Manifest.permission.POST_NOTIFICATIONS)
@@ -46,13 +48,21 @@ suspend fun Context.requestPostNotificationPermission(): Boolean {
 /**
  * 顯示發送通知權限對話框
  */
-private suspend fun Context.showPostNotificationPermissionDialog(): Int {
-    val dialog = requireComponentActivity().createAlertDialog {
-        setTitle(R.string.allow_post_notification)
-        setMessage(R.string.reason_for_download_notification)
+private suspend fun Context.showPostNotificationPermissionDialog(): Boolean =
+    suspendCancellableCoroutine { cont ->
+        val id = GlobalDialogs.show(
+            GlobalDialogs.ConfirmRequest(
+                title = getString(R.string.allow_post_notification),
+                message = getString(R.string.reason_for_download_notification),
+                confirmText = getString(R.string.allow),
+                dismissText = getString(R.string.deny),
+                onConfirm = { cont.resume(true) },
+                onCancel = { cont.resume(false) },
+                onDismissRequest = { cont.resume(false) },
+            )
+        )
+        cont.invokeOnCancellation { GlobalDialogs.dismiss(id) }
     }
-    return dialog.await(getString(R.string.allow), getString(R.string.deny))
-}
 
 /**
  * 请求安装权限
@@ -62,13 +72,13 @@ suspend fun Context.requestInstallPermission(): Boolean {
         if (packageManager.canRequestPackageInstalls()) return true
         val granted = requestPermission(Manifest.permission.REQUEST_INSTALL_PACKAGES)
         if (!granted) {
-            val res = showInstallPermissionDialog()
-            if (res == AlertDialog.BUTTON_NEGATIVE) return false
+            val goToSettings = showInstallPermissionDialog()
+            if (!goToSettings) return false
             awaitActivityResult(
                 ActivityResultContracts.StartActivityForResult(),
                 Intent(
                     Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                    Uri.parse("package:$packageName"),
+                    "package:$packageName".toUri(),
                 ),
             )
             requestPermission(Manifest.permission.REQUEST_INSTALL_PACKAGES)
@@ -81,10 +91,18 @@ suspend fun Context.requestInstallPermission(): Boolean {
 /**
  * 显示安装权限对话框
  */
-private suspend fun Context.showInstallPermissionDialog(): Int {
-    val dialog = requireComponentActivity().createAlertDialog {
-        setTitle(R.string.allow_install_from_unknown_app_sources)
-        setMessage(R.string.reason_for_allow_install_from_unknown_app_sources)
+private suspend fun Context.showInstallPermissionDialog(): Boolean =
+    suspendCancellableCoroutine { cont ->
+        val id = GlobalDialogs.show(
+            GlobalDialogs.ConfirmRequest(
+                title = getString(R.string.allow_install_from_unknown_app_sources),
+                message = getString(R.string.reason_for_allow_install_from_unknown_app_sources),
+                confirmText = getString(R.string.go_to_settings),
+                dismissText = getString(R.string.deny),
+                onConfirm = { cont.resume(true) },
+                onCancel = { cont.resume(false) },
+                onDismissRequest = { cont.resume(false) },
+            )
+        )
+        cont.invokeOnCancellation { GlobalDialogs.dismiss(id) }
     }
-    return dialog.await(getString(R.string.go_to_settings), getString(R.string.deny))
-}

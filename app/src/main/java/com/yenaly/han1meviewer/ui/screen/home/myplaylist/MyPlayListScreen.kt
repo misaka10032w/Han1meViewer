@@ -1,7 +1,5 @@
 package com.yenaly.han1meviewer.ui.screen.home.myplaylist
 
-import android.view.View
-import android.widget.EditText
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,11 +35,12 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.PullRefreshOverlay
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
+import com.yenaly.han1meviewer.ui.component.TextInputDialog
+import com.yenaly.han1meviewer.ui.component.TextInputField
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
-import com.yenaly.han1meviewer.util.showAlertDialog
-import com.yenaly.yenaly_libs.utils.showShortToast
 
 /**
  * 播放列表页面 Screen 层。
@@ -70,6 +69,9 @@ fun PlaylistScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var temporarilyHideSheetForNavigation by rememberSaveable { mutableStateOf(false) }
+    var showCreatePlaylistDialog by rememberSaveable { mutableStateOf(false) }
+    val addFailed = stringResource(R.string.add_failed)
+    val addSuccess = stringResource(R.string.add_success)
 
     LaunchedEffect(Unit) {
         viewModel.refreshCompleted.collect { isRefreshing = false }
@@ -92,10 +94,10 @@ fun PlaylistScreen(
     LaunchedEffect(Unit) {
         viewModel.createPlaylistFlow.collect { result ->
             when (result) {
-                is WebsiteState.Error -> showShortToast(R.string.add_failed)
+                is WebsiteState.Error -> GlobalToasts.show(addFailed, level = GlobalToasts.ToastLevel.ERROR)
                 is WebsiteState.Loading -> Unit
                 is WebsiteState.Success -> {
-                    showShortToast(R.string.add_success)
+                    GlobalToasts.show(addSuccess, level = GlobalToasts.ToastLevel.SUCCESS)
                     viewModel.loadMyPlayList()
                 }
             }
@@ -130,25 +132,7 @@ fun PlaylistScreen(
         onBack = navigateBack,
         scrollBehavior = scrollBehavior,
         actions = {
-            FilledIconButton(onClick = {
-                context.showAlertDialog {
-                    setTitle(R.string.create_new_playlist)
-                    val etView =
-                        View.inflate(context, R.layout.dialog_playlist_modify_edit_text, null)
-                    val etTitle = etView.findViewById<EditText>(R.id.et_title)
-                    val etDesc = etView.findViewById<EditText>(R.id.et_desc)
-                    setView(etView)
-                    setPositiveButton(R.string.confirm) { _, _ ->
-                        handleEvent(
-                            PlaylistEvent.OnCreatePlaylist(
-                                etTitle.text.toString(),
-                                etDesc.text.toString()
-                            )
-                        )
-                    }
-                    setNegativeButton(R.string.cancel, null)
-                }
-            }) {
+            FilledIconButton(onClick = { showCreatePlaylistDialog = true }) {
                 Icon(
                     Icons.Default.Add,
                     contentDescription = stringResource(R.string.create_new_playlist)
@@ -211,5 +195,26 @@ fun PlaylistScreen(
                 )
             }
         }
+
+        TextInputDialog(
+            visible = showCreatePlaylistDialog,
+            title = stringResource(R.string.create_new_playlist),
+            fields = listOf(
+                TextInputField(label = stringResource(R.string.playlist_title)),
+                TextInputField(label = stringResource(R.string.playlist_description)),
+            ),
+            confirmText = stringResource(R.string.confirm),
+            dismissText = stringResource(R.string.cancel),
+            onConfirm = { values ->
+                showCreatePlaylistDialog = false
+                handleEvent(
+                    PlaylistEvent.OnCreatePlaylist(
+                        values.getOrElse(0) { "" },
+                        values.getOrElse(1) { "" },
+                    )
+                )
+            },
+            onDismiss = { showCreatePlaylistDialog = false },
+        )
     }
 }

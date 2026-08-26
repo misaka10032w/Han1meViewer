@@ -45,7 +45,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -55,7 +54,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -69,6 +67,7 @@ import com.yenaly.han1meviewer.logic.model.UserAccount
 import com.yenaly.han1meviewer.logic.model.UserAccountAction
 import com.yenaly.han1meviewer.logic.model.UserAccountSubmittingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.PageContent
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.content.ErrorContent
@@ -77,7 +76,6 @@ import com.yenaly.han1meviewer.ui.screen.rememberRandomLoadingHint
 import com.yenaly.han1meviewer.ui.viewmodel.UserAccountViewModel
 import com.yenaly.han1meviewer.util.pickVisualMedia
 import com.yenaly.yenaly_libs.utils.browse
-import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -111,7 +109,7 @@ fun AccountScreen(
         viewModel.actionFlow.collect { event ->
             when (event.state) {
                 is WebsiteState.Error -> {
-                    showShortToast(event.state.throwable.message ?: modifyFailed)
+                    GlobalToasts.show(event.state.throwable.message ?: modifyFailed, level = GlobalToasts.ToastLevel.ERROR)
                 }
 
                 is WebsiteState.Success -> {
@@ -125,7 +123,7 @@ fun AccountScreen(
                         UserAccountAction.PasswordUpdated -> modifySuccess
                         UserAccountAction.AvatarUpdated -> modifySuccess
                     }
-                    showShortToast(message)
+                    GlobalToasts.show(message, level = GlobalToasts.ToastLevel.SUCCESS)
                 }
 
                 WebsiteState.Loading -> Unit
@@ -207,6 +205,7 @@ private fun AccountContent(
     val isUpdatingPassword = submittingState == UserAccountSubmittingState.UpdatingPassword
     val isUpdatingAvatar = submittingState == UserAccountSubmittingState.UpdatingAvatar
     val isSubmitting = submittingState != UserAccountSubmittingState.Idle
+    val passwordNotMatch = stringResource(R.string.password_not_match)
 
     Column(
         modifier = Modifier
@@ -445,7 +444,7 @@ private fun AccountContent(
                 Button(
                     onClick = {
                         if (newPassword != newPasswordConfirm) {
-                            showShortToast(R.string.password_not_match)
+                            GlobalToasts.show(passwordNotMatch, level = GlobalToasts.ToastLevel.WARNING)
                         } else {
                             onUpdatePassword(oldPassword, newPassword, newPasswordConfirm)
                             oldPassword = ""

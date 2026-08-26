@@ -333,6 +333,7 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
     }
 
     private val _modifyMyListFlow = MutableSharedFlow<WebsiteState<Unit>>()
+    val modifyMyListFlow = _modifyMyListFlow.asSharedFlow()
 
     fun modifyMyList(
         listCode: String,

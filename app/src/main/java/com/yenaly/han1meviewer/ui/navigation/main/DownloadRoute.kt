@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
@@ -15,6 +16,7 @@ import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.screen.home.DownloadScreen
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadEvent
 import com.yenaly.han1meviewer.ui.viewmodel.DownloadViewModel
@@ -24,7 +26,6 @@ import com.yenaly.han1meviewer.util.SafFileManager.scanAndImportHanimeDownloads
 import com.yenaly.han1meviewer.util.openDownloadedHanimeVideoLocally
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import com.yenaly.yenaly_libs.utils.application
-import com.yenaly.yenaly_libs.utils.showLongToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -44,6 +45,12 @@ fun DownloadRouteScreen(
     var showImportDownloadedConfirm by remember { mutableStateOf(false) }
     var isImportingDownloaded by remember { mutableStateOf(false) }
 
+    val selectCustomDirectory = stringResource(R.string.select_custom_directory)
+    val groupNameEmpty = stringResource(R.string.group_name_empty)
+    val deleteSuccess = stringResource(R.string.delete_success)
+    val readSuccess = stringResource(R.string.read_success)
+    val permissionError = stringResource(R.string.permission_error)
+
     val handleEvent: (DownloadEvent) -> Unit = { event ->
         when (event) {
             is DownloadEvent.OnPauseAll -> event.items.forEach { entity ->
@@ -62,7 +69,7 @@ fun DownloadRouteScreen(
                 ) {
                     showImportDownloadedConfirm = true
                 } else {
-                    showLongToast(application.getString(R.string.select_custom_directory))
+                    GlobalToasts.show(selectCustomDirectory, level = GlobalToasts.ToastLevel.WARNING)
                 }
             }
 
@@ -85,21 +92,21 @@ fun DownloadRouteScreen(
 
             is DownloadEvent.OnRenameGroup -> {
                 viewModel.updateGroupName(event.groupId, event.newName)
-                showLongToast(application.getString(R.string.group_renamed, event.newName))
+                GlobalToasts.show(application.getString(R.string.group_renamed, event.newName), level = GlobalToasts.ToastLevel.INFO)
             }
 
             is DownloadEvent.OnCreateGroup -> {
                 if (event.name.isBlank()) {
-                    showLongToast(application.getString(R.string.group_name_empty))
+                    GlobalToasts.show(groupNameEmpty, level = GlobalToasts.ToastLevel.WARNING)
                 } else {
                     viewModel.createNewGroup(event.name)
-                    showLongToast(application.getString(R.string.create_group_success, event.name))
+                    GlobalToasts.show(application.getString(R.string.create_group_success, event.name), level = GlobalToasts.ToastLevel.SUCCESS)
                 }
             }
 
             is DownloadEvent.OnDeleteGroup -> {
                 viewModel.deleteGroup(event.group)
-                showLongToast(application.getString(R.string.delete_success))
+                GlobalToasts.show(deleteSuccess, level = GlobalToasts.ToastLevel.SUCCESS)
             }
 
             is DownloadEvent.OnBatchDelete -> event.videos.forEach { video ->
@@ -163,9 +170,9 @@ fun DownloadRouteScreen(
                         sortedBy = HanimeDownloadEntity.SortedBy.ID,
                         ascending = false,
                     )
-                    showLongToast(application.getString(R.string.read_success))
+                    GlobalToasts.show(readSuccess, level = GlobalToasts.ToastLevel.SUCCESS)
                 } else {
-                    showLongToast(application.getString(R.string.permission_error))
+                    GlobalToasts.show(permissionError, level = GlobalToasts.ToastLevel.ERROR)
                 }
             }
         },

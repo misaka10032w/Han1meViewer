@@ -1,34 +1,34 @@
 [versions]
 # Plugins
-aboutlibraries = "14.2.0"
-androidGradle = "9.2.1"
+aboutlibraries = "15.0.4"
+androidGradle = "9.3.1"
 biometric = "1.1.0"
-coilCompose = "3.4.0"
+coilCompose = "3.5.0"
 composeAvatarCropper = "1.0.0"
 coreSplashscreen = "1.2.0"
 crashx = "7.0.1"
-kotlin = "2.3.21"
+kotlin = "2.4.10"
 materialIconsCore = "1.7.8"
-serializationPlugin = "2.3.21"
-ksp = "2.3.2"
+serializationPlugin = "2.4.10"
+ksp = "2.3.11"
 drawerlayout = "1.2.0"
 safeargs = "2.9.8"
 # Dependencies
 about = "2.5.2"
-coreKtx = "1.18.0"
-appcompat = "1.7.1"
+coreKtx = "1.19.0"
+appcompat = "1.8.0"
 material = "1.14.0"
 coroutinesAndroid = "1.11.0"
 activity = "1.13.0"
-fragment = "1.8.9"
-constraintLayout = "2.2.1"
+fragment = "1.9.0"
+constraintLayout = "2.2.2"
 recyclerView = "1.4.0"
 expandableTextView = "v1.6.1-x"
-baseRecyclerViewAdapterHelper4 = "4.4.0"
+baseRecyclerViewAdapterHelper4 = "4.4.1"
 multiType = "4.3.0"
-lifecycleViewModelKtx = "2.10.0"
-lifecycleRuntimeKtx = "2.10.0"
-lifecycleLiveDataKtx = "2.10.0"
+lifecycleViewModelKtx = "2.11.0"
+lifecycleRuntimeKtx = "2.11.0"
+lifecycleLiveDataKtx = "2.11.0"
 roomRuntime = "2.8.4"
 roomKtx = "2.8.4"
 roomCompiler = "2.8.4"
@@ -45,22 +45,23 @@ spannableX = "1.0.4"
 datetime = "0.8.0"
 serialization = "1.11.0"
 gson = "2.14.0"
-jsoup = "1.22.2"
+jsoup = "1.23.1"
 retrofit = "3.0.0"
 converterSerialization = "1.0.0"
 coil = "2.7.0"
-okhttp = "5.3.2"
+okhttp = "5.4.0"
 jiaoziVideoPlayer = "7.7.2.3300"
 junit = "4.13.2"
 testJunit = "1.3.0"
 testEspressoCore = "3.7.0"
 guava = "33.6.0-android"
-exoplayer = "1.10.1"
+exoplayer = "1.11.0"
 circularRevealSwitch = "0.4.6"
 desugarJdkLibs = "2.1.5"
-firebaseBom = "34.13.0"
-composeBom = "2026.05.01"
-compose-material3 = "1.5.0-alpha20"
+firebaseBom = "34.17.0"
+composeBom = "2026.08.00"
+compose-material3 = "1.5.0-alpha26"
+ui-test-junit4 = "1.12.0"
 mpv = "v0.1.7"
 
 [libraries]
@@ -156,7 +157,7 @@ firebase-config = { group = "com.google.firebase", name = "firebase-config" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 androidx-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
-androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "ui-test-junit4" }
 
 [bundles]
 
@@ -184,7 +185,7 @@ com-android-library = { id = "com.android.library", version.ref = "androidGradle
 com-google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 org-jetbrains-kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "serializationPlugin" }
 org-jetbrains-kotlin-plugin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
-com-google-gms-google-services = { id = "com.google.gms.google-services", version = "4.4.4" }
+com-google-gms-google-services = { id = "com.google.gms.google-services", version = "4.5.0" }
 com-google-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version = "3.0.7" }
 com-google-firebase-firebase-pref = { id = "com.google.firebase.firebase-perf", version = "2.0.2" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

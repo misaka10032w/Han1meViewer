@@ -41,7 +41,7 @@ import com.yenaly.han1meviewer.USER_AGENT
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.util.AnimeShaders
 import com.yenaly.han1meviewer.util.AnimeShaders.getCert
-import com.yenaly.yenaly_libs.utils.showShortToast
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import `is`.xyz.mpv.MPVLib
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -623,7 +623,7 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
                 MPVLib.setOptionString(key, value)
             }
         } catch (e: Exception){
-            showShortToast(e.message)
+            GlobalToasts.show(e.message.orEmpty(), level = GlobalToasts.ToastLevel.ERROR)
         }
 
         observedProperties.forEach { (name, type) ->

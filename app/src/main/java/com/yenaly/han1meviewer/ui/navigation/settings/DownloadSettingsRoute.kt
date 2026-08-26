@@ -2,7 +2,6 @@ package com.yenaly.han1meviewer.ui.navigation.settings
 
 import android.Manifest
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -10,6 +9,13 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -17,8 +23,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
@@ -29,12 +37,12 @@ import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
 import com.yenaly.han1meviewer.logic.network.interceptor.SpeedLimitInterceptor
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.TripleButtonDialog
 import com.yenaly.han1meviewer.ui.screen.settings.DownloadSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.DownloadSettingsUiState
 import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.util.SafFileManager.KEY_TREE_URI
-import com.yenaly.han1meviewer.util.showToast
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 
 private const val DOWNLOAD_COUNT_LIMIT = "download_count_limit"
@@ -49,8 +57,20 @@ fun DownloadSettingsRouteScreen(
     var refreshKey by remember { mutableIntStateOf(0) }
     var showDownloadPathDialog by remember { mutableStateOf(false) }
     var showRestoreDefaultConfirm by remember { mutableStateOf(false) }
+    var showStoragePermissionDialog by remember { mutableStateOf(false) }
+    var showImportConfirm by remember { mutableStateOf(false) }
+    var showImportPathHint by remember { mutableStateOf(false) }
+    var showImportProgress by remember { mutableStateOf(false) }
+    var importMigrated by remember { mutableIntStateOf(0) }
+    var importTotal by remember { mutableIntStateOf(0) }
     val dao = remember { DownloadDatabase.instance.hanimeDownloadDao }
     val uiState = remember(refreshKey, context) { buildDownloadSettingsUiState(context) }
+
+    val noDirectorySelected = stringResource(R.string.no_directory_selected)
+    val storagePermissionDenied = stringResource(R.string.storage_permission_denied_toast)
+    val defaultPathRestored = stringResource(R.string.default_path_restored)
+    val noExportableFiles = stringResource(R.string.no_exportable_files)
+    val permissionError = stringResource(R.string.permission_error)
 
     val openDirectoryPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -58,10 +78,10 @@ fun DownloadSettingsRouteScreen(
         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
             SafFileManager.persistUriPermission(context, result.data)
             Preferences.preferenceSp.edit { putBoolean(DOWNLOAD_USE_PRIVATE_STORAGE, false) }
-            context.showToast(R.string.directory_saved, result.data.toString())
+            GlobalToasts.show(context.getString(R.string.directory_saved, result.data.toString()), level = GlobalToasts.ToastLevel.SUCCESS)
             refreshKey++
         } else {
-            context.showToast(R.string.no_directory_selected)
+            GlobalToasts.show(noDirectorySelected, level = GlobalToasts.ToastLevel.INFO)
         }
     }
 
@@ -71,19 +91,9 @@ fun DownloadSettingsRouteScreen(
         if (granted) return@rememberLauncherForActivityResult
         val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
         if (activity.shouldShowRequestPermissionRationale(permission)) {
-            context.showToast(R.string.storage_permission_denied_toast)
+            GlobalToasts.show(storagePermissionDenied, level = GlobalToasts.ToastLevel.WARNING)
         } else {
-            AlertDialog.Builder(context)
-                .setTitle(R.string.permission_permanently_denied_title)
-                .setMessage(R.string.storage_permission_settings_message)
-                .setPositiveButton(R.string.go_to_settings) { _, _ ->
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = "package:${context.packageName}".toUri()
-                    }
-                    context.startActivity(intent)
-                }
-                .setNegativeButton(R.string.cancel, null)
-                .show()
+            showStoragePermissionDialog = true
         }
     }
 
@@ -107,7 +117,14 @@ fun DownloadSettingsRouteScreen(
         onOpenDownloadPath = { showDownloadPathDialog = true },
         onRestoreDefaultPath = { },
         onImportDownloadedFiles = {
-            importDownloadedFiles(context, activity, dao, onCompleted = { refreshKey++ })
+            if (!Preferences.isUsePrivateStorage &&
+                !Preferences.safDownloadPath.isNullOrBlank() &&
+                SafFileManager.checkSafPermissions(context)
+            ) {
+                showImportConfirm = true
+            } else {
+                showImportPathHint = true
+            }
         },
         onDownloadCountLimitChange = { value ->
             Preferences.preferenceSp.edit { putInt(DOWNLOAD_COUNT_LIMIT, value) }
@@ -167,10 +184,101 @@ fun DownloadSettingsRouteScreen(
             }
             refreshKey++
             showRestoreDefaultConfirm = false
-            context.showToast(R.string.default_path_restored)
+            GlobalToasts.show(defaultPathRestored, level = GlobalToasts.ToastLevel.SUCCESS)
         },
         onDismiss = { showRestoreDefaultConfirm = false },
     )
+
+    ConfirmDialog(
+        visible = showStoragePermissionDialog,
+        title = stringResource(R.string.permission_permanently_denied_title),
+        message = stringResource(R.string.storage_permission_settings_message),
+        confirmText = stringResource(R.string.go_to_settings),
+        dismissText = stringResource(R.string.cancel),
+        onConfirm = {
+            showStoragePermissionDialog = false
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = "package:${context.packageName}".toUri()
+            }
+            context.startActivity(intent)
+        },
+        onDismiss = { showStoragePermissionDialog = false },
+    )
+
+    ConfirmDialog(
+        visible = showImportConfirm,
+        title = stringResource(R.string.confirm_import),
+        message = stringResource(R.string.import_warning),
+        confirmText = stringResource(R.string.ok),
+        dismissText = stringResource(R.string.cancel),
+        onConfirm = {
+            showImportConfirm = false
+            showImportProgress = true
+            importMigrated = 0
+            importTotal = 0
+            SafFileManager.migratePrivateToSaf(context, dao) { migrated, total ->
+                when (total) {
+                    0 -> {
+                        showImportProgress = false
+                        GlobalToasts.show(noExportableFiles, level = GlobalToasts.ToastLevel.INFO)
+                    }
+
+                    -1 -> {
+                        showImportProgress = false
+                        GlobalToasts.show(permissionError, level = GlobalToasts.ToastLevel.ERROR)
+                    }
+
+                    else -> {
+                        importMigrated = migrated
+                        importTotal = total
+                        if (migrated == total) {
+                            showImportProgress = false
+                            GlobalToasts.show(context.getString(R.string.import_complete, total), level = GlobalToasts.ToastLevel.SUCCESS)
+                            refreshKey++
+                        }
+                    }
+                }
+            }
+        },
+        onDismiss = { showImportConfirm = false },
+    )
+
+    if (showImportPathHint) {
+        AlertDialog(
+            onDismissRequest = { showImportPathHint = false },
+            title = { Text(stringResource(R.string.specify_path_first)) },
+            text = { Text(stringResource(R.string.path_permission_message)) },
+            confirmButton = {
+                TextButton(onClick = { showImportPathHint = false }) {
+                    Text(stringResource(R.string.understood))
+                }
+            },
+        )
+    }
+
+    if (showImportProgress) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text(stringResource(R.string.import_progress)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.importing))
+                    LinearProgressIndicator(
+                        progress = {
+                            if (importTotal > 0) importMigrated.toFloat() / importTotal else 0f
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    val percent = if (importTotal > 0) importMigrated * 100 / importTotal else 0
+                    Text(
+                        stringResource(R.string.import_progress_format)
+                            .format(importMigrated, importTotal, percent)
+                    )
+                }
+            },
+            confirmButton = {},
+        )
+    }
 }
 
 private fun buildDownloadSettingsUiState(context: Context): DownloadSettingsUiState {

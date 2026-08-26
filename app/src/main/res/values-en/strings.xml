@@ -313,6 +313,7 @@ Some mirrors may not support login, may not share cookies, may fail verification
     <string name="fav_failed">Favorite Failed</string>
     <string name="cancel_fav">Cancel Favorite</string>
     <string name="already_in_queue">In Queue</string>
+    <string name="added_to_download_queue">Added to download queue</string>
     <string name="s_view_times">%1$s views</string>
     <string name="liked">Liked</string>
     <string name="cannot_download_here">Cannot download from here temporarily!</string>

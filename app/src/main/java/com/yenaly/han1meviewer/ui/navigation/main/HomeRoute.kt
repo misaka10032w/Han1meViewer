@@ -15,13 +15,13 @@ import com.yenaly.han1meviewer.logic.entity.CheckInType
 import com.yenaly.han1meviewer.logic.model.Announcement
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.screen.home.homepage.component.AnnouncementDialog
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.TripleButtonDialog
 import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageScreen
 import com.yenaly.han1meviewer.ui.screen.home.homepage.HomeUiEvent
 import com.yenaly.han1meviewer.ui.screen.home.homepage.LocalSearchHistoryQuery
 import com.yenaly.han1meviewer.ui.viewmodel.CheckInCalendarViewModel
 import com.yenaly.yenaly_libs.utils.copyTextToClipboard
-import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import java.time.LocalTime
@@ -44,6 +44,7 @@ fun HomeRouteScreen(
     val doMore = stringResource(R.string.do_more)
     val checkoutExit = stringResource(R.string.checkout_exit)
     val exit = stringResource(R.string.exit)
+    val copied = stringResource(R.string.copy_to_clipboard)
     var showExitDialog by remember { mutableStateOf(false) }
     var announcement by remember { mutableStateOf<Announcement?>(null) }
     CompositionLocalProvider(
@@ -63,7 +64,7 @@ fun HomeRouteScreen(
                     is HomeUiEvent.OpenVideo -> onNavigateToVideo(event.videoCode)
                     is HomeUiEvent.LongPressVideoCopy -> {
                         copyTextToClipboard(getHanimeShareText(event.videoTitle, event.videoCode))
-                        showShortToast(R.string.copy_to_clipboard)
+                        GlobalToasts.show(copied, level = GlobalToasts.ToastLevel.INFO)
                     }
                     is HomeUiEvent.ShowAnnouncementDialog -> { announcement = event.announcement }
                     is HomeUiEvent.ShowExitDialog -> { showExitDialog = true }

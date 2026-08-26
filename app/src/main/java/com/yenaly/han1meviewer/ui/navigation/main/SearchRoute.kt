@@ -6,14 +6,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.getHanimeShareText
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.screen.search.AdvancedSearchSheet
 import com.yenaly.han1meviewer.ui.screen.search.SearchScreen
 import com.yenaly.han1meviewer.ui.viewmodel.SearchViewModel
 import com.yenaly.yenaly_libs.utils.copyTextToClipboard
-import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.serialization.json.Json
 
 @Composable
@@ -24,6 +25,7 @@ fun SearchRouteScreen(
 ) {
     val viewModel: SearchViewModel = viewModel()
     var showAdvancedSearchSheet by remember { mutableStateOf(false) }
+    val copied = stringResource(R.string.copy_to_clipboard)
 
     LaunchedEffect(route.advancedSearchJson) {
         route.advancedSearchJson?.let { json ->
@@ -57,7 +59,7 @@ fun SearchRouteScreen(
         onOpenVideo = onNavigateToVideo,
         onLongPressCopy = { videoCode, title ->
             copyTextToClipboard(getHanimeShareText(title, videoCode))
-            showShortToast(R.string.copy_to_clipboard)
+            GlobalToasts.show(copied, level = GlobalToasts.ToastLevel.INFO)
         },
         onOpenAdvancedSearch = { showAdvancedSearchSheet = true },
     )

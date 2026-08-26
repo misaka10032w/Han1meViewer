@@ -24,6 +24,7 @@ import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.screen.settings.HKeyframeSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.HKeyframeSettingsUiState
 import com.yenaly.han1meviewer.ui.screen.settings.HKeyframesScreen
@@ -31,7 +32,6 @@ import com.yenaly.han1meviewer.ui.screen.settings.SharedHKeyframesScreen
 import com.yenaly.han1meviewer.ui.viewmodel.SettingsViewModel
 import com.yenaly.yenaly_libs.utils.copyToClipboard
 import com.yenaly.yenaly_libs.utils.decodeFromStringByBase64
-import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.serialization.json.Json
 
 private const val H_KEYFRAMES_ENABLE = "h_keyframes_enable"
@@ -61,6 +61,11 @@ fun HKeyframesRouteScreen(
         .collectAsStateWithLifecycle(initialValue = emptyList())
     var sharedHKeyframeEntity by remember { mutableStateOf<HKeyframeEntity?>(null) }
 
+    val notDetected = stringResource(R.string.h_keyframes_shared_by_other_not_detected)
+    val modifySuccess = stringResource(R.string.modify_success)
+    val deleteSuccess = stringResource(R.string.delete_success)
+    val copied = stringResource(R.string.copy_to_clipboard)
+
     if (showImportDialog) {
         ImportSharedHKeyframeDialog(
             onDismiss = onImportDialogDismiss,
@@ -70,7 +75,7 @@ fun HKeyframesRouteScreen(
                     sharedHKeyframeEntity = entity
                     onImportDialogDismiss()
                 } else {
-                    showShortToast(R.string.h_keyframes_shared_by_other_not_detected)
+                    GlobalToasts.show(notDetected, level = GlobalToasts.ToastLevel.WARNING)
                 }
             },
         )
@@ -84,19 +89,19 @@ fun HKeyframesRouteScreen(
         },
         onUpdateEntityTitle = { entity, newTitle ->
             viewModel.updateHKeyframes(entity.copy(title = newTitle))
-            showShortToast(R.string.modify_success)
+            GlobalToasts.show(modifySuccess, level = GlobalToasts.ToastLevel.SUCCESS)
         },
         onDeleteKeyframe = { videoCode, keyframe ->
             viewModel.removeHKeyframe(videoCode, keyframe)
-            showShortToast(R.string.delete_success)
+            GlobalToasts.show(deleteSuccess, level = GlobalToasts.ToastLevel.SUCCESS)
         },
         onUpdateKeyframe = { videoCode, oldKeyframe, newKeyframe ->
             viewModel.modifyHKeyframe(videoCode, oldKeyframe, newKeyframe)
-            showShortToast(R.string.modify_success)
+            GlobalToasts.show(modifySuccess, level = GlobalToasts.ToastLevel.SUCCESS)
         },
         onCopyShareContent = {
             it.copyToClipboard()
-            showShortToast(R.string.copy_to_clipboard)
+            GlobalToasts.show(copied, level = GlobalToasts.ToastLevel.INFO)
         },
     )
 

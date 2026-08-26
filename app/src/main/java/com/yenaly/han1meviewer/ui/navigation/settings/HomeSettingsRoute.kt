@@ -1,19 +1,26 @@
 package com.yenaly.han1meviewer.ui.navigation.settings
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.os.Build
+import android.provider.Settings
 import android.text.method.LinkMovementMethod
 import android.widget.TextView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -39,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.edit
+import androidx.core.net.toUri
 import androidx.core.text.parseAsHtml
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.firebase.Firebase
@@ -54,6 +62,7 @@ import com.yenaly.han1meviewer.logic.BackupManager
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.screen.settings.HomeSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.LicenseDialog
 import com.yenaly.han1meviewer.ui.screen.settings.model.HomeSettingsUiState
@@ -64,12 +73,10 @@ import com.yenaly.han1meviewer.ui.screen.home.homepage.saveHomeCategoryPreferenc
 import com.yenaly.han1meviewer.ui.theme.ThemeColorPreset
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.util.ThemeUtils
-import com.yenaly.han1meviewer.util.showToast
 import com.yenaly.yenaly_libs.ActivityManager
 import com.yenaly.yenaly_libs.utils.applicationContext
 import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.folderSize
-import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -102,6 +109,8 @@ private const val HOME_HORIZONTAL_CARD_COUNT_COMPACT = "horizontal_card_count_co
 private const val HOME_HORIZONTAL_CARD_COUNT_MEDIUM = "horizontal_card_count_medium"
 private const val HOME_HORIZONTAL_CARD_COUNT_EXPANDED = "horizontal_card_count_expanded"
 
+@SuppressLint("LocalContextGetResourceValueCall")
+@RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeSettingsRouteScreen(
@@ -121,7 +130,20 @@ fun HomeSettingsRouteScreen(
     var showRestartConfirmDialog by remember { mutableStateOf(false) }
     var showAnalyticsDialog by remember { mutableStateOf(false) }
     var showLauncherPicker by remember { mutableStateOf(false) }
+    var showApplyDeepLinksDialog by remember { mutableStateOf(false) }
     var pendingImportUri by remember { mutableStateOf<android.net.Uri?>(null) }
+
+    val backupExportSuccess = stringResource(R.string.backup_export_success)
+    val backupExportFailed = stringResource(R.string.backup_export_failed)
+    val requestPipAlert = stringResource(R.string.request_pip_alert)
+    val notSetSysLock = stringResource(R.string.not_set_sys_lock)
+    val cacheEmpty = stringResource(R.string.cache_empty)
+    val backupImportSuccess = stringResource(R.string.backup_import_success)
+    val backupImportFailed = stringResource(R.string.backup_import_failed)
+    val clearSuccess = stringResource(R.string.clear_success)
+    val clearFailed = stringResource(R.string.clear_failed)
+    val fakeIconHint = stringResource(R.string.fake_icon_hint)
+    val actionNotSupport = stringResource(R.string.action_app_open_by_default_settings_not_support)
 
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
@@ -129,8 +151,8 @@ fun HomeSettingsRouteScreen(
         uri ?: return@rememberLauncherForActivityResult
         coroutineScope.launch(Dispatchers.IO) {
             runCatching { BackupManager.exportTo(context, uri) }
-                .onSuccess { withContext(Dispatchers.Main) { showShortToast(R.string.backup_export_success) } }
-                .onFailure { withContext(Dispatchers.Main) { showShortToast(R.string.backup_export_failed) } }
+                .onSuccess { withContext(Dispatchers.Main) { GlobalToasts.show(backupExportSuccess, level = GlobalToasts.ToastLevel.SUCCESS) } }
+                .onFailure { withContext(Dispatchers.Main) { GlobalToasts.show(backupExportFailed, level = GlobalToasts.ToastLevel.ERROR) } }
         }
     }
     val importLauncher = rememberLauncherForActivityResult(
@@ -214,7 +236,7 @@ fun HomeSettingsRouteScreen(
         onVideoQualityChange = { value ->
             saveString(HOME_DEFAULT_VIDEO_QUALITY, value)
             refreshKey++
-            context.showToast(R.string.success_value, value)
+            GlobalToasts.show(context.getString(R.string.success_value, value), level = GlobalToasts.ToastLevel.SUCCESS)
         },
         onDarkModeChange = { value ->
             if (value != Preferences.useDarkMode) {
@@ -225,7 +247,7 @@ fun HomeSettingsRouteScreen(
         },
         onAllowPipModeChange = { enabled ->
             if (enabled && !isPipPermissionGranted(context)) {
-                context.showToast(R.string.request_pip_alert)
+                GlobalToasts.show(requestPipAlert, level = GlobalToasts.ToastLevel.WARNING)
                 openPipPermissionSettings(context)
                 saveBoolean(HOME_ALLOW_PIP_MODE, false)
                 refreshKey++
@@ -306,12 +328,7 @@ fun HomeSettingsRouteScreen(
         onUseLockScreenChange = { value ->
             if (value) {
                 if (!isDeviceSecureCompat(context)) {
-                    context.showToast(R.string.not_set_sys_lock)
-                    refreshKey++
-                    return@HomeSettingsScreen
-                }
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
-                    context.showToast(R.string.not_compact_lock_screen)
+                    GlobalToasts.show(notSetSysLock, level = GlobalToasts.ToastLevel.WARNING)
                     refreshKey++
                     return@HomeSettingsScreen
                 }
@@ -344,11 +361,7 @@ fun HomeSettingsRouteScreen(
             refreshKey++
         },
         onOpenApplyDeepLinks = {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-                showShortToast(R.string.action_app_open_by_default_settings_not_support)
-            } else {
-                showApplyDeepLinksDialog(context, activity)
-            }
+            showApplyDeepLinksDialog = true
         },
         onOpenFakeLauncherIcon = { showLauncherPicker = true },
         onOpenOpenSourceLicense = { showLicenseScreen = true },
@@ -357,7 +370,7 @@ fun HomeSettingsRouteScreen(
             val cacheDir = context.cacheDir
             val folderSize = cacheDir?.folderSize ?: 0L
             if (folderSize == 0L) {
-                showShortToast(R.string.cache_empty)
+                GlobalToasts.show(cacheEmpty, level = GlobalToasts.ToastLevel.INFO)
                 return@HomeSettingsScreen
             }
             showClearCacheConfirm = true
@@ -385,14 +398,14 @@ fun HomeSettingsRouteScreen(
                 runCatching { BackupManager.importFrom(context, uri) }
                     .onSuccess {
                         withContext(Dispatchers.Main) {
-                            showShortToast(R.string.backup_import_success)
+                            GlobalToasts.show(backupImportSuccess, level = GlobalToasts.ToastLevel.SUCCESS)
                             refreshKey++
                             activity.recreate()
                         }
                     }
                     .onFailure {
                         withContext(Dispatchers.Main) {
-                            showShortToast(R.string.backup_import_failed)
+                            GlobalToasts.show(backupImportFailed, level = GlobalToasts.ToastLevel.ERROR)
                         }
                     }
             }
@@ -414,7 +427,11 @@ fun HomeSettingsRouteScreen(
                 withContext(Dispatchers.Main) {
                     cacheKey++
                     refreshKey++
-                    if (success) showShortToast(R.string.clear_success) else showShortToast(R.string.clear_failed)
+                    if (success) {
+                        GlobalToasts.show(clearSuccess, level = GlobalToasts.ToastLevel.SUCCESS)
+                    } else {
+                        GlobalToasts.show(clearFailed, level = GlobalToasts.ToastLevel.ERROR)
+                    }
                 }
             }
         },
@@ -500,7 +517,7 @@ fun HomeSettingsRouteScreen(
                                 (context.applicationContext as? HanimeApplication)?.switchLauncher(
                                     item.alias
                                 )
-                                context.showToast(R.string.fake_icon_hint)
+                                GlobalToasts.show(fakeIconHint, level = GlobalToasts.ToastLevel.INFO)
                                 refreshKey++
                                 showLauncherPicker = false
                             },
@@ -524,6 +541,51 @@ fun HomeSettingsRouteScreen(
                 }
             }
         }
+    }
+
+    if (showApplyDeepLinksDialog) {
+        AlertDialog(
+            onDismissRequest = { showApplyDeepLinksDialog = false },
+            title = { Text(stringResource(R.string.apply_deep_links)) },
+            text = {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(stringResource(R.string.apply_deep_links_summary))
+                    Text(stringResource(R.string.apply_deep_links_tips))
+                    Image(
+                        painter = painterResource(R.drawable.apply_deep_links),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showApplyDeepLinksDialog = false
+                    try {
+                        val intent = Intent().apply {
+                            action = Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS
+                            addCategory(Intent.CATEGORY_DEFAULT)
+                            data = "package:${context.packageName}".toUri()
+                            flags = Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+                        }
+                        activity.startActivity(intent)
+                    } catch (e: Exception) {
+                        GlobalToasts.show(actionNotSupport, level = GlobalToasts.ToastLevel.WARNING)
+                        e.printStackTrace()
+                    }
+                }) {
+                    Text(stringResource(R.string.go_to_settings))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showApplyDeepLinksDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            },
+        )
     }
 }
 

@@ -24,9 +24,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import com.mikepenz.aboutlibraries.ui.compose.LibraryDefaults
 import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
+import com.mikepenz.aboutlibraries.ui.compose.style.LibraryActionBadges
+import com.mikepenz.aboutlibraries.ui.compose.variant.LibraryBadges
 import com.yenaly.han1meviewer.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,14 +70,8 @@ fun LicenseDialog(
                         LibrariesContainer(
                             libraries = libraries,
                             modifier = Modifier,
-                            libraryModifier = Modifier
-                                .clip(MaterialTheme.shapes.large)
-                                .background(MaterialTheme.colorScheme.surface),
-                            dimensions = LibraryDefaults.libraryDimensions(
-                                itemSpacing = 8.dp
-                            ),
-                            showDescription = true,
-                            showFundingBadges = true
+                            badges = LibraryBadges(description = true, funding = true),
+                            actionLabels = LibraryActionBadges(sourceEnabled = false)
                         )
                     }
 

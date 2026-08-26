@@ -9,6 +9,7 @@ import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Headers
 import retrofit2.http.HTTP
 import retrofit2.http.Multipart
 import retrofit2.http.POST
@@ -108,12 +109,10 @@ interface HanimeMyListService {
         @Query("page") page: Int
     ): Response<ResponseBody>
 
-    @FormUrlEncoded
-    @POST("deletePlayitem")
+    @Headers("Accept: application/json")
+    @HTTP(method = "DELETE", path = "playlist/items/{itemId}", hasBody = false)
     suspend fun deleteMyListItems(
-        @Field("playlist_id") listType: String,
-        @Field("video_id") videoCode: String,
-        @Field("count") count: Int = 1, // 隨便傳一個就行
+        @Path("itemId") itemId: String,
         @Header("X-CSRF-TOKEN") csrfToken: String?,
     ): Response<ResponseBody>
 

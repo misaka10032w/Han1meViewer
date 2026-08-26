@@ -4,8 +4,8 @@ import android.annotation.SuppressLint
 import android.app.Notification
 import android.content.Context
 import android.content.pm.ServiceInfo
-import android.os.ParcelFileDescriptor
 import android.os.Build
+import android.os.ParcelFileDescriptor
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -30,12 +30,12 @@ import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.network.ServiceCreator
 import com.yenaly.han1meviewer.logic.state.DownloadState
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.util.HImageMeower
 import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.util.await
 import com.yenaly.yenaly_libs.utils.createFileIfNotExists
 import com.yenaly.yenaly_libs.utils.saveTo
-import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -51,14 +51,13 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.io.OutputStream
 import java.io.RandomAccessFile
-import java.nio.ByteBuffer
-import java.nio.channels.FileChannel
 import java.net.ConnectException
+import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
-import java.net.SocketException
+import java.nio.ByteBuffer
+import java.nio.channels.FileChannel
 import java.util.concurrent.CancellationException
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
@@ -296,8 +295,9 @@ class HanimeDownloadWorker(
                             val reason = context.getString(R.string.download_error_file_info)
                             showFailureNotification(reason)
                             mainScope.launch {
-                                showShortToast(
-                                    context.getString(R.string.download_task_failed_s_reason_s, hanimeName, reason)
+                                GlobalToasts.show(
+                                    context.getString(R.string.download_task_failed_s_reason_s, hanimeName, reason),
+                                    level = GlobalToasts.ToastLevel.ERROR,
                                 )
                             }
                             Result.failure(workDataOf(DownloadState.STATE to DownloadState.Failed.mask))
@@ -378,7 +378,7 @@ class HanimeDownloadWorker(
                         val reason = response.toDownloadErrorMessage(requestNeedRange)
                         showFailureNotification(reason)
                         mainScope.launch {
-                            showShortToast(context.getString(R.string.download_task_failed_s_reason_s, hanimeName, reason))
+                            GlobalToasts.show(context.getString(R.string.download_task_failed_s_reason_s, hanimeName, reason), level = GlobalToasts.ToastLevel.ERROR)
                         }
                         result = Result.failure(workDataOf(DownloadState.STATE to DownloadState.Failed.mask))
                         return@withContext result
@@ -393,9 +393,7 @@ class HanimeDownloadWorker(
                         while (len != -1) {
                             if (raf != null) {
                                 raf.write(buffer, 0, len)
-                            } else if (safChannel != null) {
-                                safChannel.writeFully(buffer, len)
-                            }
+                            } else safChannel?.writeFully(buffer, len)
                             downloadedLength += len
 
                             if (System.currentTimeMillis() - delayTime > RESPONSE_INTERVAL) {
@@ -440,7 +438,7 @@ class HanimeDownloadWorker(
             } catch (e: Exception) {
                 result = if (e is CancellationException || e.isStoppedCancellation()) {
                     cancelDownloadNotification()
-                    mainScope.launch { showShortToast(R.string.download_error_cancelled) }
+                    mainScope.launch { GlobalToasts.show(context.getString(R.string.download_error_cancelled), level = GlobalToasts.ToastLevel.INFO) }
                     Result.success(
                         workDataOf(DownloadState.STATE to DownloadState.Paused.mask)
                     )
@@ -448,7 +446,7 @@ class HanimeDownloadWorker(
                     val reason = e.toDownloadErrorMessage()
                     showRetryNotification(reason)
                     mainScope.launch {
-                        showShortToast(context.getString(R.string.download_task_retrying_s_reason_s, hanimeName, reason))
+                        GlobalToasts.show(context.getString(R.string.download_task_retrying_s_reason_s, hanimeName, reason), level = GlobalToasts.ToastLevel.WARNING)
                     }
                     shouldRetry = true
                     Result.retry()
@@ -457,7 +455,7 @@ class HanimeDownloadWorker(
                     showFailureNotification(reason)
                     e.printStackTrace()
                     mainScope.launch {
-                        showShortToast(context.getString(R.string.download_task_failed_s_reason_s, hanimeName, reason))
+                        GlobalToasts.show(context.getString(R.string.download_task_failed_s_reason_s, hanimeName, reason), level = GlobalToasts.ToastLevel.ERROR)
                     }
                     Result.failure(
                         workDataOf(DownloadState.STATE to DownloadState.Failed.mask)

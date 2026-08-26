@@ -8,10 +8,10 @@ import android.os.Build
 import android.provider.CalendarContract
 import android.view.View
 import android.view.WindowInsetsController
-import android.widget.Toast
 import androidx.compose.ui.graphics.Color
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.CheckInType
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -174,7 +174,7 @@ fun createCalendarEvent(context: Context, date: LocalDate) {
     try {
         context.startActivity(intent)
     } catch (_: android.content.ActivityNotFoundException) {
-        Toast.makeText(context, R.string.no_calendar_app, Toast.LENGTH_SHORT).show()
+        GlobalToasts.show(context.getString(R.string.no_calendar_app), level = GlobalToasts.ToastLevel.WARNING)
     }
 }
 

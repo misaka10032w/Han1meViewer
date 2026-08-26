@@ -11,9 +11,9 @@ import com.yenaly.han1meviewer.FILE_PROVIDER_AUTHORITY
 import com.yenaly.han1meviewer.HFileManager
 import com.yenaly.han1meviewer.HJson
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.yenaly_libs.utils.application
 import com.yenaly.yenaly_libs.utils.applicationContext
-import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
@@ -81,7 +81,7 @@ fun Context.openDownloadedHanimeVideoLocally(
         try {
             startActivity(intent)
         } catch (e: ActivityNotFoundException) {
-            showShortToast(R.string.action_not_support)
+            GlobalToasts.show(getString(R.string.action_not_support), level = GlobalToasts.ToastLevel.WARNING)
             e.printStackTrace()
         }
     } else {
@@ -98,7 +98,7 @@ fun Context.openDownloadedHanimeVideoLocally(
         try {
             startActivity(intent)
         } catch (e: ActivityNotFoundException) {
-            showShortToast(R.string.action_not_support)
+            GlobalToasts.show(getString(R.string.action_not_support), level = GlobalToasts.ToastLevel.WARNING)
             e.printStackTrace()
         }
     }

@@ -260,6 +260,9 @@ object Parser {
         }
         val infoBoxes = hanimeSearchItem.selectFirst(".stats-container .stat-item")
         val reviews = infoBoxes?.ownText()?.trim() ?: ""
+        val playlistItemId = hanimeSearchItem.id()
+            .takeIf { it.startsWith("playlist-item-") }
+            ?.substringAfter("playlist-item-")
         return HanimeInfo(
             title = title,
             coverUrl = coverUrl,
@@ -269,6 +272,7 @@ object Parser {
             views = views.logIfParseNull(Parser::hanimeNormalItemVer2.name, "views"),
             uploadTime = uploadTime,
             genre = null,
+            playlistItemId = playlistItemId,
             itemType = HanimeInfo.NORMAL,
             reviews = reviews
         )

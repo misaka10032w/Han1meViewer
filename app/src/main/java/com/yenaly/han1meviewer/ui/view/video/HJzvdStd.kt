@@ -1,8 +1,8 @@
 package com.yenaly.han1meviewer.ui.view.video
 
 import android.annotation.SuppressLint
-import android.content.res.ColorStateList
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
 import android.media.AudioFocusRequest
@@ -38,7 +38,6 @@ import androidx.core.view.isVisible
 import androidx.core.view.size
 import androidx.core.view.updatePadding
 import androidx.fragment.app.FragmentActivity
-import androidx.navigation.findNavController
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -56,9 +55,9 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.adapter.HKeyframeRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.SuperResolutionAdapter
 import com.yenaly.han1meviewer.ui.adapter.VideoSpeedAdapter
+import com.yenaly.han1meviewer.ui.component.GlobalDialogs
 import com.yenaly.han1meviewer.ui.navigation.main.HomeRoute
 import com.yenaly.han1meviewer.util.setStateViewLayout
-import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.OrientationManager
 import com.yenaly.yenaly_libs.utils.appScreenWidth
 import com.yenaly.yenaly_libs.utils.findActivityOrNull
@@ -747,7 +746,7 @@ class HJzvdStd @JvmOverloads constructor(
         return when (v.id) {
             R.id.tv_keyframe -> {
                 onKeyframeLongClickListener?.invoke(v)
-                return true
+                true
             }
             else -> false
         }
@@ -1014,18 +1013,22 @@ class HJzvdStd @JvmOverloads constructor(
     }
 
     override fun showWifiDialog() {
-        jzvdContext.showAlertDialog {
-            setTitle(R.string.warning)
-            setMessage(cn.jzvd.R.string.tips_not_wifi)
-            setPositiveButton(cn.jzvd.R.string.tips_not_wifi_confirm) { _, _ ->
-                WIFI_TIP_DIALOG_SHOWED = true
-                if (state == STATE_PAUSE) startButton.performClick() else startVideo()
-            }
-            setNegativeButton(cn.jzvd.R.string.tips_not_wifi_cancel) { _, _ ->
-                releaseAllVideos()
-                clearFloatScreen()
-            }
-        }
+        GlobalDialogs.show(
+            GlobalDialogs.ConfirmRequest(
+                title = jzvdContext.getString(R.string.warning),
+                message = jzvdContext.getString(cn.jzvd.R.string.tips_not_wifi),
+                confirmText = jzvdContext.getString(cn.jzvd.R.string.tips_not_wifi_confirm),
+                dismissText = jzvdContext.getString(cn.jzvd.R.string.tips_not_wifi_cancel),
+                onConfirm = {
+                    WIFI_TIP_DIALOG_SHOWED = true
+                    if (state == STATE_PAUSE) startButton.performClick() else startVideo()
+                },
+                onCancel = {
+                    releaseAllVideos()
+                    clearFloatScreen()
+                },
+            )
+        )
     }
 
     // 原來是 300 period 我改成了 100 爲了計時準確

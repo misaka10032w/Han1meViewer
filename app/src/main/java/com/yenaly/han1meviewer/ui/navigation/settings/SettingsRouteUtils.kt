@@ -2,36 +2,23 @@
 
 package com.yenaly.han1meviewer.ui.navigation.settings
 
-import android.app.Activity
 import android.app.AppOpsManager
 import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Process
-import android.provider.Settings
-import android.util.Log
 import androidx.annotation.IntRange
-import androidx.annotation.RequiresApi
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.core.text.parseAsHtml
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.progressindicator.LinearProgressIndicator
-import com.google.android.material.textview.MaterialTextView
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_HOSTNAME
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.logic.dao.download.HanimeDownloadDao
 import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
-import com.yenaly.han1meviewer.util.SafFileManager.checkSafPermissions
-import com.yenaly.han1meviewer.util.SafFileManager.migratePrivateToSaf
-import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.yenaly_libs.utils.formatBytesPerSecond
 import com.yenaly.yenaly_libs.utils.formatFileSizeV2
-import com.yenaly.yenaly_libs.utils.showLongToast
-import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -57,73 +44,6 @@ internal fun buildDomainOptions(context: Context): List<Pair<String, String>> = 
     "${HANIME_HOSTNAME[2]} (${context.getString(R.string.alternative)})" to HANIME_URL[2],
     "${HANIME_HOSTNAME[3]} (av)" to HANIME_URL[3],
 )
-
-internal fun importDownloadedFiles(
-    context: Context,
-    activity: Activity,
-    dao: HanimeDownloadDao,
-    onCompleted: () -> Unit,
-) {
-    if (!Preferences.isUsePrivateStorage &&
-        !Preferences.safDownloadPath.isNullOrBlank() &&
-        checkSafPermissions(context)
-    ) {
-        MaterialAlertDialogBuilder(context)
-            .setTitle(context.getString(R.string.confirm_import))
-            .setMessage(context.getString(R.string.import_warning))
-            .setPositiveButton(R.string.ok) { _, _ ->
-                val dialogView =
-                    activity.layoutInflater.inflate(R.layout.layout_dialog_progress, null, false)
-                val titleTv = dialogView.findViewById<MaterialTextView>(R.id.progress_title)
-                val percentTv = dialogView.findViewById<MaterialTextView>(R.id.progress_value)
-                val progressBar =
-                    dialogView.findViewById<LinearProgressIndicator>(R.id.progress_bar)
-
-                val progressDialog = MaterialAlertDialogBuilder(context)
-                    .setTitle(context.getString(R.string.import_progress))
-                    .setView(dialogView)
-                    .setCancelable(false)
-                    .create()
-                progressDialog.show()
-                migratePrivateToSaf(context, dao) { migrated, total ->
-                    Log.i("migrate", "$migrated,$total")
-                    when (total) {
-                        0 -> {
-                            progressDialog.dismiss()
-                            showLongToast(context.getString(R.string.no_exportable_files))
-                            return@migratePrivateToSaf
-                        }
-
-                        -1 -> {
-                            progressDialog.dismiss()
-                            showLongToast(context.getString(R.string.permission_error))
-                            return@migratePrivateToSaf
-                        }
-                    }
-                    val percent = migrated * 100 / total
-                    titleTv.text = context.getString(R.string.importing)
-                    progressBar.max = 100
-                    progressBar.progress = percent
-                    percentTv.text = context.getString(R.string.import_progress_format)
-                        .format(migrated, total, percent)
-
-                    if (migrated == total) {
-                        progressDialog.dismiss()
-                        showLongToast(context.getString(R.string.import_complete, total))
-                        onCompleted()
-                    }
-                }
-            }
-            .setNegativeButton(context.getString(R.string.cancel), null)
-            .show()
-    } else {
-        context.showAlertDialog {
-            setTitle(context.getString(R.string.specify_path_first))
-            setMessage(context.getString(R.string.path_permission_message))
-            setPositiveButton(R.string.understood) { _, _ -> }
-        }
-    }
-}
 
 internal fun generateClearCacheSummary(context: Context, size: Long): CharSequence {
     return context.getString(R.string.cache_usage_summary, size.formatFileSizeV2()).parseAsHtml()
@@ -215,26 +135,3 @@ internal fun openPipPermissionSettings(context: Context) {
     context.startActivity(intent)
 }
 
-@RequiresApi(Build.VERSION_CODES.S)
-internal fun showApplyDeepLinksDialog(context: Context, activity: Activity) {
-    context.showAlertDialog {
-        setTitle(R.string.apply_deep_links)
-        setView(R.layout.dialog_apply_deep_links)
-        setPositiveButton(R.string.go_to_settings) { _, _ ->
-            try {
-                val intent = Intent().apply {
-                    action = Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS
-                    addCategory(Intent.CATEGORY_DEFAULT)
-                    data = "package:${context.packageName}".toUri()
-                    flags =
-                        Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
-                }
-                activity.startActivity(intent)
-            } catch (e: Exception) {
-                showShortToast(R.string.action_app_open_by_default_settings_not_support)
-                e.printStackTrace()
-            }
-        }
-        setNegativeButton(R.string.cancel, null)
-    }
-}

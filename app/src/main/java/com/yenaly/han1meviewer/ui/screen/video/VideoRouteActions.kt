@@ -3,7 +3,6 @@ package com.yenaly.han1meviewer.ui.screen.video
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import android.widget.Toast
 import androidx.core.net.toUri
 import com.yenaly.han1meviewer.HAdvancedSearch
 import com.yenaly.han1meviewer.HCacheManager
@@ -14,16 +13,15 @@ import com.yenaly.han1meviewer.getHanimeVideoLink
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.main.SearchRoute
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.requestPostNotificationPermission
-import com.yenaly.han1meviewer.util.showAlertDialog
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import com.yenaly.han1meviewer.worker.HanimeDownloadWorker
 import com.yenaly.yenaly_libs.utils.browse
 import com.yenaly.yenaly_libs.utils.copyToClipboard
-import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -44,8 +42,9 @@ class VideoRouteActions(
     private val onPendingDownloadPromptChange: (DownloadPromptState?) -> Unit,
     private val getCheckedQuality: () -> String?,
     private val setCheckedQuality: (String?) -> Unit,
-    private val onStoragePermissionDenied: () -> Unit = {},
-    private val onDownloadPermissionDialogCancelled: () -> Unit = {},
+    private val onStoragePermissionDenied: () -> Unit,
+    private val onRequestUnsubscribeConfirm: (HanimeVideo.Artist) -> Unit,
+    private val onRequestDownloadPermissionSettings: () -> Unit,
 ) {
     fun openArtistSearch(artist: HanimeVideo.Artist) {
         val searchKey = genres.firstOrNull { option ->
@@ -77,26 +76,24 @@ class VideoRouteActions(
     fun toggleArtistSubscription(artist: HanimeVideo.Artist) {
         val post = artist.post ?: return
         if (!Preferences.isAlreadyLogin) {
-            showShortToast(R.string.login_first)
+            GlobalToasts.show(context.getString(R.string.login_first), level = GlobalToasts.ToastLevel.WARNING)
             return
         }
         if (artist.isSubscribed) {
-            context.showAlertDialog {
-                setTitle(R.string.unsubscribe_artist)
-                setMessage(R.string.sure_to_unsubscribe)
-                setPositiveButton(R.string.sure) { _, _ ->
-                    viewModel.unsubscribeArtist(post.userId, post.artistId)
-                }
-                setNegativeButton(R.string.no, null)
-            }
+            onRequestUnsubscribeConfirm(artist)
         } else {
             viewModel.subscribeArtist(post.userId, post.artistId)
         }
     }
 
+    fun confirmUnsubscribe(artist: HanimeVideo.Artist) {
+        val post = artist.post ?: return
+        viewModel.unsubscribeArtist(post.userId, post.artistId)
+    }
+
     fun toggleFavorite(video: HanimeVideo) {
         if (!Preferences.isAlreadyLogin) {
-            showShortToast(R.string.login_first)
+            GlobalToasts.show(context.getString(R.string.login_first), level = GlobalToasts.ToastLevel.WARNING)
             return
         }
         if (video.isFav) {
@@ -108,7 +105,7 @@ class VideoRouteActions(
 
     fun rateVideo(video: HanimeVideo, isPositive: Boolean) {
         if (!Preferences.isAlreadyLogin) {
-            showShortToast(R.string.login_first)
+            GlobalToasts.show(context.getString(R.string.login_first), level = GlobalToasts.ToastLevel.WARNING)
             return
         }
         viewModel.rateVideo(video, isPositive)
@@ -119,7 +116,7 @@ class VideoRouteActions(
         selectedStates: List<Boolean>,
     ) {
         if (!Preferences.isAlreadyLogin || myList == null || myList.myListInfo.isEmpty()) {
-            showShortToast(R.string.login_first)
+            GlobalToasts.show(context.getString(R.string.login_first), level = GlobalToasts.ToastLevel.WARNING)
             return
         }
         myList.myListInfo.forEachIndexed { index, info ->
@@ -140,7 +137,7 @@ class VideoRouteActions(
             context.browse(link)
         } catch (_: Exception) {
             link.copyToClipboard()
-            showShortToast(R.string.copy_to_clipboard)
+            GlobalToasts.show(context.getString(R.string.copy_to_clipboard), level = GlobalToasts.ToastLevel.INFO)
         }
     }
 
@@ -148,8 +145,7 @@ class VideoRouteActions(
         try {
             context.startActivity(Intent(Intent.ACTION_VIEW, comicLink.toUri()))
         } catch (_: Exception) {
-            Toast.makeText(context, context.getString(R.string.fault_prompt), Toast.LENGTH_SHORT)
-                .show()
+            GlobalToasts.show(context.getString(R.string.fault_prompt), level = GlobalToasts.ToastLevel.ERROR)
         }
     }
 
@@ -163,7 +159,7 @@ class VideoRouteActions(
 
     fun startDownloadFlow(videoData: HanimeVideo) {
         if (videoData.videoUrls.isEmpty()) {
-            showShortToast(R.string.no_video_links_found)
+            GlobalToasts.show(context.getString(R.string.no_video_links_found), level = GlobalToasts.ToastLevel.WARNING)
             return
         }
         requestStoragePermission(
@@ -171,11 +167,7 @@ class VideoRouteActions(
                 viewModel.findDownloadedHanime(viewModel.videoCode)
             },
             {
-                Toast.makeText(
-                    context,
-                    R.string.storage_permission_denied_toast,
-                    Toast.LENGTH_LONG,
-                ).show()
+                GlobalToasts.show(context.getString(R.string.storage_permission_denied_toast), level = GlobalToasts.ToastLevel.WARNING)
                 onStoragePermissionDenied()
             },
             { openDownloadPermissionSettings() },
@@ -210,20 +202,19 @@ class VideoRouteActions(
             ),
             redownload = redownload,
         )
+        GlobalToasts.show(
+            context.getString(R.string.added_to_download_queue),
+            level = GlobalToasts.ToastLevel.SUCCESS,
+        )
     }
 
     fun openDownloadPermissionSettings() {
-        androidx.appcompat.app.AlertDialog.Builder(context)
-            .setTitle(R.string.permission_permanently_denied_title)
-            .setMessage(R.string.storage_permission_settings_message)
-            .setPositiveButton(R.string.go_to_settings) { _, _ ->
-                context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = "package:${context.packageName}".toUri()
-                })
-            }
-            .setNegativeButton(R.string.cancel) { _, _ ->
-                onDownloadPermissionDialogCancelled()
-            }
-            .show()
+        onRequestDownloadPermissionSettings()
+    }
+
+    fun goToDownloadPermissionSettings() {
+        context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = "package:${context.packageName}".toUri()
+        })
     }
 }

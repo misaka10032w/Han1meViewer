@@ -313,6 +313,7 @@
     <string name="fav_failed">喜欢失败</string>
     <string name="cancel_fav">取消喜欢</string>
     <string name="already_in_queue">在队列中</string>
+    <string name="added_to_download_queue">已加入下载队列</string>
     <string name="s_view_times">%1$s次</string>
     <string name="liked">已喜欢</string>
     <string name="cannot_download_here">暂时无法从这里下载！</string>

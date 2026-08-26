@@ -13,7 +13,6 @@ import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,8 +32,8 @@ import com.yenaly.han1meviewer.login
 import com.yenaly.han1meviewer.ui.screen.login.LoginDialog
 import com.yenaly.han1meviewer.ui.screen.login.LoginScreen
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.yenaly_libs.base.frame.FrameActivity
-import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -56,7 +55,7 @@ class LoginActivity : FrameActivity() {
             if (isGranted) {
                 scannerLauncher.launch(Intent(this, ManualInputCookiesActivity::class.java))
             } else {
-                Toast.makeText(this, getString(R.string.request_camera), Toast.LENGTH_SHORT).show()
+                GlobalToasts.show(getString(R.string.request_camera), level = GlobalToasts.ToastLevel.WARNING)
             }
         }
 
@@ -173,9 +172,9 @@ class LoginActivity : FrameActivity() {
                         isLoggingIn = false
                         state.throwable.printStackTrace()
                         if (state.throwable is IllegalStateException) {
-                            showShortToast(R.string.account_or_password_wrong)
+                            GlobalToasts.show(getString(R.string.account_or_password_wrong), level = GlobalToasts.ToastLevel.ERROR)
                         } else {
-                            showShortToast(R.string.login_failed)
+                            GlobalToasts.show(getString(R.string.login_failed), level = GlobalToasts.ToastLevel.ERROR)
                         }
                     }
 
@@ -183,7 +182,7 @@ class LoginActivity : FrameActivity() {
                         login(state.info)
                         setResult(RESULT_OK)
                         showLoginDialog = false
-                        showShortToast(R.string.login_success)
+                        GlobalToasts.show(getString(R.string.login_success), level = GlobalToasts.ToastLevel.SUCCESS)
                         finish()
                     }
                 }
