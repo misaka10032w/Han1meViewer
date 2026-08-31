@@ -371,6 +371,24 @@ object SafFileManager {
         Log.d("Migrate", "迁移完成，总文件夹数: $total")
     }
 
+    enum class ImportFailureReason {
+        INVALID_FOLDER_NAME,
+        MISSING_INFO_JSON,
+        IMPORT_EXCEPTION,
+    }
+
+    data class ImportFailure(
+        val name: String,
+        val reason: ImportFailureReason,
+    )
+
+    data class ImportResult(
+        val successCount: Int = 0,
+        val failures: List<ImportFailure> = emptyList(),
+    ) {
+        val failureCount get() = failures.size
+    }
+
     /**
      * 扫描自定义目录中的所有符合规则的视频文件夹并导入数据库
      * @param context Context
@@ -378,86 +396,116 @@ object SafFileManager {
      */
     suspend fun scanAndImportHanimeDownloads(
         context: Context,
-        dao: HanimeDownloadDao
-    ) {
-        val treeUri = Preferences.safDownloadPath?.toUri() ?: return
-        val rootDocFile = DocumentFile.fromTreeUri(context, treeUri) ?: return
-        val hanimeDownloadDoc = rootDocFile.findFile(HANIME_DOWNLOAD_FOLDER) ?: return
+        dao: HanimeDownloadDao,
+        onProgress: ((imported: Int, total: Int, currentName: String?) -> Unit)? = null,
+    ): ImportResult {
+        val treeUri = Preferences.safDownloadPath?.toUri() ?: return ImportResult()
+        val rootDocFile = DocumentFile.fromTreeUri(context, treeUri) ?: return ImportResult()
+        val hanimeDownloadDoc = rootDocFile.findFile(HANIME_DOWNLOAD_FOLDER) ?: return ImportResult()
 
-        hanimeDownloadDoc.listFiles()
-            .filter { it.isDirectory }
-            .forEach { folderDoc ->
-                val videoCode = folderDoc.name ?: return@forEach
+        val folders = hanimeDownloadDoc.listFiles().filter { it.isDirectory }
+        val total = folders.size
+        val failures = mutableListOf<ImportFailure>()
+        var successCount = 0
 
-                try {
-                    // 加载元数据
-                    val infoFile = folderDoc.findFile("info.json") ?: return@forEach
-
-                    context.contentResolver.openInputStream(infoFile.uri)?.use { input ->
-                        val json = input.bufferedReader().use { it.readText() }
-                        val jsonObj =
-                            kotlinx.serialization.json.Json.parseToJsonElement(json).jsonObject
-
-                        val title = jsonObj["title"]?.jsonPrimitive?.content ?: ""
-                        val coverUrl = jsonObj["coverUrl"]?.jsonPrimitive?.content ?: ""
-                        val addDate = System.currentTimeMillis()
-                        val videoUrls = jsonObj["videoUrls"]?.jsonObject
-
-                        // 获取视频文件的 DocumentFile
-                        val videoFile = folderDoc.listFiles()
-                            .firstOrNull { file ->
-                                file.isFile && file.name?.substringAfterLast('.', "")
-                                    ?.lowercase() in VIDEO_EXTENSIONS
-                            }
-                        val pattern = """_(\d+P)\.mp4$""".toRegex()
-                        val quality = pattern.find(videoFile?.name.toString())?.groupValues?.get(1)
-                            ?: "unknow"
-                        val videoUrl = videoUrls?.get(quality)
-                            ?.jsonObject
-                            ?.get("link")
-                            ?.jsonPrimitive
-                            ?.content
-
-                        // 获取封面文件的 DocumentFile
-                        val coverFile = folderDoc.listFiles()
-                            .firstOrNull { file ->
-                                file.isFile && file.name?.substringAfterLast('.', "")
-                                    ?.lowercase() in IMAGE_EXTENSIONS
-                            }
-
-                        val videoUri = videoFile?.uri?.toString() ?: ""
-                        val coverUri = coverFile?.uri?.toString()
-                        val existing = dao.find(videoCode)
-                        if (existing != null) {
-                            val updated = existing.copy(
-                                videoUri = videoUri,
-                                coverUri = coverUri,
-                                //                               quality = quality
-                            )
-                            dao.update(updated)
-                            Log.d("ImportHanime", "已存在，更新 videoUri/coverUri: $videoCode")
+        folders.forEachIndexed { index, folderDoc ->
+            var currentName: String? = folderDoc.name
+            var failure: ImportFailure? = null
+            try {
+                val videoCode = folderDoc.name
+                if (videoCode.isNullOrBlank()) {
+                    failure = ImportFailure(
+                        folderDoc.uri?.lastPathSegment ?: "?",
+                        ImportFailureReason.INVALID_FOLDER_NAME,
+                    )
+                } else {
+                    try {
+                        val infoFile = folderDoc.findFile("info.json")
+                        if (infoFile == null) {
+                            failure = ImportFailure(videoCode, ImportFailureReason.MISSING_INFO_JSON)
                         } else {
-                            val entity = HanimeDownloadEntity(
-                                coverUrl = coverUrl,
-                                coverUri = coverUri,
-                                title = title,
-                                addDate = addDate,
-                                videoCode = videoCode,
-                                videoUri = videoUri,
-                                quality = quality,
-                                videoUrl = videoUrl.toString(),
-                                length = 0L,
-                                downloadedLength = 0L,
-                                state = DownloadState.Finished
-                            )
-                            dao.insert(entity)
-                            Log.d("ImportHanime", "导入完成: $videoCode")
+                            val inputStream = context.contentResolver.openInputStream(infoFile.uri)
+                            if (inputStream == null) {
+                                failure = ImportFailure(videoCode, ImportFailureReason.MISSING_INFO_JSON)
+                            } else {
+                                inputStream.use { input ->
+                                    val json = input.bufferedReader().use { it.readText() }
+                                    val jsonObj =
+                                        kotlinx.serialization.json.Json.parseToJsonElement(json).jsonObject
+
+                                    val title = jsonObj["title"]?.jsonPrimitive?.content ?: ""
+                                    val coverUrl = jsonObj["coverUrl"]?.jsonPrimitive?.content ?: ""
+                                    val addDate = System.currentTimeMillis()
+                                    val videoUrls = jsonObj["videoUrls"]?.jsonObject
+
+                                    // 获取视频文件的 DocumentFile
+                                    val videoFile = folderDoc.listFiles()
+                                        .firstOrNull { file ->
+                                            file.isFile && file.name?.substringAfterLast('.', "")
+                                                ?.lowercase() in VIDEO_EXTENSIONS
+                                        }
+                                    val pattern = """_(\d+P)\.mp4$""".toRegex()
+                                    val quality = pattern.find(videoFile?.name.toString())?.groupValues?.get(1)
+                                        ?: "unknow"
+                                    val videoUrl = videoUrls?.get(quality)
+                                        ?.jsonObject
+                                        ?.get("link")
+                                        ?.jsonPrimitive
+                                        ?.content
+
+                                    // 获取封面文件的 DocumentFile
+                                    val coverFile = folderDoc.listFiles()
+                                        .firstOrNull { file ->
+                                            file.isFile && file.name?.substringAfterLast('.', "")
+                                                ?.lowercase() in IMAGE_EXTENSIONS
+                                        }
+
+                                    val videoUri = videoFile?.uri?.toString() ?: ""
+                                    val coverUri = coverFile?.uri?.toString()
+                                    val videoLength = videoFile?.length() ?: 0L
+                                    currentName = videoFile?.name ?: videoCode
+                                    val existing = dao.find(videoCode)
+                                    if (existing != null) {
+                                        val updated = existing.copy(
+                                            videoUri = videoUri,
+                                            coverUri = coverUri,
+                                            length = videoLength,
+                                            //                               quality = quality
+                                        )
+                                        dao.update(updated)
+                                        Log.d("ImportHanime", "已存在，更新 videoUri/coverUri: $videoCode, length:$videoLength")
+                                    } else {
+                                        val entity = HanimeDownloadEntity(
+                                            coverUrl = coverUrl,
+                                            coverUri = coverUri,
+                                            title = title,
+                                            addDate = addDate,
+                                            videoCode = videoCode,
+                                            videoUri = videoUri,
+                                            quality = quality,
+                                            videoUrl = videoUrl.toString(),
+                                            length = videoLength,
+                                            downloadedLength = 0L,
+                                            state = DownloadState.Finished
+                                        )
+                                        dao.insert(entity)
+                                        Log.d("ImportHanime", "导入完成: $videoCode, length:$videoLength")
+                                    }
+                                    successCount++
+                                }
+                            }
                         }
+                    } catch (e: Exception) {
+                        failure = ImportFailure(videoCode, ImportFailureReason.IMPORT_EXCEPTION)
+                        Log.e("ImportHanime", "导入失败: $videoCode", e)
                     }
-                } catch (e: Exception) {
-                    Log.e("ImportHanime", "导入失败: $videoCode", e)
                 }
+            } finally {
+                failure?.let { failures.add(it) }
+                onProgress?.invoke(index + 1, total, currentName)
             }
+        }
+        return ImportResult(successCount, failures)
     }
 
     /**

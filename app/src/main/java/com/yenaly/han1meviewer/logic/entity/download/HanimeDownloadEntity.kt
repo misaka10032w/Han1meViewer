@@ -93,7 +93,7 @@ data class HanimeDownloadEntity(
      * 下载进度
      */
     @get:IntRange(from = 0, to = 100)
-    val progress get() = (downloadedLength * 100 / length).toInt()
+    val progress get() = if (length <= 0) 0 else (downloadedLength * 100 / length).toInt()
 
     /**
      * 是否已下载完成

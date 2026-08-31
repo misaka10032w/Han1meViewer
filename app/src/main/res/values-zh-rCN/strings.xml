@@ -587,6 +587,14 @@
     <string name="read_download_dir_title">读取下载目录</string>
     <string name="read_download_dir_message">读取当前下载目录已下载的文件，用于恢复之前下载的文件到列表中。\n每个视频单元文件结构应为：\n[视频代码]/xxx.mp4、xxx.png、info.json</string>
     <string name="read_success">读取成功</string>
+    <string name="reading_download_dir">正在读取…</string>
+    <string name="import_result_title">导入完成</string>
+    <string name="import_success_count">成功导入 %d 个</string>
+    <string name="import_fail_count">失败 %d 个</string>
+    <string name="import_fail_reason_invalid_name">文件夹名无效</string>
+    <string name="import_fail_reason_missing_info">缺少 info.json</string>
+    <string name="import_fail_reason_exception">读取或解析失败</string>
+    <string name="import_fail_suggestion">请检查对应文件夹，确保包含 info.json 与视频文件（xxx.mp4、xxx.png）。缺失或损坏的文件会导致导入失败。</string>
     <string name="select_custom_directory">请先选择一个自定义目录</string>
     <string name="some_videos_moved_or_deleted">部分影片被移动或者删除，请检查。</string>
     <string name="directory_saved">目录已保存:%s</string>

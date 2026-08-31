@@ -581,6 +581,14 @@ Recommendations are as follows:\n
     <string name="read_download_dir_title">Read Download Directory</string>
     <string name="read_download_dir_message">Read the downloaded files in the current download directory to restore previously downloaded files to the list.\nEach video unit file structure should be:\n[video code]/xxx.mp4, xxx.png, info.json</string>
     <string name="read_success">Read successfully</string>
+    <string name="reading_download_dir">Reading…</string>
+    <string name="import_result_title">Import complete</string>
+    <string name="import_success_count">Successfully imported %d</string>
+    <string name="import_fail_count">Failed %d</string>
+    <string name="import_fail_reason_invalid_name">Invalid folder name</string>
+    <string name="import_fail_reason_missing_info">Missing info.json</string>
+    <string name="import_fail_reason_exception">Failed to read or parse</string>
+    <string name="import_fail_suggestion">Please check the corresponding folders to make sure they contain info.json and the video files (xxx.mp4, xxx.png). Missing or corrupted files will cause the import to fail.</string>
     <string name="select_custom_directory">Please select a custom directory first</string>
     <string name="some_videos_moved_or_deleted">Some videos have been moved or deleted, please check.</string>
     <string name="directory_saved">Directory saved: %s</string>

@@ -586,6 +586,14 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="read_download_dir_title">ダウンロードディレクトリ読み込み</string>
     <string name="read_download_dir_message">現在のダウンロードディレクトリ内のダウンロード済みファイルを読み込み、リスト復元。\n各動画ユニットのファイル構造：\n[動画コード]/xxx.mp4、xxx.png、info.json</string>
     <string name="read_success">読み込み成功</string>
+    <string name="reading_download_dir">読み込み中…</string>
+    <string name="import_result_title">読み込み完了</string>
+    <string name="import_success_count">%d個正常に読み込み</string>
+    <string name="import_fail_count">%d個失敗</string>
+    <string name="import_fail_reason_invalid_name">フォルダ名が無効</string>
+    <string name="import_fail_reason_missing_info">info.jsonがありません</string>
+    <string name="import_fail_reason_exception">読み取り・解析に失敗</string>
+    <string name="import_fail_suggestion">対象フォルダにinfo.jsonと動画ファイル（xxx.mp4、xxx.png）が含まれているか確認してください。ファイルの欠落や破損は読み込み失敗の原因になります。</string>
     <string name="select_custom_directory">まずカスタムディレクトリを選択</string>
     <string name="some_videos_moved_or_deleted">一部の動画が移動または削除されたようです、確認。</string>
     <string name="directory_saved">ディレクトリ保存済:%s</string>

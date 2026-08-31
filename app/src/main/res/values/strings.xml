@@ -628,6 +628,14 @@
     <string name="read_download_dir_title">讀取下載目錄</string>
     <string name="read_download_dir_message">讀取當前下載目錄中已下載的文件，用於將之前下載的文件恢復到列表中。\n每個視頻單元文件結構應為：\n[視頻代碼]/xxx.mp4、xxx.png、info.json</string>
     <string name="read_success">讀取成功</string>
+    <string name="reading_download_dir">正在讀取…</string>
+    <string name="import_result_title">導入完成</string>
+    <string name="import_success_count">成功導入 %d 個</string>
+    <string name="import_fail_count">失敗 %d 個</string>
+    <string name="import_fail_reason_invalid_name">文件夾名無效</string>
+    <string name="import_fail_reason_missing_info">缺少 info.json</string>
+    <string name="import_fail_reason_exception">讀取或解析失敗</string>
+    <string name="import_fail_suggestion">請檢查對應文件夾，確保包含 info.json 與視頻文件（xxx.mp4、xxx.png）。缺少或損壞的文件會導致導入失敗。</string>
     <string name="select_custom_directory">請先選擇一個自訂目錄</string>
     <string name="some_videos_moved_or_deleted">部分影片被移動或刪除，請檢查。</string>
     <string name="directory_saved">目錄已保存:%s</string>

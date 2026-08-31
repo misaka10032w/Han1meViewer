@@ -1,14 +1,27 @@
 package com.yenaly.han1meviewer.ui.navigation.main
 
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.LinearWavyProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
@@ -21,6 +34,8 @@ import com.yenaly.han1meviewer.ui.screen.home.DownloadScreen
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadEvent
 import com.yenaly.han1meviewer.ui.viewmodel.DownloadViewModel
 import com.yenaly.han1meviewer.util.SafFileManager
+import com.yenaly.han1meviewer.util.SafFileManager.ImportFailureReason
+import com.yenaly.han1meviewer.util.SafFileManager.ImportResult
 import com.yenaly.han1meviewer.util.SafFileManager.checkSafPermissions
 import com.yenaly.han1meviewer.util.SafFileManager.scanAndImportHanimeDownloads
 import com.yenaly.han1meviewer.util.openDownloadedHanimeVideoLocally
@@ -44,11 +59,16 @@ fun DownloadRouteScreen(
     var showDeleteVideoConfirm by remember { mutableStateOf<VideoWithCategories?>(null) }
     var showImportDownloadedConfirm by remember { mutableStateOf(false) }
     var isImportingDownloaded by remember { mutableStateOf(false) }
+    var showImportProgress by remember { mutableStateOf(false) }
+    var importProgress by remember { mutableIntStateOf(0) }
+    var importTotal by remember { mutableIntStateOf(0) }
+    var importCurrentName by remember { mutableStateOf<String?>(null) }
+    var importResult by remember { mutableStateOf<ImportResult?>(null) }
+    var showImportResult by remember { mutableStateOf(false) }
 
     val selectCustomDirectory = stringResource(R.string.select_custom_directory)
     val groupNameEmpty = stringResource(R.string.group_name_empty)
     val deleteSuccess = stringResource(R.string.delete_success)
-    val readSuccess = stringResource(R.string.read_success)
     val permissionError = stringResource(R.string.permission_error)
 
     val handleEvent: (DownloadEvent) -> Unit = { event ->
@@ -153,31 +173,110 @@ fun DownloadRouteScreen(
         onConfirm = {
             showImportDownloadedConfirm = false
             isImportingDownloaded = true
+            showImportProgress = true
+            importProgress = 0
+            importTotal = 0
+            importCurrentName = null
             scope.launch {
-                val importSucceeded = withContext(Dispatchers.IO) {
+                val result = withContext(Dispatchers.IO) {
                     try {
-                        if (!checkSafPermissions(context)) return@withContext false
-                        scanAndImportHanimeDownloads(context, dao)
-                        true
+                        if (!checkSafPermissions(context)) return@withContext null
+                        scanAndImportHanimeDownloads(context, dao) { imported, total, currentName ->
+                            importProgress = imported
+                            importTotal = total
+                            importCurrentName = currentName
+                        }
                     } catch (e: Exception) {
                         Log.e("ImportHanime", "Failed to import downloaded videos", e)
-                        false
+                        null
                     }
                 }
                 isImportingDownloaded = false
-                if (importSucceeded) {
+                showImportProgress = false
+                if (result == null) {
+                    GlobalToasts.show(permissionError, level = GlobalToasts.ToastLevel.ERROR)
+                } else {
                     viewModel.loadAllDownloadedHanime(
                         sortedBy = HanimeDownloadEntity.SortedBy.ID,
                         ascending = false,
                     )
-                    GlobalToasts.show(readSuccess, level = GlobalToasts.ToastLevel.SUCCESS)
-                } else {
-                    GlobalToasts.show(permissionError, level = GlobalToasts.ToastLevel.ERROR)
+                    if (result.failureCount == 0) {
+                        GlobalToasts.show(
+                            application.getString(R.string.import_success_count, result.successCount),
+                            level = GlobalToasts.ToastLevel.SUCCESS,
+                        )
+                    } else {
+                        importResult = result
+                        showImportResult = true
+                    }
                 }
             }
         },
         onDismiss = { showImportDownloadedConfirm = false },
     )
+
+    if (showImportProgress) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text(stringResource(R.string.read_download_dir_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.reading_download_dir))
+                    importCurrentName?.let { name ->
+                        Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                    LinearWavyProgressIndicator(
+                        progress = {
+                            if (importTotal > 0) importProgress.toFloat() / importTotal else 0f
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    val percent = if (importTotal > 0) importProgress * 100 / importTotal else 0
+                    Text(
+                        stringResource(R.string.import_progress_format)
+                            .format(importProgress, importTotal, percent)
+                    )
+                }
+            },
+            confirmButton = {},
+        )
+    }
+
+    if (showImportResult) {
+        val result = importResult
+        AlertDialog(
+            onDismissRequest = { showImportResult = false },
+            title = { Text(stringResource(R.string.import_result_title)) },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                ) {
+                    Text(stringResource(R.string.import_success_count, result?.successCount ?: 0))
+                    if (result != null && result.failureCount > 0) {
+                        Text(stringResource(R.string.import_fail_count, result.failureCount))
+                        for (failure in result.failures) {
+                            val reasonText = when (failure.reason) {
+                                ImportFailureReason.INVALID_FOLDER_NAME ->
+                                    stringResource(R.string.import_fail_reason_invalid_name)
+                                ImportFailureReason.MISSING_INFO_JSON ->
+                                    stringResource(R.string.import_fail_reason_missing_info)
+                                ImportFailureReason.IMPORT_EXCEPTION ->
+                                    stringResource(R.string.import_fail_reason_exception)
+                            }
+                            Text("• ${failure.name}（$reasonText）")
+                        }
+                        Text(stringResource(R.string.import_fail_suggestion))
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showImportResult = false }) {
+                    Text(stringResource(R.string.ok))
+                }
+            },
+        )
+    }
 
     showVideoNotExistConfirm?.let { video ->
         ConfirmDialog(
