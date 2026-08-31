@@ -378,20 +378,24 @@ object SafFileManager {
      */
     suspend fun scanAndImportHanimeDownloads(
         context: Context,
-        dao: HanimeDownloadDao
+        dao: HanimeDownloadDao,
+        onProgress: ((imported: Int, total: Int, currentName: String?) -> Unit)? = null,
     ) {
         val treeUri = Preferences.safDownloadPath?.toUri() ?: return
         val rootDocFile = DocumentFile.fromTreeUri(context, treeUri) ?: return
         val hanimeDownloadDoc = rootDocFile.findFile(HANIME_DOWNLOAD_FOLDER) ?: return
 
-        hanimeDownloadDoc.listFiles()
-            .filter { it.isDirectory }
-            .forEach { folderDoc ->
-                val videoCode = folderDoc.name ?: return@forEach
+        val folders = hanimeDownloadDoc.listFiles().filter { it.isDirectory }
+        val total = folders.size
+
+        folders.forEachIndexed { index, folderDoc ->
+            var currentName: String? = folderDoc.name
+            try {
+                val videoCode = folderDoc.name ?: return@forEachIndexed
 
                 try {
                     // 加载元数据
-                    val infoFile = folderDoc.findFile("info.json") ?: return@forEach
+                    val infoFile = folderDoc.findFile("info.json") ?: return@forEachIndexed
 
                     context.contentResolver.openInputStream(infoFile.uri)?.use { input ->
                         val json = input.bufferedReader().use { it.readText() }
@@ -428,6 +432,7 @@ object SafFileManager {
                         val videoUri = videoFile?.uri?.toString() ?: ""
                         val coverUri = coverFile?.uri?.toString()
                         val videoLength = videoFile?.length() ?: 0L
+                        currentName = videoFile?.name ?: videoCode
                         val existing = dao.find(videoCode)
                         if (existing != null) {
                             val updated = existing.copy(
@@ -459,7 +464,10 @@ object SafFileManager {
                 } catch (e: Exception) {
                     Log.e("ImportHanime", "导入失败: $videoCode", e)
                 }
+            } finally {
+                onProgress?.invoke(index + 1, total, currentName)
             }
+        }
     }
 
     /**
