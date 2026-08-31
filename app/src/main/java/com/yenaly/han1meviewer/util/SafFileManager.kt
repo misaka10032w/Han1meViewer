@@ -427,15 +427,17 @@ object SafFileManager {
 
                         val videoUri = videoFile?.uri?.toString() ?: ""
                         val coverUri = coverFile?.uri?.toString()
+                        val videoLength = videoFile?.length() ?: 0L
                         val existing = dao.find(videoCode)
                         if (existing != null) {
                             val updated = existing.copy(
                                 videoUri = videoUri,
                                 coverUri = coverUri,
+                                length = videoLength,
                                 //                               quality = quality
                             )
                             dao.update(updated)
-                            Log.d("ImportHanime", "已存在，更新 videoUri/coverUri: $videoCode")
+                            Log.d("ImportHanime", "已存在，更新 videoUri/coverUri: $videoCode, length:$videoLength")
                         } else {
                             val entity = HanimeDownloadEntity(
                                 coverUrl = coverUrl,
@@ -446,12 +448,12 @@ object SafFileManager {
                                 videoUri = videoUri,
                                 quality = quality,
                                 videoUrl = videoUrl.toString(),
-                                length = 0L,
+                                length = videoLength,
                                 downloadedLength = 0L,
                                 state = DownloadState.Finished
                             )
                             dao.insert(entity)
-                            Log.d("ImportHanime", "导入完成: $videoCode")
+                            Log.d("ImportHanime", "导入完成: $videoCode, length:$videoLength")
                         }
                     }
                 } catch (e: Exception) {
