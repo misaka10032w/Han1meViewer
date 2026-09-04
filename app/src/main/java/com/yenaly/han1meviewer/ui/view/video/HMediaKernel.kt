@@ -193,6 +193,12 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
         }
     }
 
+    fun setLooping(looping: Boolean) {
+        mMediaHandler?.post {
+            _exoPlayer?.repeatMode = if (looping) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
+        }
+    }
+
     override fun onVideoSizeChanged(videoSize: VideoSize) {
         val realWidth = videoSize.width * videoSize.pixelWidthHeightRatio
         val realHeight = videoSize.height
@@ -491,6 +497,12 @@ class SystemMediaKernel(jzvd: Jzvd) : JZMediaSystem(jzvd), HMediaKernel {
     override fun isPlaying(): Boolean {
         return mediaPlayer?.isPlaying == true
     }
+
+    fun setLooping(looping: Boolean) {
+        mMediaHandler?.post {
+            mediaPlayer?.isLooping = looping
+        }
+    }
 }
 
 class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
@@ -709,6 +721,10 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
 
     override fun start() {
         MPVLib.setPropertyBoolean("pause", false)
+    }
+
+    fun setLooping(looping: Boolean) {
+        MPVLib.setPropertyString("loop-file", if (looping) "inf" else "no")
     }
 
     override fun pause() {

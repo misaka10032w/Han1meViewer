@@ -51,10 +51,12 @@ fun HomeSettingsScreen(
     onAllowPipModeChange: (Boolean) -> Unit,
     onAllowResumePlaybackChange: (Boolean) -> Unit,
     onShowPlayedIndicatorChange: (Boolean) -> Unit,
+    onWatchedProgressThresholdChange: (Int) -> Unit,
     onSearchArtistIgnoreVideoTypeChange: (Boolean) -> Unit,
     onDisableMobileDataWarningChange: (Boolean) -> Unit,
     onDisablePredictiveBackChange: (Boolean) -> Unit,
     onTabletModeChange: (Boolean) -> Unit,
+    onShowExitConfirmChange: (Boolean) -> Unit,
     onDisableCommentsChange: (Boolean) -> Unit,
     onCollapseDownloadedGroupChange: (Boolean) -> Unit,
     onSearchGridColumnsConfigChange: (SearchGridColumnsConfig) -> Unit,
@@ -244,6 +246,17 @@ fun HomeSettingsScreen(
             )
         }
         item {
+            SettingSliderItem(
+                title = stringResource(R.string.watched_progress_threshold),
+                summary = stringResource(R.string.watched_progress_threshold_summary, state.watchedProgressThreshold),
+                value = state.watchedProgressThreshold,
+                valueRange = 0..100,
+                step = 10,
+                iconRes = R.drawable.ic_baseline_history_24,
+                onValueChange = onWatchedProgressThresholdChange,
+            )
+        }
+        item {
             SettingNavigationItem(
                 title = stringResource(R.string.horizontal_card_count_title),
                 summary = stringResource(R.string.horizontal_card_count_summary),
@@ -397,6 +410,15 @@ fun HomeSettingsScreen(
                 onClick = { activeDialog = HomeSettingsChoiceDialog.AppLanguage },
             )
         }
+        item {
+            SettingSwitchItem(
+                title = stringResource(R.string.show_exit_confirm),
+                summary = stringResource(R.string.show_exit_confirm_summary),
+                checked = state.showExitConfirm,
+                iconRes = R.drawable.ic_baseline_close_24,
+                onCheckedChange = onShowExitConfirmChange,
+            )
+        }
 
         item { SettingsGroupTitle(stringResource(R.string.update)) }
         item {
@@ -542,10 +564,12 @@ private fun HomeSettingsScreenPreview() {
                 allowPipMode = true,
                 allowResumePlayback = true,
                 showPlayedIndicator = true,
+                watchedProgressThreshold = 90,
                 searchArtistIgnoreVideoType = false,
                 disableMobileDataWarning = false,
                 disablePredictiveBack = false,
                 tabletMode = false,
+                showExitConfirm = true,
                 disableComments = false,
                 collapseDownloadedGroup = false,
                 useDynamicColor = true,
@@ -576,10 +600,12 @@ private fun HomeSettingsScreenPreview() {
             onAllowPipModeChange = {},
             onAllowResumePlaybackChange = {},
             onShowPlayedIndicatorChange = {},
+            onWatchedProgressThresholdChange = {},
             onSearchArtistIgnoreVideoTypeChange = {},
             onDisableMobileDataWarningChange = {},
             onDisablePredictiveBackChange = {},
             onTabletModeChange = {},
+            onShowExitConfirmChange = {},
             onDisableCommentsChange = {},
             onCollapseDownloadedGroupChange = {},
             onSearchGridColumnsConfigChange = {},

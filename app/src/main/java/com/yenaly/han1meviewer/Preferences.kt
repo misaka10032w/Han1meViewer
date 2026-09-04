@@ -141,6 +141,9 @@ object Preferences {
     val showPlayedIndicator: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.SHOW_PLAYED_INDICATOR,true)
 
+    val watchedProgressThreshold: Int
+        get() = preferenceSp.getInt(SettingsPreferenceKeys.WATCHED_PROGRESS_THRESHOLD, 90)
+
     val searchGridColumnsConfig: SearchGridColumnsConfig
         get() = SearchGridColumnsConfig(
             compactColumns = preferenceSp.getInt(
@@ -330,6 +333,9 @@ object Preferences {
 
     val tabletMode: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.TABLET_MODE, false)
+
+    val showExitConfirm: Boolean
+        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.SHOW_EXIT_CONFIRM, true)
 
     /**
      * MPV播放器设置

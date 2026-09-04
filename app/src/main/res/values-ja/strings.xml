@@ -111,6 +111,8 @@
     <string name="player_settings">プレイヤー設定</string>
     <string name="tablet_mode">タブレットモード</string>
     <string name="tablet_mode_summary">有効にすると動画ページがタブレットレイアウトで表示され、より広い視聴エリアを提供します</string>
+    <string name="show_exit_confirm">終了確認</string>
+    <string name="show_exit_confirm_summary">有効にすると戻るボタンでアプリを終了する際に確認ダイアログが表示されます</string>
     <string name="search_grid_columns_title">ビデオグリッド列数</string>
     <string name="search_grid_columns_summary">タブレットモードのみ有効。画面幅に応じて検索、後で見る、お気に入り動画、チャンネル登録ページの列数を調整します</string>
     <string name="search_grid_columns_dialog_hint">画面幅に応じてビデオグリッドの列数を設定</string>
@@ -304,6 +306,9 @@
     <string name="creator_status_pending">処理待ち</string>
     <string name="creator_status_transcoding">変換中</string>
     <string name="speed">再生速度</string>
+    <string name="loop_play">ループ再生</string>
+    <string name="loop_play_on">ループ再生をオンにしました</string>
+    <string name="loop_play_off">ループ再生をオフにしました</string>
     <string name="cancel_thumb_up_success">高評価解除成功！</string>
     <string name="thumb_up_success">高評価成功！</string>
     <string name="cancel_thumb_down_success">低評価解除成功！</string>
@@ -722,6 +727,8 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="search_artist_ignore_video_type_summary">有効にすると、詳細ページのアバターをクリックしてアーティストを検索する際、動画タイプが含まれなくなります。</string>
     <string name="show_played_indicator">再生状態マークを表示</string>
     <string name="show_played_indicator_summary">有効にすると、検索結果ページの動画カバー右上に再生済みマークが表示されます</string>
+    <string name="watched_progress_threshold">閲覧済みと判定する進捗しきい値</string>
+    <string name="watched_progress_threshold_summary">再生進捗がこの割合に達したら閲覧済みとしてマークします（現在：%1$d%%）</string>
     <string name="horizontal_card_count_title">横スクロール一覧の表示カード数</string>
     <string name="horizontal_card_count_summary">ホームや関連動画など、横スクロール一覧で一度に見えるカード数を調整します</string>
     <string name="horizontal_card_count_dialog_hint">画面幅ごとに、横スクロール一覧で一度に見えるカード数を設定します</string>

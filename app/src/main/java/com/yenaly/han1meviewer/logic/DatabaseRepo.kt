@@ -206,6 +206,9 @@ object DatabaseRepo {
 
         suspend fun getWatched(resultList: List<String>) =
             watchHistoryDao.getWatchedCodes(resultList)
+
+        suspend fun markWatched(videoCode: String) =
+            watchHistoryDao.markWatched(videoCode)
     }
 
     object HanimeDownload {

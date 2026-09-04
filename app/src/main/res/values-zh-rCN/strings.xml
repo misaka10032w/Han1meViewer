@@ -111,6 +111,8 @@
     <string name="player_settings">播放器设置</string>
     <string name="tablet_mode">平板模式</string>
     <string name="tablet_mode_summary">开启后影片页面将以平板布局显示，提供更大观看区域</string>
+    <string name="show_exit_confirm">退出确认弹窗</string>
+    <string name="show_exit_confirm_summary">开启后按返回键退出 App 时将显示确认窗口</string>
     <string name="search_grid_columns_title">影片网格列数</string>
     <string name="search_grid_columns_summary">仅在平板模式下生效，可依屏幕宽度调整搜索、稍后观看、喜欢影片与订阅页的列数</string>
     <string name="search_grid_columns_dialog_hint">依不同屏幕宽度设置影片网格的列数</string>
@@ -299,6 +301,9 @@
     <string name="creator_status_pending">待处理</string>
     <string name="creator_status_transcoding">转码中</string>
     <string name="speed">倍速</string>
+    <string name="loop_play">循环播放</string>
+    <string name="loop_play_on">循环播放已开启</string>
+    <string name="loop_play_off">循环播放已关闭</string>
     <string name="cancel_thumb_up_success">取消点赞成功！</string>
     <string name="thumb_up_success">点赞成功！</string>
     <string name="cancel_thumb_down_success">取消点踩成功！</string>
@@ -724,6 +729,8 @@
     <string name="search_artist_ignore_video_type_summary">开启后，点击详情页头像搜索艺术家时，不再附带影片类型。</string>
     <string name="show_played_indicator">显示播放状态标记</string>
     <string name="show_played_indicator_summary">开启后将在搜索结果页视频封面右上角显示已播放标记</string>
+    <string name="watched_progress_threshold">标记已观看的进度门槛</string>
+    <string name="watched_progress_threshold_summary">播放进度达到该百分比后才标记为已观看（目前：%1$d%%）</string>
     <string name="horizontal_card_count_title">横向列表可见卡片数</string>
     <string name="horizontal_card_count_summary">可调整首页与影片详情相关推荐等横向列表一次可见的卡片数量</string>
     <string name="horizontal_card_count_dialog_hint">按不同屏幕宽度设置横向列表一次可见的卡片数量</string>
