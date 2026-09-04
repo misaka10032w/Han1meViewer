@@ -55,6 +55,7 @@ fun HomeSettingsScreen(
     onDisableMobileDataWarningChange: (Boolean) -> Unit,
     onDisablePredictiveBackChange: (Boolean) -> Unit,
     onTabletModeChange: (Boolean) -> Unit,
+    onShowExitConfirmChange: (Boolean) -> Unit,
     onDisableCommentsChange: (Boolean) -> Unit,
     onCollapseDownloadedGroupChange: (Boolean) -> Unit,
     onSearchGridColumnsConfigChange: (SearchGridColumnsConfig) -> Unit,
@@ -397,6 +398,15 @@ fun HomeSettingsScreen(
                 onClick = { activeDialog = HomeSettingsChoiceDialog.AppLanguage },
             )
         }
+        item {
+            SettingSwitchItem(
+                title = stringResource(R.string.show_exit_confirm),
+                summary = stringResource(R.string.show_exit_confirm_summary),
+                checked = state.showExitConfirm,
+                iconRes = R.drawable.ic_baseline_close_24,
+                onCheckedChange = onShowExitConfirmChange,
+            )
+        }
 
         item { SettingsGroupTitle(stringResource(R.string.update)) }
         item {
@@ -546,6 +556,7 @@ private fun HomeSettingsScreenPreview() {
                 disableMobileDataWarning = false,
                 disablePredictiveBack = false,
                 tabletMode = false,
+                showExitConfirm = true,
                 disableComments = false,
                 collapseDownloadedGroup = false,
                 useDynamicColor = true,
@@ -580,6 +591,7 @@ private fun HomeSettingsScreenPreview() {
             onDisableMobileDataWarningChange = {},
             onDisablePredictiveBackChange = {},
             onTabletModeChange = {},
+            onShowExitConfirmChange = {},
             onDisableCommentsChange = {},
             onCollapseDownloadedGroupChange = {},
             onSearchGridColumnsConfigChange = {},

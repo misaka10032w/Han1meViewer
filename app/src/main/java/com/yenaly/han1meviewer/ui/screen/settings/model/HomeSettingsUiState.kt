@@ -19,6 +19,7 @@ data class HomeSettingsUiState(
     val disableMobileDataWarning: Boolean,
     val disablePredictiveBack: Boolean,
     val tabletMode: Boolean,
+    val showExitConfirm: Boolean,
     val disableComments: Boolean,
     val collapseDownloadedGroup: Boolean,
     val useDynamicColor: Boolean,

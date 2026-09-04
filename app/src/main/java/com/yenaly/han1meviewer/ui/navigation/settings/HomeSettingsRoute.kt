@@ -96,6 +96,7 @@ private const val HOME_DISABLE_MOBILE_DATA_WARNING = "disable_mobile_data_warnin
 private const val HOME_COLLAPSE_DOWNLOADED_GROUP = "collapse_downloaded_group"
 private const val HOME_DISABLE_PREDICTIVE_BACK = "disable_predictive_back"
 private const val HOME_TABLET_MODE = "tablet_mode"
+private const val HOME_SHOW_EXIT_CONFIRM = "show_exit_confirm"
 private const val HOME_DISABLE_COMMENTS = "disable_comments"
 private const val HOME_USE_LOCK_SCREEN = "use_lock_screen"
 private const val HOME_APP_LANGUAGE = "app_language"
@@ -278,6 +279,10 @@ fun HomeSettingsRouteScreen(
         },
         onTabletModeChange = {
             saveBoolean(HOME_TABLET_MODE, it)
+            refreshKey++
+        },
+        onShowExitConfirmChange = {
+            saveBoolean(HOME_SHOW_EXIT_CONFIRM, it)
             refreshKey++
         },
         onDisableCommentsChange = {
@@ -641,6 +646,7 @@ private fun buildHomeSettingsUiState(
         disableMobileDataWarning = Preferences.disableMobileDataWarning,
         disablePredictiveBack = Preferences.disablePredictiveBack,
         tabletMode = Preferences.tabletMode,
+        showExitConfirm = Preferences.showExitConfirm,
         disableComments = Preferences.preferenceSp.getBoolean(HOME_DISABLE_COMMENTS, false),
         collapseDownloadedGroup = Preferences.collapseDownloadedGroup,
         useDynamicColor = Preferences.useDynamicColor,

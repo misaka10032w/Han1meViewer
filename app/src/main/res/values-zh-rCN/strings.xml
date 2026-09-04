@@ -111,6 +111,8 @@
     <string name="player_settings">播放器设置</string>
     <string name="tablet_mode">平板模式</string>
     <string name="tablet_mode_summary">开启后影片页面将以平板布局显示，提供更大观看区域</string>
+    <string name="show_exit_confirm">退出确认弹窗</string>
+    <string name="show_exit_confirm_summary">开启后按返回键退出 App 时将显示确认窗口</string>
     <string name="search_grid_columns_title">影片网格列数</string>
     <string name="search_grid_columns_summary">仅在平板模式下生效，可依屏幕宽度调整搜索、稍后观看、喜欢影片与订阅页的列数</string>
     <string name="search_grid_columns_dialog_hint">依不同屏幕宽度设置影片网格的列数</string>

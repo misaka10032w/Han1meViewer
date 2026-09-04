@@ -111,6 +111,8 @@
     <string name="player_settings">Player Settings</string>
     <string name="tablet_mode">Tablet Mode</string>
     <string name="tablet_mode_summary">Enable tablet layout for the video page, providing a larger viewing area</string>
+    <string name="show_exit_confirm">Exit Confirmation</string>
+    <string name="show_exit_confirm_summary">Show a confirmation dialog when exiting the app with the back button</string>
     <string name="search_grid_columns_title">Video Grid Columns</string>
     <string name="search_grid_columns_summary">Only effective in tablet mode, adjust the number of columns on search, watch later, liked videos and subscription pages based on screen width</string>
     <string name="search_grid_columns_dialog_hint">Set the number of video grid columns for different screen widths</string>

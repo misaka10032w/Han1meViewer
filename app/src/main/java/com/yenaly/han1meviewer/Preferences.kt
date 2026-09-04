@@ -331,6 +331,9 @@ object Preferences {
     val tabletMode: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.TABLET_MODE, false)
 
+    val showExitConfirm: Boolean
+        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.SHOW_EXIT_CONFIRM, true)
+
     /**
      * MPV播放器设置
      */

@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.PageState
 import com.yenaly.han1meviewer.logic.state.dataOrNull
@@ -67,7 +68,7 @@ fun HomePageScreen(
         }
     }
 
-    BackHandler(enabled = !isDrawerOpen) {
+    BackHandler(enabled = !isDrawerOpen && Preferences.showExitConfirm) {
         onEvent(HomeUiEvent.ShowExitDialog)
     }
 
