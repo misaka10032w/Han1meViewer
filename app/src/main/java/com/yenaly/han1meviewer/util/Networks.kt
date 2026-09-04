@@ -2,6 +2,8 @@ package com.yenaly.han1meviewer.util
 
 import com.google.common.util.concurrent.ListenableFuture
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.logic.exception.CloudFlareBlockedException
+import com.yenaly.han1meviewer.logic.exception.IPBlockedException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.Call
@@ -52,7 +54,7 @@ suspend fun <R> ListenableFuture<R>.await(): R {
 }
 
 /**
- * Suspend extension that allows suspend [Call] inside coroutine.
+ * Suspend extension that allows to suspend [Call] inside coroutine.
  */
 suspend fun Call.await(): Response {
     return suspendCancellableCoroutine { continuation ->
@@ -125,6 +127,14 @@ fun Throwable.toNetworkErrorMessageRes(): Int {
 
         this is SocketException && rawMessage.contains("connection reset") -> {
             R.string.home_error_connection_interrupted
+        }
+
+        this is IPBlockedException -> {
+            R.string.cloudflare_ip_block_warning
+        }
+
+        this is CloudFlareBlockedException -> {
+            R.string.cloudflare_network_mismatch
         }
 
         rawMessage.contains("connection reset") -> {
