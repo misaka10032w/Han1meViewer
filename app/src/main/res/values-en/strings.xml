@@ -301,6 +301,9 @@ Some mirrors may not support login, may not share cookies, may fail verification
     <string name="creator_status_pending">Pending</string>
     <string name="creator_status_transcoding">Transcoding</string>
     <string name="speed">Speed</string>
+    <string name="loop_play">Loop playback</string>
+    <string name="loop_play_on">Loop playback enabled</string>
+    <string name="loop_play_off">Loop playback disabled</string>
     <string name="cancel_thumb_up_success">Thumb Up Cancelled Successfully!</string>
     <string name="thumb_up_success">Thumb Up Successful!</string>
     <string name="cancel_thumb_down_success">Thumb Down Cancelled Successfully!</string>

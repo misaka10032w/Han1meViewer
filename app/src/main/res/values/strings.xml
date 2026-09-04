@@ -311,6 +311,9 @@
     <string name="creator_status_pending">待處理</string>
     <string name="creator_status_transcoding">轉檔中</string>
     <string name="speed">倍速</string>
+    <string name="loop_play">循環播放</string>
+    <string name="loop_play_on">循環播放已開啟</string>
+    <string name="loop_play_off">循環播放已關閉</string>
     <string name="cancel_thumb_up_success">取消點讚成功！</string>
     <string name="thumb_up_success">點讚成功！</string>
     <string name="cancel_thumb_down_success">取消倒讚成功！</string>

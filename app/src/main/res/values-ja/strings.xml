@@ -306,6 +306,9 @@
     <string name="creator_status_pending">処理待ち</string>
     <string name="creator_status_transcoding">変換中</string>
     <string name="speed">再生速度</string>
+    <string name="loop_play">ループ再生</string>
+    <string name="loop_play_on">ループ再生をオンにしました</string>
+    <string name="loop_play_off">ループ再生をオフにしました</string>
     <string name="cancel_thumb_up_success">高評価解除成功！</string>
     <string name="thumb_up_success">高評価成功！</string>
     <string name="cancel_thumb_down_success">低評価解除成功！</string>

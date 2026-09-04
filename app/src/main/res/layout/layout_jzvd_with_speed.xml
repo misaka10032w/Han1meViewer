@@ -37,7 +37,8 @@
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:elevation="8dp"
-        android:visibility="invisible">
+        android:visibility="invisible"
+        tools:visibility="visible">
 
         <!-- 当前时间 -->
         <TextView
@@ -75,6 +76,16 @@
             android:progressDrawable="@drawable/bottom_seek_progress"
             android:thumb="@drawable/jz_bottom_seek_poster"
             android:background="@null" />
+
+        <ImageView
+            android:id="@+id/btn_loop"
+            android:layout_width="40dp"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="8dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/baseline_repeat_24"
+            android:tint="@color/white"
+            android:contentDescription="@string/loop_play" />
 
         <!-- 清晰度 -->
         <TextView
