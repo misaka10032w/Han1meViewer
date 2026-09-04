@@ -56,6 +56,7 @@ import com.yenaly.han1meviewer.ui.adapter.HKeyframeRvAdapter
 import com.yenaly.han1meviewer.ui.adapter.SuperResolutionAdapter
 import com.yenaly.han1meviewer.ui.adapter.VideoSpeedAdapter
 import com.yenaly.han1meviewer.ui.component.GlobalDialogs
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.navigation.main.HomeRoute
 import com.yenaly.han1meviewer.util.setStateViewLayout
 import com.yenaly.yenaly_libs.utils.OrientationManager
@@ -249,6 +250,7 @@ class HJzvdStd @JvmOverloads constructor(
     private lateinit var layoutTop: View
     private lateinit var layoutBottom: View
     private lateinit var gestureLock: ImageView
+    private lateinit var btnLoop: ImageView
     var gestureLocked = false
     var savedProgress: Long = 0L
     private lateinit var btnResumeProgress: MaterialButton
@@ -259,6 +261,19 @@ class HJzvdStd @JvmOverloads constructor(
     private var hasRestoredProgress  = false
     lateinit var orientationManager: OrientationManager
     private lateinit var superResolution: TextView
+
+    /**
+     * 是否开启单片循环播放
+     */
+    var isLooping = false
+        set(value) {
+            field = value
+            if (::btnLoop.isInitialized) {
+                btnLoop.imageTintList = ColorStateList.valueOf(
+                    if (value) dialogAccentColor else Color.WHITE
+                )
+            }
+        }
 
     var hKeyframe: HKeyframeEntity? = null
         set(value) {
@@ -409,12 +424,14 @@ class HJzvdStd @JvmOverloads constructor(
         topBarContainer = findViewById(R.id.top_bar_container)
         gestureLock = findViewById(R.id.lock)
         gestureLock.isSelected = false
+        btnLoop = findViewById(R.id.btn_loop)
         textureViewContainer.isHapticFeedbackEnabled = true
         tvSpeed.setOnClickListener(this)
         tvKeyframe.setOnClickListener(this)
         tvKeyframe.setOnLongClickListener(this)
         btnGoHome.setOnClickListener(this)
         superResolution.setOnClickListener(this)
+        btnLoop.setOnClickListener(this)
         btnResumeProgress.setOnClickListener {
             hasRestoredProgress = true
             mediaInterface.seekTo(0L)
@@ -449,6 +466,7 @@ class HJzvdStd @JvmOverloads constructor(
         findViewById<View>(R.id.go_home)?.isVisible = visible
         findViewById<View>(R.id.layout_top)?.isVisible = visible
         findViewById<View>(R.id.layout_bottom)?.isVisible = visible
+        findViewById<View>(R.id.btn_loop)?.isVisible = visible
     }
     override fun setUp(jzDataSource: JZDataSource?, screen: Int, clazz: Class<*>) {
         super.setUp(jzDataSource, screen, clazz)
@@ -707,6 +725,16 @@ class HJzvdStd @JvmOverloads constructor(
             R.id.tv_speed -> clickSpeed()
             R.id.tv_keyframe -> onKeyframeClickListener?.invoke(v)
             R.id.super_resolution -> clickSuperResolution()
+            R.id.btn_loop -> {
+                isLooping = !isLooping
+                applyLooping()
+                GlobalToasts.show(
+                    context.getString(
+                        if (isLooping) R.string.loop_play_on else R.string.loop_play_off
+                    ),
+                    level = if (isLooping) GlobalToasts.ToastLevel.SUCCESS else GlobalToasts.ToastLevel.INFO,
+                )
+            }
             R.id.go_home -> {
                 if (screen != SCREEN_FULLSCREEN) {
                     context.findActivityOrNull<MainActivity>()?.let { activity ->
@@ -753,12 +781,31 @@ class HJzvdStd @JvmOverloads constructor(
     }
 
     override fun onCompletion() {
+        if (isLooping) {
+            restartLoop()
+            return
+        }
         if (screen == SCREEN_FULLSCREEN) {
             onStateAutoComplete()
         } else {
             super.onCompletion()
         }
         posterImageView.isGone = true
+    }
+
+    private fun restartLoop() {
+        mediaInterface?.seekTo(0L)
+        mediaInterface?.start()
+        onStatePlaying()
+    }
+
+    private fun applyLooping() {
+        jzDataSource.looping = isLooping
+        when (val mi = mediaInterface) {
+            is ExoMediaKernel -> mi.setLooping(isLooping)
+            is MpvMediaKernel -> mi.setLooping(isLooping)
+            is SystemMediaKernel -> mi.setLooping(isLooping)
+        }
     }
 
     override fun touchActionMove(x: Float, y: Float) {
