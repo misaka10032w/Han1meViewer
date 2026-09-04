@@ -39,8 +39,11 @@ abstract class WatchHistoryDao {
     @Query("SELECT * FROM WatchHistoryEntity WHERE videoCode IN (:videoCodes)")
     abstract suspend fun findByVideoCodes(videoCodes: List<String>): List<WatchHistoryEntity>
 
-    @Query("SELECT videoCode FROM WatchHistoryEntity WHERE videoCode IN (:codes)")
+    @Query("SELECT videoCode FROM WatchHistoryEntity WHERE videoCode IN (:codes) AND watched = 1")
     abstract suspend fun getWatchedCodes(codes: List<String>): List<String>
+
+    @Query("UPDATE WatchHistoryEntity SET watched = 1 WHERE videoCode = :videoCode")
+    abstract suspend fun markWatched(videoCode: String)
 
     @Query("SELECT * FROM WatchHistoryEntity ORDER BY watchDate DESC LIMIT :limit")
     abstract suspend fun getRecentWatches(limit: Int): List<WatchHistoryEntity>
@@ -54,7 +57,8 @@ abstract class WatchHistoryDao {
         if (dbEntity != null) {
             val merged = history.copy(
                 id = dbEntity.id,
-                progress = if (history.progress == 0L) dbEntity.progress else history.progress
+                progress = if (history.progress == 0L) dbEntity.progress else history.progress,
+                watched = dbEntity.watched || history.watched
             )
             update(merged)
         } else {

@@ -84,6 +84,7 @@ import kotlinx.coroutines.withContext
 private const val HOME_VIDEO_LANGUAGE = "video_language"
 private const val HOME_DEFAULT_VIDEO_QUALITY = "default_video_quality"
 private const val HOME_SHOW_PLAYED_INDICATOR = "show_played_indicator"
+private const val HOME_WATCHED_PROGRESS_THRESHOLD = "watched_progress_threshold"
 private const val HOME_ALLOW_PIP_MODE = "allow_pip_mode"
 private const val HOME_UPDATE_POPUP_INTERVAL_DAYS = "update_popup_interval_days"
 private const val HOME_USE_CI_UPDATE_CHANNEL = "use_ci_update_channel"
@@ -263,6 +264,10 @@ fun HomeSettingsRouteScreen(
         },
         onShowPlayedIndicatorChange = {
             saveBoolean(HOME_SHOW_PLAYED_INDICATOR, it)
+            refreshKey++
+        },
+        onWatchedProgressThresholdChange = {
+            saveInt(HOME_WATCHED_PROGRESS_THRESHOLD, it)
             refreshKey++
         },
         onSearchArtistIgnoreVideoTypeChange = {
@@ -642,6 +647,7 @@ private fun buildHomeSettingsUiState(
         allowPipMode = Preferences.preferenceSp.getBoolean(HOME_ALLOW_PIP_MODE, false),
         allowResumePlayback = Preferences.allowResumePlayback,
         showPlayedIndicator = Preferences.showPlayedIndicator,
+        watchedProgressThreshold = Preferences.watchedProgressThreshold,
         searchArtistIgnoreVideoType = Preferences.searchArtistIgnoreVideoType,
         disableMobileDataWarning = Preferences.disableMobileDataWarning,
         disablePredictiveBack = Preferences.disablePredictiveBack,

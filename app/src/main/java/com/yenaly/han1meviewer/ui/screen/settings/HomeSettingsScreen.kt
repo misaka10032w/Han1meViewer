@@ -51,6 +51,7 @@ fun HomeSettingsScreen(
     onAllowPipModeChange: (Boolean) -> Unit,
     onAllowResumePlaybackChange: (Boolean) -> Unit,
     onShowPlayedIndicatorChange: (Boolean) -> Unit,
+    onWatchedProgressThresholdChange: (Int) -> Unit,
     onSearchArtistIgnoreVideoTypeChange: (Boolean) -> Unit,
     onDisableMobileDataWarningChange: (Boolean) -> Unit,
     onDisablePredictiveBackChange: (Boolean) -> Unit,
@@ -242,6 +243,17 @@ fun HomeSettingsScreen(
                 checked = state.showPlayedIndicator,
                 iconRes = R.drawable.ic_baseline_history_24,
                 onCheckedChange = onShowPlayedIndicatorChange,
+            )
+        }
+        item {
+            SettingSliderItem(
+                title = stringResource(R.string.watched_progress_threshold),
+                summary = stringResource(R.string.watched_progress_threshold_summary, state.watchedProgressThreshold),
+                value = state.watchedProgressThreshold,
+                valueRange = 0..100,
+                step = 10,
+                iconRes = R.drawable.ic_baseline_history_24,
+                onValueChange = onWatchedProgressThresholdChange,
             )
         }
         item {
@@ -552,6 +564,7 @@ private fun HomeSettingsScreenPreview() {
                 allowPipMode = true,
                 allowResumePlayback = true,
                 showPlayedIndicator = true,
+                watchedProgressThreshold = 90,
                 searchArtistIgnoreVideoType = false,
                 disableMobileDataWarning = false,
                 disablePredictiveBack = false,
@@ -587,6 +600,7 @@ private fun HomeSettingsScreenPreview() {
             onAllowPipModeChange = {},
             onAllowResumePlaybackChange = {},
             onShowPlayedIndicatorChange = {},
+            onWatchedProgressThresholdChange = {},
             onSearchArtistIgnoreVideoTypeChange = {},
             onDisableMobileDataWarningChange = {},
             onDisablePredictiveBackChange = {},

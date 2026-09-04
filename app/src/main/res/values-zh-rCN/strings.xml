@@ -726,6 +726,8 @@
     <string name="search_artist_ignore_video_type_summary">开启后，点击详情页头像搜索艺术家时，不再附带影片类型。</string>
     <string name="show_played_indicator">显示播放状态标记</string>
     <string name="show_played_indicator_summary">开启后将在搜索结果页视频封面右上角显示已播放标记</string>
+    <string name="watched_progress_threshold">标记已观看的进度门槛</string>
+    <string name="watched_progress_threshold_summary">播放进度达到该百分比后才标记为已观看（目前：%1$d%%）</string>
     <string name="horizontal_card_count_title">横向列表可见卡片数</string>
     <string name="horizontal_card_count_summary">可调整首页与影片详情相关推荐等横向列表一次可见的卡片数量</string>
     <string name="horizontal_card_count_dialog_hint">按不同屏幕宽度设置横向列表一次可见的卡片数量</string>

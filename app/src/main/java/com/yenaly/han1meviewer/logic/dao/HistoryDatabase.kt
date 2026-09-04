@@ -21,7 +21,7 @@ import com.yenaly.yenaly_libs.utils.applicationContext
     entities = [SearchHistoryEntity::class,
         WatchHistoryEntity::class,
         HanimeAdvancedSearchHistoryEntity::class],
-    version = 4, exportSchema = false
+    version = 5, exportSchema = false
 )
 abstract class HistoryDatabase : RoomDatabase() {
 
@@ -40,7 +40,8 @@ abstract class HistoryDatabase : RoomDatabase() {
             ).addMigrations(
                 Migration1To2,
                 Migration2To3,
-                Migration3To4
+                Migration3To4,
+                Migration4To5
             ).build()
         }
     }
@@ -96,6 +97,15 @@ abstract class HistoryDatabase : RoomDatabase() {
                     `createdAt` INTEGER NOT NULL
                 )
                 """.trimIndent()
+            )
+        }
+    }
+    object Migration4To5 : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // 增加「已看完」列，旧数据默认视为已看完以保留原有标记
+            db.execSQL(
+                """ALTER TABLE WatchHistoryEntity
+                   ADD COLUMN watched INTEGER NOT NULL DEFAULT 1"""
             )
         }
     }

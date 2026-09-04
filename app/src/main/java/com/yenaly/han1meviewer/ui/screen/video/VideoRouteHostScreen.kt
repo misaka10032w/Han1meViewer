@@ -411,6 +411,17 @@ fun VideoRouteHostScreen(
                 }
             }
         }
+        fun markWatchedIfReachedThreshold() {
+            if (viewModel.fromDownload) return
+            val duration = player.duration
+            val position = player.currentPositionWhenPlaying
+            if (duration > 0 && position * 100 >= duration * Preferences.watchedProgressThreshold) {
+                scope.launch {
+                    DatabaseRepo.WatchHistory.markWatched(route.videoCode)
+                }
+            }
+        }
+
         val lifecycleObserver = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_PAUSE -> {
@@ -418,6 +429,7 @@ fun VideoRouteHostScreen(
                     scope.launch {
                         DatabaseRepo.WatchHistory.updateProgress(route.videoCode, progress)
                     }
+                    markWatchedIfReachedThreshold()
                 }
 
                 Lifecycle.Event.ON_STOP -> {
@@ -468,6 +480,9 @@ fun VideoRouteHostScreen(
                         behavior.disableScroll = false
                     }
                 }
+            }
+            if (state == Jzvd.STATE_AUTO_COMPLETE) {
+                markWatchedIfReachedThreshold()
             }
         }
         player.fullscreenListener = object : HJzvdStd.FullscreenListener {

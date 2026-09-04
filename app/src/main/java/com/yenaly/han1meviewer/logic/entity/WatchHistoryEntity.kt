@@ -18,6 +18,7 @@ data class WatchHistoryEntity(
     val watchDate: Long,
     val videoCode: String,
     val progress: Long = 0L,
+    val watched: Boolean = false,
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 ) {
