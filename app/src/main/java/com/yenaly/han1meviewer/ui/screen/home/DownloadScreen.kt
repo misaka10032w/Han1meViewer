@@ -1,15 +1,23 @@
 package com.yenaly.han1meviewer.ui.screen.home
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -26,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
@@ -37,6 +46,8 @@ import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadEvent
+import com.yenaly.han1meviewer.ui.screen.home.download.DownloadSort
+import com.yenaly.han1meviewer.ui.screen.home.download.downloadSortComparator
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadUiState
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadedScreen
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadingScreen
@@ -44,6 +55,7 @@ import com.yenaly.han1meviewer.ui.screen.home.download.MoveGroupDialog
 import com.yenaly.han1meviewer.ui.screen.home.download.toDisplayGroups
 import com.yenaly.han1meviewer.ui.screen.home.download.toFlatNodeList
 import com.yenaly.han1meviewer.ui.screen.home.download.toNodeList
+import com.yenaly.han1meviewer.util.toSimplified
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -93,26 +105,53 @@ fun DownloadScreen(
     var selectedVideoIds by remember { mutableStateOf(setOf<Int>()) }
     var pendingBatchMove by remember { mutableStateOf(false) }
     var pendingBatchMoveConfirm by remember { mutableStateOf<Pair<List<VideoWithCategories>, Int>?>(null) }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    var sort by rememberSaveable { mutableStateOf(DownloadSort.DATE_DESC) }
+    var showSearchBar by rememberSaveable { mutableStateOf(false) }
+    var showSortMenu by remember { mutableStateOf(false) }
 
     val displayGroups = downloadedGroups.toDisplayGroups()
 
-    val downloadedNodes =
-        remember(downloadedItems, displayGroups, collapseDownloadedGroup, downloadedHeaderNodes, downloadedGroupExpandedState) {
-            val groupIdToNameMap = displayGroups.associate { it.id to it.name }
-            if (downloadedItems.isEmpty()) {
-                downloadedHeaderNodes = emptyList()
-                emptyList()
+    val filteredDownloadedItems =
+        remember(downloadedItems, searchQuery, sort) {
+            val filtered = if (searchQuery.isBlank()) {
+                downloadedItems
             } else {
-                val newHeaders =
-                    downloadedItems.toNodeList(groupIdToNameMap, collapseDownloadedGroup)
-                downloadedHeaderNodes = newHeaders.map { newHeader ->
-                    newHeader.copy(
-                        isExpanded = downloadedGroupExpandedState[newHeader.groupId]
-                            ?: downloadedHeaderNodes.firstOrNull { it.groupId == newHeader.groupId }?.isExpanded
-                            ?: !collapseDownloadedGroup
-                    )
+                val normalizedQuery = searchQuery.toSimplified()
+                downloadedItems.filter {
+                    it.video.title.toSimplified().contains(normalizedQuery, ignoreCase = true) ||
+                        it.video.videoCode.contains(searchQuery, ignoreCase = true)
                 }
-                downloadedHeaderNodes.toFlatNodeList()
+            }
+            filtered.sortedWith(downloadSortComparator(sort))
+        }
+
+    val downloadedNodes =
+        remember(filteredDownloadedItems, displayGroups, collapseDownloadedGroup, downloadedHeaderNodes, downloadedGroupExpandedState, searchQuery) {
+            val groupIdToNameMap = displayGroups.associate { it.id to it.name }
+            when {
+                filteredDownloadedItems.isEmpty() -> {
+                    downloadedHeaderNodes = emptyList()
+                    emptyList()
+                }
+
+                searchQuery.isNotBlank() -> {
+                    downloadedHeaderNodes = emptyList()
+                    filteredDownloadedItems.map { DownloadItemNode(it, it.video.groupId) }
+                }
+
+                else -> {
+                    val newHeaders =
+                        filteredDownloadedItems.toNodeList(groupIdToNameMap, collapseDownloadedGroup)
+                    downloadedHeaderNodes = newHeaders.map { newHeader ->
+                        newHeader.copy(
+                            isExpanded = downloadedGroupExpandedState[newHeader.groupId]
+                                ?: downloadedHeaderNodes.firstOrNull { it.groupId == newHeader.groupId }?.isExpanded
+                                ?: !collapseDownloadedGroup
+                        )
+                    }
+                    downloadedHeaderNodes.toFlatNodeList()
+                }
             }
         }
 
@@ -201,6 +240,38 @@ fun DownloadScreen(
             } else {
                 if (!uiState.multiSelectMode) {
                     FilledIconButton(
+                        onClick = { showSearchBar = !showSearchBar }
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_baseline_search_24),
+                            contentDescription = stringResource(R.string.search),
+                        )
+                    }
+                    Box {
+                        FilledIconButton(
+                            onClick = { showSortMenu = true }
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.baseline_sort_24),
+                                contentDescription = stringResource(R.string.sort_option),
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showSortMenu,
+                            onDismissRequest = { showSortMenu = false },
+                        ) {
+                            DownloadSort.entries.forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(option.labelRes)) },
+                                    onClick = {
+                                        sort = option
+                                        showSortMenu = false
+                                    },
+                                )
+                            }
+                        }
+                    }
+                    FilledIconButton(
                         onClick = { handleEvent(DownloadEvent.OnToggleMultiSelect) }
                     ) {
                         Icon(
@@ -246,6 +317,34 @@ fun DownloadScreen(
                 )
             }
 
+            AnimatedVisibility(visible = showSearchBar && uiState.currentPage == 1) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    placeholder = { Text(stringResource(R.string.search_downloaded_hint)) },
+                    singleLine = true,
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_baseline_search_24),
+                            contentDescription = null,
+                        )
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { searchQuery = "" }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Clear,
+                                    contentDescription = stringResource(R.string.close),
+                                )
+                            }
+                        }
+                    },
+                )
+            }
+
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier
@@ -270,7 +369,7 @@ fun DownloadScreen(
 
     if (pendingBatchMove) {
         val selectedVideos = downloadedNodes
-            .filterIsInstance<com.yenaly.han1meviewer.logic.model.DownloadItemNode>()
+            .filterIsInstance<DownloadItemNode>()
             .filter { it.data.video.id in selectedVideoIds }
             .map { it.data }
         if (selectedVideos.isNotEmpty()) {

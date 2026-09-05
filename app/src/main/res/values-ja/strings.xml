@@ -132,6 +132,7 @@
     <string name="sort_by_date_descending">日付順（新しい順）</string>
     <string name="sort_by_alphabet_ascending">アルファベット順（A-Z）</string>
     <string name="sort_by_alphabet_descending">アルファベット順（Z-A）</string>
+    <string name="search_downloaded_hint">ダウンロード済みを検索…</string>
     <string name="h_keyframe_settings">キーHフレーム設定</string>
     <string name="h_keyframes_enable">キーHフレームを有効化</string>
     <string name="h_keyframes_enable_tip">無効にしても履歴データは削除されません</string>
