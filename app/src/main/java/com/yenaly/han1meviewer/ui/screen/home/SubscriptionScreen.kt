@@ -59,6 +59,7 @@ fun SubscriptionScreen(
     onLongClickVideosItem: (String, String) -> Unit,
 ) {
     val state by viewModel.subscriptionsState.collectAsStateWithLifecycle()
+    val loadedPage by viewModel.loadedPage.collectAsStateWithLifecycle()
     val cachedArtists = rememberSaveable { mutableStateOf<List<SubscriptionItem>>(emptyList()) }
     val cachedVideos = rememberSaveable { mutableStateOf<List<SubscriptionVideosItem>>(emptyList()) }
     val scrollBehavior = pinnedScrollBehavior(rememberTopAppBarState())
@@ -68,6 +69,8 @@ fun SubscriptionScreen(
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
 
     val canLoadMore = viewModel.canLoadMore()
+
+    val maxPage = (state as? WebsiteState.Success)?.info?.maxPage ?: 1
 
     val showCached = state is WebsiteState.Loading && cachedArtists.value.isNotEmpty() ||
             state is WebsiteState.Error && cachedArtists.value.isNotEmpty()
@@ -93,6 +96,8 @@ fun SubscriptionScreen(
         videos = cachedVideos.value,
         isRefreshing = isRefreshing,
         canLoadMore = canLoadMore,
+        currentPage = loadedPage,
+        maxPage = maxPage,
         error = (state as? WebsiteState.Error)?.throwable,
         showCached = showCached,
     )
@@ -109,6 +114,7 @@ fun SubscriptionScreen(
                 viewModel.loadMySubscriptions(forceReload = true)
             }
             SubscriptionEvent.OnLoadMore -> viewModel.loadMySubscriptions()
+            is SubscriptionEvent.OnGoToPage -> viewModel.goToPage(event.page)
         }
     }
 

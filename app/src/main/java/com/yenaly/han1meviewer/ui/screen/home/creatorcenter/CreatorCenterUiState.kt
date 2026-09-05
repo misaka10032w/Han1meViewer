@@ -31,6 +31,8 @@ data class CreatorCenterUiState(
     val uploadingSort: CreatorSort = CreatorSort.Latest,
     val uploadedPage: Int = 0,
     val uploadingPage: Int = 0,
+    val uploadedTotalPages: Int = 1,
+    val uploadingTotalPages: Int = 1,
     val uploadedLoadingMore: Boolean = false,
     val uploadingLoadingMore: Boolean = false,
 )
@@ -47,6 +49,9 @@ sealed interface CreatorCenterEvent {
 
     /** 加载更多 */
     data class OnLoadMore(val tab: CreatorTab) : CreatorCenterEvent
+
+    /** 跳到指定页 */
+    data class OnGoToPage(val tab: CreatorTab, val page: Int) : CreatorCenterEvent
 
     /** 刷新 */
     data class OnRefresh(val tab: CreatorTab) : CreatorCenterEvent

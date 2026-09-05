@@ -735,12 +735,14 @@ object Parser {
         val desc = parseBody.getElementById("playlist-show-description")?.ownText()
         val allHanimeClass = parseBody.getElementsByClass("horizontal-row").firstOrNull()
         val myListHanimeList = allHanimeClass.extractHanimeInfo("div[class^=user-tab-item-wrapper]")
+        val maxPage = parseListMaxPage(parseBody)
 
         return PageLoadingState.Success(
             MyListItems(
                 myListHanimeList,
                 desc = desc,
-                csrfToken = csrfToken
+                csrfToken = csrfToken,
+                maxPage = maxPage,
             )
         )
     }
@@ -751,12 +753,14 @@ object Parser {
         val desc = parseBody.select("p.playlist-description").first()?.text()
         val allHanimeClass = parseBody.getElementsByClass("playlist-video-list").firstOrNull()
         val myListHanimeList = allHanimeClass.extractHanimeInfo("div[class^=user-tab-item-wrapper]")
+        val maxPage = parseListMaxPage(parseBody)
 
         return PageLoadingState.Success(
             MyListItems(
                 myListHanimeList,
                 desc = desc,
-                csrfToken = csrfToken
+                csrfToken = csrfToken,
+                maxPage = maxPage,
             )
         )
     }
@@ -769,7 +773,9 @@ object Parser {
         return if (items.isEmpty()) {
             PageLoadingState.NoMoreData
         } else {
-            PageLoadingState.Success(MyListItems(items, csrfToken = csrfToken))
+            PageLoadingState.Success(
+                MyListItems(items, csrfToken = csrfToken, maxPage = parseListMaxPage(parseBody))
+            )
         }
     }
 
@@ -820,7 +826,9 @@ object Parser {
         return if (items.isEmpty()) {
             PageLoadingState.NoMoreData
         } else {
-            PageLoadingState.Success(MyListItems(items, csrfToken = csrfToken))
+            PageLoadingState.Success(
+                MyListItems(items, csrfToken = csrfToken, maxPage = parseListMaxPage(parseBody))
+            )
         }
     }
 
@@ -861,7 +869,9 @@ object Parser {
         return if (items.isEmpty()) {
             PageLoadingState.NoMoreData
         } else {
-            PageLoadingState.Success(MyListItems(items, csrfToken = csrfToken))
+            PageLoadingState.Success(
+                MyListItems(items, csrfToken = csrfToken, maxPage = parseListMaxPage(parseBody))
+            )
         }
     }
 
@@ -900,7 +910,13 @@ object Parser {
                 listCode = listCode, title = listTitle, total = formatedTotal, coverUrl = coverUrl
             )
         }
-        return WebsiteState.Success(Playlists(playlists = playlists, csrfToken = csrfToken))
+        return WebsiteState.Success(
+            Playlists(
+                playlists = playlists,
+                csrfToken = csrfToken,
+                maxPage = parseListMaxPage(parseBody),
+            )
+        )
     }
 
     @SuppressLint("BuildListAdds")
@@ -1171,7 +1187,7 @@ object Parser {
             .lastOrNull()
             ?.select("a.page-link[href]")
             ?.mapNotNull {
-                Regex("""\?page=(\d+)""").find(it.attr("href"))?.groupValues?.get(1)?.toIntOrNull()
+                Regex("""[?&]page=(\d+)""").find(it.attr("href"))?.groupValues?.get(1)?.toIntOrNull()
             }
             ?.maxOrNull() ?: 1
     }
@@ -1187,6 +1203,16 @@ object Parser {
             ?.groupValues?.get(1)
             ?.toIntOrNull()
             ?: 1
+    }
+
+    /**
+     * 列表页（我的清单、历史、创作者中心等）的总页数：优先尝试「跳到指定页」表单，
+     * 否则回退到订阅页使用的 ul.pagination 结构。
+     */
+    private fun parseListMaxPage(parseBody: Element): Int {
+        val searchMax = parseSearchMaxPage(parseBody)
+        if (searchMax > 1) return searchMax
+        return parseMaxPage(parseBody)
     }
 
     /**

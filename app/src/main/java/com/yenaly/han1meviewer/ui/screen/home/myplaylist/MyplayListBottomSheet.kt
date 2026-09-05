@@ -38,6 +38,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -49,6 +50,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
@@ -56,8 +58,10 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
+import com.yenaly.han1meviewer.ui.component.PaginationPager
 import com.yenaly.han1meviewer.ui.component.TextInputDialog
 import com.yenaly.han1meviewer.ui.component.TextInputField
+import kotlinx.coroutines.launch
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
@@ -222,6 +226,9 @@ private fun PlaylistSheetContent(
     var showDeleteItemConfirm by remember { mutableStateOf<Triple<String, String, Int>?>(null) }
     var showEditPlaylistDialog by remember { mutableStateOf(false) }
     val desc by playlistDesc.collectAsState()
+    val totalPages by vm.playlistTotalPages.collectAsState()
+    val searchPagination = Preferences.searchPagination
+    val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.fillMaxSize()) {
         Box(Modifier
@@ -334,7 +341,7 @@ private fun PlaylistSheetContent(
                 }
 
                 item(span = { GridItemSpan(columns) }) {
-                    if (playlistState is PageLoadingState.Loading && vm.currentPage > 1) {
+                    if (playlistState is PageLoadingState.Loading && vm.currentPage > 1 && !searchPagination) {
                         Box(
                             Modifier
                                 .fillMaxWidth()
@@ -346,38 +353,50 @@ private fun PlaylistSheetContent(
                     }
                 }
 
-                if (playlistState is PageLoadingState.NoMoreData && playlist.isNotEmpty()) {
+                if (playlist.isNotEmpty()) {
                     item(span = { GridItemSpan(columns) }) {
-                        Box(
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                stringResource(
-                                    R.string.load_complete_with_pages,
-                                    vm.currentPage - 1
-                                ),
-                                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (searchPagination) {
+                            PaginationPager(
+                                currentPage = vm.currentPage.coerceAtLeast(1),
+                                totalPages = totalPages,
+                                onPageSelected = { page ->
+                                    vm.goToPlaylistPage(page, listCode)
+                                    scope.launch { gridState.scrollToItem(0) }
+                                },
+                                modifier = Modifier.padding(vertical = 4.dp),
                             )
+                        } else if (playlistState is PageLoadingState.NoMoreData) {
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    stringResource(
+                                        R.string.load_complete_with_pages,
+                                        vm.currentPage - 1
+                                    ),
+                                    style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                )
+                            }
                         }
                     }
                 }
             }
 
-            val currentListCode = listCode
-            LaunchedEffect(gridState, playlistState) {
+            LaunchedEffect(gridState, playlistState, searchPagination) {
                 snapshotFlow { gridState.layoutInfo }.collect { layoutInfo ->
                     val totalItems = layoutInfo.totalItemsCount
                     val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-                    if (lastVisibleItem >= totalItems - 3 &&
+                    if (!searchPagination &&
+                        lastVisibleItem >= totalItems - 3 &&
                         playlistState !is PageLoadingState.Loading &&
                         playlistState !is PageLoadingState.NoMoreData &&
                         !vm.isLoadingMore
                     ) {
                         vm.currentPage++
-                        vm.getPlaylistItems(vm.currentPage, currentListCode)
+                        vm.getPlaylistItems(vm.currentPage, listCode)
                     }
                 }
             }

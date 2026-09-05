@@ -20,6 +20,7 @@ data class SubscriptionUiState(
     val isRefreshing: Boolean = false,
     val canLoadMore: Boolean = false,
     val currentPage: Int = 1,
+    val maxPage: Int = 1,
     val error: Throwable? = null,
     val showCached: Boolean = false,
 )
@@ -45,6 +46,9 @@ sealed interface SubscriptionEvent {
 
     /** 加载更多 */
     data object OnLoadMore : SubscriptionEvent
+
+    /** 跳到指定页 */
+    data class OnGoToPage(val page: Int) : SubscriptionEvent
 
     /** 返回 */
     data object OnBack : SubscriptionEvent

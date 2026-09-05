@@ -3,18 +3,24 @@ package com.yenaly.han1meviewer.ui.screen.home.videogrid
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.ui.component.LoadMoreFooter
+import com.yenaly.han1meviewer.ui.component.PaginationPager
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
+import kotlinx.coroutines.launch
 
 /**
  * 视频网格 Content 层。纯 UI，不持有 ViewModel。
@@ -25,6 +31,7 @@ import com.yenaly.han1meviewer.ui.theme.SpacingNormal
  * @param gridState LazyGrid 滚动状态
  * @param onOpenVideo 打开视频详情回调
  * @param onDeleteItem 删除视频项回调
+ * @param onGoToPage 跳转到指定页回调
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -33,9 +40,12 @@ fun VideoGridContent(
     gridState: LazyGridState,
     onOpenVideo: (HanimeInfo) -> Unit,
     onDeleteItem: (HanimeInfo) -> Unit,
+    onGoToPage: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val videoColumns = rememberVideoGridColumns()
+    val scope = rememberCoroutineScope()
+    val searchPagination = Preferences.searchPagination
     LazyVerticalGrid(
         columns = GridCells.Fixed(videoColumns),
         state = gridState,
@@ -54,11 +64,23 @@ fun VideoGridContent(
         }
         if (uiState.items.isNotEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                LoadMoreFooter(
-                    state = uiState.state,
-                    loadedPage = uiState.loadedPageCount,
-                    isLoadingMore = uiState.isLoadingMore
-                )
+                if (searchPagination) {
+                    PaginationPager(
+                        currentPage = uiState.loadedPageCount.coerceAtLeast(1),
+                        totalPages = uiState.totalPages,
+                        onPageSelected = { page ->
+                            onGoToPage(page)
+                            scope.launch { gridState.scrollToItem(0) }
+                        },
+                        modifier = Modifier.padding(vertical = 4.dp),
+                    )
+                } else {
+                    LoadMoreFooter(
+                        state = uiState.state,
+                        loadedPage = uiState.loadedPageCount,
+                        isLoadingMore = uiState.isLoadingMore
+                    )
+                }
             }
         }
     }

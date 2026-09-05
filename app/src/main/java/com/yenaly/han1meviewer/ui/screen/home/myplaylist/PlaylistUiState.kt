@@ -25,6 +25,7 @@ data class PlaylistUiState(
     val isLoadingMore: Boolean = false,
     val noMorePlaylists: Boolean = false,
     val playlistPage: Int = 1,
+    val totalPages: Int = 1,
 )
 
 /**
@@ -36,6 +37,9 @@ sealed interface PlaylistEvent {
 
     /** 加载更多播放列表 */
     data object OnLoadMore : PlaylistEvent
+
+    /** 跳到指定页 */
+    data class OnGoToPage(val page: Int) : PlaylistEvent
 
     /** 点击播放列表 → 打开详情弹窗 */
     data class OnPlaylistClick(val listCode: String, val title: String) : PlaylistEvent

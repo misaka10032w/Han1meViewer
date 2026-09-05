@@ -60,6 +60,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
@@ -69,6 +70,7 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.LoadMoreFooter
 import com.yenaly.han1meviewer.ui.component.PageContent
+import com.yenaly.han1meviewer.ui.component.PaginationPager
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
@@ -95,6 +97,7 @@ fun WatchHistoryTabScreen(
     onlineState: StateFlow<PageLoadingState<*>>,
     onlineSort: StateFlow<OnlineWatchHistorySort>,
     onlineLoadedPageCount: StateFlow<Int>,
+    onlineTotalPages: StateFlow<Int>,
     onlineIsLoadingMore: StateFlow<Boolean>,
     onlineRefreshing: () -> Boolean,
     onlineDeleteStateFlow: SharedFlow<WebsiteState<Boolean>>,
@@ -106,6 +109,7 @@ fun WatchHistoryTabScreen(
     onDeleteOnlineVideo: (HanimeInfo) -> Unit,
     onRefreshOnline: (OnlineWatchHistorySort) -> Unit,
     onLoadMoreOnline: () -> Unit,
+    onGoToPageOnline: (Int) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { 2 })
@@ -114,6 +118,7 @@ fun WatchHistoryTabScreen(
     val currentOnlineState by onlineState.collectAsState()
     val currentOnlineSort by onlineSort.collectAsState()
     val currentOnlineLoadedPageCount by onlineLoadedPageCount.collectAsState()
+    val currentOnlineTotalPages by onlineTotalPages.collectAsState()
     val currentOnlineIsLoadingMore by onlineIsLoadingMore.collectAsState()
     var showHelpDialog by rememberSaveable { mutableStateOf(false) }
     var showDeleteAllLocalDialog by rememberSaveable { mutableStateOf(false) }
@@ -215,6 +220,7 @@ fun WatchHistoryTabScreen(
                         state = currentOnlineState,
                         sort = currentOnlineSort,
                         loadedPageCount = currentOnlineLoadedPageCount,
+                        totalPages = currentOnlineTotalPages,
                         isLoadingMore = currentOnlineIsLoadingMore,
                         refreshing = onlineRefreshing(),
                         deleteStateFlow = onlineDeleteStateFlow,
@@ -222,6 +228,7 @@ fun WatchHistoryTabScreen(
                         onDeleteVideo = onDeleteOnlineVideo,
                         onRefresh = onRefreshOnline,
                         onLoadMore = onLoadMoreOnline,
+                        onGoToPage = onGoToPageOnline,
                     )
                 }
             }
@@ -386,6 +393,7 @@ private fun OnlineWatchHistoryScreen(
     state: PageLoadingState<*>,
     sort: OnlineWatchHistorySort,
     loadedPageCount: Int,
+    totalPages: Int,
     isLoadingMore: Boolean,
     refreshing: Boolean,
     deleteStateFlow: SharedFlow<WebsiteState<Boolean>>,
@@ -393,6 +401,7 @@ private fun OnlineWatchHistoryScreen(
     onDeleteVideo: (HanimeInfo) -> Unit,
     onRefresh: (OnlineWatchHistorySort) -> Unit,
     onLoadMore: () -> Unit,
+    onGoToPage: (Int) -> Unit,
 ) {
     val gridState = rememberLazyGridState()
     val refreshState = rememberPullToRefreshState()
@@ -401,6 +410,7 @@ private fun OnlineWatchHistoryScreen(
     var sortBarVisible by rememberSaveable { mutableStateOf(true) }
     val deleteFailedText = stringResource(R.string.delete_failed)
     val deleteSuccessText = stringResource(R.string.delete_success)
+    val searchPagination = Preferences.searchPagination
 
     LaunchedEffect(deleteStateFlow, deleteFailedText, deleteSuccessText) {
         deleteStateFlow.collect { deleteState ->
@@ -412,8 +422,8 @@ private fun OnlineWatchHistoryScreen(
         }
     }
 
-    LaunchedEffect(gridState.canLoadMore(items, state), isLoadingMore) {
-        if (gridState.canLoadMore(items, state) && !isLoadingMore) {
+    LaunchedEffect(gridState.canLoadMore(items, state), isLoadingMore, searchPagination) {
+        if (!searchPagination && gridState.canLoadMore(items, state) && !isLoadingMore) {
             onLoadMore()
         }
     }
@@ -520,6 +530,8 @@ private fun OnlineWatchHistoryScreen(
                     snackbarHostState = snackbarHostState,
                     onOpenVideo = onOpenVideo,
                     onDeleteVideo = { pendingDelete = it },
+                    totalPages = totalPages,
+                    onGoToPage = onGoToPage,
                 )
             }
         }
@@ -536,8 +548,12 @@ private fun OnlineWatchHistoryGrid(
     snackbarHostState: androidx.compose.material3.SnackbarHostState,
     onOpenVideo: (HanimeInfo) -> Unit,
     onDeleteVideo: (HanimeInfo) -> Unit,
+    totalPages: Int,
+    onGoToPage: (Int) -> Unit,
 ) {
     val videoColumns = rememberVideoGridColumns()
+    val scope = rememberCoroutineScope()
+    val searchPagination = Preferences.searchPagination
     Box(modifier = Modifier.fillMaxSize()) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(videoColumns),
@@ -564,11 +580,23 @@ private fun OnlineWatchHistoryGrid(
             }
             if (items.isNotEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    LoadMoreFooter(
-                        state = state,
-                        loadedPage = loadedPageCount,
-                        isLoadingMore = isLoadingMore,
-                    )
+                    if (searchPagination) {
+                        PaginationPager(
+                            currentPage = loadedPageCount.coerceAtLeast(1),
+                            totalPages = totalPages,
+                            onPageSelected = { page ->
+                                onGoToPage(page)
+                                scope.launch { gridState.scrollToItem(0) }
+                            },
+                            modifier = Modifier.padding(vertical = 4.dp),
+                        )
+                    } else {
+                        LoadMoreFooter(
+                            state = state,
+                            loadedPage = loadedPageCount,
+                            isLoadingMore = isLoadingMore,
+                        )
+                    }
                 }
             }
         }

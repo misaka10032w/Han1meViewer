@@ -112,6 +112,7 @@ fun PlaylistScreen(
                 viewModel.loadMyPlayList(forceReload = true)
             }
             PlaylistEvent.OnLoadMore -> viewModel.loadMyPlayList(viewModel.playlistPage + 1)
+            is PlaylistEvent.OnGoToPage -> viewModel.goToPlaylistListPage(event.page)
             is PlaylistEvent.OnPlaylistClick -> {
                 viewModel.setShowSheet(true)
                 viewModel.setListInfo(event.listCode, event.title)

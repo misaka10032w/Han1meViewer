@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -253,7 +255,7 @@ fun HomeSettingsScreen(
                 value = state.watchedProgressThreshold,
                 valueRange = 0..100,
                 step = 10,
-                iconRes = R.drawable.ic_baseline_history_24,
+                iconRes = R.drawable.baseline_flag_24,
                 onValueChange = onWatchedProgressThresholdChange,
             )
         }
@@ -408,7 +410,7 @@ fun HomeSettingsScreen(
                 title = stringResource(R.string.search_pagination),
                 summary = stringResource(R.string.search_pagination_summary),
                 checked = state.searchPagination,
-                iconRes = R.drawable.baseline_grid_24,
+                iconRes = R.drawable.baseline_paging_24,
                 onCheckedChange = onSearchPaginationChange,
             )
         }
