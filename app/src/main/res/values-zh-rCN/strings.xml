@@ -132,6 +132,7 @@
     <string name="sort_by_date_descending">时间反排序</string>
     <string name="sort_by_alphabet_ascending">字母正排序</string>
     <string name="sort_by_alphabet_descending">字母反排序</string>
+    <string name="search_downloaded_hint">搜索已下载视频…</string>
     <string name="h_keyframe_settings">关键H帧设置</string>
     <string name="h_keyframes_enable">关键H帧，启动！</string>
     <string name="h_keyframes_enable_tip">该功能关闭后并不会删除你的历史数据</string>
