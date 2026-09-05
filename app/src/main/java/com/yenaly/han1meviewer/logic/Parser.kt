@@ -13,6 +13,7 @@ import com.yenaly.han1meviewer.logic.exception.LoginStateExpiredException
 import com.yenaly.han1meviewer.logic.exception.ParseException
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimePreview
+import com.yenaly.han1meviewer.logic.model.HanimeSearchResult
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.model.CreatorUploadingItem
 import com.yenaly.han1meviewer.logic.model.HomePage
@@ -216,8 +217,9 @@ object Parser {
         return resultList
     }
 
-    fun hanimeSearch(body: String): PageLoadingState<MutableList<HanimeInfo>> {
+    fun hanimeSearch(body: String): PageLoadingState<HanimeSearchResult> {
         val parseBody = Jsoup.parse(body).body()
+        val maxPage = parseSearchMaxPage(parseBody)
         val allContentsClass =
             parseBody.getElementsByClass("content-padding-new").firstOrNull()
         val allSimplifiedContentsClass =
@@ -225,11 +227,11 @@ object Parser {
 
         // emit!
         if (allContentsClass != null) {
-            return hanimeSearchNormalVer2(allContentsClass)
+            return hanimeSearchNormalVer2(allContentsClass, maxPage)
         } else if (allSimplifiedContentsClass != null) {
-            return hanimeSearchSimplified(allSimplifiedContentsClass)
+            return hanimeSearchSimplified(allSimplifiedContentsClass, maxPage)
         }
-        return PageLoadingState.Success(mutableListOf())
+        return PageLoadingState.Success(HanimeSearchResult(emptyList(), maxPage))
     }
 
     private fun hanimeNormalItemVer2(hanimeSearchItem: Element): HanimeInfo? {
@@ -298,7 +300,8 @@ object Parser {
     // 出来后是正常视频单元的页面用这个
     private fun hanimeSearchNormalVer2(
         allContentsClass: Element,
-    ): PageLoadingState<MutableList<HanimeInfo>> {
+        maxPage: Int,
+    ): PageLoadingState<HanimeSearchResult> {
         val hanimeSearchList = mutableListOf<HanimeInfo>()
         val hanimeSearchItems =
             allContentsClass.select("div[class^=horizontal-card]")
@@ -310,13 +313,14 @@ object Parser {
             }
         }
         Log.d("search_result", "$hanimeSearchList")
-        return PageLoadingState.Success(hanimeSearchList)
+        return PageLoadingState.Success(HanimeSearchResult(hanimeSearchList, maxPage))
     }
 
     // 出来后是简化版视频单元的页面用这个
     private fun hanimeSearchSimplified(
         allSimplifiedContentsClass: Element,
-    ): PageLoadingState<MutableList<HanimeInfo>> {
+        maxPage: Int,
+    ): PageLoadingState<HanimeSearchResult> {
         val hanimeSearchList = mutableListOf<HanimeInfo>()
         val hanimeSearchItems = allSimplifiedContentsClass.children()
         if (hanimeSearchItems.isEmpty()) {
@@ -324,7 +328,7 @@ object Parser {
         } else hanimeSearchItems.forEach { hanimeSearchItem ->
             hanimeSimplifiedItem(hanimeSearchItem)?.let(hanimeSearchList::add)
         }
-        return PageLoadingState.Success(hanimeSearchList)
+        return PageLoadingState.Success(HanimeSearchResult(hanimeSearchList, maxPage))
     }
 
     fun hanimeVideoVer2(body: String): VideoLoadingState<HanimeVideo> {
@@ -1170,6 +1174,19 @@ object Parser {
                 Regex("""\?page=(\d+)""").find(it.attr("href"))?.groupValues?.get(1)?.toIntOrNull()
             }
             ?.maxOrNull() ?: 1
+    }
+
+    /**
+     * 搜索页没有静态的分页列表，总页数藏在「跳到指定页」的表单里：
+     * <input id="skip-page-input" oninput="validateNumberInput(this, 1, 232)" .../>
+     */
+    private fun parseSearchMaxPage(parseBody: Element): Int {
+        val input = parseBody.selectFirst("input#skip-page-input") ?: return 1
+        return Regex("""validateNumberInput\(this,\s*\d+,\s*(\d+)\)""")
+            .find(input.attr("oninput"))
+            ?.groupValues?.get(1)
+            ?.toIntOrNull()
+            ?: 1
     }
 
     /**

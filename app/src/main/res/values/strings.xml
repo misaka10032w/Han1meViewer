@@ -766,6 +766,8 @@
     <string name="show_played_indicator_summary">開啟後將在搜尋結果頁影片封面右上角顯示已播放標記</string>
     <string name="watched_progress_threshold">標記已觀看的進度門檻</string>
     <string name="watched_progress_threshold_summary">播放進度達到該百分比後才標記為已觀看（目前：%1$d%%）</string>
+    <string name="search_pagination">分頁載入</string>
+    <string name="search_pagination_summary">開啟後搜尋結果改用分頁導覽，關閉則使用瀑布流無限載入</string>
     <string name="horizontal_card_count_title">橫向列表可見卡片數</string>
     <string name="horizontal_card_count_summary">可調整首頁與影片詳情相關影片等橫向列表一次可見的卡片數量</string>
     <string name="horizontal_card_count_dialog_hint">依不同螢幕寬度設定橫向列表一次可見的卡片數量</string>

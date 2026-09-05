@@ -52,6 +52,7 @@ fun HomeSettingsScreen(
     onAllowResumePlaybackChange: (Boolean) -> Unit,
     onShowPlayedIndicatorChange: (Boolean) -> Unit,
     onWatchedProgressThresholdChange: (Int) -> Unit,
+    onSearchPaginationChange: (Boolean) -> Unit,
     onSearchArtistIgnoreVideoTypeChange: (Boolean) -> Unit,
     onDisableMobileDataWarningChange: (Boolean) -> Unit,
     onDisablePredictiveBackChange: (Boolean) -> Unit,
@@ -257,15 +258,6 @@ fun HomeSettingsScreen(
             )
         }
         item {
-            SettingNavigationItem(
-                title = stringResource(R.string.horizontal_card_count_title),
-                summary = stringResource(R.string.horizontal_card_count_summary),
-                valueText = state.horizontalCardCountSummary,
-                iconRes = R.drawable.baseline_row_24,
-                onClick = { showHorizontalCardCountDialog = true },
-            )
-        }
-        item {
             SettingSwitchItem(
                 title = stringResource(R.string.search_artist_ignore_video_type),
                 summary = stringResource(R.string.search_artist_ignore_video_type_summary),
@@ -283,36 +275,7 @@ fun HomeSettingsScreen(
                 onCheckedChange = onDisableMobileDataWarningChange,
             )
         }
-        item {
-            SettingSwitchItem(
-                title = stringResource(R.string.disable_predictive_back_title),
-                summary = "暂不可用 Temporarily unavailable",
-                checked = state.disablePredictiveBack,
-                iconRes = R.drawable.ic_baseline_arrow_back_24,
-                onCheckedChange = onDisablePredictiveBackChange,
-                enabled = false
-            )
-        }
-        item {
-            SettingSwitchItem(
-                title = stringResource(R.string.tablet_mode),
-                summary = stringResource(R.string.tablet_mode_summary),
-                checked = state.tabletMode,
-                iconRes = R.drawable.ic_baseline_tablet_24,
-                onCheckedChange = onTabletModeChange,
-            )
-        }
-        if (state.tabletMode) {
-            item {
-                SettingNavigationItem(
-                    title = stringResource(R.string.search_grid_columns_title),
-                    summary = stringResource(R.string.search_grid_columns_summary),
-                    valueText = state.searchGridColumnsSummary,
-                    iconRes = R.drawable.baseline_grid_24,
-                    onClick = { showSearchGridColumnsDialog = true },
-                )
-            }
-        }
+
         item {
             SettingNavigationItem(
                 title = stringResource(R.string.player_settings),
@@ -399,6 +362,54 @@ fun HomeSettingsScreen(
                 ),
                 iconRes = R.drawable.baseline_sort_24,
                 onClick = { showHomeCategoryDialog = true },
+            )
+        }
+        item {
+            SettingSwitchItem(
+                title = stringResource(R.string.disable_predictive_back_title),
+                summary = "暂不可用 Temporarily unavailable",
+                checked = state.disablePredictiveBack,
+                iconRes = R.drawable.ic_baseline_arrow_back_24,
+                onCheckedChange = onDisablePredictiveBackChange,
+                enabled = false
+            )
+        }
+        item {
+            SettingSwitchItem(
+                title = stringResource(R.string.tablet_mode),
+                summary = stringResource(R.string.tablet_mode_summary),
+                checked = state.tabletMode,
+                iconRes = R.drawable.ic_baseline_tablet_24,
+                onCheckedChange = onTabletModeChange,
+            )
+        }
+        if (state.tabletMode) {
+            item {
+                SettingNavigationItem(
+                    title = stringResource(R.string.search_grid_columns_title),
+                    summary = stringResource(R.string.search_grid_columns_summary),
+                    valueText = state.searchGridColumnsSummary,
+                    iconRes = R.drawable.baseline_grid_24,
+                    onClick = { showSearchGridColumnsDialog = true },
+                )
+            }
+        }
+        item {
+            SettingNavigationItem(
+                title = stringResource(R.string.horizontal_card_count_title),
+                summary = stringResource(R.string.horizontal_card_count_summary),
+                valueText = state.horizontalCardCountSummary,
+                iconRes = R.drawable.baseline_row_24,
+                onClick = { showHorizontalCardCountDialog = true },
+            )
+        }
+        item {
+            SettingSwitchItem(
+                title = stringResource(R.string.search_pagination),
+                summary = stringResource(R.string.search_pagination_summary),
+                checked = state.searchPagination,
+                iconRes = R.drawable.baseline_grid_24,
+                onCheckedChange = onSearchPaginationChange,
             )
         }
         item {
@@ -565,6 +576,7 @@ private fun HomeSettingsScreenPreview() {
                 allowResumePlayback = true,
                 showPlayedIndicator = true,
                 watchedProgressThreshold = 90,
+                searchPagination = false,
                 searchArtistIgnoreVideoType = false,
                 disableMobileDataWarning = false,
                 disablePredictiveBack = false,
@@ -601,6 +613,7 @@ private fun HomeSettingsScreenPreview() {
             onAllowResumePlaybackChange = {},
             onShowPlayedIndicatorChange = {},
             onWatchedProgressThresholdChange = {},
+            onSearchPaginationChange = {},
             onSearchArtistIgnoreVideoTypeChange = {},
             onDisableMobileDataWarningChange = {},
             onDisablePredictiveBackChange = {},

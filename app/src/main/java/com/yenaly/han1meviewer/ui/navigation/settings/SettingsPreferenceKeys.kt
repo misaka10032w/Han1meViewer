@@ -6,6 +6,7 @@ object SettingsPreferenceKeys {
     const val SHOW_PLAYED_INDICATOR = "show_played_indicator"
     const val WATCHED_PROGRESS_THRESHOLD = "watched_progress_threshold"
     const val AUTO_PLAY_NEXT = "auto_play_next"
+    const val SEARCH_PAGINATION = "search_pagination"
     const val UPDATE_POPUP_INTERVAL_DAYS = "update_popup_interval_days"
     const val USE_CI_UPDATE_CHANNEL = "use_ci_update_channel"
     const val USE_ANALYTICS = "use_analytics"

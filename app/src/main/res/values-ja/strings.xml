@@ -730,6 +730,8 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="show_played_indicator_summary">有効にすると、検索結果ページの動画カバー右上に再生済みマークが表示されます</string>
     <string name="watched_progress_threshold">閲覧済みと判定する進捗しきい値</string>
     <string name="watched_progress_threshold_summary">再生進捗がこの割合に達したら閲覧済みとしてマークします（現在：%1$d%%）</string>
+    <string name="search_pagination">ページネーション読み込み</string>
+    <string name="search_pagination_summary">有効にすると検索結果をページナビゲーションに切り替え、無効ならウォーターフォール無限読み込みを使用します</string>
     <string name="horizontal_card_count_title">横スクロール一覧の表示カード数</string>
     <string name="horizontal_card_count_summary">ホームや関連動画など、横スクロール一覧で一度に見えるカード数を調整します</string>
     <string name="horizontal_card_count_dialog_hint">画面幅ごとに、横スクロール一覧で一度に見えるカード数を設定します</string>
