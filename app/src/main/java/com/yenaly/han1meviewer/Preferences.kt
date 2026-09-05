@@ -144,6 +144,9 @@ object Preferences {
     val watchedProgressThreshold: Int
         get() = preferenceSp.getInt(SettingsPreferenceKeys.WATCHED_PROGRESS_THRESHOLD, 90)
 
+    val autoPlayNext: Boolean
+        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.AUTO_PLAY_NEXT, false)
+
     val searchGridColumnsConfig: SearchGridColumnsConfig
         get() = SearchGridColumnsConfig(
             compactColumns = preferenceSp.getInt(

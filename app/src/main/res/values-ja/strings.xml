@@ -34,6 +34,7 @@
     <string name="collapse">折りたたむ</string>
     <string name="expand">展開する</string>
     <string name="series_video">シリーズ作品</string>
+    <string name="auto_play_next">自動再生</string>
     <string name="related_video">関連動画</string>
     <string name="now_playing">再生中</string>
     <string name="view_more_replies">返信%1$d件を表示</string>

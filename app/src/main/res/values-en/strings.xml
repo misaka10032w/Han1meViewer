@@ -34,6 +34,7 @@
     <string name="collapse">Collapse</string>
     <string name="expand">Expand</string>
     <string name="series_video">Series Videos</string>
+    <string name="auto_play_next">Auto-play</string>
     <string name="related_video">Related Videos</string>
     <string name="now_playing">Now Playing</string>
     <string name="view_more_replies">View %1$d replies</string>

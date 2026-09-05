@@ -68,6 +68,7 @@ import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.PermissionRequester
+import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.view.video.ExoMediaKernel
 import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
@@ -422,6 +423,25 @@ fun VideoRouteHostScreen(
             }
         }
 
+        fun autoPlayNextIfEnabled() {
+            if (viewModel.fromDownload || !Preferences.autoPlayNext) return
+            val videos = viewModel.hanimeVideoFlow.value?.playlist?.video.orEmpty()
+            if (videos.isEmpty()) return
+            val currentIndex = videos.indexOfFirst { it.videoCode == route.videoCode }
+            if (currentIndex < 0) return
+            val next = videos.getOrNull(currentIndex + 1) ?: return
+            if (player.screen == Jzvd.SCREEN_FULLSCREEN) {
+                changeScreenNormal()
+            }
+            val navController = activity.navController
+            val currentId = navController.currentBackStackEntry?.destination?.id
+            navController.navigateSafely(VideoRoute(next.videoCode, autoPlay = true)) {
+                if (currentId != null) {
+                    popUpTo(currentId) { inclusive = true }
+                }
+            }
+        }
+
         val lifecycleObserver = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_PAUSE -> {
@@ -483,6 +503,7 @@ fun VideoRouteHostScreen(
             }
             if (state == Jzvd.STATE_AUTO_COMPLETE) {
                 markWatchedIfReachedThreshold()
+                autoPlayNextIfEnabled()
             }
         }
         player.fullscreenListener = object : HJzvdStd.FullscreenListener {
@@ -578,6 +599,9 @@ fun VideoRouteHostScreen(
                         }
                         val history = DatabaseRepo.WatchHistory.findBy(route.videoCode)
                         player.savedProgress = history?.progress ?: 0L
+                        if (route.autoPlay) {
+                            player.startVideo()
+                        }
                     }
 
                     is VideoLoadingState.NoContent -> {

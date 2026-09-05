@@ -35,6 +35,7 @@
     <string name="collapse">收起</string>
     <string name="expand">展開</string>
     <string name="series_video">系列影片</string>
+    <string name="auto_play_next">自動續播</string>
     <string name="related_video">相關影片</string>
     <string name="now_playing">現正播放</string>
     <string name="view_more_replies">查看 %1$d 則回覆</string>
