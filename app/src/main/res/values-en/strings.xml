@@ -34,6 +34,7 @@
     <string name="collapse">Collapse</string>
     <string name="expand">Expand</string>
     <string name="series_video">Series Videos</string>
+    <string name="auto_play_next">Auto-play</string>
     <string name="related_video">Related Videos</string>
     <string name="now_playing">Now Playing</string>
     <string name="view_more_replies">View %1$d replies</string>
@@ -724,6 +725,8 @@ Recommendations are as follows:\n
     <string name="show_played_indicator_summary">When enabled, shows played indicator at top-right corner of video covers on search results page</string>
     <string name="watched_progress_threshold">Watched Progress Threshold</string>
     <string name="watched_progress_threshold_summary">Mark as watched when playback progress reaches this percentage (current: %1$d%%)</string>
+    <string name="search_pagination">Pagination Loading</string>
+    <string name="search_pagination_summary">When enabled, search results use pagination navigation; when disabled, waterfall infinite loading is used</string>
     <string name="horizontal_card_count_title">Visible Cards In Horizontal Lists</string>
     <string name="horizontal_card_count_summary">Adjust how many cards are visible at once in horizontal lists such as Home and related videos</string>
     <string name="horizontal_card_count_dialog_hint">Set how many cards should be visible at once for different screen widths</string>

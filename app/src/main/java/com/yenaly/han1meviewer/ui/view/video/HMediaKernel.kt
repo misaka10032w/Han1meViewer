@@ -690,7 +690,7 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
         } finally {
             currentPfd = null
             detachFd = null
-            handler.postDelayed({
+            handler?.postDelayed({
                 Log.i(TAG, "${from ?: "releaseCurrentPfd"} completed. PFD cleared.")
             }, 200)
         }
@@ -749,9 +749,9 @@ class MpvMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd) {
         MPVLib.setOptionString("force-window", "no")
         MPVLib.detachSurface()
         MPVLib.removeObserver(mpvEventObserver)
-        handler.postDelayed({
+        handler?.postDelayed({
             releaseCurrentPfd("jzvd-release")
-        },200)
+        }, 200)
         SAVED_SURFACE = null
     }
 

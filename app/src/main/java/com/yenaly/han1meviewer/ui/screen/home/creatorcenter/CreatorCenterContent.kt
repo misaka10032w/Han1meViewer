@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -18,17 +19,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.CreatorTab
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.ui.component.LoadMoreFooter
 import com.yenaly.han1meviewer.ui.component.PageContent
+import com.yenaly.han1meviewer.ui.component.PaginationPager
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.content.ErrorContent
@@ -36,6 +41,7 @@ import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 
 /**
  * 已上传视频 Tab 页面。
@@ -53,14 +59,17 @@ fun CreatorUploadedPage(
     val state = uiState.uploadedState
     val sort = uiState.uploadedSort
     val loadedPageCount = uiState.uploadedPage
+    val totalPages = uiState.uploadedTotalPages
     val isLoadingMore = uiState.uploadedLoadingMore
     val gridState = rememberLazyGridState()
     val refreshState = rememberPullToRefreshState()
     val refreshing = state is PageLoadingState.Loading && items.isEmpty()
     var sortBarVisible by rememberSaveable { mutableStateOf(true) }
+    val searchPagination = Preferences.searchPagination
+    val scope = rememberCoroutineScope()
 
-    LaunchedEffect(gridState.canLoadMore(state), isLoadingMore) {
-        if (gridState.canLoadMore(state) && !isLoadingMore) {
+    LaunchedEffect(gridState.canLoadMore(state), isLoadingMore, searchPagination) {
+        if (!searchPagination && gridState.canLoadMore(state) && !isLoadingMore) {
             onEvent(CreatorCenterEvent.OnLoadMore(CreatorTab.Uploaded))
         }
     }
@@ -154,11 +163,23 @@ fun CreatorUploadedPage(
                     }
                     if (items.isNotEmpty()) {
                         item(span = { GridItemSpan(maxLineSpan) }) {
-                            LoadMoreFooter(
-                                state = state,
-                                loadedPage = loadedPageCount,
-                                isLoadingMore = isLoadingMore
-                            )
+                            if (searchPagination) {
+                                PaginationPager(
+                                    currentPage = loadedPageCount.coerceAtLeast(1),
+                                    totalPages = totalPages,
+                                    onPageSelected = { page ->
+                                        onEvent(CreatorCenterEvent.OnGoToPage(CreatorTab.Uploaded, page))
+                                        scope.launch { gridState.scrollToItem(0) }
+                                    },
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                )
+                            } else {
+                                LoadMoreFooter(
+                                    state = state,
+                                    loadedPage = loadedPageCount,
+                                    isLoadingMore = isLoadingMore
+                                )
+                            }
                         }
                     }
                 }
@@ -183,14 +204,17 @@ fun CreatorUploadingPage(
     val state = uiState.uploadingState
     val sort = uiState.uploadingSort
     val loadedPageCount = uiState.uploadingPage
+    val totalPages = uiState.uploadingTotalPages
     val isLoadingMore = uiState.uploadingLoadingMore
     val gridState = rememberLazyGridState()
     val refreshState = rememberPullToRefreshState()
     val refreshing = state is PageLoadingState.Loading && items.isEmpty()
     var sortBarVisible by rememberSaveable { mutableStateOf(true) }
+    val searchPagination = Preferences.searchPagination
+    val scope = rememberCoroutineScope()
 
-    LaunchedEffect(gridState.canLoadMore(state), isLoadingMore) {
-        if (gridState.canLoadMore(state) && !isLoadingMore) {
+    LaunchedEffect(gridState.canLoadMore(state), isLoadingMore, searchPagination) {
+        if (!searchPagination && gridState.canLoadMore(state) && !isLoadingMore) {
             onEvent(CreatorCenterEvent.OnLoadMore(CreatorTab.Uploading))
         }
     }
@@ -276,11 +300,23 @@ fun CreatorUploadingPage(
                     }
                     if (items.isNotEmpty()) {
                         item(span = { GridItemSpan(maxLineSpan) }) {
-                            LoadMoreFooter(
-                                state = state,
-                                loadedPage = loadedPageCount,
-                                isLoadingMore = isLoadingMore
-                            )
+                            if (searchPagination) {
+                                PaginationPager(
+                                    currentPage = loadedPageCount.coerceAtLeast(1),
+                                    totalPages = totalPages,
+                                    onPageSelected = { page ->
+                                        onEvent(CreatorCenterEvent.OnGoToPage(CreatorTab.Uploading, page))
+                                        scope.launch { gridState.scrollToItem(0) }
+                                    },
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                )
+                            } else {
+                                LoadMoreFooter(
+                                    state = state,
+                                    loadedPage = loadedPageCount,
+                                    isLoadingMore = isLoadingMore
+                                )
+                            }
                         }
                     }
                 }

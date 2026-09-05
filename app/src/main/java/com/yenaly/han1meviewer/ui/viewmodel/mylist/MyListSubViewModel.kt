@@ -26,6 +26,9 @@ abstract class MyListSubViewModel(application: Application) : YenalyViewModel(ap
     protected val mutableLoadedPageCount = MutableStateFlow(0)
     val loadedPageCount = mutableLoadedPageCount.asStateFlow()
 
+    protected val mutableTotalPages = MutableStateFlow(1)
+    val totalPages = mutableTotalPages.asStateFlow()
+
     protected val mutableIsLoadingMore = MutableStateFlow(false)
     val isLoadingMore = mutableIsLoadingMore.asStateFlow()
 
@@ -45,6 +48,7 @@ abstract class MyListSubViewModel(application: Application) : YenalyViewModel(ap
                     when (state) {
                         is PageLoadingState.Success -> {
                             onSuccess(state.info)
+                            mutableTotalPages.value = state.info.maxPage
                             if (state.info.hanimeInfo.isEmpty()) {
                                 itemsStateFlow.update { PageLoadingState.NoMoreData }
                             } else {
@@ -90,6 +94,7 @@ abstract class MyListSubViewModel(application: Application) : YenalyViewModel(ap
         isRefreshing = true
         mutableIsLoadingMore.value = false
         mutableLoadedPageCount.value = 0
+        mutableTotalPages.value = 1
         itemsFlow.value = emptyList()
         itemsStateFlow.value = PageLoadingState.Loading
     }

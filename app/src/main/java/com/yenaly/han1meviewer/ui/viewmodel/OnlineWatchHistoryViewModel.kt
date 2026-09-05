@@ -32,6 +32,9 @@ class OnlineWatchHistoryViewModel(application: Application) : YenalyViewModel(ap
     private val _loadedPageCount = MutableStateFlow(0)
     val loadedPageCount = _loadedPageCount.asStateFlow()
 
+    private val _totalPages = MutableStateFlow(1)
+    val totalPages = _totalPages.asStateFlow()
+
     private val _isLoadingMore = MutableStateFlow(false)
     val isLoadingMore = _isLoadingMore.asStateFlow()
 
@@ -62,6 +65,17 @@ class OnlineWatchHistoryViewModel(application: Application) : YenalyViewModel(ap
         loadPage(_loadedPageCount.value + 1)
     }
 
+    fun goToPage(page: Int) {
+        if (_isLoadingMore.value) return
+        isRefreshing = true
+        isManualRefreshing = true
+        _isLoadingMore.value = false
+        _loadedPageCount.value = 0
+        _state.value = PageLoadingState.Loading
+        _items.value = emptyList()
+        loadPage(page)
+    }
+
     private fun loadPage(page: Int) {
         val userId = Preferences.savedUserId
         if (userId.isBlank()) {
@@ -77,6 +91,7 @@ class OnlineWatchHistoryViewModel(application: Application) : YenalyViewModel(ap
                     when (pageState) {
                         is PageLoadingState.Success -> {
                             val incoming = pageState.info.hanimeInfo
+                            _totalPages.value = pageState.info.maxPage
                             if (incoming.isEmpty()) {
                                 _state.value = PageLoadingState.NoMoreData
                             } else {
