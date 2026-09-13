@@ -19,8 +19,15 @@ import retrofit2.http.Url
  * @time 2022/09/09 009 20:04
  */
 interface HGitHubService {
+    /**
+     * 最新 Release。
+     *
+     * 返回[Response]而非实体类型是刻意为之：只有拿到[Response]才能读取状态码、错误响应体
+     * 与 `x-ratelimit-*` 响应头，从而区分「限额耗尽 / Token 失效 / 权限不足 / 服务端故障」
+     * 并给出对应提示。
+     */
     @GET("releases/latest")
-    suspend fun getLatestVersion(): Release
+    suspend fun getLatestVersion(): Response<Release>
 
     /**
      * What is Workflow Runs?
@@ -32,7 +39,7 @@ interface HGitHubService {
     @GET("actions/workflows/ci.yml/runs?event=push&status=success&per_page=1")
     suspend fun getWorkflowRuns(
         @Query("branch") branch: String = HUpdater.DEFAULT_BRANCH,
-    ): WorkflowRuns
+    ): Response<WorkflowRuns>
 
     /**
      * What is Commit Comparison?
@@ -44,7 +51,7 @@ interface HGitHubService {
     suspend fun getCommitComparison(
         @Path("curSha") curSha: String,
         @Path("latestSha") latestSha: String,
-    ): CommitComparison
+    ): Response<CommitComparison>
 
     /**
      * What is Artifacts?
@@ -55,10 +62,14 @@ interface HGitHubService {
     @GET
     suspend fun getArtifacts(
         @Url url: String,
-    ): Artifacts
+    ): Response<Artifacts>
 
     /**
      * Typical request
+     *
+     * 下载更新包专用。调用方必须先检查[Response.isSuccessful]：非 2xx 时
+     * [Response.errorBody] 里是 GitHub 的错误 JSON，直接写进文件会得到
+     * 一个「能存下来但装不上」的假安装包。
      */
     @GET
     @Streaming

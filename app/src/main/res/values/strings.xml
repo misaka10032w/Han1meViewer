@@ -84,6 +84,20 @@
     <string name="downloading_update_percent">正在下載更新 %d%%</string>
     <string name="update_download_failed">更新下載失敗</string>
     <string name="update_download_failed_unknown">更新下載失敗，請稍後重試或前往 GitHub Releases 手動下載。</string>
+    <!-- 更新模組的具體錯誤原因：用於取代過去一律顯示的「更新失敗」 -->
+    <string name="update_error_rate_limited">GitHub 的請求次數已達上限，暫時無法檢查更新，請稍後再試（或在 GitHub Releases 頁面手動下載）。</string>
+    <string name="update_error_bad_credentials">檢查更新失敗：內建的 GitHub 存取權杖無效或已過期，請前往 GitHub Releases 頁面手動下載。</string>
+    <string name="update_error_forbidden">檢查更新失敗：存取 GitHub 更新介面的權限不足（可能是建置產物權限已回收），請前往 GitHub Releases 頁面手動下載。</string>
+    <string name="update_error_no_release">檢查更新失敗：目前沒有可用的發行版本或建置產物，請稍後再試。</string>
+    <string name="update_error_server">檢查更新失敗：GitHub 伺服器暫時無法回應（%s），請稍後重試。</string>
+    <string name="update_error_network">檢查更新失敗：網路連線異常（%s），請檢查網路或代理設定後重試。</string>
+    <string name="update_error_download_rate_limited">下載更新失敗：GitHub 的請求次數已達上限，請稍後重試或前往 GitHub Releases 手動下載。</string>
+    <string name="update_error_download_bad_credentials">下載更新失敗：內建的 GitHub 存取權杖無效或已過期，請前往 GitHub Releases 手動下載。</string>
+    <string name="update_error_download_artifact_expired">下載更新失敗：對應的建置產物已過期或被清理，請改用正式版本或稍後再試。</string>
+    <string name="update_error_download_client">下載更新失敗：GitHub 拒絕了這次請求（%s），請稍後重試或前往 GitHub Releases 手動下載。</string>
+    <string name="update_error_download_server">下載更新失敗：GitHub 伺服器暫時無法回應（%s），請稍後重試。</string>
+    <string name="update_error_download_network">下載更新失敗：網路連線中斷（%s），請檢查網路後重試。</string>
+    <string name="update_error_download_invalid_payload">下載更新失敗：取得的檔案不是有效的安裝包，請稍後重試或前往 GitHub Releases 手動下載。</string>
     <string name="downloaded">已下載</string>
     <string name="start_download">開始下載</string>
     <string name="cancel_download">取消下載</string>

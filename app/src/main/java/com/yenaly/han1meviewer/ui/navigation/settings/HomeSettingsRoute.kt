@@ -201,20 +201,25 @@ fun HomeSettingsRouteScreen(
             generateClearCacheSummary(context, context.cacheDir?.folderSize ?: 0L).toString()
         }
     }
-    val checkUpdateFailed = stringResource(R.string.check_update_failed)
-    val checkingUpdate = stringResource(R.string.checking_update)
-    val alreadyLatestUpdate = stringResource(R.string.already_latest_update)
 
     val updateSummary = remember(versionState, context) {
-        when (versionState) {
-            is WebsiteState.Error -> checkUpdateFailed
-            is WebsiteState.Loading -> checkingUpdate
+        // 注意：versionState 是委托属性，只能在这里取一次快照，无法智能转换
+        when (val state = versionState) {
+            is WebsiteState.Error -> {
+                // 更新模块会把「限额耗尽 / 密钥失效 / 网络异常」等具体原因带在异常里，
+                // 优先展示具体原因，拿不到才回退到笼统的「检查更新失败，点击重试」
+                state.throwable.message?.takeIf { it.isNotBlank() }
+                    ?: context.getString(R.string.check_update_failed)
+            }
+
+            is WebsiteState.Loading -> context.getString(R.string.checking_update)
+
             is WebsiteState.Success -> {
-                val info = (versionState as WebsiteState.Success).info
+                val info = state.info
                 if (info == null) {
-                    alreadyLatestUpdate
+                    context.getString(R.string.already_latest_update)
                 } else {
-                    applicationContext.getString(R.string.check_update_success, info.version)
+                    context.getString(R.string.check_update_success, info.version)
                 }
             }
         }

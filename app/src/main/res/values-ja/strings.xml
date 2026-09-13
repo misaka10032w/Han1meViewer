@@ -83,6 +83,20 @@
     <string name="downloading_update_percent">更新ダウンロード中 %d%%</string>
     <string name="update_download_failed">更新のダウンロードに失敗しました</string>
     <string name="update_download_failed_unknown">更新のダウンロードに失敗しました。しばらくしてから再試行するか、GitHub Releases から手動でダウンロードしてください。</string>
+    <!-- 更新モジュールの具体的なエラー理由：従来の一律「更新失敗」を置き換える -->
+    <string name="update_error_rate_limited">GitHub のリクエスト回数が上限に達したため、現在は更新を確認できません。しばらくしてから再試行してください（GitHub Releases から手動でダウンロードすることもできます）。</string>
+    <string name="update_error_bad_credentials">更新確認に失敗しました：組み込みの GitHub トークンが無効か期限切れです。GitHub Releases から手動でダウンロードしてください。</string>
+    <string name="update_error_forbidden">更新確認に失敗しました：GitHub の更新 API にアクセスする権限がありません（ビルド成果物の権限が失効した可能性があります）。GitHub Releases から手動でダウンロードしてください。</string>
+    <string name="update_error_no_release">更新確認に失敗しました：利用可能なリリースまたはビルド成果物がありません。しばらくしてから再試行してください。</string>
+    <string name="update_error_server">更新確認に失敗しました：GitHub サーバーが一時的に応答していません（%s）。しばらくしてから再試行してください。</string>
+    <string name="update_error_network">更新確認に失敗しました：ネットワークエラーです（%s）。ネットワークまたはプロキシ設定を確認して再試行してください。</string>
+    <string name="update_error_download_rate_limited">更新のダウンロードに失敗しました：GitHub のリクエスト回数が上限に達しました。しばらくしてから再試行するか、GitHub Releases から手動でダウンロードしてください。</string>
+    <string name="update_error_download_bad_credentials">更新のダウンロードに失敗しました：組み込みの GitHub トークンが無効か期限切れです。GitHub Releases から手動でダウンロードしてください。</string>
+    <string name="update_error_download_artifact_expired">更新のダウンロードに失敗しました：対応するビルド成果物が期限切れ、または削除されています。正式版をご利用ください。</string>
+    <string name="update_error_download_client">更新のダウンロードに失敗しました：GitHub にリクエストを拒否されました（%s）。しばらくしてから再試行するか、GitHub Releases から手動でダウンロードしてください。</string>
+    <string name="update_error_download_server">更新のダウンロードに失敗しました：GitHub サーバーが一時的に応答していません（%s）。しばらくしてから再試行してください。</string>
+    <string name="update_error_download_network">更新のダウンロードに失敗しました：ネットワーク接続が中断されました（%s）。ネットワークを確認して再試行してください。</string>
+    <string name="update_error_download_invalid_payload">更新のダウンロードに失敗しました：取得したファイルが有効なパッケージではありません。しばらくしてから再試行するか、GitHub Releases から手動でダウンロードしてください。</string>
     <string name="downloaded">ダウンロード済み</string>
     <string name="start_download">ダウンロード開始</string>
     <string name="cancel_download">ダウンロードキャンセル</string>

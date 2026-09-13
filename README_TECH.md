@@ -372,6 +372,7 @@ Room 主要用于：
 - `HanimeNotFoundException`
 - `LoginStateExpiredException`
 - `ParseException`
+- `HUpdaterException`
 
 开发约定：
 
@@ -379,6 +380,36 @@ Room 主要用于：
 - `NetworkRepo` 应保留 `CancellationException` 语义，不吞掉协程取消。
 - 登录态过期、Cloudflare、IP blocked 等应映射成可被 UI 理解的异常或状态。
 - 解析列表时优先保证 `videoCode`、`listCode` 等业务键非空和稳定。
+
+### 更新链路（GitHub）
+
+更新完全依赖 GitHub，因此必须把「限额耗尽 / 密钥失效 / 权限不足 / Artifact 过期 / 网络异常」
+区分开，而不是一律报「更新失败」。
+
+相关文件：
+
+- `logic/network/HUpdater.kt`：版本检查与安装包下载。
+- `logic/network/GitHubErrorMapper.kt`：HTTP 响应 → `HUpdaterException` 的分类映射。
+- `logic/exception/HUpdaterException.kt`：分类异常 + 对应的可展示文案。
+- `worker/HUpdateWorker.kt`：下载通知与失败提示。
+- `util/Versions.kt`：版本比较与安装包落盘位置。
+
+约定：
+
+- `HGitHubService` 的版本信息接口必须返回 `Response<T>`。返回实体类型时非 2xx 会直接抛
+  `HttpException`，拿不到响应体与状态码，就永远无法区分 403 的两种含义
+  （限额耗尽 vs 权限不足）。
+- 渠道由 `Preferences.useCIUpdateChannel` 唯一决定，**任何情况下都不做回落**：
+  CI 构建始终领先 Release，一旦因 CI 出错就回落，会把用户降级到更旧的版本。
+  CI 频道出错就如实报错，由用户自己在设置页手动重试。`enable_ci_update`（Remote Config，
+  默认开启）只是作者临时下线 CI 频道的开关，关闭时同样只报错、不回落。
+- 更新链路**不做自动重试**：失败原因如实回报给用户，由用户在设置页手动重试。
+  不要在这里重新引入退避重试，限额耗尽时重试只会让情况更糟。
+- `checkForUpdate()` 失败时抛 `HUpdaterException.VersionCheck`，`injectUpdate()` 失败时抛
+  `HUpdaterException.Download`；UI 侧用 `HUpdater.errorMessage(e)` 取可展示文案，
+  详细诊断（状态码 + 响应体片段）用 `HUpdater.errorDetail(e)` 写日志。
+- 下载必须先校验 `Response.isSuccessful` 再落盘，否则错误 JSON 会被写成假的 `update.apk`。
+- `BuildConfig.HA_GITHUB_TOKEN` 为空时不再发送非法的 `Bearer `，改为匿名请求（限额更低但可用）。
 
 ## 12. 账号、Cookie 和 Cloudflare
 
