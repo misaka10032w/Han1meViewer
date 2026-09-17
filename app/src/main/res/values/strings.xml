@@ -916,6 +916,8 @@
     <string name="theme_color_teal">初音藍(綠)</string>
     <string name="theme_color_yellow">鹹蛋黃</string>
     <string name="theme_color_high_contrast">高對比</string>
+    <string name="pure_black_dark_mode">純黑模式 (OLED)</string>
+    <string name="pure_black_dark_mode_summary">深色主題下使用純黑背景，OLED 螢幕更省電</string>
     <string name="restart_needed">需要重啟程序，否則不起作用！</string>
     <string name="played">已觀看</string>
     <string name="local">本地</string>

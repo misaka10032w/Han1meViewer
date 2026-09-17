@@ -103,6 +103,7 @@ private const val HOME_DISABLE_COMMENTS = "disable_comments"
 private const val HOME_USE_LOCK_SCREEN = "use_lock_screen"
 private const val HOME_APP_LANGUAGE = "app_language"
 private const val HOME_THEME_COLOR = "theme_color"
+private const val HOME_PURE_BLACK_DARK_MODE = "pure_black_dark_mode"
 private const val HOME_SEARCH_GRID_COLUMNS_COMPACT = "search_grid_columns_compact"
 private const val HOME_SEARCH_GRID_COLUMNS_MEDIUM = "search_grid_columns_medium"
 private const val HOME_SEARCH_GRID_COLUMNS_EXPANDED = "search_grid_columns_expanded"
@@ -326,6 +327,13 @@ fun HomeSettingsRouteScreen(
             saveString(HOME_THEME_COLOR, key)
             refreshKey++
             activity.recreate()
+        },
+        onPureBlackDarkModeChange = { enabled ->
+            if (enabled != Preferences.pureBlackDarkMode) {
+                saveBoolean(HOME_PURE_BLACK_DARK_MODE, enabled)
+                refreshKey++
+                activity.recreate()
+            }
         },
         onHomeCategoryPreferencesChange = { order, hiddenKeys ->
             saveHomeCategoryPreferences(order, hiddenKeys)
@@ -685,6 +693,7 @@ private fun buildHomeSettingsUiState(
         dynamicColorEnabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
         themeColorKey = Preferences.themeColor ?: ThemeColorPreset.DEFAULT.key,
         themeColorName = context.getString(ThemeColorPreset.fromKey(Preferences.themeColor).displayNameRes),
+        pureBlackDarkMode = Preferences.pureBlackDarkMode,
         searchGridColumnsSummary = listOf(
             searchGridColumnsConfig.compactColumns,
             searchGridColumnsConfig.mediumColumns,

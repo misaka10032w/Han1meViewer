@@ -867,6 +867,8 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="theme_color_teal">ミントティール</string>
     <string name="theme_color_yellow">ゴールデンイエロー</string>
     <string name="theme_color_high_contrast">ハイコントラスト</string>
+    <string name="pure_black_dark_mode">ピュアブラック (OLED)</string>
+    <string name="pure_black_dark_mode_summary">ダークテーマで純黒の背景を使用し、OLED画面の消費電力を節約</string>
     <string name="restart_needed">プログラムを再起動する必要があります。そうしないと動作しません！</string>
     <string name="played">閲覧済み</string>
     <string name="local">ローカル</string>

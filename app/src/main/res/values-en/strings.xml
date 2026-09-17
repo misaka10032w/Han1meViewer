@@ -862,6 +862,8 @@ Recommendations are as follows:\n
     <string name="theme_color_teal">Mint Teal</string>
     <string name="theme_color_yellow">Golden Yellow</string>
     <string name="theme_color_high_contrast">High Contrast</string>
+    <string name="pure_black_dark_mode">Pure Black (OLED)</string>
+    <string name="pure_black_dark_mode_summary">Use a pure black background in dark theme to save power on OLED screens</string>
     <string name="restart_needed">You need to restart the program, otherwise it won\'t work!</string>
     <string name="played">Watched</string>
     <string name="local">Local</string>

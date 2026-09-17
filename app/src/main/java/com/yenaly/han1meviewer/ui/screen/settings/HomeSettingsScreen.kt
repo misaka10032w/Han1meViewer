@@ -68,6 +68,7 @@ fun HomeSettingsScreen(
     onUseAnalyticsChange: (Boolean) -> Unit,
     onUseLockScreenChange: (Boolean) -> Unit,
     onThemeColorChange: (String) -> Unit,
+    onPureBlackDarkModeChange: (Boolean) -> Unit,
     onHomeCategoryPreferencesChange: (List<String>, Set<String>) -> Unit,
     onOpenPlayerSettings: () -> Unit,
     onOpenHKeyframeSettings: () -> Unit,
@@ -355,6 +356,15 @@ fun HomeSettingsScreen(
             )
         }
         item {
+            SettingSwitchItem(
+                title = stringResource(R.string.pure_black_dark_mode),
+                summary = stringResource(R.string.pure_black_dark_mode_summary),
+                checked = state.pureBlackDarkMode,
+                iconRes = R.drawable.ic_baseline_contrast_24,
+                onCheckedChange = onPureBlackDarkModeChange,
+            )
+        }
+        item {
             SettingNavigationItem(
                 title = stringResource(R.string.home_category_layout),
                 summary = stringResource(
@@ -599,6 +609,7 @@ private fun HomeSettingsScreenPreview() {
                 dynamicColorEnabled = true,
                 themeColorKey = "default",
                 themeColorName = "預設（暖紅）",
+                pureBlackDarkMode = false,
                 searchGridColumnsSummary = "2 / 3 / 4 / 5",
                 searchGridColumnsConfig = SearchGridColumnsConfig(),
                 horizontalCardCountSummary = "1.5 / 2.1 / 4.1 / 5.1",
@@ -629,6 +640,7 @@ private fun HomeSettingsScreenPreview() {
             onUseAnalyticsChange = {},
             onUseLockScreenChange = {},
             onThemeColorChange = {},
+            onPureBlackDarkModeChange = {},
             onHomeCategoryPreferencesChange = { _, _ -> },
             onOpenPlayerSettings = {},
             onOpenHKeyframeSettings = {},
