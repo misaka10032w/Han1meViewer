@@ -22,6 +22,8 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.google.firebase.Firebase
+import com.google.firebase.crashlytics.crashlytics
 import com.yenaly.han1meviewer.EMPTY_STRING
 import com.yenaly.han1meviewer.FILE_PROVIDER_AUTHORITY
 import com.yenaly.han1meviewer.Preferences
@@ -117,20 +119,27 @@ class HUpdateWorker(
                     updateNotification(progress, fileSize, downloadedSize)
                 }
             }
-            if (inject.isSuccess) {
+            val error = inject.exceptionOrNull()
+            if (error == null) {
                 val outputData = workDataOf(UPDATE_APK to file.toUri().toString())
                 Preferences.updateNodeId = nodeId
                 cancelDownloadNotification()
                 showInstallNotification(file)
                 return Result.success(outputData)
-            } else {
-                val error = inject.exceptionOrNull()
-                error?.printStackTrace()
-                file.delete()
-                cancelDownloadNotification()
-                showFailureNotification(error?.localizedMessage)
-                return Result.failure()
             }
+
+            // 具体原因（限额耗尽/密钥失效/Artifact 过期/网络异常）已经有明确分类：
+            // 日志与 Crashlytics 里保留完整诊断（状态码 + 响应体片段），
+            // 通告栏里只放翻译好的具体原因
+            error.printStackTrace()
+            val diagnostic = HUpdater.errorDetail(error)
+            Firebase.crashlytics.recordException(
+                if (diagnostic != null) IllegalStateException(diagnostic, error) else error
+            )
+            file.delete()
+            cancelDownloadNotification()
+            showFailureNotification(error)
+            return Result.failure()
         }
     }
 
@@ -225,12 +234,15 @@ class HUpdateWorker(
     }
 
     @SuppressLint("MissingPermission")
-    private fun showFailureNotification(errMsg: String? = null) {
+    private fun showFailureNotification(error: Throwable? = null) {
+        // 优先展示分类后的具体原因（限额耗尽 / 密钥失效 / 网络异常…），
+        // 没有分类信息时才退回通用文案
+        val reason = HUpdater.errorMessage(error)?.takeIf { it.isNotBlank() }
         val notification = NotificationCompat.Builder(context, UPDATE_NOTIFICATION_CHANNEL)
             .setContentTitle(context.getString(R.string.update_download_failed))
             .setContentText(
-                errMsg?.takeIf { it.isNotBlank() }
-                    ?: context.getString(R.string.update_download_failed_unknown)
+                reason ?: error?.localizedMessage?.takeIf { it.isNotBlank() }
+                ?: context.getString(R.string.update_download_failed_unknown)
             )
             .setSmallIcon(R.mipmap.ic_launcher_new)
             .setAutoCancel(true)

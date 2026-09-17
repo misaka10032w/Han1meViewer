@@ -37,6 +37,7 @@ data class HomeSettingsUiState(
     val dynamicColorEnabled: Boolean,
     val themeColorKey: String,
     val themeColorName: String,
+    val pureBlackDarkMode: Boolean,
     val searchGridColumnsSummary: String,
     val searchGridColumnsConfig: SearchGridColumnsConfig,
     val horizontalCardCountSummary: String,

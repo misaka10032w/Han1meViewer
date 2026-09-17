@@ -83,6 +83,20 @@
     <string name="downloading_update_percent">Downloading Update %d%%</string>
     <string name="update_download_failed">Update Download Failed</string>
     <string name="update_download_failed_unknown">Update download failed. Please try again later or download manually from GitHub Releases.</string>
+    <!-- Specific failure reasons for the updater, replacing the old catch-all "update failed" -->
+    <string name="update_error_rate_limited">GitHub rate limit exceeded, so updates cannot be checked right now. Please try again later (or download manually from GitHub Releases).</string>
+    <string name="update_error_bad_credentials">Update check failed: the bundled GitHub token is invalid or expired. Please download manually from GitHub Releases.</string>
+    <string name="update_error_forbidden">Update check failed: no permission to access the GitHub update API (build artifact permissions may have been revoked). Please download manually from GitHub Releases.</string>
+    <string name="update_error_no_release">Update check failed: no release version or build artifact is available right now. Please try again later.</string>
+    <string name="update_error_server">Update check failed: the GitHub server is temporarily unavailable (%s). Please try again later.</string>
+    <string name="update_error_network">Update check failed: network error (%s). Please check your network or proxy settings and try again.</string>
+    <string name="update_error_download_rate_limited">Update download failed: GitHub rate limit exceeded. Please try again later or download manually from GitHub Releases.</string>
+    <string name="update_error_download_bad_credentials">Update download failed: the bundled GitHub token is invalid or expired. Please download manually from GitHub Releases.</string>
+    <string name="update_error_download_artifact_expired">Update download failed: the build artifact has expired or been cleaned up. Please use the official release instead.</string>
+    <string name="update_error_download_client">Update download failed: GitHub rejected the request (%s). Please try again later or download manually from GitHub Releases.</string>
+    <string name="update_error_download_server">Update download failed: the GitHub server is temporarily unavailable (%s). Please try again later.</string>
+    <string name="update_error_download_network">Update download failed: the network connection was interrupted (%s). Please check your network and try again.</string>
+    <string name="update_error_download_invalid_payload">Update download failed: the downloaded file is not a valid package. Please try again later or download manually from GitHub Releases.</string>
     <string name="downloaded">Downloaded</string>
     <string name="start_download">Start Download</string>
     <string name="cancel_download">Cancel Download</string>
@@ -848,6 +862,8 @@ Recommendations are as follows:\n
     <string name="theme_color_teal">Mint Teal</string>
     <string name="theme_color_yellow">Golden Yellow</string>
     <string name="theme_color_high_contrast">High Contrast</string>
+    <string name="pure_black_dark_mode">Pure Black (OLED)</string>
+    <string name="pure_black_dark_mode_summary">Use a pure black background in dark theme to save power on OLED screens</string>
     <string name="restart_needed">You need to restart the program, otherwise it won\'t work!</string>
     <string name="played">Watched</string>
     <string name="local">Local</string>

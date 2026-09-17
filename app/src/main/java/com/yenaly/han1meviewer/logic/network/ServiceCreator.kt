@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.logic.network
 
+import android.util.Log
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.yenaly.han1meviewer.BuildConfig
 import com.yenaly.han1meviewer.HA1_GITHUB_API_URL
@@ -119,16 +120,24 @@ object ServiceCreator {
     }
 
     private fun buildGithubClient(): OkHttpClient {
+        // 令牌可能为空（CI/本地构建时没有配置 HA_GITHUB_TOKEN）。以前这里无条件带上
+        // "Bearer "，会得到一个必然 401 的非法凭证，反而掩盖了真正的原因；
+        // 空令牌时干脆走匿名请求（限额更低，但至少不会自己把自己弄挂）。
+        val token = BuildConfig.HA_GITHUB_TOKEN.trim()
+        if (token.isEmpty()) {
+            Log.w("ServiceCreator", "HA_GITHUB_TOKEN 为空，GitHub 请求将以匿名方式进行（限额更低）")
+        }
         return OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .dns(GitHubDns)
             .addInterceptor(UserAgentInterceptor)
             .addInterceptor(UrlLoggingInterceptor())
             .addInterceptor { chain ->
-                val request = chain.request().newBuilder().addHeader(
-                    "Authorization", "Bearer ${BuildConfig.HA_GITHUB_TOKEN}"
-                ).build()
-                return@addInterceptor chain.proceed(request)
+                val builder = chain.request().newBuilder()
+                if (token.isNotEmpty()) {
+                    builder.addHeader("Authorization", "Bearer $token")
+                }
+                return@addInterceptor chain.proceed(builder.build())
             }
             .build()
     }

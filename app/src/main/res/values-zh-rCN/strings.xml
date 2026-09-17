@@ -83,6 +83,20 @@
     <string name="downloading_update_percent">正在下载更新 %d%%</string>
     <string name="update_download_failed">更新下载失败</string>
     <string name="update_download_failed_unknown">更新下载失败，请稍后重试或前往 GitHub Releases 手动下载。</string>
+    <!-- 更新模块的具体错误原因：用于取代过去一律显示的「更新失败」 -->
+    <string name="update_error_rate_limited">GitHub 的请求次数已达上限，暂时无法检查更新，请稍后再试（或在 GitHub Releases 页面手动下载）。</string>
+    <string name="update_error_bad_credentials">检查更新失败：内置的 GitHub 访问令牌无效或已过期，请前往 GitHub Releases 页面手动下载。</string>
+    <string name="update_error_forbidden">检查更新失败：访问 GitHub 更新接口的权限不足（可能是构建产物权限已回收），请前往 GitHub Releases 页面手动下载。</string>
+    <string name="update_error_no_release">检查更新失败：当前没有可用的发行版本或构建产物，请稍后再试。</string>
+    <string name="update_error_server">检查更新失败：GitHub 服务器暂时无法响应（%s），请稍后重试。</string>
+    <string name="update_error_network">检查更新失败：网络连接异常（%s），请检查网络或代理设置后重试。</string>
+    <string name="update_error_download_rate_limited">下载更新失败：GitHub 的请求次数已达上限，请稍后重试或前往 GitHub Releases 手动下载。</string>
+    <string name="update_error_download_bad_credentials">下载更新失败：内置的 GitHub 访问令牌无效或已过期，请前往 GitHub Releases 手动下载。</string>
+    <string name="update_error_download_artifact_expired">下载更新失败：对应的构建产物已过期或被清理，请改用正式版本或稍后再试。</string>
+    <string name="update_error_download_client">下载更新失败：GitHub 拒绝了这次请求（%s），请稍后重试或前往 GitHub Releases 手动下载。</string>
+    <string name="update_error_download_server">下载更新失败：GitHub 服务器暂时无法响应（%s），请稍后重试。</string>
+    <string name="update_error_download_network">下载更新失败：网络连接中断（%s），请检查网络后重试。</string>
+    <string name="update_error_download_invalid_payload">下载更新失败：获取到的文件不是有效的安装包，请稍后重试或前往 GitHub Releases 手动下载。</string>
     <string name="downloaded">已下载</string>
     <string name="start_download">开始下载</string>
     <string name="cancel_download">取消下载</string>
@@ -854,6 +868,8 @@
     <string name="theme_color_teal">初音蓝(绿)</string>
     <string name="theme_color_yellow">咸蛋黄</string>
     <string name="theme_color_high_contrast">高对比</string>
+    <string name="pure_black_dark_mode">纯黑模式 (OLED)</string>
+    <string name="pure_black_dark_mode_summary">深色主题下使用纯黑背景，OLED 屏幕更省电</string>
     <string name="played">已观看</string>
     <string name="local">本地</string>
     <string name="current_bucket">当前命中档位</string>
