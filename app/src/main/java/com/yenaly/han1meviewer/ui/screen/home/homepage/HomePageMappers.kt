@@ -4,6 +4,57 @@ import com.yenaly.han1meviewer.HanimeConstants
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.HomePage
+import com.yenaly.han1meviewer.util.DisplayTextLocalizer
+
+/** Hero 轮播中来自视频条目的数量上限，官网运营位不计入其中。 */
+private const val HERO_VIDEO_ITEM_COUNT = 6
+
+/**
+ * 构建首页 Hero 轮播数据。
+ *
+ * 官网运营位固定排在首位；其后从下方分类行中取若干条视频，使轮播在网站只下发一条运营位时
+ * 依然可以翻页。视频优先取自「他們在看」，其余分组按用户设置的顺序补足，并跳过与运营位
+ * 重复的条目。
+ *
+ * @param homePage 仓库层返回的首页原始数据。
+ * @param categories 已按用户设置过滤排序的分类行，确保 Hero 不会展示被隐藏分组的内容。
+ */
+fun buildHomeHeroItems(
+    homePage: HomePage,
+    categories: List<HomeCategory>
+): List<HomeHeroItem> {
+    val officialBanner = homePage.banner?.let { banner ->
+        HomeHeroItem(
+            imageUrl = banner.picUrl,
+            title = banner.title,
+            subtitle = banner.description,
+            videoCode = banner.videoCode
+        )
+    }
+    val videos = categories
+        .sortedBy { if (it.key == HOME_CATEGORY_WATCHING_NOW) 0 else 1 }
+        .flatMap { it.videos }
+        .asSequence()
+        .filter { it.videoCode != officialBanner?.videoCode }
+        .distinctBy { it.videoCode }
+        .take(HERO_VIDEO_ITEM_COUNT)
+        .map { video ->
+            HomeHeroItem(
+                imageUrl = video.coverUrl,
+                title = video.title,
+                subtitle = listOfNotNull(
+                    video.currentArtist?.takeIf { it.isNotBlank() },
+                    video.views?.takeIf { it.isNotBlank() }
+                        ?.let(DisplayTextLocalizer::localizeViews),
+                    video.uploadTime?.takeIf { it.isNotBlank() }
+                        ?.let(DisplayTextLocalizer::localizeRelativeTime),
+                ).joinToString(" · ").takeIf { it.isNotEmpty() },
+                videoCode = video.videoCode
+            )
+        }
+        .toList()
+    return listOfNotNull(officialBanner) + videos
+}
 
 /**
  * 将首页原始数据转换为 UI 可直接展示的分类行数据。
