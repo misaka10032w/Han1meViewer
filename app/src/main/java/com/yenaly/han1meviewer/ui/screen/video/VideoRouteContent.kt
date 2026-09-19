@@ -36,7 +36,7 @@ fun VideoRouteContent(
     onManageMyList: (com.yenaly.han1meviewer.logic.model.HanimeVideo.MyList?, List<Boolean>) -> Unit,
     onQuickCheckIn: (com.yenaly.han1meviewer.logic.entity.CheckInRecordEntity) -> Unit,
     onPrepareDownload: (String, com.yenaly.han1meviewer.logic.model.HanimeVideo?) -> Unit,
-    onConfirmDownloadPrompt: (com.yenaly.han1meviewer.logic.model.HanimeVideo?) -> Unit,
+    onConfirmDownloadPrompt: (com.yenaly.han1meviewer.logic.model.HanimeVideo?, String?) -> Unit,
     onRequestOpenOfficialDownloadPage: () -> Unit,
     onRequestOpenDownloadPermissionSettings: () -> Unit,
     onOpenWebPage: () -> Unit,

@@ -46,7 +46,7 @@ fun RenderVideoIntroductionContent(
     onManageMyList: (HanimeVideo.MyList?, List<Boolean>) -> Unit,
     onQuickCheckIn: (CheckInRecordEntity) -> Unit,
     onPrepareDownload: (String, HanimeVideo?) -> Unit,
-    onConfirmDownloadPrompt: (HanimeVideo?) -> Unit,
+    onConfirmDownloadPrompt: (HanimeVideo?, String?) -> Unit,
     onRequestOpenOfficialDownloadPage: () -> Unit,
     onRequestOpenDownloadPermissionSettings: () -> Unit,
     onOpenWebPage: () -> Unit,
@@ -95,8 +95,8 @@ fun RenderVideoIntroductionContent(
             onDismissDownloadPrompt = {
                 onPendingDownloadPromptChange(null)
             },
-            onConfirmDownloadPrompt = {
-                onConfirmDownloadPrompt(video)
+            onConfirmDownloadPrompt = { autoGroupName ->
+                onConfirmDownloadPrompt(video, autoGroupName)
             },
             onRequestOpenOfficialDownloadPage = onRequestOpenOfficialDownloadPage,
             onRequestOpenDownloadPermissionSettings = onRequestOpenDownloadPermissionSettings,
@@ -125,6 +125,8 @@ fun RenderVideoIntroductionContent(
                 viewModel.setIntroScrollState(videoCode, index, offset)
             },
             onIntroductionLinkClick = onIntroductionLinkClick,
+            downloadGroups = viewModel.downloadGroups.collectAsStateWithLifecycle().value,
+            recommendedGroupId = viewModel.recommendedGroupId.collectAsStateWithLifecycle().value,
         )
     }
 }

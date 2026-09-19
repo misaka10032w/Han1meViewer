@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SettingSliderItem
+import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
@@ -18,6 +19,7 @@ data class DownloadSettingsUiState(
     val downloadCountLimitSummary: String,
     val downloadSpeedLimitIndex: Int,
     val downloadSpeedLimitSummary: String,
+    val downloadAutoGroup: Boolean = true,
 )
 
 @Composable
@@ -30,6 +32,7 @@ fun DownloadSettingsScreen(
     onImportDownloadedFiles: () -> Unit,
     onDownloadCountLimitChange: (Int) -> Unit,
     onDownloadSpeedLimitChange: (Int) -> Unit,
+    onDownloadAutoGroupChange: (Boolean) -> Unit,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = 8.dp),
@@ -74,6 +77,16 @@ fun DownloadSettingsScreen(
                 onValueChange = onDownloadSpeedLimitChange,
             )
         }
+
+        item {
+            SettingSwitchItem(
+                title = stringResource(R.string.download_auto_group),
+                summary = stringResource(R.string.download_auto_group_summary),
+                checked = state.downloadAutoGroup,
+                iconRes = R.drawable.ic_baseline_fold_24,
+                onCheckedChange = onDownloadAutoGroupChange,
+            )
+        }
     }
 }
 
@@ -88,6 +101,7 @@ private fun DownloadSettingsScreenPreview() {
                 downloadCountLimitSummary = "2",
                 downloadSpeedLimitIndex = 0,
                 downloadSpeedLimitSummary = "无限制",
+                downloadAutoGroup = true,
             ),
             maxDownloadCountLimit = 10,
             maxDownloadSpeedLimitIndex = 5,
@@ -96,6 +110,7 @@ private fun DownloadSettingsScreenPreview() {
             onImportDownloadedFiles = {},
             onDownloadCountLimitChange = {},
             onDownloadSpeedLimitChange = {},
+            onDownloadAutoGroupChange = {},
         )
     }
 }

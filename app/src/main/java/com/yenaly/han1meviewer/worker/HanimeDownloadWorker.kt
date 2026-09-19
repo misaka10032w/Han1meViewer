@@ -27,6 +27,7 @@ import com.yenaly.han1meviewer.HFileManager
 import com.yenaly.han1meviewer.HFileManager.createVideoName
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.DatabaseRepo
+import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.network.ServiceCreator
 import com.yenaly.han1meviewer.logic.state.DownloadState
@@ -79,6 +80,10 @@ class HanimeDownloadWorker(
         val hanimeName: String,
         val videoCode: String,
         val coverUrl: String,
+        /**
+         * 目标下载分组，为 null 时使用默认分组（未分组）。
+         */
+        val groupId: Int? = null,
     ) {
         companion object {
             fun fromEntity(entity: HanimeDownloadEntity): Args {
@@ -89,6 +94,7 @@ class HanimeDownloadWorker(
                     hanimeName = entity.title,
                     videoCode = entity.videoCode,
                     coverUrl = entity.coverUrl,
+                    groupId = entity.groupId,
                 )
             }
         }
@@ -112,6 +118,8 @@ class HanimeDownloadWorker(
         const val HANIME_NAME = "hanime_name"
         const val VIDEO_CODE = "video_code"
         const val COVER_URL = "cover_url"
+        const val GROUP_ID = "group_id"
+        const val NO_GROUP_ID = -1
         const val REDOWNLOAD = "redownload"
         const val IN_WAITING_QUEUE = "in_waiting_queue"
         // const val RELEASE_DATE = "release_date"
@@ -166,6 +174,7 @@ class HanimeDownloadWorker(
     private val quality by inputData(QUALITY, EMPTY_STRING)
     private val videoCode by inputData(VIDEO_CODE, EMPTY_STRING)
     private val coverUrl by inputData(COVER_URL, EMPTY_STRING)
+    private val groupId by inputData(GROUP_ID, NO_GROUP_ID)
 
     private val fastPathCancel by inputData(FAST_PATH_CANCEL, false)
     private val shouldDelete by inputData(DELETE, false)
@@ -201,6 +210,7 @@ class HanimeDownloadWorker(
                 if (len > 0) {
                     // 创建数据库记录
                     val entity = HanimeDownloadEntity(
+                        groupId = groupId.takeIf { it > 0 } ?: DownloadGroupEntity.DEFAULT_GROUP_ID,
                         coverUrl = coverUrl,
                         coverUri = null,
                         title = hanimeName,
@@ -311,6 +321,13 @@ class HanimeDownloadWorker(
                     return@withContext Result.retry()
                 }
                 throw e
+            }
+
+            // 自动分组：影片已存在于下载库时，同样把分组更新为目标分组
+            val targetGroupId = groupId.takeIf { it > 0 }
+            if (targetGroupId != null && entity.groupId != targetGroupId) {
+                entity = entity.copy(groupId = targetGroupId)
+                DatabaseRepo.HanimeDownload.update(entity)
             }
 
             if (entity.downloadedLength >= entity.length && entity.length > 0) {

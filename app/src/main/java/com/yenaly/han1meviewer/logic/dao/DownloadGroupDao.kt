@@ -73,6 +73,12 @@ interface DownloadGroupDao {
     suspend fun getGroupById(groupId: Int): DownloadGroupEntity?
 
     /**
+     * 按名称查找分组，用于下载时自动分组复用同名分组。
+     */
+    @Query("SELECT * FROM download_groups WHERE name = :name LIMIT 1")
+    suspend fun getGroupByName(name: String): DownloadGroupEntity?
+
+    /**
      * 获取最大分组ID
      */
     @Query("SELECT MAX(orderIndex) FROM download_groups")

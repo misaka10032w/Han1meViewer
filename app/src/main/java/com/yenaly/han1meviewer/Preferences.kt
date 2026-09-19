@@ -314,6 +314,41 @@ object Preferences {
 
     val collapseDownloadedGroup: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.COLLAPSE_DOWNLOADED_GROUP,false)
+
+    /**
+     * 下載時是否預設按系列自動建立分組，同時作為下載確認對話框的預設勾選狀態。
+     */
+    var downloadAutoGroup: Boolean
+        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.DOWNLOAD_AUTO_GROUP, true)
+        set(value) = preferenceSp.edit {
+            putBoolean(SettingsPreferenceKeys.DOWNLOAD_AUTO_GROUP, value)
+        }
+
+    /**
+     * 自動分組時分組名是否取自系列名（關閉時取自影片標題）。
+     * 於下載確認對話框選擇，並記住作為下次的預設選項。
+     */
+    var downloadGroupNameFromSeriesName: Boolean
+        get() = preferenceSp.getBoolean(
+            SettingsPreferenceKeys.DOWNLOAD_GROUP_NAME_FROM_SERIES_NAME,
+            false,
+        )
+        set(value) = preferenceSp.edit {
+            putBoolean(SettingsPreferenceKeys.DOWNLOAD_GROUP_NAME_FROM_SERIES_NAME, value)
+        }
+
+    /**
+     * 自動分組時是否將分組名快速轉換為繁體（關閉時轉為簡體）。
+     * 於下載確認對話框選擇，未曾選擇過時跟隨[視頻標題語言][videoLanguage]。
+     */
+    var downloadGroupNameTraditional: Boolean
+        get() = preferenceSp.getBoolean(
+            SettingsPreferenceKeys.DOWNLOAD_GROUP_TRADITIONAL,
+            videoLanguage == "zht",
+        )
+        set(value) = preferenceSp.edit {
+            putBoolean(SettingsPreferenceKeys.DOWNLOAD_GROUP_TRADITIONAL, value)
+        }
     val isUsePrivateStorage: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.USE_PRIVATE_STORAGE,true)
     val safDownloadPath: String?

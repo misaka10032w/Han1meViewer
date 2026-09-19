@@ -10,6 +10,8 @@ import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.getHanimeVideoDownloadLink
 import com.yenaly.han1meviewer.getHanimeVideoLink
+import com.yenaly.han1meviewer.logic.DatabaseRepo
+import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.ui.activity.MainActivity
@@ -176,20 +178,36 @@ class VideoRouteActions(
 
     fun confirmPendingDownload(
         videoData: HanimeVideo,
-        pendingDownloadPrompt: DownloadPromptState?
+        pendingDownloadPrompt: DownloadPromptState?,
+        autoGroupName: String? = null,
     ) {
         val redownload = pendingDownloadPrompt?.oldQuality != null
         onPendingDownloadPromptChange(null)
         scope.launch {
-            enqueueDownloadWork(videoData, redownload = redownload)
+            enqueueDownloadWork(
+                videoData = videoData,
+                redownload = redownload,
+                autoGroupName = autoGroupName,
+            )
         }
     }
 
-    private suspend fun enqueueDownloadWork(videoData: HanimeVideo, redownload: Boolean = false) {
+    private suspend fun enqueueDownloadWork(
+        videoData: HanimeVideo,
+        redownload: Boolean = false,
+        autoGroupName: String? = null,
+    ) {
         context.requestPostNotificationPermission()
         val quality = getCheckedQuality()
         withContext(Dispatchers.IO) {
             HCacheManager.saveHanimeVideoInfo(context, viewModel.videoCode, videoData)
+        }
+        val autoGroup = autoGroupName?.let { resolveAutoGroup(videoData, it) }
+        autoGroup?.createdName?.let { name ->
+            GlobalToasts.show(
+                context.getString(R.string.download_auto_group_created, name),
+                level = GlobalToasts.ToastLevel.SUCCESS,
+            )
         }
         HanimeDownloadManagerV2.addTask(
             HanimeDownloadWorker.Args(
@@ -199,6 +217,7 @@ class VideoRouteActions(
                 hanimeName = videoData.title,
                 videoCode = viewModel.videoCode,
                 coverUrl = videoData.coverUrl,
+                groupId = autoGroup?.id,
             ),
             redownload = redownload,
         )
@@ -206,6 +225,37 @@ class VideoRouteActions(
             context.getString(R.string.added_to_download_queue),
             level = GlobalToasts.ToastLevel.SUCCESS,
         )
+    }
+
+    private data class ResolvedGroup(val id: Int, val createdName: String?)
+
+    /**
+     * 解析自动分组：已有同名分组则复用，否则新建。
+     *
+     * @return 目标分组；分组名为空白时返回 null（即不自动分组）
+     */
+    private suspend fun resolveAutoGroup(videoData: HanimeVideo, name: String): ResolvedGroup? =
+        withContext(Dispatchers.IO) {
+            val groupName = name.trim().takeIf { it.isNotEmpty() }
+                ?: return@withContext null
+            val existing = DatabaseRepo.HanimeDownload.findGroupByName(groupName)
+            val groupId = existing?.id
+                ?: DatabaseRepo.HanimeDownload.createNewGroup(groupName).toInt()
+            moveUngroupedSeriesToGroup(videoData, groupId)
+            ResolvedGroup(id = groupId, createdName = groupName.takeIf { existing == null })
+        }
+
+    /**
+     * 把同系列中仍处于默认分组（未分组）的影片一并归入目标分组。
+     * 用户手动分过组的影片保持原位。
+     */
+    private suspend fun moveUngroupedSeriesToGroup(videoData: HanimeVideo, groupId: Int) {
+        val seriesCodes = videoData.playlist?.video?.map { it.videoCode }.orEmpty()
+        seriesCodes.forEach { videoCode ->
+            val entity = DatabaseRepo.HanimeDownload.find(videoCode) ?: return@forEach
+            if (entity.groupId != DownloadGroupEntity.DEFAULT_GROUP_ID) return@forEach
+            DatabaseRepo.HanimeDownload.updateVideoGroup(videoCode, groupId)
+        }
     }
 
     fun openDownloadPermissionSettings() {

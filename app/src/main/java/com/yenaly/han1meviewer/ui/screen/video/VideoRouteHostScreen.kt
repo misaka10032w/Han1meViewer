@@ -327,8 +327,10 @@ fun VideoRouteHostScreen(
                     checkedQuality = quality
                     video?.let(actions::startDownloadFlow)
                 },
-                onConfirmDownloadPrompt = { video ->
-                    video?.let { actions.confirmPendingDownload(it, pendingDownloadPrompt) }
+                onConfirmDownloadPrompt = { video, autoGroupName ->
+                    video?.let {
+                        actions.confirmPendingDownload(it, pendingDownloadPrompt, autoGroupName)
+                    }
                 },
                 onRequestOpenOfficialDownloadPage = actions::openOfficialDownloadPage,
                 onRequestOpenDownloadPermissionSettings = actions::openDownloadPermissionSettings,
