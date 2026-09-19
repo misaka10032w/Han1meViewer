@@ -263,8 +263,14 @@ object DatabaseRepo {
         suspend fun getGroupById(id: Int)=
             downloadGroupDao.getGroupById(id)
 
+        suspend fun findGroupByName(name: String)=
+            downloadGroupDao.getGroupByName(name)
+
         suspend fun updateVideoGroup(videoCode: String, newGroupId: Int)=
             hanimeDownloadDao.updateVideoGroup(videoCode, newGroupId)
+
+        suspend fun findGroupIdOfSeries(videoCodes: List<String>) =
+            hanimeDownloadDao.findGroupIdOfSeries(videoCodes)
 
         suspend fun createNewGroup(name: String): Long{
             val maxIndex = downloadGroupDao.getMaxOrderIndex() ?: 0

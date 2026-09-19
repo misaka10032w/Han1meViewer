@@ -135,6 +135,10 @@ fun DownloadSettingsRouteScreen(
             Preferences.preferenceSp.edit { putInt(DOWNLOAD_SPEED_LIMIT, value) }
             refreshKey++
         },
+        onDownloadAutoGroupChange = { checked ->
+            Preferences.downloadAutoGroup = checked
+            refreshKey++
+        },
     )
 
     if (!Preferences.isUsePrivateStorage) {
@@ -305,6 +309,7 @@ private fun buildDownloadSettingsUiState(context: Context): DownloadSettingsUiSt
                         SpeedLimitInterceptor.NO_LIMIT_INDEX,
                     )
                 ].toDownloadSpeedPrettyString(context),
+                downloadAutoGroup = Preferences.downloadAutoGroup,
             )
         )?.name ?: uri.toString()
     }
@@ -322,5 +327,6 @@ private fun buildDownloadSettingsUiState(context: Context): DownloadSettingsUiSt
         downloadSpeedLimitIndex = speedIndex,
         downloadSpeedLimitSummary = SpeedLimitInterceptor.SPEED_BYTES[speedIndex]
             .toDownloadSpeedPrettyString(context),
+        downloadAutoGroup = Preferences.downloadAutoGroup,
     )
 }

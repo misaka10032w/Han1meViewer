@@ -24,6 +24,20 @@ fun String.toSimplified(): String {
 }
 
 /**
+ * 将文本粗略转换为繁体中文，用于把简体标题转成繁体。
+ *
+ * 依赖 ICU，API 29 以下直接返回原文。
+ */
+fun String.toTraditional(): String {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return this
+    return try {
+        ChineseTransliterator.traditionalize(this)
+    } catch (_: Throwable) {
+        this
+    }
+}
+
+/**
  * 日文新字体 → 简体中文映射。
  *
  * 覆盖日文常用汉字中与中文简体不同的日文特有写法（如「伝」「転」「円」「楽」），
@@ -116,5 +130,12 @@ private object ChineseTransliterator {
        Transliterator.getInstance("Traditional-Simplified")
 
     @RequiresApi(Build.VERSION_CODES.Q)
+    private val traditionalTransliterator =
+        Transliterator.getInstance("Simplified-Traditional")
+
+    @RequiresApi(Build.VERSION_CODES.Q)
     fun simplify(text: String): String = transliterator.transliterate(text)
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun traditionalize(text: String): String = traditionalTransliterator.transliterate(text)
 }

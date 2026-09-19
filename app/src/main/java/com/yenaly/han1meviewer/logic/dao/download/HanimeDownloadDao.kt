@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.logic.state.DownloadState
@@ -96,5 +97,18 @@ abstract class HanimeDownloadDao {
     // 更新已下载的某视频的分组
     @Query("UPDATE HanimeDownloadEntity SET groupId = :newGroupId WHERE videoCode = :videoCode")
     abstract suspend fun updateVideoGroup(videoCode: String, newGroupId: Int)
+
+    /**
+     * 查询这些影片中已归入非默认分组的分组 id，用于下载时推荐同系列已用的分组。
+     * 同一系列散落在多个分组时，取影片数量最多的那个。
+     *
+     * [videoCodes] 不可为空，调用方需自行过滤。
+     */
+    @Query(
+        "SELECT groupId FROM HanimeDownloadEntity WHERE videoCode IN (:videoCodes) " +
+                "AND groupId != ${DownloadGroupEntity.DEFAULT_GROUP_ID} " +
+                "GROUP BY groupId ORDER BY COUNT(*) DESC LIMIT 1"
+    )
+    abstract suspend fun findGroupIdOfSeries(videoCodes: List<String>): Int?
 
 }

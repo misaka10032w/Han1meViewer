@@ -33,9 +33,13 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.outlined.CreateNewFolder
+import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material.icons.outlined.ThumbDown
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -46,8 +50,14 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenu
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -65,6 +75,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -82,6 +94,7 @@ import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ResolutionLinkMap
 import com.yenaly.han1meviewer.logic.entity.CheckInRecordEntity
+import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
@@ -103,11 +116,29 @@ import com.yenaly.han1meviewer.ui.theme.SpacingNormal
 import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
 import com.yenaly.han1meviewer.ui.theme.VideoSimplifiedCardMinWidth
 import com.yenaly.han1meviewer.util.DisplayTextLocalizer
+import com.yenaly.han1meviewer.util.toSimplified
+import com.yenaly.han1meviewer.util.toTraditional
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format
 
 private val previewSafeDateFormat = LocalDate.Formats.ISO
+
+/**
+ * 分组名下拉搜索最多展示的结果数量与其高度上限。
+ */
+private const val MAX_GROUP_SUGGESTIONS = 8
+private val GroupSuggestionMenuMaxHeight = 180.dp
+
+/**
+ * 分组名输入框最多显示的行数，超出后输入框内可滚动。
+ */
+private const val GROUP_NAME_MAX_LINES = 3
+
+/**
+ * 下载确认对话框内容区的最大高度占屏幕高度的比例。
+ */
+private const val DIALOG_CONTENT_HEIGHT_RATIO = 0.6f
 
 data class DownloadPromptState(
     val newQuality: String,
@@ -136,7 +167,10 @@ fun VideoIntroductionScreen(
     onQuickCheckIn: (CheckInRecordEntity) -> Unit,
     onPrepareDownload: (String) -> Unit,
     onDismissDownloadPrompt: () -> Unit,
-    onConfirmDownloadPrompt: () -> Unit,
+    /**
+     * @param autoGroupName 自动分组的目标分组名，null 表示不自动分组
+     */
+    onConfirmDownloadPrompt: (autoGroupName: String?) -> Unit,
     onRequestOpenOfficialDownloadPage: () -> Unit,
     onRequestOpenDownloadPermissionSettings: () -> Unit,
     onShare: () -> Unit,
@@ -148,6 +182,11 @@ fun VideoIntroductionScreen(
     onPlaylistScrollChange: (Int) -> Unit,
     onIntroductionScrollChange: (Int, Int) -> Unit,
     onIntroductionLinkClick: (String) -> Unit,
+    downloadGroups: List<DownloadGroupEntity> = emptyList(),
+    /**
+     * 同系列已使用的分组 id，作为自动分组的推荐项
+     */
+    recommendedGroupId: Int? = null,
 ) {
     val maxScreenWidth = LocalWindowInfo.current.containerSize.width.dp
 
@@ -190,6 +229,8 @@ fun VideoIntroductionScreen(
                 onPlaylistScrollChange = onPlaylistScrollChange,
                 onIntroductionScrollChange = onIntroductionScrollChange,
                 onIntroductionLinkClick = onIntroductionLinkClick,
+                downloadGroups = downloadGroups,
+                recommendedGroupId = recommendedGroupId,
             )
 
             state is VideoLoadingState.Error -> ErrorContent(
@@ -232,7 +273,7 @@ private fun VideoIntroductionContent(
     onQuickCheckIn: (CheckInRecordEntity) -> Unit,
     onPrepareDownload: (String) -> Unit,
     onDismissDownloadPrompt: () -> Unit,
-    onConfirmDownloadPrompt: () -> Unit,
+    onConfirmDownloadPrompt: (autoGroupName: String?) -> Unit,
     onRequestOpenOfficialDownloadPage: () -> Unit,
     onRequestOpenDownloadPermissionSettings: () -> Unit,
     onShare: () -> Unit,
@@ -244,6 +285,8 @@ private fun VideoIntroductionContent(
     onPlaylistScrollChange: (Int) -> Unit,
     onIntroductionScrollChange: (Int, Int) -> Unit,
     onIntroductionLinkClick: (String) -> Unit,
+    downloadGroups: List<DownloadGroupEntity>,
+    recommendedGroupId: Int?,
 ) {
     val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val listState = rememberLazyListState(
@@ -275,6 +318,8 @@ private fun VideoIntroductionContent(
         DownloadConfirmDialog(
             video = video,
             prompt = downloadPrompt,
+            groups = downloadGroups,
+            recommendedGroupId = recommendedGroupId,
             onDismiss = onDismissDownloadPrompt,
             onConfirm = onConfirmDownloadPrompt,
             onOpenOfficial = {
@@ -484,14 +529,105 @@ private fun DownloadQualityDialog(
     )
 }
 
+/**
+ * 按「快速繁简转换」的选择把文本转为繁体或简体。
+ */
+private fun String.toChineseScript(traditional: Boolean): String {
+    return if (traditional) toTraditional() else toSimplified()
+}
+
+/**
+ * 自动分组的默认分组名。
+ *
+ * 影片标题与详情页主标题（[TitleSection]）一致，没有中文标题时退回原名；
+ * 系列名称没有时同样退回影片标题。最后按 [traditional] 快速转换繁简。
+ *
+ * @param nameFromSeriesName 组名是否来自系列名称
+ */
+private fun HanimeVideo.suggestedGroupName(
+    nameFromSeriesName: Boolean,
+    traditional: Boolean,
+): String {
+    val videoTitle = chineseTitle?.takeIf { it.isNotBlank() } ?: title
+    val seriesName = playlist?.playlistName?.takeIf { it.isNotBlank() }
+    val baseName = if (nameFromSeriesName) seriesName ?: videoTitle else videoTitle
+    return baseName.toChineseScript(traditional)
+}
+
+/**
+ * 分组名的模糊匹配：忽略大小写，并把繁简、日文汉字归一化后再比对；
+ * 输入为空时列出全部分组，方便直接挑选。
+ */
+private fun DownloadGroupEntity.matchesGroupQuery(query: String): Boolean {
+    val trimmed = query.trim()
+    if (trimmed.isEmpty()) return true
+    if (name.contains(trimmed, ignoreCase = true)) return true
+    return name.toSimplified().contains(trimmed.toSimplified(), ignoreCase = true)
+}
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 private fun DownloadConfirmDialog(
     video: HanimeVideo,
     prompt: DownloadPromptState,
+    groups: List<DownloadGroupEntity>,
+    recommendedGroupId: Int?,
     onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
+    onConfirm: (autoGroupName: String?) -> Unit,
     onOpenOfficial: () -> Unit,
 ) {
+    var autoGroup by remember { mutableStateOf(Preferences.downloadAutoGroup) }
+    var nameFromSeriesName by remember {
+        mutableStateOf(Preferences.downloadGroupNameFromSeriesName)
+    }
+    var nameTraditional by remember { mutableStateOf(Preferences.downloadGroupNameTraditional) }
+    var groupName by remember {
+        mutableStateOf(video.suggestedGroupName(nameFromSeriesName, nameTraditional))
+    }
+    var groupNameExpanded by remember { mutableStateOf(false) }
+    // 用户手动改过名称后，切换下方的组名来源/繁简转换或推荐分组都不再覆盖它
+    var groupNameEdited by remember { mutableStateOf(false) }
+
+    val recommendedGroup = remember(groups, recommendedGroupId) {
+        groups.firstOrNull { it.id == recommendedGroupId }
+    }
+    // 同系列已有分组时推荐该分组，优先于按组名来源生成的名字
+    LaunchedEffect(recommendedGroup) {
+        if (recommendedGroup != null && !groupNameEdited) {
+            groupName = recommendedGroup.name
+        }
+    }
+
+    fun regenerateGroupName() {
+        if (!groupNameEdited) {
+            groupName = video.suggestedGroupName(nameFromSeriesName, nameTraditional)
+        }
+    }
+
+    fun onNameSourceChange(fromSeriesName: Boolean) {
+        nameFromSeriesName = fromSeriesName
+        Preferences.downloadGroupNameFromSeriesName = fromSeriesName
+        regenerateGroupName()
+    }
+
+    fun onScriptConversionChange(toTraditional: Boolean) {
+        nameTraditional = toTraditional
+        Preferences.downloadGroupNameTraditional = toTraditional
+        regenerateGroupName()
+    }
+
+    val selectableGroups = remember(groups) {
+        groups.filter { it.id != DownloadGroupEntity.DEFAULT_GROUP_ID }
+    }
+    val groupSuggestions = remember(groupName, selectableGroups) {
+        selectableGroups.filter { it.matchesGroupQuery(groupName) }
+            .take(MAX_GROUP_SUGGESTIONS)
+    }
+
+    val trimmedGroupName = groupName.trim()
+    val existingGroup = groups.firstOrNull { it.name == trimmedGroupName }
+    val suggestionsExpanded = groupNameExpanded && groupSuggestions.isNotEmpty()
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -502,30 +638,163 @@ private fun DownloadConfirmDialog(
             )
         },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(stringResource(R.string.download_video_detail_below))
-                prompt.oldQuality?.let {
-                    Text(stringResource(R.string.check_video_exists_in_download, it))
-                }
-                Text(stringResource(R.string.name_with_colon) + video.title)
-                Text(
-                    stringResource(R.string.quality_with_colon) + if (
-                        prompt.oldQuality != null && prompt.oldQuality != prompt.newQuality
-                    ) {
-                        "${prompt.oldQuality} → ${prompt.newQuality}"
-                    } else {
-                        prompt.newQuality
+            BoxWithConstraints {
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = maxHeight * DIALOG_CONTENT_HEIGHT_RATIO)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text(stringResource(R.string.download_video_detail_below))
+                    prompt.oldQuality?.let {
+                        Text(stringResource(R.string.check_video_exists_in_download, it))
                     }
-                )
-                Text(
-                    text = stringResource(R.string.after_download_tips),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                    Text(stringResource(R.string.name_with_colon) + video.title)
+                    Text(
+                        stringResource(R.string.quality_with_colon) + if (
+                            prompt.oldQuality != null && prompt.oldQuality != prompt.newQuality
+                        ) {
+                            "${prompt.oldQuality} → ${prompt.newQuality}"
+                        } else {
+                            prompt.newQuality
+                        }
+                    )
+                    HorizontalDivider()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(2.dp),
+                        ) {
+                            Text(stringResource(R.string.download_auto_group))
+                            when {
+                                !autoGroup -> Text(
+                                    text = stringResource(R.string.download_auto_group_summary),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+    
+                                existingGroup != null -> DownloadGroupTargetHint(
+                                    icon = Icons.Outlined.FolderOpen,
+                                    text = stringResource(
+                                        R.string.download_auto_group_reuse,
+                                        existingGroup.name,
+                                    ),
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+    
+                                else -> DownloadGroupTargetHint(
+                                    icon = Icons.Outlined.CreateNewFolder,
+                                    text = stringResource(
+                                        R.string.download_auto_group_create,
+                                        trimmedGroupName,
+                                    ),
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                )
+                            }
+                        }
+                        Switch(
+                            checked = autoGroup,
+                            onCheckedChange = { checked ->
+                                autoGroup = checked
+                                Preferences.downloadAutoGroup = checked
+                            },
+                        )
+                    }
+                    if (autoGroup) {
+                        ExposedDropdownMenuBox(
+                            expanded = suggestionsExpanded,
+                            onExpandedChange = { groupNameExpanded = it },
+                        ) {
+                            OutlinedTextField(
+                                value = groupName,
+                                onValueChange = { value ->
+                                    groupName = value.replace("\n", "")
+                                    groupNameEdited = true
+                                    groupNameExpanded = true
+                                },
+                                label = { Text(stringResource(R.string.group_name)) },
+                                maxLines = GROUP_NAME_MAX_LINES,
+                                trailingIcon = {
+                                    if (groupName.isNotEmpty()) {
+                                        IconButton(
+                                            onClick = {
+                                                // 清空即回到「按上方选项自动命名」的状态
+                                                groupName = ""
+                                                groupNameEdited = false
+                                            },
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Filled.Clear,
+                                                contentDescription = stringResource(R.string.close),
+                                            )
+                                        }
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
+                            )
+                            ExposedDropdownMenu(
+                                expanded = suggestionsExpanded,
+                                onDismissRequest = { groupNameExpanded = false },
+                                modifier = Modifier.heightIn(max = GroupSuggestionMenuMaxHeight),
+                            ) {
+                                groupSuggestions.forEach { group ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = group.name,
+                                                maxLines = 2,
+                                                overflow = TextOverflow.Ellipsis,
+                                            )
+                                        },
+                                        onClick = {
+                                            groupName = group.name
+                                            groupNameEdited = true
+                                            groupNameExpanded = false
+                                        },
+                                    )
+                                }
+                            }
+                        }
+                        DownloadGroupOptionRow(
+                            label = stringResource(R.string.download_group_title_from),
+                            options = listOf(
+                                stringResource(R.string.download_group_title_from_video_title) to false,
+                                stringResource(R.string.download_group_title_from_series_name) to true,
+                            ),
+                            selected = nameFromSeriesName,
+                            onSelect = ::onNameSourceChange,
+                        )
+                        DownloadGroupOptionRow(
+                            label = stringResource(R.string.download_group_name_quick_tc_sc_conversion),
+                            options = listOf(
+                                stringResource(R.string.download_group_script_simplified) to false,
+                                stringResource(R.string.download_group_script_traditional) to true,
+                            ),
+                            selected = nameTraditional,
+                            onSelect = ::onScriptConversionChange,
+                        )
+                    }
+                    Text(
+                        text = stringResource(R.string.after_download_tips),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         },
         confirmButton = {
-            TextButton(onClick = onConfirm) {
+            TextButton(
+                onClick = {
+                    val target = trimmedGroupName.takeIf { autoGroup && it.isNotEmpty() }
+                    onConfirm(target)
+                },
+                enabled = !autoGroup || trimmedGroupName.isNotEmpty(),
+            ) {
                 Text(stringResource(R.string.sure))
             }
         },
@@ -540,6 +809,61 @@ private fun DownloadConfirmDialog(
             }
         },
     )
+}
+
+/**
+ * 分组名最终去向的提示行，复用已有分组与新建分组用图标和颜色区分。
+ */
+@Composable
+private fun DownloadGroupTargetHint(
+    icon: ImageVector,
+    text: String,
+    color: Color,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier.size(14.dp),
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = color,
+        )
+    }
+}
+
+/**
+ * 分组名的选择行，如「组名来自：影片标题 / 系列名称」。
+ */
+@Composable
+private fun <T> DownloadGroupOptionRow(
+    label: String,
+    options: List<Pair<String, T>>,
+    selected: T,
+    onSelect: (T) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            options.forEach { (text, value) ->
+                FilterChip(
+                    selected = selected == value,
+                    onClick = { onSelect(value) },
+                    label = { Text(text) },
+                )
+            }
+        }
+    }
 }
 
 @Composable

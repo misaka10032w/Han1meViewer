@@ -17,6 +17,7 @@ import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
+import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
@@ -31,12 +32,17 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -99,6 +105,40 @@ class VideoViewModel(application: Application) : YenalyViewModel(application) {
     val hanimeVideoFlow = _hanimeVideoFlow.asStateFlow()
     private val _videoHostUiStateFlow = MutableStateFlow(VideoHostUiState())
     val videoHostUiStateFlow = _videoHostUiStateFlow.asStateFlow()
+
+    /**
+     * 同系列影片已歸入的分組 id，作為下載時分組名的推薦項。
+     *
+     * 同系列任意一集在非預設分組中時推薦該分組，否則為 null。
+     */
+    val recommendedGroupId: StateFlow<Int?> =
+        hanimeVideoFlow
+            .map { video -> video?.playlist?.video?.map { it.videoCode }.orEmpty() }
+            .distinctUntilChanged()
+            .map { videoCodes ->
+                if (videoCodes.isEmpty()) null
+                else DatabaseRepo.HanimeDownload.findGroupIdOfSeries(videoCodes)
+            }
+            .flowOn(Dispatchers.IO)
+            .catch { e -> e.printStackTrace() }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = null,
+            )
+
+    /**
+     * 已下載分組列表，供下載時自動分組選擇（複用/挑選已有分組）使用。
+     */
+    val downloadGroups: StateFlow<List<DownloadGroupEntity>> =
+        DatabaseRepo.HanimeDownload.getAllGroups()
+            .flowOn(Dispatchers.IO)
+            .catch { e -> e.printStackTrace() }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList(),
+            )
 
     fun setVideoList(list: List<HanimeInfo>) {
         _videoList.value = list
