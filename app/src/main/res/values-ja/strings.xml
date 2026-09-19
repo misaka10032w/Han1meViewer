@@ -125,7 +125,7 @@
     <string name="add_to_playlist">リストに追加</string>
     <string name="player_settings">プレイヤー設定</string>
     <string name="tablet_mode">タブレットモード</string>
-    <string name="tablet_mode_summary">有効にすると動画ページがタブレットレイアウトで表示され、より広い視聴エリアを提供します</string>
+    <string name="tablet_mode_summary">有効にすると動画ページとホームのバナーがタブレットレイアウトで表示され、より広い視聴エリアを提供します</string>
     <string name="show_exit_confirm">終了確認</string>
     <string name="show_exit_confirm_summary">有効にすると戻るボタンでアプリを終了する際に確認ダイアログが表示されます</string>
     <string name="search_grid_columns_title">ビデオグリッド列数</string>

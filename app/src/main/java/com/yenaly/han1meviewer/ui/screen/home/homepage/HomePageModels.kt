@@ -24,6 +24,23 @@ val LocalSearchHistoryQuery = staticCompositionLocalOf<suspend (String) -> List<
 }
 
 /**
+ * 首页 Hero 区域的轮播项。
+ *
+ * 官网运营位与下方分类行中的视频共用该模型，图片同为 16:9，可直接混排在同一个轮播里。
+ *
+ * @param imageUrl 图片地址。
+ * @param title 主标题。
+ * @param subtitle 副标题，视频条目为「艺术家 · 观看数 · 上传时间」。
+ * @param videoCode 点击后打开的视频编号，官网运营位可能为空。
+ */
+data class HomeHeroItem(
+    val imageUrl: String,
+    val title: String,
+    val subtitle: String?,
+    val videoCode: String?,
+)
+
+/**
  * 首页视频分类行数据。
  *
  * @param titleRes 分类标题的字符串资源。

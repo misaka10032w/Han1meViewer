@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -39,9 +38,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.Announcement
+import com.yenaly.han1meviewer.ui.component.AutoScrollEffect
+import com.yenaly.han1meviewer.ui.component.PageIndicator
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.preview.fakeAnnouncements
 import com.yenaly.han1meviewer.ui.screen.home.homepage.formatTimestamp
+import kotlin.time.Duration.Companion.seconds
+
+/** 公告轮播的间隔，比图片轮播长一些，留出阅读时间。 */
+internal val AnnouncementAutoScrollInterval = 8.seconds
 
 /**
  * 显示首页紧凑公告轮播卡片。
@@ -62,6 +67,12 @@ fun AnnouncementCard(
 
     val pagerState = rememberPagerState(pageCount = { announcements.size })
     var showAllDialog by remember { mutableStateOf(false) }
+
+    AutoScrollEffect(
+        pagerState = pagerState,
+        pageCount = announcements.size,
+        interval = AnnouncementAutoScrollInterval
+    )
 
     Column(modifier = modifier) {
         Box(
@@ -119,28 +130,13 @@ fun AnnouncementCard(
                 }
             }
 
-            if (announcements.size > 1) {
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    repeat(announcements.size) { index ->
-                        val isSelected = pagerState.currentPage == index
-                        Box(
-                            modifier = Modifier
-                                .size(if (isSelected) 6.dp else 4.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.outlineVariant
-                                )
-                        )
-                        if (index < announcements.lastIndex) Spacer(Modifier.width(4.dp))
-                    }
-                }
-            }
+            PageIndicator(
+                pageCount = announcements.size,
+                currentPage = pagerState.currentPage,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 6.dp)
+            )
 
             IconButton(
                 onClick = onClose,
