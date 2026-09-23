@@ -88,5 +88,14 @@
       "ja": "コスプレ"
     },
     "search_key": "Cosplay"
+  },
+  {
+    "lang": {
+      "zh-rCN": "新番预告片",
+      "en": "New Anime Trailer",
+      "zh-rTW": "新番預告片",
+      "ja": "新作アニメ予告編"
+    },
+    "search_key": "新番預告"
   }
 ]
