@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,6 +42,8 @@ import com.yenaly.han1meviewer.ui.navigation.main.MainNavHost
 import com.yenaly.han1meviewer.ui.navigation.main.handleMainIntent
 import com.yenaly.han1meviewer.ui.navigation.main.navigateDrawerDestination
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
+import com.yenaly.han1meviewer.ui.adaptive.LocalTabletRailVisible
+import com.yenaly.han1meviewer.ui.adaptive.isTabletWindow
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageViewModel
 import com.yenaly.han1meviewer.util.getUpdateIfExists
@@ -127,6 +130,11 @@ fun MainActivityContent(
                 }
             }
         }
+        val tabletWindow = isTabletWindow()
+        val railVisible = tabletWindow &&
+            currentMainDestination != MainDestinationSpec.Video &&
+            currentMainDestination != MainDestinationSpec.AvatarCrop
+        CompositionLocalProvider(LocalTabletRailVisible provides railVisible) {
         MainActivityScaffold(
             drawerState = drawerState,
             drawerEnabled = currentMainDestination.drawerEnabled,
@@ -136,9 +144,12 @@ fun MainActivityContent(
             isLoggedIn = isLoggedIn,
             isLoading = headerIsLoading,
             currentSite = Preferences.baseUrl,
+            useRail = railVisible,
             onAvatarClick = {
                 if (isLoggedIn) {
-                    scope.launch { drawerState.close() }
+                    if (!railVisible) {
+                        scope.launch { drawerState.close() }
+                    }
                     onOpenAccount()
                 } else {
                     onRequireLogin()
@@ -153,8 +164,9 @@ fun MainActivityContent(
                     destination = destination,
                     isLoggedIn = isLoggedIn,
                     onRequireLogin = { GlobalToasts.show(loginFirst, level = GlobalToasts.ToastLevel.WARNING) },
+                    asTopLevel = railVisible,
                 )
-                if (handled) {
+                if (handled && !railVisible) {
                     scope.launch { drawerState.close() }
                 }
                 handled
@@ -173,6 +185,7 @@ fun MainActivityContent(
                     onDestinationChanged = { destination ->
                         currentMainDestination = destination
                     },
+                    railVisible = railVisible,
                 )
                 if (showAuthGuard) {
                     Box(
@@ -211,6 +224,7 @@ fun MainActivityContent(
                     onDeclined = { activity.finish() },
                 )
             }
+        }
         }
 
         if (activity.showSiteSwitchConfirm) {

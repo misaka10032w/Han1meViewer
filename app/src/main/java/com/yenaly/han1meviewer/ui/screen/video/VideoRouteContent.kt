@@ -46,6 +46,8 @@ fun VideoRouteContent(
     onIntroductionLinkClick: (String) -> Unit,
     stringLongPressShare: String,
     pageHost: VideoPageHost,
+    inlineChildComments: Boolean = false,
+    onChildCommentIdChange: (String?) -> Unit = {},
 ) {
     val hostUiState by videoViewModel.videoHostUiStateFlow.collectAsStateWithLifecycle()
     val disableComments = remember {
@@ -115,6 +117,8 @@ fun VideoRouteContent(
                         }
                     },
                     pageHost = pageHost,
+                    inlineChildComments = inlineChildComments,
+                    onChildCommentIdChange = onChildCommentIdChange,
                 )
             }
         }

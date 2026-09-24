@@ -43,7 +43,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun CreatorCenterScreen(
     viewModel: CreatorCenterViewModel,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onOpenUploadedVideo: (HanimeInfo) -> Unit,
     onOpenUploadingVideo: (CreatorUploadingItem) -> Unit,
 ) {
@@ -64,7 +64,7 @@ fun CreatorCenterScreen(
 
     val handleEvent: (CreatorCenterEvent) -> Unit = { event ->
         when (event) {
-            CreatorCenterEvent.OnBack -> onBack()
+            CreatorCenterEvent.OnBack -> onBack?.invoke()
             is CreatorCenterEvent.OnTabChange -> {
                 val page = if (event.tab == CreatorTab.Uploaded) 0 else 1
                 scope.launch { pagerState.animateScrollToPage(page) }

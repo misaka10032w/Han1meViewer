@@ -87,6 +87,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import coil3.compose.AsyncImage
@@ -151,6 +152,7 @@ fun VideoIntroductionScreen(
     state: VideoLoadingState<HanimeVideo>,
     fromDownload: Boolean,
     hideRelatedInIntro: Boolean,
+    hidePlaylistInIntro: Boolean = false,
     shareText: String,
     playlistInitialIndex: Int?,
     introFirstVisibleItemIndex: Int,
@@ -202,6 +204,7 @@ fun VideoIntroductionScreen(
                 video = currentVideo,
                 fromDownload = fromDownload,
                 hideRelatedInIntro = hideRelatedInIntro,
+                hidePlaylistInIntro = hidePlaylistInIntro,
                 shareText = shareText,
                 playlistInitialIndex = playlistInitialIndex,
                 introFirstVisibleItemIndex = introFirstVisibleItemIndex,
@@ -258,6 +261,7 @@ private fun VideoIntroductionContent(
     video: HanimeVideo,
     fromDownload: Boolean,
     hideRelatedInIntro: Boolean,
+    hidePlaylistInIntro: Boolean = false,
     shareText: String,
     playlistInitialIndex: Int?,
     introFirstVisibleItemIndex: Int,
@@ -450,7 +454,7 @@ private fun VideoIntroductionContent(
             }
         }
 
-        if (!fromDownload && video.playlist != null && video.playlist.video.isNotEmpty()) {
+        if (!fromDownload && !hidePlaylistInIntro && video.playlist != null && video.playlist.video.isNotEmpty()) {
             item(key = "playlist") {
                 PlaylistSection(
                     playlist = video.playlist,
@@ -1650,19 +1654,30 @@ private fun PlaylistSection(
 internal fun RelatedVideosSection(
     videos: List<HanimeInfo>,
     onOpenVideo: (HanimeInfo) -> Unit,
+    titleRes: Int = R.string.related_video,
+    horizontalPadding: Dp = 10.dp,
+    forcedColumns: Int? = null,
 ) {
     Column(
+        modifier = Modifier.padding(horizontal = horizontalPadding),
         verticalArrangement = Arrangement.spacedBy(SpacingNormal),
     ) {
-        SectionHeader(title = stringResource(R.string.related_video))
+        SectionHeader(
+            title = stringResource(titleRes),
+            horizontalPadding = 0.dp,
+        )
 
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             val isNormal = videos.firstOrNull()?.itemType == HanimeInfo.NORMAL
             val minCardWidth =
                 if (isNormal) VideoNormalCardMinWidth else VideoSimplifiedCardMinWidth
             val spacing = SpacingNormal
-            val columns = maxOf(2, ((maxWidth + spacing) / (minCardWidth + spacing)).toInt())
-            val itemWidth = ((maxWidth - (spacing * (columns - 1))) / columns) - 0.5.dp
+            val columns = forcedColumns?.coerceAtLeast(1) ?: if (maxWidth < minCardWidth * 2 + spacing) {
+                1
+            } else {
+                ((maxWidth + spacing) / (minCardWidth + spacing)).toInt().coerceAtLeast(1)
+            }
+            val itemWidth = (maxWidth - (spacing * (columns - 1))) / columns
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 maxItemsInEachRow = columns,
@@ -1689,36 +1704,42 @@ private fun SectionHeader(
     subtitle: String? = null,
     actionText: String? = null,
     onActionClick: (() -> Unit)? = null,
+    horizontalPadding: Dp = 16.dp,
 ) {
     Column(
-        modifier = Modifier.padding(start = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = Modifier.padding(horizontal = horizontalPadding),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Bold,
-                )
-                subtitle?.takeIf { it.isNotBlank() }?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
+            Text(
+                text = title,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
             if (!actionText.isNullOrBlank() && onActionClick != null) {
-                TextButton(onClick = onActionClick) {
+                TextButton(
+                    onClick = onActionClick,
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                ) {
                     Text(actionText)
                 }
             }
+        }
+        subtitle?.takeIf { it.isNotBlank() }?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
         HorizontalDivider()
     }

@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.ui.navigation.main
 
 import android.content.Intent
 import androidx.navigation.NavHostController
+import com.yenaly.han1meviewer.ui.navigation.canNavigateSafely
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import kotlinx.serialization.json.Json
@@ -17,23 +18,42 @@ fun NavHostController.navigateDrawerDestination(
     destination: MainDrawerDestination,
     isLoggedIn: Boolean,
     onRequireLogin: () -> Unit,
+    asTopLevel: Boolean = false,
 ): Boolean {
     if (destination in loginRequiredDrawerItems && !isLoggedIn) {
         onRequireLogin()
         return false
     }
 
+    val options: androidx.navigation.NavOptionsBuilder.() -> Unit = if (asTopLevel) {
+        {
+            popUpTo(HomeRoute) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    } else {
+        {}
+    }
     when (destination) {
-        MainDrawerDestination.Home -> navigateSafely(HomeRoute)
-        MainDrawerDestination.Settings -> navigateSafely(HomeSettingsRoute)
-        MainDrawerDestination.DailyCheckIn -> navigateSafely(DailyCheckInRoute)
-        MainDrawerDestination.WatchLater -> navigateSafely(MyWatchLaterRoute)
-        MainDrawerDestination.FavVideo -> navigateSafely(MyFavVideoRoute)
-        MainDrawerDestination.Playlist -> navigateSafely(MyPlaylistRoute)
-        MainDrawerDestination.Subscription -> navigateSafely(SubscriptionRoute)
-        MainDrawerDestination.CreatorCenter -> navigateSafely(CreatorCenterRoute)
-        MainDrawerDestination.WatchHistory -> navigateSafely(WatchHistoryRoute)
-        MainDrawerDestination.Download -> navigateSafely(DownloadRoute)
+        MainDrawerDestination.Home -> {
+            if (asTopLevel) {
+                if (!canNavigateSafely()) return false
+                if (!popBackStack(HomeRoute, inclusive = false)) {
+                    navigateSafely(HomeRoute)
+                }
+            } else {
+                navigateSafely(HomeRoute)
+            }
+        }
+        MainDrawerDestination.Settings -> navigateSafely(HomeSettingsRoute, options)
+        MainDrawerDestination.DailyCheckIn -> navigateSafely(DailyCheckInRoute, options)
+        MainDrawerDestination.WatchLater -> navigateSafely(MyWatchLaterRoute, options)
+        MainDrawerDestination.FavVideo -> navigateSafely(MyFavVideoRoute, options)
+        MainDrawerDestination.Playlist -> navigateSafely(MyPlaylistRoute, options)
+        MainDrawerDestination.Subscription -> navigateSafely(SubscriptionRoute, options)
+        MainDrawerDestination.CreatorCenter -> navigateSafely(CreatorCenterRoute, options)
+        MainDrawerDestination.WatchHistory -> navigateSafely(WatchHistoryRoute, options)
+        MainDrawerDestination.Download -> navigateSafely(DownloadRoute, options)
     }
     return true
 }

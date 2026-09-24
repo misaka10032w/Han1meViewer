@@ -59,7 +59,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun DailyCheckInScreen(
     activity: Activity,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onAddWidget: () -> Unit,
     onNavigateToVideo: (String) -> Unit,
     viewModel: CheckInCalendarViewModel = viewModel(),

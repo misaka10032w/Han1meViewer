@@ -126,6 +126,10 @@
     <string name="player_settings">播放器设置</string>
     <string name="tablet_mode">平板模式</string>
     <string name="tablet_mode_summary">开启后影片页面与首页横幅将以平板布局显示，提供更大观看区域</string>
+    <string name="tablet_select_settings">选择一个设置项</string>
+    <string name="tablet_select_playlist">选择一个播放列表</string>
+    <string name="tablet_select_preview_comment">选择一天以查看评论</string>
+    <string name="tablet_select_getchu">选择一个预告</string>
     <string name="show_exit_confirm">退出确认弹窗</string>
     <string name="show_exit_confirm_summary">开启后按返回键退出 App 时将显示确认窗口</string>
     <string name="search_grid_columns_title">影片网格列数</string>

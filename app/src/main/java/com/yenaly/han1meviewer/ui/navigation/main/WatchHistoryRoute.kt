@@ -8,7 +8,7 @@ import com.yenaly.han1meviewer.ui.viewmodel.OnlineWatchHistoryViewModel
 
 @Composable
 fun WatchHistoryRouteScreen(
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onNavigateToVideo: (String) -> Unit,
 ) {
     val localViewModel: HomePageViewModel = viewModel()

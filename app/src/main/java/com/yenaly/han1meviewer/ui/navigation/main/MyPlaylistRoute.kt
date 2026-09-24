@@ -12,7 +12,7 @@ import com.yenaly.yenaly_libs.utils.copyTextToClipboard
 
 @Composable
 fun MyPlaylistRouteScreen(
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onNavigateToVideo: (String) -> Unit,
 ) {
     val viewModel: MyPlayListViewModelV2 = viewModel()

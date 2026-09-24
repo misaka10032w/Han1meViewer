@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.home.dailycheckin
 
+import com.yenaly.han1meviewer.ui.adaptive.tabletReadableWidth
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.fadeIn
@@ -79,7 +80,7 @@ fun DailyCheckInContent(
 
     Column(
         modifier = modifier
-            .fillMaxSize()
+            .tabletReadableWidth(960.dp)
             .padding(paddingValues)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)

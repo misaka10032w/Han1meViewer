@@ -13,7 +13,7 @@ import com.yenaly.han1meviewer.ui.widget.CheckInWidgetProvider
 @Composable
 fun DailyCheckInRouteScreen(
     activity: MainActivity,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onNavigateToVideo: (String) -> Unit,
 ) {
     val widgetPinHint = stringResource(R.string.widget_pin_not_supported_manual_add)

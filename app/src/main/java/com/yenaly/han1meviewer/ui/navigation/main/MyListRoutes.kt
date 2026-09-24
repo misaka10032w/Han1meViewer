@@ -10,7 +10,7 @@ import com.yenaly.han1meviewer.ui.viewmodel.MyListViewModel
 
 @Composable
 fun FavVideoRouteScreen(
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onNavigateToVideo: (String) -> Unit,
 ) {
     val viewModel: MyListViewModel = viewModel()
@@ -57,7 +57,7 @@ fun FavVideoRouteScreen(
 
 @Composable
 fun WatchLaterRouteScreen(
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onNavigateToVideo: (String) -> Unit,
 ) {
     val viewModel: MyListViewModel = viewModel()

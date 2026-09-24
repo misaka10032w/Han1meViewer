@@ -49,7 +49,8 @@ fun HomePageTopBar(
     onOpenDrawer: () -> Unit,
     onSearchClick: () -> Unit,
     onNavigateToPreview: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showMenuButton: Boolean = true,
 ) {
     val placeholders = stringArrayResource(R.array.search_placeholders)
     val randomHint = placeholders.random()
@@ -65,12 +66,14 @@ fun HomePageTopBar(
                 .statusBarsPadding()
                 .padding(horizontal = 4.dp, vertical = 4.dp)
         ) {
-            IconButton(onClick = onOpenDrawer) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = stringResource(R.string.open_menu),
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
+            if (showMenuButton) {
+                IconButton(onClick = onOpenDrawer) {
+                    Icon(
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = stringResource(R.string.open_menu),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
             Box(
                 modifier = Modifier
