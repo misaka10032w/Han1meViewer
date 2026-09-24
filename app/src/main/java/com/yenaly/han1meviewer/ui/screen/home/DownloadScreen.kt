@@ -84,7 +84,7 @@ fun DownloadScreen(
     downloadedFlow: StateFlow<List<VideoWithCategories>>,
     downloadedGroupsFlow: StateFlow<List<DownloadGroupEntity>>,
     collapseDownloadedGroup: Boolean,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onLoadDownloaded: () -> Unit,
     onEvent: (DownloadEvent) -> Unit,
 ) {

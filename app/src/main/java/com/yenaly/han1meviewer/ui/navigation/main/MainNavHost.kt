@@ -57,12 +57,14 @@ fun MainNavHost(
     isDrawerOpen: Boolean,
     onOpenDrawer: () -> Unit,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
+    railVisible: Boolean = false,
 ) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val destinationSpec = MainDestinationSpec.fromDestination(backStackEntry?.destination)
     var pendingAvatarCropResult by remember { mutableStateOf<String?>(null) }
 
     val onBack: () -> Unit = { navController.popBackStack() }
+    val drawerRootOnBack: (() -> Unit)? = if (railVisible) null else onBack
     val onNavigateToVideo: (String) -> Unit = { code -> navController.navigateSafely(VideoRoute(code)) }
     val onNavigateToLocalVideo: (String, String?) -> Unit =
         { code, uri -> navController.navigateSafely(VideoRoute(code, uri)) }
@@ -76,35 +78,48 @@ fun MainNavHost(
         startDestination = HomeRoute,
         // 新页面进入：从右侧滑入，同时伴随淡入，且带有回弹感
         enterTransition = {
-            if (targetState.isAutoPlayVideo()) EnterTransition.None
-            else slideIntoContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.Start,
-                animationSpec = tween(450, easing = FastOutSlowInEasing)
-            ) + fadeIn(animationSpec = tween(450))
+            when {
+                targetState.isAutoPlayVideo() -> EnterTransition.None
+                railVisible && isRailSiblingTransition(initialState, targetState) ->
+                    fadeIn(animationSpec = tween(200))
+                else -> slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                    animationSpec = tween(450, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(450))
+            }
         },
-        // 旧页面退出：向左轻微偏移，同时缩小并淡出，营造被“压在下面”的感觉
         exitTransition = {
-            if (targetState.isAutoPlayVideo()) ExitTransition.None
-            else slideOutOfContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.Start,
-                targetOffset = { it / 3 }, // 只偏移 1/3 的宽度
-                animationSpec = tween(450, easing = FastOutSlowInEasing)
-            ) + scaleOut(targetScale = 0.9f) + fadeOut(animationSpec = tween(300))
+            when {
+                targetState.isAutoPlayVideo() -> ExitTransition.None
+                railVisible && isRailSiblingTransition(initialState, targetState) ->
+                    fadeOut(animationSpec = tween(200))
+                else -> slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                    targetOffset = { it / 3 },
+                    animationSpec = tween(450, easing = FastOutSlowInEasing)
+                ) + scaleOut(targetScale = 0.9f) + fadeOut(animationSpec = tween(300))
+            }
         },
-        // 弹出（返回）新页面进入：从左侧滑入，由 0.9 放大恢复，营造“浮上来”的感觉
         popEnterTransition = {
-            slideIntoContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.End,
-                initialOffset = { it / 3 },
-                animationSpec = tween(450, easing = FastOutSlowInEasing)
-            ) + scaleIn(initialScale = 0.9f) + fadeIn(animationSpec = tween(450))
+            if (railVisible && isRailSiblingTransition(initialState, targetState)) {
+                fadeIn(animationSpec = tween(200))
+            } else {
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.End,
+                    initialOffset = { it / 3 },
+                    animationSpec = tween(450, easing = FastOutSlowInEasing)
+                ) + scaleIn(initialScale = 0.9f) + fadeIn(animationSpec = tween(450))
+            }
         },
-        // 弹出（返回）旧页面退出：向右侧滑出，同时淡出
         popExitTransition = {
-            slideOutOfContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.End,
-                animationSpec = tween(450, easing = FastOutSlowInEasing)
-            ) + fadeOut(animationSpec = tween(300))
+            if (railVisible && isRailSiblingTransition(initialState, targetState)) {
+                fadeOut(animationSpec = tween(200))
+            } else {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.End,
+                    animationSpec = tween(450, easing = FastOutSlowInEasing)
+                ) + fadeOut(animationSpec = tween(300))
+            }
         }
     ) {
         composable<HomeRoute> {
@@ -112,6 +127,7 @@ fun MainNavHost(
                 activity = activity,
                 isDrawerOpen = isDrawerOpen,
                 onOpenDrawer = onOpenDrawer,
+                showMenuButton = !railVisible,
                 onNavigateToPreview = { navController.navigateSafely(PreviewRoute) },
                 onNavigateToSearch = { query -> navController.navigateSafely(SearchRoute(query = query)) },
                 onNavigateToSearchAdvanced = { params ->
@@ -124,31 +140,31 @@ fun MainNavHost(
         }
         composable<WatchHistoryRoute> {
             WatchHistoryRouteScreen(
-                onBack = onBack,
+                onBack = drawerRootOnBack,
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<MyFavVideoRoute> {
             FavVideoRouteScreen(
-                onBack = onBack,
+                onBack = drawerRootOnBack,
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<MyWatchLaterRoute> {
             WatchLaterRouteScreen(
-                onBack = onBack,
+                onBack = drawerRootOnBack,
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<MyPlaylistRoute> {
             MyPlaylistRouteScreen(
-                onBack = onBack,
+                onBack = drawerRootOnBack,
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<SubscriptionRoute> {
             SubscriptionRouteScreen(
-                onBack = onBack,
+                onBack = drawerRootOnBack,
                 onNavigateToSearch = { query -> navController.navigateSafely(SearchRoute(query = query)) },
                 onNavigateToVideo = onNavigateToVideo,
             )
@@ -156,13 +172,13 @@ fun MainNavHost(
         composable<DailyCheckInRoute> {
             DailyCheckInRouteScreen(
                 activity = activity,
-                onBack = onBack,
+                onBack = drawerRootOnBack,
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<DownloadRoute> {
             DownloadRouteScreen(
-                onBack = onBack,
+                onBack = drawerRootOnBack,
                 onNavigateToVideo = onNavigateToVideo,
                 onNavigateToLocalVideo = onNavigateToLocalVideo,
             )
@@ -171,7 +187,7 @@ fun MainNavHost(
             val creatorViewModel: CreatorCenterViewModel = viewModel()
             CreatorCenterScreen(
                 viewModel = creatorViewModel,
-                onBack = onBack,
+                onBack = drawerRootOnBack,
                 onOpenUploadedVideo = { item -> onNavigateToVideo(item.videoCode) },
                 onOpenUploadingVideo = { item -> onNavigateToLocalVideo("-1", item.remoteVideoUrl) },
             )
@@ -310,6 +326,7 @@ fun MainNavHost(
             GetchuPreviewRouteScreen(
                 onBack = onBack,
                 onNavigateToDetail = { id -> navController.navigateSafely(GetchuPreviewDetailRoute(id)) },
+                onNavigateToVideoUrl = { url -> navController.navigateSafely(VideoRoute("-1", url)) },
             )
         }
         composable<GetchuPreviewDetailRoute> {
@@ -338,3 +355,12 @@ fun MainNavHost(
 
 private fun NavBackStackEntry.isAutoPlayVideo(): Boolean =
     destination.hasRoute<VideoRoute>() && toRoute<VideoRoute>().autoPlay
+
+private fun isRailSiblingTransition(
+    initial: NavBackStackEntry,
+    target: NavBackStackEntry,
+): Boolean {
+    val from = MainDestinationSpec.fromDestination(initial.destination)?.drawerDestination
+    val to = MainDestinationSpec.fromDestination(target.destination)?.drawerDestination
+    return from != null && to != null
+}

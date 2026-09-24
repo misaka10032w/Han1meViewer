@@ -25,6 +25,8 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.theme.SpacingLarge
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
 import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
+import com.yenaly.han1meviewer.ui.adaptive.isTabletWindow
+import com.yenaly.han1meviewer.ui.adaptive.rememberAvailableWidthDp
 
 @Composable
 fun RetryableImage(
@@ -65,10 +67,7 @@ fun RetryableImage(
 
 @Composable
 fun getColumnCount(itemWidth: Int): Int {
-    val density = LocalDensity.current
-    val windowInfo = LocalWindowInfo.current
-    val screenWidthPx = windowInfo.containerSize.width
-    val screenWidthDp = with(density) { screenWidthPx.toDp() }
+    val screenWidthDp = rememberAvailableWidthDp()
     return maxOf(2, (screenWidthDp / itemWidth.dp).toInt())
 }
 
@@ -77,10 +76,7 @@ fun rememberCardResponsiveWidth(
     horizontalPadding: Dp = SpacingLarge,
     itemSpacing: Dp = SpacingNormal
 ): Pair<Dp, Float> {
-    val containerWidth = LocalWindowInfo.current.containerSize.width
-    val density = LocalDensity.current
-    val currentWidthDp = with(density) { containerWidth.toDp() }
-
+    val currentWidthDp = rememberAvailableWidthDp()
     val isPreview = LocalInspectionMode.current
     val itemsToShow = if (!isPreview) {
         Preferences.horizontalCardCountConfig.countForWidthDp(currentWidthDp.value.toInt())
@@ -97,14 +93,10 @@ fun rememberCardResponsiveWidth(
 
 @Composable
 fun rememberVideoGridColumns(): Int {
-    val density = LocalDensity.current
-    val windowInfo = LocalWindowInfo.current
-    val screenWidthPx = windowInfo.containerSize.width
-    val screenWidthDp = with(density) { screenWidthPx.toDp() }
-
+    val screenWidthDp = rememberAvailableWidthDp()
     val isPreview = LocalInspectionMode.current
 
-    return if (!isPreview && Preferences.tabletMode) {
+    return if (!isPreview && (Preferences.tabletMode || isTabletWindow())) {
         Preferences.searchGridColumnsConfig.columnsForWidthDp(screenWidthDp.value.toInt())
     } else {
         maxOf(2, ((screenWidthDp + SpacingNormal) / (VideoNormalCardMinWidth + SpacingNormal)).toInt())

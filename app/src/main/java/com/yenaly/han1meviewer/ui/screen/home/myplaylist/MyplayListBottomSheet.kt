@@ -91,6 +91,7 @@ fun PlaylistBottomSheet(
     onLongClickItem: (String, String) -> Unit,
     vm: MyPlayListViewModelV2,
     context: Context,
+    embedded: Boolean = false,
 ) {
     val playlistState by vm.playlistStateFlow.collectAsState()
     val playlist by vm.playlistFlow.collectAsState()
@@ -130,7 +131,9 @@ fun PlaylistBottomSheet(
         }
     }
 
-    LaunchedEffect(Unit) { sheetState.show() }
+    if (!embedded) {
+        LaunchedEffect(Unit) { sheetState.show() }
+    }
 
     LaunchedEffect(gridState, currentCode) {
         snapshotFlow { gridState.firstVisibleItemIndex to gridState.firstVisibleItemScrollOffset }
@@ -139,7 +142,7 @@ fun PlaylistBottomSheet(
             }
     }
 
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState, dragHandle = null) {
+    val pane: @Composable () -> Unit = {
         if (playlist.isEmpty() && playlistState is PageLoadingState.Loading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
@@ -171,6 +174,13 @@ fun PlaylistBottomSheet(
             }
         }
     }
+    if (embedded) {
+        pane()
+    } else {
+        ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState, dragHandle = null) {
+            pane()
+        }
+    }
 
     LaunchedEffect(Unit) {
         vm.modifyPlaylistFlow.collect { result ->
@@ -179,7 +189,7 @@ fun PlaylistBottomSheet(
                 WebsiteState.Loading -> {}
                 is WebsiteState.Success -> {
                     if (result.info.isDeleted) {
-                        sheetState.hide()
+                        if (!embedded) sheetState.hide()
                         onDismiss()
                         GlobalToasts.show(deleteSuccess, level = GlobalToasts.ToastLevel.SUCCESS)
                         vm.loadMyPlayList()
@@ -205,6 +215,28 @@ fun PlaylistBottomSheet(
             }
         }
     }
+}
+
+@Composable
+internal fun PlaylistDetailPane(
+    listCode: String,
+    onDismiss: () -> Unit,
+    playListTitle: String,
+    onClickItem: (String) -> Unit,
+    onLongClickItem: (String, String) -> Unit,
+    vm: MyPlayListViewModelV2,
+    context: Context,
+) {
+    PlaylistBottomSheet(
+        listCode = listCode,
+        onDismiss = onDismiss,
+        playListTitle = playListTitle,
+        onClickItem = onClickItem,
+        onLongClickItem = onLongClickItem,
+        vm = vm,
+        context = context,
+        embedded = true,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

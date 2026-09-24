@@ -101,7 +101,7 @@ fun WatchHistoryTabScreen(
     onlineIsLoadingMore: StateFlow<Boolean>,
     onlineRefreshing: () -> Boolean,
     onlineDeleteStateFlow: SharedFlow<WebsiteState<Boolean>>,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onOpenLocalVideo: (WatchHistoryEntity) -> Unit,
     onDeleteLocalHistory: (WatchHistoryEntity) -> Unit,
     onDeleteAllLocalHistories: () -> Unit,
@@ -239,7 +239,7 @@ fun WatchHistoryTabScreen(
 @Composable
 fun WatchHistoryScreen(
     historiesFlow: Flow<List<WatchHistoryEntity>>,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onOpenVideo: (WatchHistoryEntity) -> Unit,
     onDeleteHistory: (WatchHistoryEntity) -> Unit,
     onDeleteAllHistories: () -> Unit,
@@ -263,7 +263,7 @@ fun WatchHistoryScreen(
 @Composable
 private fun WatchHistoryScreen(
     histories: List<WatchHistoryEntity>,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onOpenVideo: (WatchHistoryEntity) -> Unit,
     onDeleteHistory: (WatchHistoryEntity) -> Unit,
     onDeleteAllHistories: () -> Unit,

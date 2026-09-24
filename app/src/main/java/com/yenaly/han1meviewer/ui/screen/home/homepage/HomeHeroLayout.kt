@@ -8,6 +8,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.ui.adaptive.isTabletWindow
+import com.yenaly.han1meviewer.ui.adaptive.rememberAvailableWidthDp
 
 /**
  * 首页 Hero 区域（Banner 与公告）在平板模式下的尺寸。
@@ -59,11 +61,11 @@ private val HeroPanelMaxWidth = 420.dp
 @Composable
 fun rememberHomeHeroSpec(hasSideContent: Boolean): HomeHeroSpec {
     val isPreview = LocalInspectionMode.current
-    if (!isPreview && !Preferences.tabletMode) return HomeHeroSpec.Default
+    if (!isPreview && !Preferences.tabletMode && !isTabletWindow()) return HomeHeroSpec.Default
 
     val containerSize = LocalWindowInfo.current.containerSize
     val density = LocalDensity.current
-    val containerWidth = with(density) { containerSize.width.toDp() }
+    val containerWidth = rememberAvailableWidthDp()
     val containerHeight = with(density) { containerSize.height.toDp() }
 
     val naturalHeight = containerWidth * 9f / 16f

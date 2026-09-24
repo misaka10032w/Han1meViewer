@@ -13,7 +13,7 @@ import com.yenaly.yenaly_libs.utils.copyTextToClipboard
 
 @Composable
 fun SubscriptionRouteScreen(
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onNavigateToSearch: (String?) -> Unit,
     onNavigateToVideo: (String) -> Unit,
 ) {

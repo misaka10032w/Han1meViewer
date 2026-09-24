@@ -47,7 +47,7 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun DownloadRouteScreen(
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onNavigateToVideo: (String) -> Unit,
     onNavigateToLocalVideo: (String, String?) -> Unit,
 ) {

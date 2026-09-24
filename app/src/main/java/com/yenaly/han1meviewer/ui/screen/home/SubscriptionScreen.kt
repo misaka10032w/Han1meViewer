@@ -51,7 +51,7 @@ import com.yenaly.han1meviewer.ui.viewmodel.MySubscriptionsViewModel
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SubscriptionScreen(
-    navigateBack: () -> Unit,
+    navigateBack: (() -> Unit)?,
     viewModel: MySubscriptionsViewModel,
     onClickArtist: (String) -> Unit,
     onLongClickArtist: (String) -> Unit,
@@ -104,7 +104,7 @@ fun SubscriptionScreen(
 
     val handleEvent: (SubscriptionEvent) -> Unit = { event ->
         when (event) {
-            SubscriptionEvent.OnBack -> navigateBack()
+            SubscriptionEvent.OnBack -> navigateBack?.invoke()
             is SubscriptionEvent.OnClickArtist -> onClickArtist(event.artistName)
             is SubscriptionEvent.OnLongClickArtist -> onLongClickArtist(event.artistName)
             is SubscriptionEvent.OnClickVideo -> onClickVideosItem(event.videoCode)

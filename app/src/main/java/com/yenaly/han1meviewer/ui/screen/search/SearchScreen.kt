@@ -626,9 +626,8 @@ fun SearchResultsGrid(
         val normalCardWidth = VideoNormalCardMinWidth
         val simplifiedCardWidth = VideoSimplifiedCardMinWidth
         val useNormalGrid = videos.firstOrNull()?.itemType == NORMAL
-        val density = LocalDensity.current
-        val screenWidthDp = with(density) { LocalWindowInfo.current.containerSize.width.toDp().value.toInt() }
-        val columns = if (Preferences.tabletMode) {
+        val screenWidthDp = com.yenaly.han1meviewer.ui.adaptive.rememberAvailableWidthDp().value.toInt()
+        val columns = if (Preferences.tabletMode || com.yenaly.han1meviewer.ui.adaptive.isTabletWindow()) {
             GridCells.Fixed(Preferences.searchGridColumnsConfig.columnsForWidthDp(screenWidthDp))
         } else {
             GridCells.Adaptive(
