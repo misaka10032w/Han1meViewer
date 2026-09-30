@@ -46,6 +46,7 @@ data class NetworkSettingsUiState(
     val domainDisplay: String,
     val proxySummary: String,
     val useBuiltInHosts: Boolean,
+    val useBackupMediaCdn: Boolean,
     val useCustomMirrorSite: Boolean,
     val customMirrorSite: String,
     val appendCustomMirrorPath: Boolean,
@@ -98,6 +99,8 @@ fun NetworkSettingsScreen(
     onDomainChange: (String) -> Unit,
     onSaveCustomMirrorSite: (Boolean, String, Boolean) -> Unit,
     onTestCustomMirrorSite: (String, Boolean) -> Unit,
+    useBackupMediaCdn: Boolean,
+    onUseBackupMediaCdnChange: (Boolean) -> Unit,
     onUseBuiltInHostsChange: (Boolean) -> Unit,
     onSaveCustomHosts: (String) -> Unit,
     onSaveDohSettings: (Boolean, String, String, String, Int) -> Unit,
@@ -227,6 +230,16 @@ fun NetworkSettingsScreen(
                 summary = state.proxySummary,
                 iconRes = R.drawable.baseline_vpn_24,
                 onClick = { showProxyDialog = true },
+            )
+        }
+
+        item {
+            SettingSwitchItem(
+                title = stringResource(R.string.use_backup_media_cdn),
+                summary = stringResource(R.string.use_backup_media_cdn_summary),
+                checked = useBackupMediaCdn,
+                iconRes = R.drawable.baseline_domain_24,
+                onCheckedChange = onUseBackupMediaCdnChange,
             )
         }
 
@@ -782,6 +795,7 @@ private fun NetworkSettingsScreenPreview() {
                 domainDisplay = "hanime1.me (默认)",
                 proxySummary = "系统代理",
                 useBuiltInHosts = false,
+                useBackupMediaCdn = false,
                 useCustomMirrorSite = false,
                 customMirrorSite = "",
                 appendCustomMirrorPath = true,
@@ -820,6 +834,8 @@ private fun NetworkSettingsScreenPreview() {
             onDomainChange = {},
             onSaveCustomMirrorSite = { _, _, _ -> },
             onTestCustomMirrorSite = { _, _ -> },
+            useBackupMediaCdn = false,
+            onUseBackupMediaCdnChange = {},
             onUseBuiltInHostsChange = {},
             onSaveCustomHosts = {},
             customHostsData = "",

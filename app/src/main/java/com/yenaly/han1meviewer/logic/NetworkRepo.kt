@@ -21,6 +21,7 @@ import com.yenaly.han1meviewer.logic.network.HanimeNetwork
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.replaceBackupMediaCdnHost
 import com.yenaly.yenaly_libs.utils.applicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -555,7 +556,7 @@ object NetworkRepo {
         action: (String) -> WebsiteState<T>,
     ) = flow {
         val requestResult = request.invoke()
-        val resultBody = requestResult.body()?.string()
+        val resultBody = requestResult.body()?.string()?.replaceBackupMediaCdnHost()
         val permitted = permittedSuccessCode?.contains(requestResult.code()) == true
         if ((permitted || requestResult.isSuccessful)) {
             emit(action.invoke(resultBody ?: EMPTY_STRING))
@@ -574,7 +575,7 @@ object NetworkRepo {
         action: (String) -> PageLoadingState<T>,
     ) = flow {
         val requestResult = request.invoke()
-        val resultBody = requestResult.body()?.string()
+        val resultBody = requestResult.body()?.string()?.replaceBackupMediaCdnHost()
         if (requestResult.isSuccessful && resultBody != null) {
             emit(action.invoke(resultBody))
         } else {
@@ -592,7 +593,7 @@ object NetworkRepo {
         action: (String) -> VideoLoadingState<T>,
     ) = flow {
         val requestResult = request.invoke()
-        val resultBody = requestResult.body()?.string()
+        val resultBody = requestResult.body()?.string()?.replaceBackupMediaCdnHost()
         if (requestResult.isSuccessful && resultBody != null) {
             emit(action.invoke(resultBody))
         } else {
