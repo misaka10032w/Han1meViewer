@@ -73,6 +73,7 @@ import com.yenaly.han1meviewer.ui.component.PageContent
 import com.yenaly.han1meviewer.ui.component.PaginationPager
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
+import com.yenaly.han1meviewer.ui.adaptive.LocalTabletRailVisible
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.content.ErrorContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
@@ -101,7 +102,7 @@ fun WatchHistoryTabScreen(
     onlineIsLoadingMore: StateFlow<Boolean>,
     onlineRefreshing: () -> Boolean,
     onlineDeleteStateFlow: SharedFlow<WebsiteState<Boolean>>,
-    onBack: (() -> Unit)?,
+    onBack: () -> Unit,
     onOpenLocalVideo: (WatchHistoryEntity) -> Unit,
     onDeleteLocalHistory: (WatchHistoryEntity) -> Unit,
     onDeleteAllLocalHistories: () -> Unit,
@@ -161,6 +162,7 @@ fun WatchHistoryTabScreen(
     HanimeScaffold(
         title = stringResource(R.string.watch_history),
         onBack = onBack,
+        showNavigationIcon = !LocalTabletRailVisible.current,
         actions = {
             FilledIconButton(onClick = { showHelpDialog = true }) {
                 Icon(
@@ -239,7 +241,7 @@ fun WatchHistoryTabScreen(
 @Composable
 fun WatchHistoryScreen(
     historiesFlow: Flow<List<WatchHistoryEntity>>,
-    onBack: (() -> Unit)?,
+    onBack: () -> Unit,
     onOpenVideo: (WatchHistoryEntity) -> Unit,
     onDeleteHistory: (WatchHistoryEntity) -> Unit,
     onDeleteAllHistories: () -> Unit,
@@ -263,7 +265,7 @@ fun WatchHistoryScreen(
 @Composable
 private fun WatchHistoryScreen(
     histories: List<WatchHistoryEntity>,
-    onBack: (() -> Unit)?,
+    onBack: () -> Unit,
     onOpenVideo: (WatchHistoryEntity) -> Unit,
     onDeleteHistory: (WatchHistoryEntity) -> Unit,
     onDeleteAllHistories: () -> Unit,

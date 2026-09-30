@@ -4,7 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -22,7 +21,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -33,12 +31,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -75,37 +76,27 @@ fun MainActivityScaffold(
     useRail: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    if (useRail) {
-        Row(modifier = Modifier.fillMaxSize()) {
-            MainNavigationRail(
-                selectedDestination = selectedDestination,
-                avatarUrl = avatarUrl,
-                onAvatarClick = onAvatarClick,
-                onAvatarLongClick = onAvatarLongClick,
-                onSwitchSiteClick = onSwitchSiteClick,
-                onDrawerItemSelected = onDrawerItemSelected,
-            )
-            VerticalDivider()
-            ScaffoldContentPane(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
-                content = content,
-            )
-        }
-        return
-    }
-
     val scope = rememberCoroutineScope()
+    LaunchedEffect(useRail) {
+        if (useRail) drawerState.close()
+    }
     val drawerFraction by animateFloatAsState(
-        targetValue = if (drawerState.currentValue == DrawerValue.Open || drawerState.targetValue == DrawerValue.Open) 1f else 0f,
+        targetValue = if (!useRail &&
+            (drawerState.currentValue == DrawerValue.Open || drawerState.targetValue == DrawerValue.Open)
+        ) {
+            1f
+        } else {
+            0f
+        },
         label = "drawer_fraction",
     )
 
     ModalNavigationDrawer(
-        gesturesEnabled = drawerEnabled,
+        gesturesEnabled = drawerEnabled && !useRail,
         drawerState = drawerState,
         drawerContent = {
+            // Keep the drawer measured while the rail is visible so its closed
+            // anchor does not collapse to the same position as its open anchor.
             ModalDrawerSheet(
                 drawerContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             ) {
@@ -123,7 +114,7 @@ fun MainActivityScaffold(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
+                        .verticalScroll(rememberScrollState()),
                 ) {
                     MainDrawerPrimaryItems(selectedDestination, onDrawerItemSelected)
                     MainDrawerSection(
@@ -165,7 +156,7 @@ fun MainActivityScaffold(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background),
         ) {
-            Box(
+            Row(
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
@@ -175,20 +166,41 @@ fun MainActivityScaffold(
                         alpha = 1f - (0.08f * drawerFraction)
                     },
             ) {
-                ScaffoldContentPane(content = content)
-                if (drawerFraction > 0f) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.14f * drawerFraction)),
+                if (useRail) {
+                    MainNavigationRail(
+                        selectedDestination = selectedDestination,
+                        avatarUrl = avatarUrl,
+                        username = username,
+                        onAvatarClick = onAvatarClick,
+                        onAvatarLongClick = onAvatarLongClick,
+                        onSwitchSiteClick = onSwitchSiteClick,
+                        onDrawerItemSelected = onDrawerItemSelected,
                     )
+                    VerticalDivider()
                 }
+                ScaffoldContentPane(
+                    modifier = if (useRail) {
+                        Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    } else {
+                        Modifier.fillMaxSize()
+                    },
+                    content = content,
+                )
+            }
+            if (drawerFraction > 0f) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.14f * drawerFraction)),
+                )
             }
         }
 
         BackHandler(
-            enabled = drawerState.currentValue == DrawerValue.Open ||
-                drawerState.targetValue == DrawerValue.Open,
+            enabled = !useRail &&
+                (drawerState.currentValue == DrawerValue.Open || drawerState.targetValue == DrawerValue.Open),
         ) {
             scope.launch { drawerState.close() }
         }
@@ -211,6 +223,7 @@ private fun ScaffoldContentPane(
 private fun MainNavigationRail(
     selectedDestination: MainDrawerDestination?,
     avatarUrl: String?,
+    username: String?,
     onAvatarClick: () -> Unit,
     onAvatarLongClick: () -> Unit,
     onSwitchSiteClick: () -> Unit,
@@ -218,17 +231,18 @@ private fun MainNavigationRail(
 ) {
     Column(
         modifier = Modifier
-            .width(200.dp)
+            .width(80.dp)
             .fillMaxHeight()
             .background(MaterialTheme.colorScheme.surfaceContainerLow),
     ) {
         AsyncImage(
             model = avatarUrl,
-            contentDescription = null,
+            contentDescription = username ?: stringResource(R.string.login),
             modifier = Modifier
+                .align(Alignment.CenterHorizontally)
                 .statusBarsPadding()
-                .padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
-                .size(44.dp)
+                .padding(top = 12.dp, bottom = 8.dp)
+                .size(40.dp)
                 .clip(CircleShape)
                 .combinedClickable(
                     onClick = onAvatarClick,
@@ -239,64 +253,57 @@ private fun MainNavigationRail(
             fallback = painterResource(id = R.drawable.bg_default_header),
             error = painterResource(id = R.drawable.bg_default_header),
         )
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 12.dp),
+        NavigationRail(
+            modifier = Modifier.weight(1f),
+            containerColor = Color.Transparent,
         ) {
-            RailDestinationGroup(
-                items = listOf(
-                    MainDrawerDestination.Home,
-                    MainDrawerDestination.Settings,
-                    MainDrawerDestination.DailyCheckIn,
-                ),
-                selectedDestination = selectedDestination,
-                onDrawerItemSelected = onDrawerItemSelected,
-            )
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp))
-            RailDestinationGroup(
-                items = listOf(
-                    MainDrawerDestination.WatchLater,
-                    MainDrawerDestination.FavVideo,
-                    MainDrawerDestination.Playlist,
-                    MainDrawerDestination.Subscription,
-                    MainDrawerDestination.CreatorCenter,
-                ),
-                selectedDestination = selectedDestination,
-                onDrawerItemSelected = onDrawerItemSelected,
-            )
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp))
-            RailDestinationGroup(
-                items = listOf(
-                    MainDrawerDestination.WatchHistory,
-                    MainDrawerDestination.Download,
-                ),
-                selectedDestination = selectedDestination,
-                onDrawerItemSelected = onDrawerItemSelected,
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                RailDestinationGroup(
+                    items = listOf(
+                        MainDrawerDestination.Home,
+                        MainDrawerDestination.Settings,
+                        MainDrawerDestination.DailyCheckIn,
+                    ),
+                    selectedDestination = selectedDestination,
+                    onDrawerItemSelected = onDrawerItemSelected,
+                )
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp))
+                RailDestinationGroup(
+                    items = listOf(
+                        MainDrawerDestination.WatchLater,
+                        MainDrawerDestination.FavVideo,
+                        MainDrawerDestination.Playlist,
+                        MainDrawerDestination.Subscription,
+                        MainDrawerDestination.CreatorCenter,
+                    ),
+                    selectedDestination = selectedDestination,
+                    onDrawerItemSelected = onDrawerItemSelected,
+                )
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp))
+                RailDestinationGroup(
+                    items = listOf(
+                        MainDrawerDestination.WatchHistory,
+                        MainDrawerDestination.Download,
+                    ),
+                    selectedDestination = selectedDestination,
+                    onDrawerItemSelected = onDrawerItemSelected,
+                )
+            }
         }
-        Row(
+        IconButton(
+            onClick = onSwitchSiteClick,
             modifier = Modifier
+                .align(Alignment.CenterHorizontally)
                 .navigationBarsPadding()
-                .padding(horizontal = 12.dp, vertical = 8.dp)
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .clickable(onClick = onSwitchSiteClick)
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .padding(8.dp),
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_baseline_switch_24),
                 contentDescription = stringResource(R.string.switch_site),
-                modifier = Modifier.size(22.dp),
-            )
-            Text(
-                text = stringResource(R.string.switch_site),
-                style = MaterialTheme.typography.labelLarge,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(start = 12.dp),
             )
         }
     }
@@ -311,42 +318,18 @@ private fun RailDestinationGroup(
     items.forEach { item ->
         val selected = selectedDestination == item
         val label = stringResource(item.titleRes)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 2.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(
-                    if (selected) MaterialTheme.colorScheme.primaryContainer
-                    else Color.Transparent,
+        NavigationRailItem(
+            selected = selected,
+            onClick = { onDrawerItemSelected(item) },
+            icon = {
+                Icon(
+                    painter = painterResource(item.iconRes),
+                    contentDescription = label,
                 )
-                .clickable { onDrawerItemSelected(item) }
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                painter = painterResource(item.iconRes),
-                contentDescription = label,
-                modifier = Modifier.size(22.dp),
-                tint = if (selected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-            )
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelLarge,
-                color = if (selected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(start = 12.dp),
-            )
-        }
+            },
+            label = { Text(label, maxLines = 2, overflow = TextOverflow.Ellipsis) },
+            alwaysShowLabel = false,
+        )
     }
 }
 

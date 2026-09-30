@@ -33,6 +33,7 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.PageContent
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
+import com.yenaly.han1meviewer.ui.adaptive.LocalTabletRailVisible
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.content.ErrorContent
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
@@ -75,7 +76,7 @@ fun VideoGridScreen(
     titleRes: Int,
     helpMessageRes: Int,
     deleteTitleRes: Int,
-    onBack: (() -> Unit)?,
+    onBack: () -> Unit,
     onOpenVideo: (HanimeInfo) -> Unit,
     onDeleteItem: (HanimeInfo) -> Unit,
     onRefresh: () -> Unit,
@@ -170,6 +171,7 @@ fun VideoGridScreen(
             )
         },
         onBack = onBack,
+        showNavigationIcon = !LocalTabletRailVisible.current,
         actions = {
             FilledIconButton(onClick = { showHelpDialog = true }) {
                 Icon(

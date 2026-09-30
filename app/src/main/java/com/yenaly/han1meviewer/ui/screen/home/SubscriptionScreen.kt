@@ -29,6 +29,7 @@ import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.PullRefreshOverlay
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
+import com.yenaly.han1meviewer.ui.adaptive.LocalTabletRailVisible
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.screen.home.subscription.SubscriptionContent
 import com.yenaly.han1meviewer.ui.screen.home.subscription.SubscriptionEvent
@@ -51,7 +52,7 @@ import com.yenaly.han1meviewer.ui.viewmodel.MySubscriptionsViewModel
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SubscriptionScreen(
-    navigateBack: (() -> Unit)?,
+    navigateBack: () -> Unit,
     viewModel: MySubscriptionsViewModel,
     onClickArtist: (String) -> Unit,
     onLongClickArtist: (String) -> Unit,
@@ -104,7 +105,7 @@ fun SubscriptionScreen(
 
     val handleEvent: (SubscriptionEvent) -> Unit = { event ->
         when (event) {
-            SubscriptionEvent.OnBack -> navigateBack?.invoke()
+            SubscriptionEvent.OnBack -> navigateBack()
             is SubscriptionEvent.OnClickArtist -> onClickArtist(event.artistName)
             is SubscriptionEvent.OnLongClickArtist -> onLongClickArtist(event.artistName)
             is SubscriptionEvent.OnClickVideo -> onClickVideosItem(event.videoCode)
@@ -122,6 +123,7 @@ fun SubscriptionScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         title = stringResource(R.string.my_subscribe),
         onBack = navigateBack,
+        showNavigationIcon = !LocalTabletRailVisible.current,
         scrollBehavior = scrollBehavior,
     ) { innerPadding ->
         Box(

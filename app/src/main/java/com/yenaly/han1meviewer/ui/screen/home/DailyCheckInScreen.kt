@@ -29,6 +29,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
+import com.yenaly.han1meviewer.ui.adaptive.LocalTabletRailVisible
 import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.CheckInDialog
 import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.ContributionReportDialog
 import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.DailyCheckInContent
@@ -59,7 +60,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @Composable
 fun DailyCheckInScreen(
     activity: Activity,
-    onBack: (() -> Unit)?,
+    onBack: () -> Unit,
     onAddWidget: () -> Unit,
     onNavigateToVideo: (String) -> Unit,
     viewModel: CheckInCalendarViewModel = viewModel(),
@@ -174,6 +175,7 @@ fun DailyCheckInScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         title = stringResource(R.string.has_cum),
         onBack = onBack,
+        showNavigationIcon = !LocalTabletRailVisible.current,
         scrollBehavior = scrollBehavior,
         actions = {
             FilledIconButton(onClick = { showReport = true }) {

@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.ui.navigation.main
 
 import android.content.Intent
 import androidx.navigation.NavHostController
+import androidx.navigation.NavDestination.Companion.hasRoute
 import com.yenaly.han1meviewer.ui.navigation.canNavigateSafely
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
@@ -37,8 +38,9 @@ fun NavHostController.navigateDrawerDestination(
     when (destination) {
         MainDrawerDestination.Home -> {
             if (asTopLevel) {
+                if (currentBackStackEntry?.destination?.hasRoute<HomeRoute>() == true) return true
                 if (!canNavigateSafely()) return false
-                if (!popBackStack(HomeRoute, inclusive = false)) {
+                if (!popBackStack(HomeRoute, inclusive = false, saveState = true)) {
                     navigateSafely(HomeRoute)
                 }
             } else {

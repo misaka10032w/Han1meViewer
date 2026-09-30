@@ -28,6 +28,7 @@ import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
+import com.yenaly.han1meviewer.ui.adaptive.LocalTabletRailVisible
 import com.yenaly.han1meviewer.ui.screen.home.creatorcenter.CreatorCenterEvent
 import com.yenaly.han1meviewer.ui.screen.home.creatorcenter.CreatorUploadedPage
 import com.yenaly.han1meviewer.ui.screen.home.creatorcenter.CreatorUploadingPage
@@ -43,7 +44,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun CreatorCenterScreen(
     viewModel: CreatorCenterViewModel,
-    onBack: (() -> Unit)?,
+    onBack: () -> Unit,
     onOpenUploadedVideo: (HanimeInfo) -> Unit,
     onOpenUploadingVideo: (CreatorUploadingItem) -> Unit,
 ) {
@@ -64,7 +65,7 @@ fun CreatorCenterScreen(
 
     val handleEvent: (CreatorCenterEvent) -> Unit = { event ->
         when (event) {
-            CreatorCenterEvent.OnBack -> onBack?.invoke()
+            CreatorCenterEvent.OnBack -> onBack()
             is CreatorCenterEvent.OnTabChange -> {
                 val page = if (event.tab == CreatorTab.Uploaded) 0 else 1
                 scope.launch { pagerState.animateScrollToPage(page) }
@@ -116,6 +117,7 @@ fun CreatorCenterScreen(
     HanimeScaffold(
         title = stringResource(R.string.creator_center),
         onBack = onBack,
+        showNavigationIcon = !LocalTabletRailVisible.current,
         actions = {
             FilledIconButton(onClick = { showHelpDialog = true }) {
                 Icon(
