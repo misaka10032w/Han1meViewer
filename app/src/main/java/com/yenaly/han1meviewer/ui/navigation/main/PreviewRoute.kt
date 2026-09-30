@@ -11,9 +11,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.adaptive.AdaptiveListDetail
 import com.yenaly.han1meviewer.ui.adaptive.TabletEmptyDetail
-import com.yenaly.han1meviewer.ui.adaptive.TabletListDetail
-import com.yenaly.han1meviewer.ui.adaptive.shouldUseListDetail
+import com.yenaly.han1meviewer.ui.adaptive.currentContentUsesListDetail
 import com.yenaly.han1meviewer.ui.screen.home.PreviewScreen
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.PreviewViewModel
@@ -28,58 +28,46 @@ fun PreviewRouteScreen(
 ) {
     val previewViewModel: PreviewViewModel = viewModel()
     val commentViewModel: CommentViewModel = viewModel(viewModelStoreOwner = activity)
-    val listDetail = shouldUseListDetail()
+    val useListDetail = currentContentUsesListDetail()
     var selectedDate by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedDateCode by rememberSaveable { mutableStateOf<String?>(null) }
     val selected = selectedDate != null && selectedDateCode != null
 
-    if (!listDetail) {
+    fun clearSelection() {
+        selectedDate = null
+        selectedDateCode = null
+    }
+
+    BackHandler(enabled = selected, onBack = ::clearSelection)
+    val listContent: @Composable () -> Unit = {
         PreviewScreen(
-            onBack = onBack,
+            onBack = {
+                if (useListDetail && selected) clearSelection() else onBack()
+            },
             onNavigateToGetchuPreview = onNavigateToGetchuPreview,
-            onNavigateToPreviewComment = onNavigateToPreviewComment,
+            onNavigateToPreviewComment = { date, dateCode ->
+                if (useListDetail) {
+                    selectedDate = date
+                    selectedDateCode = dateCode
+                } else {
+                    onNavigateToPreviewComment(date, dateCode)
+                }
+            },
             onNavigateToVideo = onNavigateToVideo,
             previewViewModel = previewViewModel,
             commentViewModel = commentViewModel,
         )
-        return
     }
-
-    BackHandler(enabled = selected) {
-        selectedDate = null
-        selectedDateCode = null
-    }
-    TabletListDetail(
+    AdaptiveListDetail(
+        useListDetail = useListDetail,
         showDetail = selected,
         listWidth = 420.dp,
-        list = {
-            PreviewScreen(
-                onBack = {
-                    if (selected) {
-                        selectedDate = null
-                        selectedDateCode = null
-                    } else {
-                        onBack()
-                    }
-                },
-                onNavigateToGetchuPreview = onNavigateToGetchuPreview,
-                onNavigateToPreviewComment = { date, dateCode ->
-                    selectedDate = date
-                    selectedDateCode = dateCode
-                },
-                onNavigateToVideo = onNavigateToVideo,
-                previewViewModel = previewViewModel,
-                commentViewModel = commentViewModel,
-            )
-        },
+        list = listContent,
         detail = {
             PreviewCommentRouteScreen(
                 activity = activity,
                 route = PreviewCommentRoute(selectedDate.orEmpty(), selectedDateCode.orEmpty()),
-                onBack = {
-                    selectedDate = null
-                    selectedDateCode = null
-                },
+                onBack = ::clearSelection,
             )
         },
         emptyDetail = {

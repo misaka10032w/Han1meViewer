@@ -43,7 +43,7 @@ import com.yenaly.han1meviewer.ui.navigation.main.handleMainIntent
 import com.yenaly.han1meviewer.ui.navigation.main.navigateDrawerDestination
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.adaptive.LocalTabletRailVisible
-import com.yenaly.han1meviewer.ui.adaptive.isTabletWindow
+import com.yenaly.han1meviewer.ui.adaptive.currentWindowUsesTabletLayout
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageViewModel
 import com.yenaly.han1meviewer.util.getUpdateIfExists
@@ -130,7 +130,7 @@ fun MainActivityContent(
                 }
             }
         }
-        val tabletWindow = isTabletWindow()
+        val tabletWindow = currentWindowUsesTabletLayout()
         val railVisible = tabletWindow &&
             currentMainDestination != MainDestinationSpec.Video &&
             currentMainDestination != MainDestinationSpec.AvatarCrop

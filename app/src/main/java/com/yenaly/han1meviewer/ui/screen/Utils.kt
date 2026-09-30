@@ -25,8 +25,8 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.theme.SpacingLarge
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
 import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
-import com.yenaly.han1meviewer.ui.adaptive.isTabletWindow
-import com.yenaly.han1meviewer.ui.adaptive.rememberAvailableWidthDp
+import com.yenaly.han1meviewer.ui.adaptive.currentContentWidthDp
+import com.yenaly.han1meviewer.ui.adaptive.currentWindowUsesTabletLayout
 
 @Composable
 fun RetryableImage(
@@ -67,7 +67,7 @@ fun RetryableImage(
 
 @Composable
 fun getColumnCount(itemWidth: Int): Int {
-    val screenWidthDp = rememberAvailableWidthDp()
+    val screenWidthDp = currentContentWidthDp()
     return maxOf(2, (screenWidthDp / itemWidth.dp).toInt())
 }
 
@@ -76,7 +76,7 @@ fun rememberCardResponsiveWidth(
     horizontalPadding: Dp = SpacingLarge,
     itemSpacing: Dp = SpacingNormal
 ): Pair<Dp, Float> {
-    val currentWidthDp = rememberAvailableWidthDp()
+    val currentWidthDp = currentContentWidthDp()
     val isPreview = LocalInspectionMode.current
     val itemsToShow = if (!isPreview) {
         Preferences.horizontalCardCountConfig.countForWidthDp(currentWidthDp.value.toInt())
@@ -93,10 +93,10 @@ fun rememberCardResponsiveWidth(
 
 @Composable
 fun rememberVideoGridColumns(): Int {
-    val screenWidthDp = rememberAvailableWidthDp()
+    val screenWidthDp = currentContentWidthDp()
     val isPreview = LocalInspectionMode.current
 
-    return if (!isPreview && (Preferences.tabletMode || isTabletWindow())) {
+    return if (!isPreview && (Preferences.tabletMode || currentWindowUsesTabletLayout())) {
         Preferences.searchGridColumnsConfig.columnsForWidthDp(screenWidthDp.value.toInt())
     } else {
         maxOf(2, ((screenWidthDp + SpacingNormal) / (VideoNormalCardMinWidth + SpacingNormal)).toInt())

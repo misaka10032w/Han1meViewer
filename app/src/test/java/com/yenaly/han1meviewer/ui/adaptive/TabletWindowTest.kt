@@ -31,6 +31,14 @@ class TabletWindowTest {
     }
 
     @Test
+    fun isTabletWindow_respectsWindowAndDeviceBoundaries() {
+        assertFalse(isTabletWindow(599, 600, true))
+        assertFalse(isTabletWindow(600, 599, false))
+        assertTrue(isTabletWindow(600, 600, false))
+        assertTrue(isTabletWindow(600, 599, true))
+    }
+
+    @Test
     fun shouldUseListDetail_threshold() {
         assertFalse(shouldUseListDetail(839))
         assertTrue(shouldUseListDetail(840))

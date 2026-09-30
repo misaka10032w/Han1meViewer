@@ -10,9 +10,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.adaptive.AdaptiveListDetail
 import com.yenaly.han1meviewer.ui.adaptive.TabletEmptyDetail
-import com.yenaly.han1meviewer.ui.adaptive.TabletListDetail
-import com.yenaly.han1meviewer.ui.adaptive.shouldUseListDetail
+import com.yenaly.han1meviewer.ui.adaptive.currentContentUsesListDetail
 import com.yenaly.han1meviewer.ui.screen.home.preview.getchupreview.GetchuPreviewDetailScreen
 import com.yenaly.han1meviewer.ui.screen.home.preview.getchupreview.GetchuPreviewScreen
 import com.yenaly.han1meviewer.ui.screen.home.preview.getchupreview.GetchuPreviewViewModel
@@ -21,33 +21,37 @@ import com.yenaly.han1meviewer.ui.screen.home.preview.getchupreview.GetchuPrevie
 fun GetchuPreviewRouteScreen(
     onBack: () -> Unit,
     onNavigateToDetail: (String) -> Unit,
-    onNavigateToVideoUrl: (String) -> Unit = {},
+    onNavigateToVideoUrl: (String) -> Unit,
 ) {
     val viewModel: GetchuPreviewViewModel = viewModel()
-    if (!shouldUseListDetail()) {
+    val useListDetail = currentContentUsesListDetail()
+    var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
+
+    fun clearSelection() {
+        selectedId = null
+    }
+
+    BackHandler(enabled = selectedId != null, onBack = ::clearSelection)
+    val listContent: @Composable () -> Unit = {
         GetchuPreviewScreen(
-            onBack = onBack,
-            onNavigateToDetail = onNavigateToDetail,
+            onBack = {
+                if (useListDetail && selectedId != null) clearSelection() else onBack()
+            },
+            onNavigateToDetail = { id ->
+                if (useListDetail) selectedId = id else onNavigateToDetail(id)
+            },
             viewModel = viewModel,
         )
-        return
     }
-    var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
-    BackHandler(enabled = selectedId != null) { selectedId = null }
-    TabletListDetail(
+    AdaptiveListDetail(
+        useListDetail = useListDetail,
         showDetail = selectedId != null,
         listWidth = 360.dp,
-        list = {
-            GetchuPreviewScreen(
-                onBack = onBack,
-                onNavigateToDetail = { selectedId = it },
-                viewModel = viewModel,
-            )
-        },
+        list = listContent,
         detail = {
             GetchuPreviewDetailScreen(
                 id = selectedId.orEmpty(),
-                onBack = { selectedId = null },
+                onBack = ::clearSelection,
                 onNavigateToDetail = { selectedId = it },
                 onNavigateToVideoUrl = onNavigateToVideoUrl,
                 viewModel = viewModel,
@@ -65,19 +69,27 @@ fun GetchuPreviewDetailRouteScreen(
     onNavigateToVideoUrl: (String) -> Unit,
 ) {
     val viewModel: GetchuPreviewViewModel = viewModel()
-    if (!shouldUseListDetail()) {
+    val useListDetail = currentContentUsesListDetail()
+    var selectedId by rememberSaveable(route.id) { mutableStateOf(route.id) }
+
+    fun navigateBackFromDetail() {
+        if (selectedId != route.id) selectedId = route.id else onBack()
+    }
+
+    BackHandler(enabled = selectedId != route.id, onBack = ::navigateBackFromDetail)
+    val detailContent: @Composable () -> Unit = {
         GetchuPreviewDetailScreen(
-            id = route.id,
-            onBack = onBack,
-            onNavigateToDetail = onNavigateToDetail,
+            id = selectedId,
+            onBack = ::navigateBackFromDetail,
+            onNavigateToDetail = { id ->
+                if (useListDetail) selectedId = id else onNavigateToDetail(id)
+            },
             onNavigateToVideoUrl = onNavigateToVideoUrl,
             viewModel = viewModel,
         )
-        return
     }
-    var selectedId by rememberSaveable { mutableStateOf(route.id) }
-    BackHandler(enabled = selectedId != route.id) { selectedId = route.id }
-    TabletListDetail(
+    AdaptiveListDetail(
+        useListDetail = useListDetail,
         showDetail = true,
         listWidth = 360.dp,
         list = {
@@ -87,15 +99,7 @@ fun GetchuPreviewDetailRouteScreen(
                 viewModel = viewModel,
             )
         },
-        detail = {
-            GetchuPreviewDetailScreen(
-                id = selectedId,
-                onBack = { selectedId = route.id },
-                onNavigateToDetail = { selectedId = it },
-                onNavigateToVideoUrl = onNavigateToVideoUrl,
-                viewModel = viewModel,
-            )
-        },
+        detail = detailContent,
         emptyDetail = { TabletEmptyDetail(stringResource(R.string.tablet_select_getchu)) },
     )
 }

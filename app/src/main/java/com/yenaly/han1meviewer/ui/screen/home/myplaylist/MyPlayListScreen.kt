@@ -1,15 +1,9 @@
 package com.yenaly.han1meviewer.ui.screen.home.myplaylist
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.width
-import androidx.activity.compose.BackHandler
-import androidx.compose.material3.VerticalDivider
-import androidx.compose.ui.unit.dp
-import com.yenaly.han1meviewer.ui.adaptive.TabletEmptyDetail
-import com.yenaly.han1meviewer.ui.adaptive.shouldUseListDetail
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -22,6 +16,10 @@ import androidx.compose.material3.TopAppBarDefaults.pinnedScrollBehavior
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberTopAppBarState
+import com.yenaly.han1meviewer.ui.adaptive.AdaptiveListDetail
+import com.yenaly.han1meviewer.ui.adaptive.LocalTabletRailVisible
+import com.yenaly.han1meviewer.ui.adaptive.TabletEmptyDetail
+import com.yenaly.han1meviewer.ui.adaptive.currentContentUsesListDetail
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -36,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -53,7 +52,7 @@ import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
  * 播放列表页面 Screen 层。
  *
  * 持有 [MyPlayListViewModelV2]，管理缓存、下拉刷新、底部弹窗等状态编排。
- * 渲染委托给 [PlaylistContent] 和 [PlaylistBottomSheet]。
+ * 渲染委托给 [PlaylistContent] 和 [PlaylistDetailPane]。
  *
  * @param viewModel 播放列表 ViewModel
  * @param navigateBack 返回回调
@@ -64,7 +63,7 @@ import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
 @Composable
 fun PlaylistScreen(
     viewModel: MyPlayListViewModelV2,
-    navigateBack: (() -> Unit)?,
+    navigateBack: () -> Unit,
     onClickItem: (String) -> Unit,
     onLongClickItem: (String, String) -> Unit,
 ) {
@@ -113,7 +112,7 @@ fun PlaylistScreen(
 
     val handleEvent: (PlaylistEvent) -> Unit = { event ->
         when (event) {
-            PlaylistEvent.OnBack -> navigateBack?.invoke()
+            PlaylistEvent.OnBack -> navigateBack()
             PlaylistEvent.OnRefresh -> {
                 isRefreshing = true
                 viewModel.loadMyPlayList(forceReload = true)
@@ -121,8 +120,8 @@ fun PlaylistScreen(
             PlaylistEvent.OnLoadMore -> viewModel.loadMyPlayList(viewModel.playlistPage + 1)
             is PlaylistEvent.OnGoToPage -> viewModel.goToPlaylistListPage(event.page)
             is PlaylistEvent.OnPlaylistClick -> {
-                viewModel.setShowSheet(true)
                 viewModel.setListInfo(event.listCode, event.title)
+                viewModel.setShowSheet(true)
             }
             PlaylistEvent.OnDismissSheet -> {
                 temporarilyHideSheetForNavigation = false
@@ -134,20 +133,21 @@ fun PlaylistScreen(
         }
     }
 
-    val listDetail = shouldUseListDetail()
-    BackHandler(enabled = listDetail && uiState.showSheet) {
+    val useListDetail = currentContentUsesListDetail()
+    BackHandler(enabled = useListDetail && uiState.showSheet) {
         handleEvent(PlaylistEvent.OnDismissSheet)
     }
     HanimeScaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         title = stringResource(R.string.my_list),
         onBack = {
-            if (listDetail && uiState.showSheet) {
+            if (useListDetail && uiState.showSheet) {
                 handleEvent(PlaylistEvent.OnDismissSheet)
             } else {
-                navigateBack?.invoke()
+                navigateBack()
             }
         },
+        showNavigationIcon = !LocalTabletRailVisible.current || (useListDetail && uiState.showSheet),
         scrollBehavior = scrollBehavior,
         actions = {
             FilledIconButton(onClick = { showCreatePlaylistDialog = true }) {
@@ -158,82 +158,78 @@ fun PlaylistScreen(
             }
         },
     ) { innerPadding ->
-        Row(modifier = Modifier.fillMaxSize()) {
-        Box(
-            modifier = Modifier
-                .then(if (listDetail) Modifier.width(360.dp) else Modifier.weight(1f))
-                .padding(innerPadding)
-                .fillMaxSize()
-                .pullToRefresh(
-                    state = refreshState,
-                    isRefreshing = isRefreshing,
-                    onRefresh = { handleEvent(PlaylistEvent.OnRefresh) })
-                .background(MaterialTheme.colorScheme.background)
-        ) {
-            when (state) {
-                is WebsiteState.Loading -> {
-                    if (uiState.playlists.isEmpty()) {
-                        LoadingIndicator(Modifier.align(Alignment.Center))
-                    } else {
+        val listContent: @Composable () -> Unit = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pullToRefresh(
+                        state = refreshState,
+                        isRefreshing = isRefreshing,
+                        onRefresh = { handleEvent(PlaylistEvent.OnRefresh) },
+                    )
+                    .background(MaterialTheme.colorScheme.background),
+            ) {
+                when (state) {
+                    is WebsiteState.Loading -> {
+                        if (uiState.playlists.isEmpty()) {
+                            LoadingIndicator(Modifier.align(Alignment.Center))
+                        } else {
+                            PlaylistContent(uiState = uiState, onEvent = handleEvent, rawState = state)
+                        }
+                    }
+                    is WebsiteState.Error -> {
+                        if (uiState.playlists.isEmpty()) {
+                            EmptyContent(
+                                hint = stringResource(
+                                    R.string.load_failed_with_reason,
+                                    (state as WebsiteState.Error).throwable.message.orEmpty(),
+                                ),
+                                picRes = R.drawable.h_chan_sad,
+                            )
+                        } else {
+                            PlaylistContent(uiState = uiState, onEvent = handleEvent, rawState = state)
+                        }
+                    }
+                    is WebsiteState.Success -> {
                         PlaylistContent(uiState = uiState, onEvent = handleEvent, rawState = state)
                     }
                 }
-
-                is WebsiteState.Error -> {
-                    if (uiState.playlists.isEmpty()) {
-                        EmptyContent(
-                            hint = stringResource(
-                                R.string.load_failed_with_reason,
-                                (state as WebsiteState.Error).throwable.message.orEmpty()
-                            ),
-                            picRes = R.drawable.h_chan_sad
-                        )
-                    } else {
-                        PlaylistContent(uiState = uiState, onEvent = handleEvent, rawState = state)
-                    }
-                }
-
-                is WebsiteState.Success -> {
-                    PlaylistContent(uiState = uiState, onEvent = handleEvent, rawState = state)
-                }
-            }
-
-            PullRefreshOverlay(state = refreshState, isRefreshing = isRefreshing)
-
-            if (!listDetail && uiState.showSheet && !temporarilyHideSheetForNavigation) {
-                PlaylistBottomSheet(
-                    listCode = uiState.selectedListCode,
-                    onDismiss = { handleEvent(PlaylistEvent.OnDismissSheet) },
-                    playListTitle = uiState.selectedListTitle,
-                    onClickItem = { item ->
-                        temporarilyHideSheetForNavigation = true
-                        onClickItem(item)
-                    },
-                    onLongClickItem = onLongClickItem,
-                    vm = viewModel,
-                    context = context,
-                )
-            }
-        }
-        if (listDetail) {
-            VerticalDivider()
-            Box(modifier = Modifier.weight(1f).padding(innerPadding)) {
-                if (uiState.showSheet) {
-                    PlaylistDetailPane(
+                PullRefreshOverlay(state = refreshState, isRefreshing = isRefreshing)
+                if (!useListDetail && uiState.showSheet && !temporarilyHideSheetForNavigation) {
+                    PlaylistBottomSheet(
                         listCode = uiState.selectedListCode,
-                        playListTitle = uiState.selectedListTitle,
                         onDismiss = { handleEvent(PlaylistEvent.OnDismissSheet) },
-                        onClickItem = onClickItem,
+                        playListTitle = uiState.selectedListTitle,
+                        onClickItem = { item ->
+                            temporarilyHideSheetForNavigation = true
+                            onClickItem(item)
+                        },
                         onLongClickItem = onLongClickItem,
                         vm = viewModel,
                         context = context,
                     )
-                } else {
-                    TabletEmptyDetail(stringResource(R.string.tablet_select_playlist))
                 }
             }
         }
-        }
+        AdaptiveListDetail(
+            useListDetail = useListDetail,
+            showDetail = useListDetail && uiState.showSheet,
+            listWidth = 360.dp,
+            list = listContent,
+            detail = {
+                PlaylistDetailPane(
+                    listCode = uiState.selectedListCode,
+                    playListTitle = uiState.selectedListTitle,
+                    onDismiss = { handleEvent(PlaylistEvent.OnDismissSheet) },
+                    onClickItem = onClickItem,
+                    onLongClickItem = onLongClickItem,
+                    vm = viewModel,
+                    context = context,
+                )
+            },
+            emptyDetail = { TabletEmptyDetail(stringResource(R.string.tablet_select_playlist)) },
+            modifier = Modifier.padding(innerPadding),
+        )
 
         TextInputDialog(
             visible = showCreatePlaylistDialog,

@@ -31,7 +31,7 @@ val LocalContentWidthDp = compositionLocalOf { 0.dp }
 val LocalTabletRailVisible = compositionLocalOf { false }
 
 @Composable
-fun isTabletWindow(): Boolean {
+fun currentWindowUsesTabletLayout(): Boolean {
     val configuration = LocalConfiguration.current
     return isTabletWindow(
         screenWidthDp = configuration.screenWidthDp,
@@ -41,16 +41,16 @@ fun isTabletWindow(): Boolean {
 }
 
 @Composable
-fun rememberAvailableWidthDp(): Dp {
+fun currentContentWidthDp(): Dp {
     val provided = LocalContentWidthDp.current
     if (provided > 0.dp) return provided
     val density = LocalDensity.current
-    val widthPx = LocalWindowInfo.current.containerSize.width
-    return with(density) { widthPx.toDp() }
+    return with(density) { LocalWindowInfo.current.containerSize.width.toDp() }
 }
 
 @Composable
-fun shouldUseListDetail(): Boolean = shouldUseListDetail(rememberAvailableWidthDp().value.toInt())
+fun currentContentUsesListDetail(): Boolean =
+    currentWindowUsesTabletLayout() && shouldUseListDetail(currentContentWidthDp().value.toInt())
 
 fun Modifier.tabletReadableWidth(max: Dp): Modifier =
     fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally).widthIn(max = max)

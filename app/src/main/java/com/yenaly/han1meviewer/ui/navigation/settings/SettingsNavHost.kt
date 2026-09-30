@@ -1,7 +1,6 @@
 package com.yenaly.han1meviewer.ui.navigation.settings
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -25,10 +24,10 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.adaptive.AdaptiveListDetail
 import com.yenaly.han1meviewer.ui.adaptive.LocalTabletRailVisible
 import com.yenaly.han1meviewer.ui.adaptive.TabletEmptyDetail
-import com.yenaly.han1meviewer.ui.adaptive.TabletListDetail
-import com.yenaly.han1meviewer.ui.adaptive.shouldUseListDetail
+import com.yenaly.han1meviewer.ui.adaptive.currentContentUsesListDetail
 import com.yenaly.han1meviewer.ui.adaptive.tabletReadableWidth
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.util.logScreenViewEvent
@@ -58,104 +57,64 @@ fun SettingsScaffold(
         activity.logScreenViewEvent(currentDestination.screenClassName)
     }
 
-    if (shouldUseListDetail()) {
-        val parent = currentDestination.parent()
-        if (parent == null) {
-            TabletListDetail(
-                showDetail = false,
-                listWidth = 360.dp,
-                list = {
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        Text(
-                            text = stringResource(R.string.settings),
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier
-                                .statusBarsPadding()
-                                .padding(16.dp),
-                        )
-                        Box(modifier = Modifier.weight(1f)) {
-                            content()
-                        }
-                    }
-                },
-                detail = {},
-                emptyDetail = {
-                    TabletEmptyDetail(stringResource(R.string.tablet_select_settings))
-                },
-            )
-        } else {
-            TabletListDetail(
-                showDetail = true,
-                listWidth = 360.dp,
-                list = {
-                    SettingsParentPane(
-                        parent = parent,
-                        activity = activity,
-                        navController = navController,
-                    )
-                },
-                detail = {
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        if (currentDestination.showToolbar) {
-                            TopAppBar(
-                                title = { Text(stringResource(currentDestination.titleRes)) },
-                                navigationIcon = {
-                                    FilledIconButton(onClick = ::navigateBack) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                            contentDescription = stringResource(R.string.back),
-                                        )
-                                    }
-                                },
-                                actions = { actions() },
-                                modifier = Modifier.statusBarsPadding(),
-                            )
-                        }
-                        Box(modifier = Modifier.weight(1f)) {
-                            content()
-                        }
-                    }
-                },
-                emptyDetail = {},
-            )
-        }
-        return
-    }
-
+    val useListDetail = currentContentUsesListDetail()
+    val parent = currentDestination.parent()
     val hideHomeBack = LocalTabletRailVisible.current &&
         currentDestination == SettingsDestinationSpec.Home
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            if (currentDestination.showToolbar) {
-                TopAppBar(
-                    title = { Text(stringResource(currentDestination.titleRes)) },
-                    navigationIcon = {
-                        if (!hideHomeBack) {
-                            FilledIconButton(onClick = ::navigateBack) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = stringResource(R.string.back),
-                                )
+    val screenContent: @Composable () -> Unit = {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                if (currentDestination.showToolbar) {
+                    TopAppBar(
+                        title = { Text(stringResource(currentDestination.titleRes)) },
+                        navigationIcon = {
+                            if (!hideHomeBack) {
+                                FilledIconButton(onClick = ::navigateBack) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = stringResource(R.string.back),
+                                    )
+                                }
                             }
-                        }
-                    },
-                    actions = { actions() },
-                    modifier = Modifier.statusBarsPadding(),
+                        },
+                        actions = { actions() },
+                        modifier = Modifier.statusBarsPadding(),
+                    )
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.background,
+        ) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .tabletReadableWidth(840.dp),
+            ) {
+                content()
+            }
+        }
+    }
+    AdaptiveListDetail(
+        useListDetail = useListDetail,
+        showDetail = parent != null,
+        listWidth = 360.dp,
+        list = {
+            if (parent == null) {
+                screenContent()
+            } else {
+                SettingsParentPane(
+                    parent = parent,
+                    activity = activity,
+                    navController = navController,
                 )
             }
         },
-        containerColor = MaterialTheme.colorScheme.background,
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .tabletReadableWidth(840.dp),
-        ) {
-            content()
-        }
-    }
+        detail = screenContent,
+        emptyDetail = {
+            TabletEmptyDetail(stringResource(R.string.tablet_select_settings))
+        },
+    )
 }
 
 @Composable

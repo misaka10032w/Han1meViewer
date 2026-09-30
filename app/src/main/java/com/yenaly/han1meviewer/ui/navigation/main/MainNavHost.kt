@@ -64,7 +64,6 @@ fun MainNavHost(
     var pendingAvatarCropResult by remember { mutableStateOf<String?>(null) }
 
     val onBack: () -> Unit = { navController.popBackStack() }
-    val drawerRootOnBack: (() -> Unit)? = if (railVisible) null else onBack
     val onNavigateToVideo: (String) -> Unit = { code -> navController.navigateSafely(VideoRoute(code)) }
     val onNavigateToLocalVideo: (String, String?) -> Unit =
         { code, uri -> navController.navigateSafely(VideoRoute(code, uri)) }
@@ -140,31 +139,31 @@ fun MainNavHost(
         }
         composable<WatchHistoryRoute> {
             WatchHistoryRouteScreen(
-                onBack = drawerRootOnBack,
+                onBack = onBack,
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<MyFavVideoRoute> {
             FavVideoRouteScreen(
-                onBack = drawerRootOnBack,
+                onBack = onBack,
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<MyWatchLaterRoute> {
             WatchLaterRouteScreen(
-                onBack = drawerRootOnBack,
+                onBack = onBack,
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<MyPlaylistRoute> {
             MyPlaylistRouteScreen(
-                onBack = drawerRootOnBack,
+                onBack = onBack,
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<SubscriptionRoute> {
             SubscriptionRouteScreen(
-                onBack = drawerRootOnBack,
+                onBack = onBack,
                 onNavigateToSearch = { query -> navController.navigateSafely(SearchRoute(query = query)) },
                 onNavigateToVideo = onNavigateToVideo,
             )
@@ -172,13 +171,13 @@ fun MainNavHost(
         composable<DailyCheckInRoute> {
             DailyCheckInRouteScreen(
                 activity = activity,
-                onBack = drawerRootOnBack,
+                onBack = onBack,
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
         composable<DownloadRoute> {
             DownloadRouteScreen(
-                onBack = drawerRootOnBack,
+                onBack = onBack,
                 onNavigateToVideo = onNavigateToVideo,
                 onNavigateToLocalVideo = onNavigateToLocalVideo,
             )
@@ -187,7 +186,7 @@ fun MainNavHost(
             val creatorViewModel: CreatorCenterViewModel = viewModel()
             CreatorCenterScreen(
                 viewModel = creatorViewModel,
-                onBack = drawerRootOnBack,
+                onBack = onBack,
                 onOpenUploadedVideo = { item -> onNavigateToVideo(item.videoCode) },
                 onOpenUploadingVideo = { item -> onNavigateToLocalVideo("-1", item.remoteVideoUrl) },
             )
