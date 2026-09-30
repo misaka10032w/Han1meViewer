@@ -234,6 +234,9 @@ object Preferences {
     val useBuiltInHosts: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.USE_BUILT_IN_HOSTS, false)
 
+    val useBackupMediaCdn: Boolean
+        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.USE_BACKUP_MEDIA_CDN, false)
+
     val customHostsData: String
         get() = preferenceSp.getString(SettingsPreferenceKeys.CUSTOM_HOSTS_DATA, EMPTY_STRING).orEmpty()
 

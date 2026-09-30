@@ -212,6 +212,8 @@ Some mirrors may not support login, may not share cookies, may fail verification
     <string name="use_built_in_hosts">Use Built-in Hosts</string>
     <string name="network_settings">Network Settings</string>
     <string name="use_built_in_hosts_summary">Mapping of hosts to IP provided by the app\nCustom hosts take priority if configured\nVPN? What\'s that?</string>
+    <string name="use_backup_media_cdn">Use backup media CDN</string>
+    <string name="use_backup_media_cdn_summary">Switch the CDN hosts for images and videos to the backup options to resolve issues where the primary CDN is unavailable on certain networks.</string>
     <string name="custom_hosts">Custom Hosts</string>
     <string name="custom_hosts_format">Multiple IPs separated by commas, e.g. 1.2.3.4,5.6.7.8</string>
     <string name="custom_hosts_empty_summary">Not set (using built-in mapping)</string>

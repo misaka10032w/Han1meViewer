@@ -52,6 +52,7 @@ private const val NETWORK_USE_CUSTOM_MIRROR_SITE = "use_custom_mirror_site"
 private const val NETWORK_CUSTOM_MIRROR_SITE = "custom_mirror_site"
 private const val NETWORK_APPEND_CUSTOM_MIRROR_PATH = "append_custom_mirror_path"
 private const val NETWORK_USE_BUILT_IN_HOSTS = "use_built_in_hosts"
+private const val NETWORK_USE_BACKUP_MEDIA_CDN = "use_backup_media_cdn"
 private const val NETWORK_CUSTOM_HOSTS_DATA = "custom_hosts_data"
 private const val NETWORK_USE_DOH = "use_doh"
 private const val NETWORK_DOH_PRESET = "doh_preset"
@@ -252,6 +253,12 @@ fun NetworkSettingsRouteScreen() {
                     isCustomMirrorTesting = false
                 }
             }
+        },
+        useBackupMediaCdn = Preferences.useBackupMediaCdn,
+        onUseBackupMediaCdnChange = { value ->
+            Preferences.preferenceSp.edit { putBoolean(NETWORK_USE_BACKUP_MEDIA_CDN, value) }
+            refreshKey++
+            showHostsRestartConfirm = true
         },
         onUseBuiltInHostsChange = { value ->
             if (value && Preferences.useDoH) {
@@ -501,6 +508,7 @@ private fun buildNetworkSettingsUiState(context: Context): NetworkSettingsUiStat
             else -> context.getString(R.string.direct)
         },
         useBuiltInHosts = Preferences.useBuiltInHosts,
+        useBackupMediaCdn = Preferences.useBackupMediaCdn,
         useCustomMirrorSite = Preferences.useCustomMirrorSite,
         customMirrorSite = Preferences.customMirrorSite,
         appendCustomMirrorPath = Preferences.appendCustomMirrorPath,

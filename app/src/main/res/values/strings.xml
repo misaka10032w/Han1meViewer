@@ -221,6 +221,8 @@
     <string name="use_built_in_hosts">應用內建 Hosts</string>
     <string name="network_settings">網路設定</string>
     <string name="use_built_in_hosts_summary">應用提供的主機到 IP 的映射\n若已設定自定義 Hosts，則優先使用\nVPN？那是什麼？</string>
+    <string name="use_backup_media_cdn">使用備用媒體 CDN</string>
+    <string name="use_backup_media_cdn_summary">將圖片與影片的CDN主機替換為備選，解決部分網路下主要CDN不可用的問題。</string>
     <string name="custom_hosts">自定義 Hosts</string>
     <string name="custom_hosts_format">多個 IP 以逗號分隔，如 1.2.3.4,5.6.7.8</string>
     <string name="custom_hosts_empty_summary">未設定（使用內建映射）</string>

@@ -64,6 +64,26 @@ object HanimeConstants {
 @JvmField
 val HANIME_LOGIN_URL = HANIME_BASE_URL + "login"
 
+// 媒體 CDN
+
+/**
+ * 主站影片與圖片使用的 CDN 主機，部分地區可能無法訪問。
+ */
+const val HANIME_MEDIA_CDN_HOST = "vdownload.hembed.com"
+
+/**
+ * 備用媒體 CDN 主機，用於替換 [HANIME_MEDIA_CDN_HOST]。
+ */
+const val HANIME_BACKUP_MEDIA_CDN_HOST = "1497203185.rsc.cdn77.org"
+
+/**
+ * 啟用備用媒體 CDN 後，將回應內容中的媒體（圖片 / 影片）CDN 主機替換為備用主機。
+ */
+fun String.replaceBackupMediaCdnHost(): String {
+    if (!Preferences.useBackupMediaCdn) return this
+    return replace(HANIME_MEDIA_CDN_HOST, HANIME_BACKUP_MEDIA_CDN_HOST, ignoreCase = true)
+}
+
 // github url
 
 const val HA1_GITHUB_URL = "https://github.com/misaka10032w/Han1meViewer"

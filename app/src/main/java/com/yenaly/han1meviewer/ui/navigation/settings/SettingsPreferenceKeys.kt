@@ -46,6 +46,7 @@ object SettingsPreferenceKeys {
     const val CUSTOM_MIRROR_SITE = "custom_mirror_site"
     const val APPEND_CUSTOM_MIRROR_PATH = "append_custom_mirror_path"
     const val USE_BUILT_IN_HOSTS = "use_built_in_hosts"
+    const val USE_BACKUP_MEDIA_CDN = "use_backup_media_cdn"
     const val CUSTOM_HOSTS_DATA = "custom_hosts_data"
     const val USE_DOH = "use_doh"
     const val DOH_PRESET = "doh_preset"
