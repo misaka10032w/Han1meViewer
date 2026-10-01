@@ -186,6 +186,16 @@ data class VideoRoute(
 - 复杂搜索参数通过 JSON 字符串承载，进入 `SearchRouteScreen` 后再灌入 `SearchViewModel`。
 - 视频本地文件播放使用 `VideoRoute(videoCode = "-1", localUri = uri)` 这一路径。
 
+### 自适应布局
+
+- `ui/adaptive/TabletWindow.kt` 中的带参函数负责纯尺寸判定；`currentWindowUsesTabletLayout()` 和 `currentContentUsesListDetail()` 读取当前 Compose 环境，不缓存窗口尺寸。
+- 当前宽度至少 600dp，且最小宽度至少 600dp 或用户开启平板模式时显示 80dp 导航轨。普通手机横屏不自动改为列表详情布局。
+- 导航轨与抽屉共用同一内容挂载位置；抽屉始终保留测量结果，避免窗口缩窄时关闭锚点失效。顶级切换保存、恢复返回栈状态。
+- 路由和业务 Screen 的返回回调保持非空；仅在工具栏边界通过 `showNavigationIcon` 控制根页面图标，详情页仍提供真实返回行为。
+- 内容区达到 840dp 时，设置、新番评论、Getchu 和播放列表复用 `AdaptiveListDetail` 的列表、详情内容。各栏提供自己的 `LocalContentWidthDp`，切换单栏时保留选择与列表可保存状态；播放列表在窄屏仍使用底部弹窗。
+
+相关回归测试：`TabletWindowTest` 覆盖尺寸边界；`ui.adaptive` 包下的 Android 测试覆盖分栏状态、导航内容挂载、抽屉关闭状态和播放列表选择切换。
+
 ## 6. 搜索和分页列表
 
 搜索入口：
@@ -263,6 +273,13 @@ VideoRoute(videoCode = "-1", localUri) -> VideoViewModel.buildLocalPlayInfo -> H
 - `VideoIntroductionScreen` 的 `ArtistSection` 触发 `onOpenArtist`。
 - `VideoRouteActions.openArtistSearch` 构造 `SearchRoute`。
 - 搜索页通过 `route.query` 自动填充作者名并发起搜索。
+
+自适应播放器约定：
+
+- `VideoShellContent` 始终使用同一个 `AndroidView` 位置托管 `VideoRouteShell`。分栏只调整宿主宽度和内嵌播放器高度，不搬移播放器或 Tabs；JZVD 独占全屏视图的移入、移出。
+- 全屏、画中画期间不由分栏布局覆盖播放器高度。系统返回先关闭内嵌回复面板，全屏返回仍交给播放器。
+- 回复选择由路由 Host 单点持有，底部弹窗与右侧回复栏共用内容，避免关闭后缩放窗口又出现旧回复。
+- `AdaptiveLayoutTest` 在真实 Android View 树中检查窗口缩放、全屏和画中画布局切换不会重新挂载播放器宿主。
 
 ## 8. 播放器链路
 
