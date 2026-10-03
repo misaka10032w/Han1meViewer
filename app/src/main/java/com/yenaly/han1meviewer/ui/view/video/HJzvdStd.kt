@@ -932,9 +932,11 @@ class HJzvdStd @JvmOverloads constructor(
             }
             isAdjustBrightness = false
         }
-        // 从 decorView 移除全屏播放器视图
+        // 从 decorView 移除全屏播放器视图。全屏期间如果被别的布局抢走，
+        // removeView 不会生效，必须先从当前父布局摘掉再加回去。
         val decorView = (JZUtils.scanForActivity(jzvdContext)).window.decorView as ViewGroup
         decorView.removeView(this)
+        (parent as? ViewGroup)?.removeView(this)
         // 恢复到原始容器
         val originalContainer = CONTAINER_LIST.lastOrNull()
         if (originalContainer != null){
@@ -952,8 +954,8 @@ class HJzvdStd @JvmOverloads constructor(
         } else if (originalContainer is FrameLayout) {
             layoutParams = LayoutParams(blockLayoutParams)
         }
-        // 把播放器重新添加回原来的位置
-        originalContainer.addView(this, blockIndex, layoutParams)
+        val index = blockIndex.coerceIn(0, originalContainer.childCount)
+        originalContainer.addView(this, index, layoutParams)
         originalContainer.requestLayout()
         // 设置播放器状态并恢复系统UI和方向
         setScreenNormal()

@@ -1,16 +1,20 @@
 package com.yenaly.han1meviewer.ui.screen.video
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
@@ -69,6 +73,7 @@ fun RenderVideoIntroductionContent(
             state = videoState,
             fromDownload = viewModel.fromDownload,
             hideRelatedInIntro = viewModel.hideRelatedInIntro,
+            hidePlaylistInIntro = viewModel.hidePlaylistInIntro,
             shareText = videoShareText,
             playlistInitialIndex = viewModel.getPlaylistFirstVisibleIndex(videoCode),
             introFirstVisibleItemIndex = introScrollState.firstVisibleItemIndex,
@@ -138,11 +143,13 @@ fun RenderVideoCommentContent(
     reportMessages: MutableSharedFlow<CommentMessage>,
     getMessageText: (CommentViewModel.Message) -> String,
     pageHost: VideoPageHost? = null,
+    inlineChildComments: Boolean,
+    childCommentId: String?,
+    onChildCommentIdChange: (String?) -> Unit,
 ) {
     val commentUiState = remember(viewModel.code) {
         viewModel.getCommentUiState(viewModel.code)
     }
-    var childCommentId by remember { mutableStateOf(commentUiState.childCommentId) }
     val childSheetState = rememberBottomSheetState(
         initialValue = SheetValue.Hidden,
         enabledValues = setOf(
@@ -166,72 +173,18 @@ fun RenderVideoCommentContent(
                 }
             }
         }
-
-        childCommentId?.let { currentCommentId ->
+        if (childCommentId != null && !inlineChildComments) {
+            val currentCommentId = childCommentId
             ModalBottomSheet(
-                onDismissRequest = {
-                    childCommentId = null
-                    viewModel.setChildCommentId(viewModel.code, null)
-                    viewModel.clearVideoReplyList()
-                },
+                onDismissRequest = { onChildCommentIdChange(null) },
                 sheetState = childSheetState,
                 dragHandle = null,
             ) {
-                LaunchedEffect(currentCommentId) {
-                    viewModel.getCommentReply(currentCommentId)
-                }
                 BottomSheetHandler()
-                val childReportFlow = remember(viewModel.reportMessage) {
-                    viewModel.reportMessage.map { message ->
-                        val text = if (message.args.isNotEmpty()) {
-                            com.yenaly.yenaly_libs.utils.application.getString(
-                                message.resId,
-                                *message.args.toTypedArray()
-                            )
-                        } else {
-                            com.yenaly.yenaly_libs.utils.application.getString(message.resId)
-                        }
-                        CommentMessage(text)
-                    }
-                }
-                ChildCommentScreen(
-                    commentsFlow = viewModel.videoReplyFlow,
-                    commentStateFlow = viewModel.videoReplyStateFlow,
-                    reportMessageFlow = childReportFlow,
-                    postReplyStateFlow = viewModel.postReplyFlow,
-                    commentLikeStateFlow = viewModel.commentLikeFlow,
-                    reportReasons = viewModel.reportReason,
+                VideoChildCommentContent(
+                    viewModel = viewModel,
+                    commentId = currentCommentId,
                     isAlreadyLogin = isAlreadyLogin,
-                    onRefresh = { viewModel.getCommentReply(currentCommentId) },
-                    onReply = { _, text ->
-                        viewModel.postReply(currentCommentId, text)
-                    },
-                    onReport = { comment, reason ->
-                        viewModel.reportComment(
-                            reason.reasonKey ?: reason.value,
-                            viewModel.currentUserId,
-                            "${Preferences.baseUrl}watch?v=${viewModel.code}",
-                            comment.reportableType,
-                            comment.reportableId,
-                        )
-                    },
-                    onThumbUp = { comment ->
-                        viewModel.likeChildComment(
-                            true,
-                            0,
-                            comment,
-                            likeCommentStatus = comment.post.likeCommentStatus,
-                        )
-                    },
-                    onThumbDown = { comment ->
-                        viewModel.likeChildComment(
-                            false,
-                            0,
-                            comment,
-                            unlikeCommentStatus = comment.post.unlikeCommentStatus,
-                        )
-                    },
-                    onCommentLikeSuccess = viewModel::handleCommentLike,
                     onReplyStateChange = { isReplying ->
                         if (isReplying) {
                             scope.launch { childSheetState.expand() }
@@ -315,8 +268,7 @@ fun RenderVideoCommentContent(
                     }
                     return@CommentScreen
                 }
-                childCommentId = replyTargetId
-                viewModel.setChildCommentId(viewModel.code, replyTargetId)
+                onChildCommentIdChange(replyTargetId)
             },
             onSortChange = { viewModel.setSortType(it) },
             onComposeComment = {
@@ -333,4 +285,77 @@ fun RenderVideoCommentContent(
             },
         )
     }
+}
+
+@Composable
+fun VideoChildCommentPane(
+    viewModel: CommentViewModel,
+    commentId: String,
+    isAlreadyLogin: Boolean,
+    onDismiss: () -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        IconButton(onClick = onDismiss) {
+            Icon(
+                painter = painterResource(R.drawable.ic_baseline_close_24),
+                contentDescription = stringResource(R.string.back),
+            )
+        }
+        VideoChildCommentContent(
+            viewModel = viewModel,
+            commentId = commentId,
+            isAlreadyLogin = isAlreadyLogin,
+            onReplyStateChange = {},
+        )
+    }
+}
+
+@Composable
+private fun VideoChildCommentContent(
+    viewModel: CommentViewModel,
+    commentId: String,
+    isAlreadyLogin: Boolean,
+    onReplyStateChange: (Boolean) -> Unit,
+) {
+    LaunchedEffect(commentId) {
+        viewModel.getCommentReply(commentId)
+    }
+    val childReportFlow = remember(viewModel.reportMessage) {
+        viewModel.reportMessage.map { message ->
+            val text = if (message.args.isNotEmpty()) {
+                com.yenaly.yenaly_libs.utils.application.getString(message.resId, *message.args.toTypedArray())
+            } else {
+                com.yenaly.yenaly_libs.utils.application.getString(message.resId)
+            }
+            CommentMessage(text)
+        }
+    }
+    ChildCommentScreen(
+        commentsFlow = viewModel.videoReplyFlow,
+        commentStateFlow = viewModel.videoReplyStateFlow,
+        reportMessageFlow = childReportFlow,
+        postReplyStateFlow = viewModel.postReplyFlow,
+        commentLikeStateFlow = viewModel.commentLikeFlow,
+        reportReasons = viewModel.reportReason,
+        isAlreadyLogin = isAlreadyLogin,
+        onRefresh = { viewModel.getCommentReply(commentId) },
+        onReply = { _, text -> viewModel.postReply(commentId, text) },
+        onReport = { comment, reason ->
+            viewModel.reportComment(
+                reason.reasonKey ?: reason.value,
+                viewModel.currentUserId,
+                "${Preferences.baseUrl}watch?v=${viewModel.code}",
+                comment.reportableType,
+                comment.reportableId,
+            )
+        },
+        onThumbUp = { comment ->
+            viewModel.likeChildComment(true, 0, comment, likeCommentStatus = comment.post.likeCommentStatus)
+        },
+        onThumbDown = { comment ->
+            viewModel.likeChildComment(false, 0, comment, unlikeCommentStatus = comment.post.unlikeCommentStatus)
+        },
+        onCommentLikeSuccess = viewModel::handleCommentLike,
+        onReplyStateChange = onReplyStateChange,
+    )
 }

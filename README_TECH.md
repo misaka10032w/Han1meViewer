@@ -264,6 +264,13 @@ VideoRoute(videoCode = "-1", localUri) -> VideoViewModel.buildLocalPlayInfo -> H
 - `VideoRouteActions.openArtistSearch` 构造 `SearchRoute`。
 - 搜索页通过 `route.query` 自动填充作者名并发起搜索。
 
+自适应播放器约定：
+
+- `VideoShellContent` 始终使用同一个 `AndroidView` 位置托管 `VideoRouteShell`。分栏只调整宿主宽度和内嵌播放器高度，不搬移播放器或 Tabs；JZVD 独占全屏视图的移入、移出。
+- 全屏、画中画期间不由分栏布局覆盖播放器高度。系统返回先关闭内嵌回复面板，全屏返回仍交给播放器。
+- 回复选择由路由 Host 单点持有，底部弹窗与右侧回复栏共用内容，避免关闭后缩放窗口又出现旧回复。
+- `VideoPlayerHostTest` 在真实 Android View 树中检查窗口缩放、全屏和画中画布局切换不会重新挂载播放器宿主。
+
 ## 8. 播放器链路
 
 项目保留了历史 JZVD 播放器封装，同时引入 Media3 和 MPV 能力。

@@ -22,6 +22,7 @@ import com.yenaly.han1meviewer.R
 fun HanimeTopAppBar(
     title: String,
     onBack: (() -> Unit)?,
+    showNavigationIcon: Boolean = true,
     modifier: Modifier = Modifier,
     subtitle: (@Composable () -> Unit)? = null,
     actions: @Composable () -> Unit = {},
@@ -56,7 +57,7 @@ fun HanimeTopAppBar(
             }
         },
         navigationIcon = {
-            if (onBack != null) {
+            if (showNavigationIcon && onBack != null) {
                 FilledIconButton(onClick = onBack) {
                     Icon(
                         painter = painterResource(R.drawable.ic_baseline_arrow_back_24),
