@@ -14,6 +14,7 @@ import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.screen.home.myplaylist.PlaylistUiState
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -48,6 +49,7 @@ class MyPlayListViewModelV2 : ViewModel() {
     val playlistFlow = _playlistFlow.asStateFlow()
     private val _currentListInfo = MutableStateFlow<Pair<String, String>?>(null)
     val currentListInfo = _currentListInfo.asStateFlow()
+    private var playlistLoadJob: Job? = null
     private val _playlistSheetScrollStates = MutableStateFlow<Map<String, PlaylistSheetScrollState>>(emptyMap())
 
 
@@ -100,6 +102,7 @@ class MyPlayListViewModelV2 : ViewModel() {
         _showSheet.value = value
     }
     fun setListInfo(code: String, title: String) {
+        if (_currentListInfo.value?.first != code) clearCurrentList()
         _currentListInfo.value = code to title
     }
 
@@ -172,10 +175,9 @@ class MyPlayListViewModelV2 : ViewModel() {
     // 获取单个playlist内容
     fun getPlaylistItems(page: Int = 1, listCode: String, refresh: Boolean = false) {
         Log.i("getPlaylistItems","isLoadingMore:$isLoadingMore,listCode:$listCode,")
-        if (isLoadingMore) return
+        if (listCode.isBlank() || isLoadingMore) return
         isLoadingMore = true
-        viewModelScope.launch {
-            if (listCode.isBlank()) return@launch
+        playlistLoadJob = viewModelScope.launch {
             Log.i("getPlaylistItems","page:$page,refresh:$refresh")
             // 如果是第一页或刷新，重置状态
             if (page == 1 || refresh) {
@@ -268,8 +270,15 @@ class MyPlayListViewModelV2 : ViewModel() {
     fun clearMyListItems() {
         _playlistStateFlow.value = PageLoadingState.Loading
     }
-    fun clearCurrentList(){
+    fun clearCurrentList() {
+        playlistLoadJob?.cancel()
+        playlistLoadJob = null
+        isLoadingMore = false
+        currentPage = 1
         _playlistFlow.value = emptyList()
+        _playlistDesc.value = null
+        _playlistTotalPages.value = 1
+        _playlistStateFlow.value = PageLoadingState.Loading
     }
     private val _createPlaylistFlow = MutableSharedFlow<WebsiteState<Unit>>()
     val createPlaylistFlow = _createPlaylistFlow.asSharedFlow()

@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.account
 
+import com.yenaly.han1meviewer.ui.adaptive.tabletReadableWidth
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -209,7 +210,7 @@ private fun AccountContent(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .tabletReadableWidth(720.dp)
             .verticalScroll(scrollState)
             .padding(contentPadding)
             .padding(horizontal = 16.dp, vertical = 20.dp),

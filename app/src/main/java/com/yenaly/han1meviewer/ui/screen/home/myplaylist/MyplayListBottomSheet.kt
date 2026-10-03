@@ -27,11 +27,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
-import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -92,6 +90,29 @@ fun PlaylistBottomSheet(
     vm: MyPlayListViewModelV2,
     context: Context,
 ) {
+    ModalBottomSheet(onDismissRequest = onDismiss, dragHandle = null) {
+        PlaylistDetailPane(
+            listCode = listCode,
+            onDismiss = onDismiss,
+            playListTitle = playListTitle,
+            onClickItem = onClickItem,
+            onLongClickItem = onLongClickItem,
+            vm = vm,
+            context = context,
+        )
+    }
+}
+
+@Composable
+internal fun PlaylistDetailPane(
+    listCode: String,
+    onDismiss: () -> Unit,
+    playListTitle: String,
+    onClickItem: (String) -> Unit,
+    onLongClickItem: (String, String) -> Unit,
+    vm: MyPlayListViewModelV2,
+    context: Context,
+) {
     val playlistState by vm.playlistStateFlow.collectAsState()
     val playlist by vm.playlistFlow.collectAsState()
     val unknownError = stringResource(R.string.unknown_error)
@@ -99,17 +120,10 @@ fun PlaylistBottomSheet(
     val deleteSuccess = stringResource(R.string.delete_success)
     val modifySuccess = stringResource(R.string.modify_success)
     val deleteFailed = stringResource(R.string.delete_failed)
-    val sheetState = rememberBottomSheetState(
-        initialValue = SheetValue.Hidden,
-        enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
-    )
-    if (listCode.isNotEmpty()) {
-        vm.setListInfo(listCode, playListTitle)
-    }
 
     val listInfo by vm.currentListInfo.collectAsState()
-    val currentCode = listInfo?.first ?: ""
-    val currentTitle = listInfo?.second ?: ""
+    val currentCode = listCode
+    val currentTitle = listInfo?.takeIf { it.first == currentCode }?.second ?: playListTitle
     val savedScrollState = remember(currentCode, vm) {
         vm.getPlaylistSheetScrollState(currentCode)
     }
@@ -130,8 +144,6 @@ fun PlaylistBottomSheet(
         }
     }
 
-    LaunchedEffect(Unit) { sheetState.show() }
-
     LaunchedEffect(gridState, currentCode) {
         snapshotFlow { gridState.firstVisibleItemIndex to gridState.firstVisibleItemScrollOffset }
             .collect { (index, offset) ->
@@ -139,47 +151,47 @@ fun PlaylistBottomSheet(
             }
     }
 
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState, dragHandle = null) {
-        if (playlist.isEmpty() && playlistState is PageLoadingState.Loading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        } else if (playlist.isEmpty() && playlistState is PageLoadingState.Error) {
-            Box(Modifier
+    if (playlist.isEmpty() && playlistState is PageLoadingState.Loading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+    } else if (playlist.isEmpty() && playlistState is PageLoadingState.Error) {
+        Box(
+            modifier = Modifier
                 .fillMaxSize()
-                .height(200.dp), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.load_failed_retry))
-            }
-        } else {
-            AnimatedVisibility(visible = true, enter = fadeIn()) {
-                PlaylistSheetContent(
-                    gridState = gridState,
-                    listCode = currentCode,
-                    playlist = playlist,
-                    onDismiss = onDismiss,
-                    playListTitle = currentTitle,
-                    playlistDesc = vm.playlistDesc,
-                    playlistState = playlistState,
-                    onClickItem = onClickItem,
-                    onLongClickItem = onLongClickItem,
-                    vm = vm,
-                    context = context,
-                )
-                if (playlist.isEmpty()) {
-                    EmptyContent(stringResource(R.string.empty_content))
-                }
+                .height(200.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(stringResource(R.string.load_failed_retry))
+        }
+    } else {
+        AnimatedVisibility(visible = true, enter = fadeIn()) {
+            PlaylistSheetContent(
+                gridState = gridState,
+                listCode = currentCode,
+                playlist = playlist,
+                onDismiss = onDismiss,
+                playListTitle = currentTitle,
+                playlistDesc = vm.playlistDesc,
+                playlistState = playlistState,
+                onClickItem = onClickItem,
+                onLongClickItem = onLongClickItem,
+                vm = vm,
+                context = context,
+            )
+            if (playlist.isEmpty()) {
+                EmptyContent(stringResource(R.string.empty_content))
             }
         }
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(vm, currentCode) {
         vm.modifyPlaylistFlow.collect { result ->
             when (result) {
                 is WebsiteState.Error -> GlobalToasts.show(modifyFailed, level = GlobalToasts.ToastLevel.ERROR)
-                WebsiteState.Loading -> {}
+                WebsiteState.Loading -> Unit
                 is WebsiteState.Success -> {
                     if (result.info.isDeleted) {
-                        sheetState.hide()
                         onDismiss()
                         GlobalToasts.show(deleteSuccess, level = GlobalToasts.ToastLevel.SUCCESS)
                         vm.loadMyPlayList()
@@ -197,7 +209,7 @@ fun PlaylistBottomSheet(
         vm.deleteFromPlaylistFlow.collect { result ->
             when (result) {
                 is WebsiteState.Error -> GlobalToasts.show(deleteFailed, level = GlobalToasts.ToastLevel.ERROR)
-                is WebsiteState.Loading -> {}
+                WebsiteState.Loading -> Unit
                 is WebsiteState.Success -> {
                     GlobalToasts.show(deleteSuccess, level = GlobalToasts.ToastLevel.SUCCESS)
                     vm.loadMyPlayList()
