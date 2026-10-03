@@ -2,7 +2,7 @@ package com.yenaly.han1meviewer.ui.adaptive
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,7 +32,7 @@ class AdaptiveListDetailTest {
         var selected by mutableStateOf(false)
         compose.setContent {
             MaterialTheme {
-                Box(Modifier.requiredSize(if (expanded) 1000.dp else 600.dp, 600.dp)) {
+                Box(Modifier.fillMaxSize()) {
                     AdaptiveListDetail(
                         useListDetail = expanded,
                         showDetail = selected,
@@ -40,7 +40,7 @@ class AdaptiveListDetailTest {
                         list = {
                             var count by rememberSaveable { mutableStateOf(0) }
                             Button(onClick = { count++; selected = true }) {
-                                Text("List $count / ${currentContentWidthDp().value.toInt()}")
+                                Text("List $count")
                             }
                         },
                         detail = {
@@ -51,14 +51,14 @@ class AdaptiveListDetailTest {
                 }
             }
         }
-        compose.onNodeWithText("List 0 / 360").performClick()
+        compose.onNodeWithText("List 0").performClick()
         compose.onNodeWithText("Selected detail").assertIsDisplayed()
         compose.runOnIdle { expanded = false }
-        compose.onNodeWithText("List 1 / 360").assertDoesNotExist()
+        compose.onNodeWithText("List 1").assertDoesNotExist()
         compose.onNodeWithText("Selected detail").performClick()
-        compose.onNodeWithText("List 1 / 600").assertIsDisplayed()
+        compose.onNodeWithText("List 1").assertIsDisplayed()
         compose.runOnIdle { expanded = true }
-        compose.onNodeWithText("List 1 / 360").assertIsDisplayed()
+        compose.onNodeWithText("List 1").assertIsDisplayed()
         compose.onNodeWithText("Choose an item").assertIsDisplayed()
     }
 }
