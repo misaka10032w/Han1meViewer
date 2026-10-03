@@ -2,7 +2,7 @@ package com.yenaly.han1meviewer.ui.adaptive
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -18,7 +18,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.yenaly.han1meviewer.ui.navigation.main.MainDrawerDestination
 import com.yenaly.han1meviewer.ui.screen.main.MainActivityScaffold
@@ -39,7 +38,7 @@ class NavigationScaffoldTest {
         compose.setContent {
             drawer = rememberDrawerState(DrawerValue.Closed)
             MaterialTheme {
-                Box(Modifier.requiredSize(if (useRail) 1000.dp else 600.dp, 600.dp)) {
+                Box(Modifier.fillMaxSize()) {
                     MainActivityScaffold(
                         drawerState = drawer,
                         drawerEnabled = true,
