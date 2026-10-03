@@ -22,6 +22,7 @@ import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 fun HanimeScaffold(
     title: String,
     onBack: (() -> Unit)?,
+    showNavigationIcon: Boolean = true,
     modifier: Modifier = Modifier,
     subtitle: (@Composable () -> Unit)? = null,
     actions: @Composable () -> Unit = {},
@@ -36,6 +37,7 @@ fun HanimeScaffold(
             HanimeTopAppBar(
                 title = title,
                 onBack = onBack,
+                showNavigationIcon = showNavigationIcon,
                 subtitle = subtitle,
                 actions = actions,
                 scrollBehavior = scrollBehavior,
