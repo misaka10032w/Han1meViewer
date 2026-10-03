@@ -324,6 +324,7 @@ fun MainNavHost(
             GetchuPreviewRouteScreen(
                 onBack = onBack,
                 onNavigateToDetail = { id -> navController.navigateSafely(GetchuPreviewDetailRoute(id)) },
+                onNavigateToVideoUrl = { url -> navController.navigateSafely(VideoRoute("-1", url)) },
             )
         }
         composable<GetchuPreviewDetailRoute> {
