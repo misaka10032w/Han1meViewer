@@ -86,6 +86,13 @@ enum class SettingsDestinationSpec(
         routeClass = HKeyframeSettingsRoute::class,
     );
 
+    fun parent(): SettingsDestinationSpec? = when (this) {
+        Home -> null
+        Player, Network, Download, HKeyframeSettings -> Home
+        Mpv -> Player
+        HKeyframes, SharedHKeyframes -> HKeyframeSettings
+    }
+
     val route: Any
         get() = when (this) {
             Home -> HomeSettingsRoute

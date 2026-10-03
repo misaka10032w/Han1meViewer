@@ -55,7 +55,8 @@ fun HomePageScreen(
     viewModel: HomePageViewModel,
     isDrawerOpen: Boolean,
     onEvent: (HomeUiEvent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showMenuButton: Boolean = true,
 ) {
     val context = LocalContext.current
     val pageState by viewModel.homePageFlow.collectAsStateWithLifecycle()
@@ -94,7 +95,8 @@ fun HomePageScreen(
             HomePageTopBar(
                 onOpenDrawer = { onEvent(HomeUiEvent.OpenDrawer) },
                 onSearchClick = { onEvent(HomeUiEvent.OpenSearchPage()) },
-                onNavigateToPreview = { onEvent(HomeUiEvent.NavigateToPreview) }
+                onNavigateToPreview = { onEvent(HomeUiEvent.NavigateToPreview) },
+                showMenuButton = showMenuButton,
             )
             Box(
                 modifier = Modifier

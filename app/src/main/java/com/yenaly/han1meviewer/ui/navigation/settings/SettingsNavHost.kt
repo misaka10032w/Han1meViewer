@@ -19,10 +19,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.adaptive.AdaptiveListDetail
+import com.yenaly.han1meviewer.ui.adaptive.LocalTabletRailVisible
+import com.yenaly.han1meviewer.ui.adaptive.TabletEmptyDetail
+import com.yenaly.han1meviewer.ui.adaptive.currentContentUsesListDetail
+import com.yenaly.han1meviewer.ui.adaptive.tabletReadableWidth
+import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.util.logScreenViewEvent
 import com.yenaly.yenaly_libs.utils.findActivity
 
@@ -50,33 +57,93 @@ fun SettingsScaffold(
         activity.logScreenViewEvent(currentDestination.screenClassName)
     }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            if (currentDestination.showToolbar) {
-                TopAppBar(
-                    title = { Text(stringResource(currentDestination.titleRes)) },
-                    navigationIcon = {
-                        FilledIconButton(onClick = ::navigateBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.back),
-                            )
-                        }
-                    },
-                    actions = { actions() },
-                    modifier = Modifier.statusBarsPadding(),
+    val useListDetail = currentContentUsesListDetail()
+    val parent = currentDestination.parent()
+    val hideHomeBack = LocalTabletRailVisible.current &&
+        currentDestination == SettingsDestinationSpec.Home
+    val screenContent: @Composable () -> Unit = {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                if (currentDestination.showToolbar) {
+                    TopAppBar(
+                        title = { Text(stringResource(currentDestination.titleRes)) },
+                        navigationIcon = {
+                            if (!hideHomeBack) {
+                                FilledIconButton(onClick = ::navigateBack) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = stringResource(R.string.back),
+                                    )
+                                }
+                            }
+                        },
+                        actions = { actions() },
+                        modifier = Modifier.statusBarsPadding(),
+                    )
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.background,
+        ) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .tabletReadableWidth(840.dp),
+            ) {
+                content()
+            }
+        }
+    }
+    AdaptiveListDetail(
+        useListDetail = useListDetail,
+        showDetail = parent != null,
+        listWidth = 360.dp,
+        list = {
+            if (parent == null) {
+                screenContent()
+            } else {
+                SettingsParentPane(
+                    parent = parent,
+                    activity = activity,
+                    navController = navController,
                 )
             }
         },
-        containerColor = MaterialTheme.colorScheme.background,
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-        ) {
-            content()
+        detail = screenContent,
+        emptyDetail = {
+            TabletEmptyDetail(stringResource(R.string.tablet_select_settings))
+        },
+    )
+}
+
+@Composable
+private fun SettingsParentPane(
+    parent: SettingsDestinationSpec,
+    activity: MainActivity,
+    navController: NavController,
+) {
+    fun navigateSingleTop(route: Any) {
+        navController.navigateSafely(route) {
+            launchSingleTop = true
         }
+    }
+
+    when (parent) {
+        SettingsDestinationSpec.Home -> HomeSettingsRouteScreen(
+            activity = activity,
+            onNavigateToPlayerSettings = { navigateSingleTop(PlayerSettingsRoute) },
+            onNavigateToHKeyframeSettings = { navigateSingleTop(HKeyframeSettingsRoute) },
+            onNavigateToDownloadSettings = { navigateSingleTop(DownloadSettingsRoute) },
+            onNavigateToNetworkSettings = { navigateSingleTop(NetworkSettingsRoute) },
+        )
+        SettingsDestinationSpec.Player -> PlayerSettingsRouteScreen(
+            onNavigateToMpvSettings = { navigateSingleTop(MpvPlayerSettingsRoute) },
+        )
+        SettingsDestinationSpec.HKeyframeSettings -> HKeyframeSettingsRouteScreen(
+            onNavigateToHKeyframes = { navigateSingleTop(HKeyframesRoute) },
+            onNavigateToSharedHKeyframes = { navigateSingleTop(SharedHKeyframesRoute) },
+        )
+        else -> Unit
     }
 }
