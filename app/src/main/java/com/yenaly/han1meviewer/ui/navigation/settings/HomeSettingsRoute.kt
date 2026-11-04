@@ -253,6 +253,9 @@ fun HomeSettingsRouteScreen(
         onDarkModeChange = { value ->
             if (value != Preferences.useDarkMode) {
                 saveString(HOME_USE_DARK_MODE, value)
+                // 立即刷新设置项状态；follow_system 与 always_off 在浅色系统下
+                // 可能不会触发 Activity 重建，必须手动刷新才能看到选择变化
+                refreshKey++
                 // AppCompatDelegate 会自行重建 Activity；先等待弹窗关闭再切换
                 coroutineScope.runAfterUiSettles {
                     ThemeUtils.applyDarkModeFromPreferences(context)
