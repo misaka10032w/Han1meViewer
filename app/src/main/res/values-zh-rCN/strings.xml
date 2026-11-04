@@ -13,8 +13,6 @@
     <string name="brand">品牌</string>
     <string name="release_date">发布日期</string>
     <string name="duration">影片时长</string>
-    <string name="alert">提示</string>
-    <string name="alert_cancel_all_tags">确认将会取消你所选的所有标签</string>
     <string name="confirm">确认</string>
     <string name="cancel">取消</string>
     <string name="pair_widely">模糊搜索</string>
@@ -41,14 +39,12 @@
     <string name="comment_not_found">未发现评论</string>
     <string name="hanime_list">新番列表</string>
     <string name="latest_hanime_list_monthly">%s 里番新番列表</string>
-    <string name="preview_page_updating">站方正在更新新番预告页面，请尝试查看其他月份</string>
     <string name="preview_page_updating_getchu_hint">站方正在更新新番预告页面，可先查看 Getchu 新番预告。Getchu 可能需要 VPN 才能正常访问。</string>
     <string name="latest_hanime_comment">%s 新番评论区</string>
     <string name="view_getchu_preview">查看 Getchu 预告</string>
     <string name="getchu_preview">Getchu 新番预告</string>
     <string name="getchu_preview_title">Getchu %s 新番预告</string>
     <string name="getchu_preview_detail">Getchu 新番详情</string>
-    <string name="getchu_sample_images">样品图</string>
     <string name="getchu_series">系列商品</string>
     <string name="getchu_product_intro">商品介绍</string>
     <string name="getchu_story">故事</string>
@@ -77,7 +73,6 @@
     <string name="check_update_success">当前有新版本：%s，点击查看</string>
     <string name="current_version">当前版本：%s</string>
     <string name="already_latest_update">已经是最新版本！</string>
-    <string name="search_placeholder">今天想看点什么呢</string>
     <string name="downloading">正在下载</string>
     <string name="downloading_s">正在下载：%1$s</string>
     <string name="downloading_update_percent">正在下载更新 %d%%</string>
@@ -98,7 +93,6 @@
     <string name="update_error_download_network">下载更新失败：网络连接中断（%s），请检查网络后重试。</string>
     <string name="update_error_download_invalid_payload">下载更新失败：获取到的文件不是有效的安装包，请稍后重试或前往 GitHub Releases 手动下载。</string>
     <string name="downloaded">已下载</string>
-    <string name="start_download">开始下载</string>
     <string name="cancel_download">取消下载</string>
     <string name="local_playback">本地观看</string>
     <string name="download_path">下载路径</string>
@@ -121,7 +115,6 @@
     <string name="prepare_to_delete_s">你现在正要准备删除\n%s</string>
     <string name="playlist_title">标题</string>
     <string name="playlist_description">介绍</string>
-    <string name="open_playlist_drawer">打开播放清单列表</string>
     <string name="add_to_playlist">加入清单</string>
     <string name="player_settings">播放器设置</string>
     <string name="tablet_mode">平板模式</string>
@@ -154,7 +147,6 @@
     <string name="h_keyframe_title_prefix">影片代码：</string>
     <string name="manage">管理</string>
     <string name="h_keyframe_manage">关键H帧管理</string>
-    <string name="h_keyframe">关键H帧</string>
     <string name="when_countdown_remind">何时开始倒计时提醒</string>
     <string name="show_prompt_when_countdown">倒计时显示提示</string>
     <string name="will_remind_before_d_seconds">将会在 %d 秒前倒计时提醒</string>
@@ -225,7 +217,6 @@
     <string name="doh_bootstrap_ips_summary">可输入 DoH 服务本身的多个 IP，用逗号分隔。内置预设会自动提供，自定义 URL 留空时使用系统解析</string>
     <string name="doh_timeout_seconds">解析超时（秒）</string>
     <string name="doh_timeout_seconds_summary">DoH 请求的连接和读取超时，建议 5–15 秒</string>
-    <string name="doh_enabled_summary">已启用</string>
     <string name="doh_disabled_summary">已关闭</string>
     <string name="password">密码</string>
     <string name="try_login_here">试试在这里登录</string>
@@ -233,10 +224,8 @@
     <string name="login_failed">登录失败</string>
     <string name="login_success">登录成功</string>
     <string name="account_or_password_wrong">账户或密码可能错误</string>
-    <string name="login_tips">该方法只能保持登录 2 个小时… 还是推荐使用网页登录，\n但网页是不走 Hosts 的，所以可能需要 VPN</string>
     <string name="update">更新</string>
     <string name="use_ci_update_channel">采用 CI 更新频道</string>
-    <string name="use_ci_update_channel_summary">CI 更新频道能更快地获取最新变更\n但不保证稳定性</string>
     <string name="update_popup_interval_days">检查更新弹窗间隔天数</string>
     <string name="update_failed">更新失败</string>
     <string name="update_download_background">在后台下载更新</string>
@@ -250,11 +239,9 @@
     <string name="which_days">%d天</string>
     <string name="last_update_popup_check_time">最近更新弹窗跳出时刻：\n%s</string>
     <string name="no_update_popup_yet">最近还没跳出过更新窗口哦</string>
-    <string name="no_description">您似乎还没写介绍…</string>
     <string name="share_to_others_tip">复制以下内容，分享给其他人，可以通过顶部右侧添加按钮来将其存入设备：\n%s</string>
     <string name="delete_playlist">删除播放清单</string>
     <string name="delete_the_playlist">删除该播放清单</string>
-    <string name="s_copy_to_clipboard">「%1$s」已复制到剪贴板</string>
     <string name="detect_ha1_related_link_in_clipboard">检测到剪贴板里存在Hanime1相关链接</string>
     <string name="enter">进入</string>
     <string name="sure_to_logout">你确定要登出吗？</string>
@@ -273,7 +260,6 @@
     <string name="pause_then_long_press">先暂停再长按</string>
     <string name="long_press_to_add_h_keyframe">请长按🥵添加关键H帧</string>
     <string name="video_deleted_sure_to_delete_item">影片已被删除或移动，是否删除该条目？</string>
-    <string name="watching_this_video_now">当前正在观看该影片哦~</string>
     <string name="delete_failed">删除失败</string>
     <string name="delete_fav">删除喜欢</string>
     <string name="attention">注意！</string>
@@ -285,7 +271,6 @@
     <string name="default_">默认</string>
     <string name="alternative">备用</string>
     <string name="loading">加载中…</string>
-    <string name="slide_to_choose_list">请从右向左滑动选择列表</string>
     <string name="create_new_playlist">创建新清单</string>
     <string name="delete_watch_later">删除待看</string>
     <string name="long_press_to_cancel_watch_later">长按可以取消待看！</string>
@@ -300,7 +285,6 @@
     <string name="watch_history_resume_watch">继续观看</string>
     <string name="watch_history_watched_at">观看于 %1$s</string>
     <string name="watch_history_released_at">发布于 %1$s</string>
-    <string name="watch_history_progress_minutes">已观看约 %1$d 分钟</string>
     <string name="online">在线</string>
     <string name="popular">热门</string>
     <string name="watch_history_online_help">下拉刷新，滑到底部自动加载更多。</string>
@@ -331,15 +315,11 @@
     <string name="send_failed">发送失败！</string>
     <string name="sending_reply">发表回复中</string>
     <string name="send_success">发送成功！</string>
-    <string name="sending_comment">发表评论中</string>
     <string name="there_is_a_small_issue">出了点小问题…</string>
-    <string name="fav_failed">喜欢失败</string>
-    <string name="cancel_fav">取消喜欢</string>
     <string name="already_in_queue">在队列中</string>
     <string name="added_to_download_queue">已加入下载队列</string>
     <string name="s_view_times">%1$s次</string>
     <string name="liked">已喜欢</string>
-    <string name="cannot_download_here">暂时无法从这里下载！</string>
     <string name="long_press_share_to_copy">长按分享可以复制到剪贴板中</string>
     <string name="sure_to_download">确定要下载吗？</string>
     <string name="go_to_official">转到官方</string>
@@ -354,8 +334,6 @@
     <string name="clear_success">清除成功</string>
     <string name="clear_failed">清除发生意外</string>
     <string name="cache_empty">当前缓存为空，无需清理哦</string>
-    <string name="do_not_check_update_again">别再检查更新了！</string>
-    <string name="take_me_to_download">带我去下载</string>
     <string name="d_speed_times">%.1f倍</string>
     <string name="high">高</string>
     <string name="moderately_high">较高</string>
@@ -364,8 +342,6 @@
     <string name="low">低</string>
     <string name="very_low">很低</string>
     <string name="extremely_low">极低</string>
-    <string name="update_failed_tips">如果你发现软件有重大问题但是提示更新失败，请直接去 Github Releases 界面查看是否有最新版下载\n\n
-还有我竟然发现有人花钱买这 APP，真没必要哈！</string>
     <string name="shared_h_keyframe_detected_msg">注意：如果你也有和对方相同代号的关键H帧，那么你自己的将会被覆盖\n
 \n
 标题：%1$s\n
@@ -379,19 +355,16 @@
 · 无 VPN 用户，使用 hanime1.me 并开启内置 Hosts\n
 · 日本用户，使用 hanime1.com\n
 · 其他地区用户，使用 hanime1.me 并关闭内置 Hosts</string>
-    <string name="do_not_use_japan_ip">不要使用日本IP地址!!!</string>
     <string name="website_blocked_msg">看到这里说明他们网站被加固了，能不能恢复只能听天命了…</string>
     <string name="not_logged_in_currently">当前未登录</string>
     <string name="login_state_expired">登录状态已失效，已自动登出，请重新登录</string>
     <string name="parse_error_msg">可能这个网址解析起来不太一样…</string>
-    <string name="network_unstable_msg">可能是你的网络不稳定，多刷新！</string>
     <string name="unknown_download_error">未知下载错误</string>
     <string name="download_task_completed">下载任务已完成！</string>
     <string name="download_completed_s">下载完毕：%1$s</string>
     <string name="this_data_exists">该文件已存在！</string>
     <string name="download_failed_s_exists">下载失败：%1$s 已存在</string>
     <string name="download_task_failed">下载任务失败！</string>
-    <string name="download_task_failed_s">下载任务失败：%1$s</string>
     <string name="download_task_failed_s_reason_s">下载失败：%1$s\n原因为：%2$s</string>
     <string name="download_task_retrying">下载暂时中断，正在重试</string>
     <string name="download_task_retrying_s_reason_s">下载暂时中断：%1$s\n原因：%2$s\n稍后会自动继续。</string>
@@ -415,16 +388,12 @@
     <string name="switch_player_kernel">切换播放器内核</string>
     <string name="switch_to_year">切换至年</string>
     <string name="switch_to_year_month">切换至年月</string>
-    <string name="subscribe_failed">关注失败</string>
-    <string name="subscribe_success">关注成功</string>
-    <string name="unsubscribe_success">取消关注成功</string>
     <string name="subscribe">关注</string>
     <string name="subscribed">已关注</string>
     <string name="unsubscribe_artist">取消关注该作者</string>
     <string name="sure_to_unsubscribe">确定要取消关注吗？</string>
     <string name="action_app_open_by_default_settings_not_support">此设备不支持从程序中开启深层链接设置</string>
     <string name="sure_to_redownload">确定要重新下载吗？</string>
-    <string name="subscription">关注</string>
     <string name="analytics_summary">长按了解开启对开发者的重要性</string>
     <string name="analytics_title">使用情况统计</string>
     <string name="privacy">隐私</string>
@@ -434,14 +403,12 @@
     <string name="website_blocked_msg_2">网站被加固，修改为另外一个域名可能有奇效！</string>
     <string name="website_blocked_msg_3">可以提醒一下开发者，但不要催，网站被加固跟他没有任何关系哦～</string>
     <string name="action_not_support">此设备不支持该操作</string>
-    <string name="get_file_info_failed">获取文件信息失败</string>
     <string name="download_settings">下载设置</string>
     <string name="download_count_limit">同时下载数量限制</string>
     <string name="download_speed_limit">下载速度限制</string>
     <string name="no_limit">无限制</string>
     <string name="check_video_exists_in_download">我注意到你好像下载过分辨率为 %s 的该影片</string>
     <string name="retry">重试</string>
-    <string name="oss_license">本软件使用的开源项目</string>
     <string name="open_source_license">开源许可</string>
     <string name="confirm_to_exit">退出确认</string>
     <string name="finished_masturbating">确定已经〇完了吗🥵？</string>
@@ -483,14 +450,12 @@
     <string name="crop_avatar">裁剪头像</string>
     <string name="updating">更新中…</string>
     <string name="changing">更改中…</string>
-    <string name="uploading">上传中…</string>
     <string name="title_activity_qrcode_scanner">手动录入cookies</string>
     <string name="scan_for_cookies">手动录入cookies</string>
     <string name="import_cookies_intro">此种导入方式也可以缓解因cloudflare引起的登录拦截\n1.在网页版登录之后，想办法获取Cookies，只要你能获取到，手机和电脑都行。\n2.格式大概如图所示，注意！头尾不应包含双引号，并且不应是格式化后的Cookies序列。\n使用“手动导入”按钮的导入。\n如果导入完成之后刷新页面还是显示未登陆的状态，那就检查你的Cookies。</string>
     <string name="cookies_import_desc">引导图示</string>
     <string name="cookies_import_title">如何导入</string>
     <string name="cookies_import_dismiss">我知道了</string>
-    <string name="manual_import_cookies">手动导入</string>
     <string name="request_camera">请授予相机权限以扫码</string>
     <string name="allow_pip_disc">允许返回桌面时进入画中画模式 （需要开启画中画权限）</string>
     <string name="allow_pip_title">允许进入画中画模式</string>
@@ -522,7 +487,6 @@
     <string name="not_checked_yet">今日尚未打卡</string>
     <string name="checkin">打卡</string>
     <string name="clear_checkin">清除</string>
-    <string name="current_streak">连续</string>
     <string name="best_streak">最高连续</string>
     <string name="day_unit">天</string>
     <string name="mon">一</string>
@@ -558,8 +522,6 @@
     <string name="calendar_dialog_title">预约手冲日？</string>
     <string name="calendar_dialog_message">要为 %1$s 建立一个「预约手冲」的日历提醒吗？\n到了那天记得准时报到！🫡</string>
     <string name="calendar_dialog_confirm">建立提醒</string>
-    <string name="calendar_dialog_dismiss">不用了</string>
-    <string name="testing">测试中…</string>
     <string name="test_doh">测试 DoH</string>
     <string name="test_doh_summary">检查当前 DoH 配置是否可解析域名</string>
     <string name="doh_test_result">DoH 测试结果</string>
@@ -567,7 +529,6 @@
     <string name="view_checkin">查看</string>
     <string name="dialog_existing_records">已打卡记录</string>
     <string name="dialog_max_reached">今日打卡已达上限 (20次)</string>
-    <string name="checkin_type_label">类型</string>
     <string name="checkin_type_masturbation">自慰</string>
     <string name="checkin_type_wet_dream">梦遗</string>
     <string name="checkin_type_sex">做爱</string>
@@ -596,20 +557,15 @@
     <string name="streak_title">连续达成</string>
     <string name="egg_god">%1$d 次…你已经超越人类极限了 🫠</string>
     <string name="egg_nice">%1$d 次！Nice～ 😏</string>
-    <string name="egg_streak">连续 %1$d 天！手不能停！🫡</string>
     <string name="egg_singles">光棍节快乐…今天不冲吗？😢</string>
     <string name="widget_description">手冲打卡小部件，桌面即可签到</string>
-    <string name="widget_checkin">打卡</string>
     <string name="add_widget">添加桌面小工具</string>
     <string name="widget_not_supported">你的桌面不支持直接添加小工具</string>
-    <string name="widget_pick_hint">请在手冲打卡小工具上点击添加</string>
     <string name="widget_today_label">今日已冲</string>
-    <string name="widget_month_label">本月</string>
     <string name="original_comic">原作漫画</string>
     <string name="fault_prompt">出现错误，请联系开发者！</string>
     <string name="read_download_dir_title">读取下载目录</string>
     <string name="read_download_dir_message">读取当前下载目录已下载的文件，用于恢复之前下载的文件到列表中。\n每个视频单元文件结构应为：\n[视频代码]/xxx.mp4、xxx.png、info.json</string>
-    <string name="read_success">读取成功</string>
     <string name="reading_download_dir">正在读取…</string>
     <string name="import_result_title">导入完成</string>
     <string name="import_success_count">成功导入 %d 个</string>
@@ -619,7 +575,6 @@
     <string name="import_fail_reason_exception">读取或解析失败</string>
     <string name="import_fail_suggestion">请检查对应文件夹，确保包含 info.json 与视频文件（xxx.mp4、xxx.png）。缺失或损坏的文件会导致导入失败。</string>
     <string name="select_custom_directory">请先选择一个自定义目录</string>
-    <string name="some_videos_moved_or_deleted">部分影片被移动或者删除，请检查。</string>
     <string name="directory_saved">目录已保存:%s</string>
     <string name="no_directory_selected">未选择目录，未作变更</string>
     <string name="select_download_folder">选择您的下载文件夹</string>
@@ -627,8 +582,6 @@
     <string name="restore_default_path">恢复默认存储路径</string>
     <string name="restore_default_message">确定要恢复为应用内部存储吗？\n\n● 当前下载的文件不会被移动\n● 后续下载将保存到应用内部\n● 应用卸载后文件将被清除\n● 选择外部路径后，可以使用文件迁移功能移出</string>
     <string name="default_path_restored">已恢复默认存储路径</string>
-    <string name="already_default_path">当前已是默认路径</string>
-    <string name="already_default_message">您正在使用应用内部存储空间。\n\n如需更改，可以指定外部存储路径来更好地管理文件。</string>
     <string name="understood">明白了</string>
     <string name="confirm_import">是否进行导出？</string>
     <string name="import_warning">导出中请勿关闭 APP，以免造成文件损坏！</string>
@@ -642,8 +595,6 @@
     <string name="pref_export_downloads_summary">导出私有下载目录中的所有下载项到自定义目录</string>
     <string name="save_failed_title">保存失败</string>
     <string name="save_failed_message">由于外部存储权限或其他原因，视频信息文件保存失败。\n已自动切换到应用私有路径。\n如果你是卸载重新安装的应用可尝试清理Download/Han1meViewer目录后在设置切换下载位置再试，否则将继续使用私有目录，并请在卸载或清除数据之前移出文件！</string>
-    <string name="download_category">下载设置</string>
-    <string name="download_category_summary">点击可设置路径，长按可恢复默认路径</string>
     <string name="whats_wrong_with_him">你觉得他咋了？</string>
     <string name="submit">提交</string>
     <string name="report_reason_hint">请先选择一个举报理由</string>
@@ -672,15 +623,12 @@
     <string name="sort_comment">评论排序</string>
     <string name="theme">主题与外观</string>
     <string name="dark_theme">深色主题</string>
-    <string name="dynamic_color_title">动态配色</string>
-    <string name="dynamic_color_summary">开启后跟随系统主题色，仅支持Android 12以上</string>
     <string name="follow_system">跟随系统</string>
     <string name="always_off">总是关闭</string>
     <string name="always_on">总是开启</string>
     <string name="category_instant_noodle">泡面番</string>
     <string name="category_motion_anime">动态动画</string>
     <string name="category_3d_animation">3D作品</string>
-    <string name="category_doujin">同人作品</string>
     <string name="category_cosplay">Cosplay</string>
     <string name="new_anime_trailers">新番預告片</string>
     <string name="permission_error">权限错误，请尝试重新指定文件夹！</string>
@@ -707,7 +655,6 @@
     <string name="mpv_advanced_settings">MPV 播放内核设置</string>
     <string name="mpv_settings_disabled_summary">仅当播放内核为 MPV 播放器时可配置</string>
     <string name="mpv_advanced_settings_summary">配置画质、性能与网络缓存等高级选项</string>
-    <string name="player_settings_base">基础播放设置</string>
     <string name="player_settings_quality_performance">画质与性能</string>
     <string name="player_settings_network_cache">网络与缓存</string>
     <string name="mpv_profile">渲染质量级别 (profile)</string>
@@ -732,7 +679,6 @@
     <string name="custom_parameters">自定义参数</string>
     <string name="custom_parameters_summary">配置播放器启动参数/配置，格式为key,parameters，使用英文分号分隔</string>
     <string name="advanced">高级</string>
-    <string name="advanced_summary">可能会影响播放稳定性</string>
     <string name="custom_parameters_example">例如：vo,gpu;profile,gpu-hq;framedrop,no</string>
     <string name="custom_parameters_title">注意：因播放器平台不同，部分参数可能不会生效</string>
     <string name="decoding_sw">软件解码 (SW: no)</string>
@@ -756,19 +702,12 @@
     <string name="horizontal_card_count_dialog_hint">按不同屏幕宽度设置横向列表一次可见的卡片数量</string>
     <string name="horizontal_card_count_current_width_hint">当前容器宽度参考：约 %1$ddp</string>
     <string name="horizontal_card_count_current_bucket_hint">当前命中档位：%1$s = %2$.1f 张</string>
-    <string name="video_group_error">获取视频分组错误：</string>
-    <string name="video_group_empty">视频分组为空</string>
-    <string name="default_group_rename_not_allowed">默认分组（%s）不允许重命名！</string>
-    <string name="default_group_delete_not_allowed">默认分组（%s）不允许删除！</string>
     <string name="new_group_name">新分组名称</string>
     <string name="rename_group">重命名分组</string>
     <string name="current_group_name">当前分组名称：%s</string>
     <string name="group_name_empty">分组名称不能为空</string>
-    <string name="group_name_unchanged">名称未做更改</string>
     <string name="group_renamed">分组已重命名为 %s</string>
     <string name="modify_video_group">修改该视频的分组：%s</string>
-    <string name="group_modify_success">修改成功！%1$s，ID:%2$s</string>
-    <string name="unknown_group_id">发生错误：未知组id！</string>
     <string name="unknown_error">未知错误</string>
     <string name="ungrouped">未分组</string>
     <string name="create_new_group">创建新分组</string>
@@ -785,7 +724,6 @@
     <string name="download_group_name_quick_tc_sc_conversion">快捷繁简转换</string>
     <string name="download_group_script_simplified">简体</string>
     <string name="download_group_script_traditional">繁体</string>
-    <string name="coming_soon">敬请期待</string>
     <string name="disable_mobile_data_warning">关闭流量提醒</string>
     <string name="disable_mobile_data_warning_summary">开启后使用移动流量播放时将不再提醒</string>
     <string name="mpv_socks5_warning">注意：MPV播放内核不支持Socks代理，可能会播放失败</string>
@@ -802,24 +740,17 @@
     <string name="ai_decensored">AI解码</string>
     <string name="china_av">国产AV</string>
     <string name="chinese_amateur">国产素人</string>
-    <string name="view_count">观看次数</string>
     <string name="ai_generated">AI生成</string>
     <string name="current_webview_version">\n\n📊 当前WebView版本: %s</string>
     <string name="webview_version_too_low">\n⚠️ WebView版本过低，可能会验证失败，推荐版本为120.x.x.x以上</string>
     <string name="webview_version_unknown">\n⚠️ 无法识别WebView版本</string>
     <string name="version_check_failed">\n⚠️ 版本检查失败</string>
     <string name="switch_site">切换站点</string>
-    <string name="current_site">当前站点：</string>
     <string name="confirm_switch_site">确定要切换站点吗？</string>
-    <string name="webview_exception">系统 WebView 组件异常，Cloudflare验证页面加载失败！</string>
     <string name="disable_predictive_back_title">关闭预测性返回动画</string>
-    <string name="disable_predictive_back_summary">开启后，返回手势只有在松手后才会触发返回，避免观看视频时因误触返回手势而暂停播放</string>
     <string name="play_trailer">播放预告</string>
     <string name="search_video_hint">搜索影片…</string>
     <string name="recent_searches">最近搜索</string>
-    <string name="search_suggestions">搜索建议</string>
-    <string name="no_matching_search_history">暂无匹配的搜索历史</string>
-    <string name="search_enter_keywords">输入关键词搜索影片</string>
     <string name="search_no_results">没有搜索到结果</string>
     <string name="search_load_failed_with_reason">加载失败：%1$s</string>
     <string name="load_failed_with_reason">加载失败：%1$s</string>
@@ -896,7 +827,6 @@
     <string name="cloudflare_ip_block_warning">检测到您的IP归属地为日本，或已被CloudFlare列入黑名单。这并非APP本身的问题，CloudFlare出于安全考虑会定期屏蔽部分高风险IP。建议您尝试切换VPN节点或更换网络环境后重试。</string>
     <string name="cloudflare_network_mismatch">当前网络环境无法通过验证。如果您正在使用内置 hosts 访问，请注意：CloudFlare 验证页面暂不支持通过自定义 hosts 解析，可能导致验证节点与应用主站解析到不同区域，两者访问环境不一致，从而造成验证失败。此问题目前无法解决，建议您切换至更“干净”的 IP 或网络环境后重试。</string>
     <string name="ssl_handshake_error">SSL 安全连接失败，可能是系统时间异常、网络被拦截或证书验证失败。请检查时间设置并切换其他网络环境后重试。</string>
-    <string name="parse_page_failed">网站页面解析失败，可能是页面结构发生了变更。请联系开发者跟进，或暂时使用网页版作为替代。</string>
     <string name="home_error_dns">无法解析服务器地址，请检查网络连接或 DNS 设置后重试。</string>
     <string name="home_error_timeout">连接超时，当前网络可能较慢或服务器暂时无响应，请稍后重试。</string>
     <string name="home_error_ssl">安全连接失败，请检查系统时间是否正确，或切换网络后重试。</string>

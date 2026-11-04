@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.util
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.content.Context
@@ -38,6 +39,7 @@ val appScreenWidth: Int
 /**
  * 系统状态栏高度，单位像素。
  */
+@get:SuppressLint("DiscouragedApi", "InternalInsetResource")
 val statusBarHeight: Int
     get() {
         val resources = applicationContext.resources
@@ -48,6 +50,7 @@ val statusBarHeight: Int
 /**
  * 系统导航栏高度，单位像素。
  */
+@get:SuppressLint("DiscouragedApi", "InternalInsetResource")
 val navBarHeight: Int
     get() {
         val resources = applicationContext.resources

@@ -13,8 +13,6 @@
     <string name="brand">ブランド</string>
     <string name="release_date">発売日</string>
     <string name="duration">再生時間</string>
-    <string name="alert">確認</string>
-    <string name="alert_cancel_all_tags">選択中のすべてのタグを解除します</string>
     <string name="confirm">確認</string>
     <string name="cancel">キャンセル</string>
     <string name="pair_widely">あいまい検索</string>
@@ -41,14 +39,12 @@
     <string name="comment_not_found">コメントはありません</string>
     <string name="hanime_list">新作リスト</string>
     <string name="latest_hanime_list_monthly">%s 裏アニメ新作リスト</string>
-    <string name="preview_page_updating">サイト側で新作プレビューページを更新中です。他の月を確認してください。</string>
     <string name="preview_page_updating_getchu_hint">サイト側で新作プレビューページを更新中です。先に Getchu の新作予告を確認できます。Getchu へのアクセスには VPN が必要な場合があります。</string>
     <string name="latest_hanime_comment">%s 新作コメント欄</string>
     <string name="view_getchu_preview">Getchu 予告を見る</string>
     <string name="getchu_preview">Getchu 新作予告</string>
     <string name="getchu_preview_title">Getchu %s 新作予告</string>
     <string name="getchu_preview_detail">Getchu 新作詳細</string>
-    <string name="getchu_sample_images">サンプル画像</string>
     <string name="getchu_series">シリーズ商品</string>
     <string name="getchu_product_intro">商品紹介</string>
     <string name="getchu_story">ストーリー</string>
@@ -77,7 +73,6 @@
     <string name="check_update_success">新しいバージョン %s があります、タップして確認</string>
     <string name="current_version">現在のバージョン：%s</string>
     <string name="already_latest_update">最新版です！</string>
-    <string name="search_placeholder">今日は何を見ようかな</string>
     <string name="downloading">ダウンロード中</string>
     <string name="downloading_s">ダウンロード中：%1$s</string>
     <string name="downloading_update_percent">更新ダウンロード中 %d%%</string>
@@ -98,7 +93,6 @@
     <string name="update_error_download_network">更新のダウンロードに失敗しました：ネットワーク接続が中断されました（%s）。ネットワークを確認して再試行してください。</string>
     <string name="update_error_download_invalid_payload">更新のダウンロードに失敗しました：取得したファイルが有効なパッケージではありません。しばらくしてから再試行するか、GitHub Releases から手動でダウンロードしてください。</string>
     <string name="downloaded">ダウンロード済み</string>
-    <string name="start_download">ダウンロード開始</string>
     <string name="cancel_download">ダウンロードキャンセル</string>
     <string name="local_playback">ローカル再生</string>
     <string name="download_path">ダウンロード先</string>
@@ -121,7 +115,6 @@
     <string name="prepare_to_delete_s">次の項目を削除しようとしています\n%s</string>
     <string name="playlist_title">タイトル</string>
     <string name="playlist_description">説明</string>
-    <string name="open_playlist_drawer">プレイリスト一覧を開く</string>
     <string name="add_to_playlist">リストに追加</string>
     <string name="player_settings">プレイヤー設定</string>
     <string name="tablet_mode">タブレットモード</string>
@@ -154,7 +147,6 @@
     <string name="h_keyframe_title_prefix">動画コード：</string>
     <string name="manage">管理</string>
     <string name="h_keyframe_manage">キーHフレーム管理</string>
-    <string name="h_keyframe">キーHフレーム</string>
     <string name="when_countdown_remind">カウントダウン通知のタイミング</string>
     <string name="show_prompt_when_countdown">カウントダウン時に表示</string>
     <string name="will_remind_before_d_seconds">%d 秒前からカウントダウン通知</string>
@@ -225,10 +217,8 @@
     <string name="doh_bootstrap_ips_summary">DoH サービス自身の IP をカンマ区切りで入力します。組み込みプリセットは自動設定され、カスタム URL で空欄の場合はシステム解決を使います</string>
     <string name="doh_timeout_seconds">解決タイムアウト（秒）</string>
     <string name="doh_timeout_seconds_summary">DoH リクエストの接続・読み取りタイムアウトです。5〜15秒を推奨します</string>
-    <string name="doh_enabled_summary">有効</string>
     <string name="doh_disabled_summary">無効</string>
     <string name="doh_conflict_message">DoH と組み込み DNS マッピングは同時に有効化できません。どちらかを有効にすると、もう一方は自動で無効になります。</string>
-    <string name="testing">テスト実施中…</string>
     <string name="test_doh">DoHをテスト</string>
     <string name="test_doh_summary">現在のDoH設定でドメインを解決できるか確認します</string>
     <string name="doh_test_result">DoHテスト結果</string>
@@ -238,10 +228,8 @@
     <string name="login_failed">ログイン失敗</string>
     <string name="login_success">ログイン成功</string>
     <string name="account_or_password_wrong">アカウントまたはパスワードが間違っている可能性</string>
-    <string name="login_tips">この方法ではログイン状態は2時間のみ保持… ウェブでのログインを推奨\nただしウェブはHostsを通さないので、VPNが必要かも</string>
     <string name="update">更新</string>
     <string name="use_ci_update_channel">CI更新チャンネルを使用</string>
-    <string name="use_ci_update_channel_summary">CI更新チャンネルは最新変更をより早く取得可能\nただし安定性は保証しない</string>
     <string name="update_popup_interval_days">更新確認ポップアップ間隔（日）</string>
     <string name="update_failed">更新失敗</string>
     <string name="update_download_background">バックグラウンドで更新をダウンロード</string>
@@ -255,11 +243,9 @@
     <string name="which_days">%d日</string>
     <string name="last_update_popup_check_time">最終更新ポップアップ表示時刻：\n%s</string>
     <string name="no_update_popup_yet">最近更新ポップアップは表示されていません</string>
-    <string name="no_description">説明文がまだありません…</string>
     <string name="share_to_others_tip">以下の内容をコピーして共有できます。右上の追加ボタンからデバイスに保存可：\n%s</string>
     <string name="delete_playlist">プレイリスト削除</string>
     <string name="delete_the_playlist">このプレイリストを削除</string>
-    <string name="s_copy_to_clipboard">「%1$s」をクリップボードにコピーしました</string>
     <string name="detect_ha1_related_link_in_clipboard">クリップボードにHanime1関連リンクを検出</string>
     <string name="enter">入る</string>
     <string name="sure_to_logout">ログアウトしますか？</string>
@@ -278,7 +264,6 @@
     <string name="pause_then_long_press">一時停止して長押し</string>
     <string name="long_press_to_add_h_keyframe">長押しで🥵キーHフレーム追加</string>
     <string name="video_deleted_sure_to_delete_item">動画が削除または移動されたようです、この項目を削除しますか？</string>
-    <string name="watching_this_video_now">現在この動画を視聴中です~</string>
     <string name="delete_failed">削除失敗</string>
     <string name="delete_fav">お気に入り解除</string>
     <string name="attention">注意！</string>
@@ -290,7 +275,6 @@
     <string name="default_">デフォルト</string>
     <string name="alternative">代替</string>
     <string name="loading">読み込み中…</string>
-    <string name="slide_to_choose_list">右から左にスワイプしてリスト選択</string>
     <string name="create_new_playlist">新規リスト作成</string>
     <string name="delete_watch_later">後で見る解除</string>
     <string name="long_press_to_cancel_watch_later">長押しで後で見る解除！</string>
@@ -305,7 +289,6 @@
     <string name="watch_history_resume_watch">続けて視聴</string>
     <string name="watch_history_watched_at">視聴日時 %1$s</string>
     <string name="watch_history_released_at">公開日時 %1$s</string>
-    <string name="watch_history_progress_minutes">約 %1$d 分視聴しました</string>
     <string name="online">オンライン</string>
     <string name="popular">人気</string>
     <string name="watch_history_online_help">下に引いて更新し、下端までスクロールすると続きを読み込みます。</string>
@@ -336,15 +319,11 @@
     <string name="send_failed">送信失敗！</string>
     <string name="sending_reply">返信送信中</string>
     <string name="send_success">送信成功！</string>
-    <string name="sending_comment">コメント送信中</string>
     <string name="there_is_a_small_issue">問題が発生しました…</string>
-    <string name="fav_failed">お気に入り登録失敗</string>
-    <string name="cancel_fav">お気に入り解除</string>
     <string name="already_in_queue">キューに存在</string>
     <string name="added_to_download_queue">ダウンロードキューに追加しました</string>
     <string name="s_view_times">%1$s回</string>
     <string name="liked">いいね済み</string>
-    <string name="cannot_download_here">ここからはダウンロードできません！</string>
     <string name="long_press_share_to_copy">共有を長押しでクリップボードにコピー</string>
     <string name="sure_to_download">ダウンロードしますか？</string>
     <string name="go_to_official">公式へ</string>
@@ -358,8 +337,6 @@
     <string name="clear_success">クリア成功</string>
     <string name="clear_failed">クリア中に問題発生</string>
     <string name="cache_empty">現在キャッシュは空、クリア不要</string>
-    <string name="do_not_check_update_again">もう更新確認しない！</string>
-    <string name="take_me_to_download">ダウンロードへ</string>
     <string name="d_speed_times">%.1f倍</string>
     <string name="high">高</string>
     <string name="moderately_high">やや高</string>
@@ -368,8 +345,6 @@
     <string name="low">低</string>
     <string name="very_low">非常に低</string>
     <string name="extremely_low">極低</string>
-    <string name="update_failed_tips">重大な問題があるのに更新失敗と表示されたら、直接Github Releasesで最新版を確認\n\n
-あと、このアプリをわざわざお金で買う人もいるなんて、本当に必要ないよ！</string>
     <string name="shared_h_keyframe_detected_msg">注意：同じコードのキーHフレームを既に持っている場合、上書きされます\n
 \n
 タイトル：%1$s\n
@@ -383,19 +358,16 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
 ・ VPNなしユーザー：hanime1.me + 組み込みHosts有効\n
 ・ 日本ユーザー：hanime1.com\n
 ・ その他地域：hanime1.me + 組み込みHosts無効</string>
-    <string name="do_not_use_japan_ip">日本のIPアドレスは使用しないでください!!!</string>
     <string name="website_blocked_msg">ここに表示されているということは、サイトが強化されたということ。復旧できるかは運次第…</string>
     <string name="not_logged_in_currently">現在未ログイン</string>
     <string name="login_state_expired">ログイン状態の有効期限が切れたため、自動的にログアウトしました。再度ログインしてください。</string>
     <string name="parse_error_msg">このURLの解析は少し異なるかも…</string>
-    <string name="network_unstable_msg">ネットワークが不安定かもしれません、再読み込み！</string>
     <string name="unknown_download_error">不明なダウンロードエラー</string>
     <string name="download_task_completed">ダウンロード完了！</string>
     <string name="download_completed_s">ダウンロード完了：%1$s</string>
     <string name="this_data_exists">ファイルが既に存在！</string>
     <string name="download_failed_s_exists">ダウンロード失敗：%1$s は既に存在</string>
     <string name="download_task_failed">ダウンロード失敗！</string>
-    <string name="download_task_failed_s">ダウンロード失敗：%1$s</string>
     <string name="download_task_failed_s_reason_s">ダウンロード失敗：%1$s\n原因：%2$s</string>
     <string name="download_task_retrying">ダウンロードが一時中断、再試行中</string>
     <string name="download_task_retrying_s_reason_s">ダウンロードが一時中断：%1$s\n原因：%2$s\nまもなく自動で続行します。</string>
@@ -419,16 +391,12 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="switch_player_kernel">プレイヤーカーネル切替</string>
     <string name="switch_to_year">年に切替</string>
     <string name="switch_to_year_month">年月に切替</string>
-    <string name="subscribe_failed">フォロー失敗</string>
-    <string name="subscribe_success">フォロー成功</string>
-    <string name="unsubscribe_success">フォロー解除成功</string>
     <string name="subscribe">フォロー</string>
     <string name="subscribed">フォロー中</string>
     <string name="unsubscribe_artist">この作者のフォロー解除</string>
     <string name="sure_to_unsubscribe">フォロー解除しますか？</string>
     <string name="action_app_open_by_default_settings_not_support">この端末ではアプリからディープリンク設定を開くことはサポートされていません</string>
     <string name="sure_to_redownload">再ダウンロードしますか？</string>
-    <string name="subscription">フォロー</string>
     <string name="analytics_summary">長押しで有効化が開発者にとっての重要性を確認</string>
     <string name="analytics_title">利用状況統計</string>
     <string name="privacy">プライバシー</string>
@@ -438,14 +406,12 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="website_blocked_msg_2">サイトが強化された、別のドメインに変更すると効果があるかも！</string>
     <string name="website_blocked_msg_3">開発者に通知可、ただし急かさないで。サイト強化は開発者とは関係ありません～</string>
     <string name="action_not_support">この端末ではこの操作はサポートされていません</string>
-    <string name="get_file_info_failed">ファイル情報取得失敗</string>
     <string name="download_settings">ダウンロード設定</string>
     <string name="download_count_limit">同時ダウンロード数制限</string>
     <string name="download_speed_limit">ダウンロード速度制限</string>
     <string name="no_limit">制限なし</string>
     <string name="check_video_exists_in_download">解像度 %s のこの動画はダウンロード済みのようです</string>
     <string name="retry">再試行</string>
-    <string name="oss_license">本ソフトウェアで使用しているオープンソースプロジェクト</string>
     <string name="open_source_license">オープンソースライセンス</string>
     <string name="confirm_to_exit">終了確認</string>
     <string name="finished_masturbating">本当に〇えましたか🥵？</string>
@@ -487,14 +453,12 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="crop_avatar">アバターを切り抜く</string>
     <string name="updating">更新中…</string>
     <string name="changing">変更中…</string>
-    <string name="uploading">アップロード中…</string>
     <string name="title_activity_qrcode_scanner">手動クッキー入力</string>
     <string name="scan_for_cookies">手動クッキー入力</string>
     <string name="import_cookies_intro">このインポート方法はcloudflareによるログイン遮断も緩和可能\n1. ウェブ版ログイン後、Cookiesを取得（方法は問わず、携帯/PC可）。\n2. フォーマットは大体図の通り。注意！前後にダブルクォーテーションを含まず、フォーマット後のCookiesシーケンスではないこと。\n「手動インポート」ボタンを使用。\nインポート後ページ再読み込みで未ログイン状態の場合は、Cookiesを確認。</string>
     <string name="cookies_import_desc">ガイド図</string>
     <string name="cookies_import_title">インポート方法</string>
     <string name="cookies_import_dismiss">了解</string>
-    <string name="manual_import_cookies">手動インポート</string>
     <string name="request_camera">QRコードスキャンのためカメラ権限を許可</string>
     <string name="allow_pip_disc">ホーム画面戻った時にピクチャインピクチャモードに入ることを許可 （ピクチャインピクチャ権限要）</string>
     <string name="allow_pip_title">ピクチャインピクチャ許可</string>
@@ -526,7 +490,6 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="not_checked_yet">まだチェックインしていません</string>
     <string name="checkin">チェックイン</string>
     <string name="clear_checkin">クリア</string>
-    <string name="current_streak">連続</string>
     <string name="best_streak">最高連続</string>
     <string name="day_unit">日</string>
     <string name="mon">月</string>
@@ -562,11 +525,9 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="calendar_dialog_title">オナニー予約する？</string>
     <string name="calendar_dialog_message">%1$s に「オナニー予約」のリマインダーを作成しますか？\n時間通りに来てね！🫡</string>
     <string name="calendar_dialog_confirm">リマインダー作成</string>
-    <string name="calendar_dialog_dismiss">いいえ</string>
     <string name="view_checkin">見る</string>
     <string name="dialog_existing_records">チェックイン記録</string>
     <string name="dialog_max_reached">本日の上限に達しました (20回)</string>
-    <string name="checkin_type_label">タイプ</string>
     <string name="checkin_type_masturbation">自慰</string>
     <string name="checkin_type_wet_dream">夢精</string>
     <string name="checkin_type_sex">セックス</string>
@@ -595,20 +556,15 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="streak_title">連続達成</string>
     <string name="egg_god">%1$d回…もう人間の限界を超えた 🫠</string>
     <string name="egg_nice">%1$d回！ナイス～ 😏</string>
-    <string name="egg_streak">%1$d日連続！手が止まらない！🫡</string>
     <string name="egg_singles">独身の日おめでとう…今日はシコらないの？😢</string>
     <string name="widget_description">オナニー記録ウィジェット — ホーム画面からチェックイン</string>
-    <string name="widget_checkin">チェックイン</string>
     <string name="add_widget">ウィジェットを追加</string>
     <string name="widget_not_supported">お使いのランチャーはウィジェットの直接追加に対応していません</string>
-    <string name="widget_pick_hint">「オナニー記録」を見つけてタップして追加</string>
     <string name="widget_today_label">今日</string>
-    <string name="widget_month_label">今月</string>
     <string name="original_comic">原作漫画</string>
     <string name="fault_prompt">エラー発生、開発者に連絡！</string>
     <string name="read_download_dir_title">ダウンロードディレクトリ読み込み</string>
     <string name="read_download_dir_message">現在のダウンロードディレクトリ内のダウンロード済みファイルを読み込み、リスト復元。\n各動画ユニットのファイル構造：\n[動画コード]/xxx.mp4、xxx.png、info.json</string>
-    <string name="read_success">読み込み成功</string>
     <string name="reading_download_dir">読み込み中…</string>
     <string name="import_result_title">読み込み完了</string>
     <string name="import_success_count">%d個正常に読み込み</string>
@@ -618,7 +574,6 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="import_fail_reason_exception">読み取り・解析に失敗</string>
     <string name="import_fail_suggestion">対象フォルダにinfo.jsonと動画ファイル（xxx.mp4、xxx.png）が含まれているか確認してください。ファイルの欠落や破損は読み込み失敗の原因になります。</string>
     <string name="select_custom_directory">まずカスタムディレクトリを選択</string>
-    <string name="some_videos_moved_or_deleted">一部の動画が移動または削除されたようです、確認。</string>
     <string name="directory_saved">ディレクトリ保存済:%s</string>
     <string name="no_directory_selected">ディレクトリ未選択、変更なし</string>
     <string name="select_download_folder">ダウンロードフォルダ選択</string>
@@ -626,8 +581,6 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="restore_default_path">デフォルト保存先に復元</string>
     <string name="restore_default_message">アプリ内部ストレージに復元しますか？\n\n● 現在のダウンロードファイルは移動されない\n● 以降のダウンロードはアプリ内部に保存\n● アプリ削除でファイルも削除\n● 外部パス選択後、ファイル移行機能で移動可</string>
     <string name="default_path_restored">デフォルト保存先復元済</string>
-    <string name="already_default_path">現在デフォルトパス使用中</string>
-    <string name="already_default_message">アプリ内部ストレージ使用中。\n\n変更希望の場合は、外部ストレージパスを指定してファイル管理を改善。</string>
     <string name="understood">了解</string>
     <string name="confirm_import">エクスポートしますか？</string>
     <string name="import_warning">エクスポート中はAPPを閉じないで！ファイル破損の原因に！</string>
@@ -641,8 +594,6 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="pref_export_downloads_summary">プライベートダウンロードディレクトリ内の全ダウンロード項目をカスタムディレクトリにエクスポート</string>
     <string name="save_failed_title">保存失敗</string>
     <string name="save_failed_message">外部ストレージ権限或其他原因により、動画情報ファイル保存失敗。\n自動でアプリプライベートパスに切替。\nアプリ再インストールの場合はDownload/Han1meViewerディレクトリ削除後、設定でダウンロード場所切替再試行。否则プライベートディレクトリ使用継続。アプリ削除或データクリア前にはファイル移出必須！</string>
-    <string name="download_category">ダウンロード設定</string>
-    <string name="download_category_summary">タップでパス設定、長押しでデフォルトパス復元</string>
     <string name="whats_wrong_with_him">彼はどうかしましたか？</string>
     <string name="submit">送信</string>
     <string name="report_reason_hint">まず報告理由を選択</string>
@@ -671,15 +622,12 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="sort_comment">コメント並び順</string>
     <string name="theme">テーマと外観</string>
     <string name="dark_theme">ダークテーマ</string>
-    <string name="dynamic_color_title">ダイナミックカラー</string>
-    <string name="dynamic_color_summary">有効でシステムテーマカラーに追随、Android 12以上のみ対応</string>
     <string name="follow_system">システムに追随</string>
     <string name="always_off">常にオフ</string>
     <string name="always_on">常にオン</string>
     <string name="category_instant_noodle">短編アニメ</string>
     <string name="category_motion_anime">動くイラスト</string>
     <string name="category_3d_animation">3D作品</string>
-    <string name="category_doujin">同人作品</string>
     <string name="category_cosplay">コスプレ</string>
     <string name="new_anime_trailers">新作予告編</string>
     <string name="permission_error">権限エラー、フォルダ再指定を試みて！</string>
@@ -705,7 +653,6 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="mpv_advanced_settings">MPV 再生エンジン設定</string>
     <string name="mpv_settings_disabled_summary">MPVが再生エンジンとして選択されている場合のみ設定可能</string>
     <string name="mpv_advanced_settings_summary">画質、パフォーマンス、ネットワークキャッシュなどの詳細オプションを設定</string>
-    <string name="player_settings_base">基本再生設定</string>
     <string name="player_settings_quality_performance">画質とパフォーマンス</string>
     <string name="player_settings_network_cache">ネットワークとキャッシュ</string>
     <string name="mpv_profile">レンダリング品質レベル (profile)</string>
@@ -730,7 +677,6 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="custom_parameters">カスタムパラメータ</string>
     <string name="custom_parameters_summary">プレイヤー起動パラメータ/設定をkey,parameters形式で設定、セミコロンで区切ります</string>
     <string name="advanced">詳細設定</string>
-    <string name="advanced_summary">再生安定性に影響する可能性があります</string>
     <string name="custom_parameters_example">例: vo,gpu;profile,gpu-hq;framedrop,no</string>
     <string name="custom_parameters_title">注意：プレイヤープラットフォームが異なるため、一部パラメータが有効にならない場合があります</string>
     <string name="decoding_sw">ソフトウェアデコード (SW: no)</string>
@@ -754,25 +700,17 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="horizontal_card_count_dialog_hint">画面幅ごとに、横スクロール一覧で一度に見えるカード数を設定します</string>
     <string name="horizontal_card_count_current_width_hint">現在のコンテナ幅の目安：約 %1$ddp</string>
     <string name="horizontal_card_count_current_bucket_hint">現在の適用範囲：%1$s = %2$.1f 枚</string>
-    <string name="video_group_error">動画グループ取得エラー：</string>
-    <string name="video_group_empty">動画グループが空です</string>
-    <string name="default_group_rename_not_allowed">デフォルトグループ（%s）は名前変更できません！</string>
-    <string name="default_group_delete_not_allowed">デフォルトグループ（%s）は削除できません！</string>
     <string name="new_group_name">新しいグループ名</string>
     <string name="rename_group">グループ名を変更</string>
     <string name="current_group_name">現在のグループ名：%s</string>
     <string name="group_name_empty">グループ名を入力してください</string>
-    <string name="group_name_unchanged">名前は変更されていません</string>
     <string name="group_renamed">グループ名を%sに変更しました</string>
     <string name="modify_video_group">この動画のグループを変更：%s</string>
-    <string name="group_modify_success">変更成功！%1$s，ID:%2$s</string>
-    <string name="unknown_group_id">エラー：不明なグループID！</string>
     <string name="unknown_error">不明なエラー</string>
     <string name="ungrouped">未グループ化</string>
     <string name="create_new_group">新規グループ作成</string>
     <string name="create_group_success">作成成功！%s</string>
     <string name="download_group_script_traditional">繁体字</string>
-    <string name="coming_soon">近日公開</string>
     <string name="disable_mobile_data_warning">モバイルデータ警告を無効化</string>
     <string name="disable_mobile_data_warning_summary">有効にすると、モバイルデータで再生時の警告が表示されません</string>
     <string name="mpv_socks5_warning">注意：MPV再生エンジンはSOCKSプロキシに対応しておらず、再生が失敗する可能性があります</string>
@@ -787,7 +725,6 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="ai_decensored">AI無修正</string>
     <string name="china_av">中国AV</string>
     <string name="chinese_amateur">中国の素人</string>
-    <string name="view_count">視聴回数</string>
     <string name="delete_group">グループ削除</string>
     <string name="delete_group_confirm">グループ「%1$s」を削除してもよろしいですか？このグループの動画はデフォルトグループに移動されます。</string>
     <string name="ai_generated">AI生成</string>
@@ -796,18 +733,12 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="webview_version_unknown">\n⚠️ WebViewバージョンを識別できません</string>
     <string name="version_check_failed">\n⚠️ バージョンチェック失敗</string>
     <string name="switch_site">サイト切替</string>
-    <string name="current_site">現在のサイト：</string>
     <string name="confirm_switch_site">サイトを切り替えますか？</string>
-    <string name="webview_exception">システムWebViewコンポーネントが異常です。Cloudflare認証ページの読み込みに失敗しました！</string>
     <string name="disable_predictive_back_title">予測型バックアニメーションを無効化</string>
-    <string name="disable_predictive_back_summary">有効にすると、バックジェスチャーは指を離した時のみ反応し、動画視聴中の誤操作による再生停止を防ぎます</string>
     <string name="play_trailer">予告編を再生</string>
     <string name="load_complete">読み込み完了！</string>
     <string name="search_video_hint">動画を検索…</string>
     <string name="recent_searches">最近の検索</string>
-    <string name="search_suggestions">検索候補</string>
-    <string name="no_matching_search_history">一致する検索履歴はありません</string>
-    <string name="search_enter_keywords">キーワードを入力して動画を検索</string>
     <string name="search_no_results">検索結果が見つかりません</string>
     <string name="search_load_failed_with_reason">読み込み失敗：%1$s</string>
     <string name="load_failed_with_reason">読み込み失敗：%1$s</string>
@@ -885,7 +816,6 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="cloudflare_ip_block_warning">お客様のIPアドレスが日本に所在しているか、CloudFlareのブラックリストに登録されている可能性があります。これはアプリ自体の問題ではありません。CloudFlareはセキュリティ上の理由から、定期的に特定の高リスクIPアドレスをブロックします。別のVPNノードに切り替えるか、ネットワーク環境を変更してからもう一度お試しください。</string>
     <string name="cloudflare_network_mismatch">現在のネットワーク環境では検証を通過できません。内蔵hostsを利用してアクセスしている場合、CloudFlare検証ページはカスタムhostsによる名前解決をサポートしていないため、検証ノードとアプリ本体が異なるリージョンに解決され、アクセス環境が統一されず検証に失敗する可能性があります。この問題は現時点では解決できません。より「クリーンな」IPまたはネットワーク環境に切り替えてから再試行してください。</string>
     <string name="ssl_handshake_error">SSLセキュア接続に失敗しました。システム時刻の異常、ネットワークの傍受、または証明書検証の失敗が考えられます。時刻設定を確認し、別のネットワーク環境に切り替えてから再試行してください。</string>
-    <string name="parse_page_failed">ウェブページの解析に失敗しました。ページ構造が変更された可能性があります。開発者に連絡して対応を依頼するか、一時的にウェブ版をご利用ください。</string>
     <string name="home_error_dns">サーバーアドレスを解決できません。ネットワーク接続または DNS 設定を確認してから再試行してください。</string>
     <string name="home_error_timeout">接続がタイムアウトしました。現在のネットワークが遅いか、サーバーが応答していない可能性があります。しばらくしてから再試行してください。</string>
     <string name="home_error_ssl">安全な接続に失敗しました。システム時刻が正しいか確認するか、ネットワークを切り替えて再試行してください。</string>

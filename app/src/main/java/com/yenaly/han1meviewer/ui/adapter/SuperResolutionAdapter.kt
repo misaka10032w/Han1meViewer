@@ -1,6 +1,6 @@
 package com.yenaly.han1meviewer.ui.adapter
 
-import android.R
+import android.R as AndroidR
 import android.content.Context
 import android.graphics.Color
 import android.view.Gravity
@@ -33,9 +33,9 @@ class SuperResolutionAdapter(private var currentIndex: Int, items: List<String>)
     }
 
     override fun onBindViewHolder(holder: QuickViewHolder, position: Int, item: String?) {
-        holder.setText(R.id.text1, item)
+        holder.setText(AndroidR.id.text1, item)
         holder.setTextColor(
-            R.id.text1,
+            AndroidR.id.text1,
             if (currentIndex == holder.bindingAdapterPosition) colorPrimary
             else "#ffffff".toColorInt()
         )
@@ -46,8 +46,8 @@ class SuperResolutionAdapter(private var currentIndex: Int, items: List<String>)
         parent: ViewGroup,
         viewType: Int,
     ): QuickViewHolder {
-        return QuickViewHolder(R.layout.simple_list_item_1, parent).also { viewHolder ->
-            viewHolder.getView<TextView>(R.id.text1).gravity = Gravity.CENTER
+        return QuickViewHolder(AndroidR.layout.simple_list_item_1, parent).also { viewHolder ->
+            viewHolder.getView<TextView>(AndroidR.id.text1).gravity = Gravity.CENTER
         }
     }
 }

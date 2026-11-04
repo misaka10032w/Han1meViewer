@@ -94,6 +94,12 @@ android {
         buildConfig = true
         compose  =  true
     }
+    bundle {
+        language {
+            // 应用内切换语言需要打包全部语言资源
+            enableSplit = false
+        }
+    }
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_21

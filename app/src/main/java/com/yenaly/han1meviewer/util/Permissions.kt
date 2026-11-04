@@ -66,24 +66,21 @@ private suspend fun Context.showPostNotificationPermissionDialog(): Boolean =
  * 请求安装权限
  */
 suspend fun Context.requestInstallPermission(): Boolean {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        if (packageManager.canRequestPackageInstalls()) return true
-        val granted = requestPermission(Manifest.permission.REQUEST_INSTALL_PACKAGES)
-        if (!granted) {
-            val goToSettings = showInstallPermissionDialog()
-            if (!goToSettings) return false
-            awaitActivityResult(
-                ActivityResultContracts.StartActivityForResult(),
-                Intent(
-                    Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                    "package:$packageName".toUri(),
-                ),
-            )
-            requestPermission(Manifest.permission.REQUEST_INSTALL_PACKAGES)
-        }
-        return packageManager.canRequestPackageInstalls()
+    if (packageManager.canRequestPackageInstalls()) return true
+    val granted = requestPermission(Manifest.permission.REQUEST_INSTALL_PACKAGES)
+    if (!granted) {
+        val goToSettings = showInstallPermissionDialog()
+        if (!goToSettings) return false
+        awaitActivityResult(
+            ActivityResultContracts.StartActivityForResult(),
+            Intent(
+                Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                "package:$packageName".toUri(),
+            ),
+        )
+        requestPermission(Manifest.permission.REQUEST_INSTALL_PACKAGES)
     }
-    return true
+    return packageManager.canRequestPackageInstalls()
 }
 
 /**
