@@ -65,7 +65,6 @@ import com.yenaly.han1meviewer.util.findActivityOrNull
 import com.yenaly.han1meviewer.util.navBarHeight
 import com.yenaly.han1meviewer.util.statusBarHeight
 import com.yenaly.han1meviewer.util.unsafeLazy
-import com.yenaly.han1meviewer.util.removeItself
 import java.util.Timer
 import kotlin.math.absoluteValue
 
@@ -501,7 +500,7 @@ class HJzvdStd @JvmOverloads constructor(
         })
         titleTextView.isInvisible = true
         if (bottomProgressBar != null && !showBottomProgress) {
-            bottomProgressBar.removeItself()
+            bottomProgressBar?.let { bar -> (bar.parent as? ViewGroup)?.removeView(bar) }
             bottomProgressBar = ProgressBar(context)
         }
         screenBrightnessBK = try {

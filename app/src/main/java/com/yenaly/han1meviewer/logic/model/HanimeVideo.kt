@@ -1,7 +1,6 @@
 package com.yenaly.han1meviewer.logic.model
 
 import com.yenaly.han1meviewer.ResolutionLinkMap
-import com.yenaly.han1meviewer.util.mapToArray
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -100,7 +99,7 @@ data class HanimeVideo(
             var isSelected: Boolean,
         )
 
-        val titleArray get() = myListInfo.mapToArray(MyListInfo::title)
+        val titleArray get() = Array(myListInfo.size) { myListInfo[it].title }
         val isSelectedArray get() = myListInfo.map(MyListInfo::isSelected).toBooleanArray()
     }
 

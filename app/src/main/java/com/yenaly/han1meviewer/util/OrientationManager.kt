@@ -12,6 +12,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 
+/**
+ * 监听设备方向变化，并提供屏幕方向锁定/解锁能力。
+ *
+ * 实现了 [LifecycleEventObserver]，可在页面 ON_START / ON_STOP 时自动开启或关闭监听。
+ */
 class OrientationManager(
     private val context: Context,
     private var orientationChangeListener: OrientationChangeListener? = null
@@ -29,6 +34,13 @@ class OrientationManager(
 
     private var lastLockedOrientation: Int? = null
 
+    /**
+     * 锁定 Activity 的屏幕方向。
+     *
+     * @param activity 目标 Activity
+     * @param orientation 目标方向
+     * @param delayMillis 延迟执行时间，0 表示立即执行
+     */
     fun lockOrientation(activity: Activity, orientation: ScreenOrientation, delayMillis: Long = 0L) {
         val requestedOrientation = when (orientation) {
             ScreenOrientation.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -51,13 +63,22 @@ class OrientationManager(
         }
     }
 
+    /**
+     * 解除屏幕方向锁定，恢复系统默认行为。
+     */
     fun unlockOrientation(activity: Activity) {
         lastLockedOrientation = null
         activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
     }
 
+    /**
+     * 当前是否处于方向锁定状态。
+     */
     fun isOrientationLocked(): Boolean = lastLockedOrientation != null
 
+    /**
+     * 获取最近一次识别到的屏幕方向。
+     */
     fun getCurrentScreenOrientation(): ScreenOrientation = screenOrientation
 
     override fun onOrientationChanged(orientation: Int) {
@@ -84,6 +105,9 @@ class OrientationManager(
         orientationChangeListener?.onOrientationChanged(screenOrientation)
     }
 
+    /**
+     * 屏幕方向变化回调。
+     */
     fun interface OrientationChangeListener {
         fun onOrientationChanged(orientation: ScreenOrientation)
     }

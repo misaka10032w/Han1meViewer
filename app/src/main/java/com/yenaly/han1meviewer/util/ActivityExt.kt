@@ -2,52 +2,72 @@ package com.yenaly.han1meviewer.util
 
 import android.app.Activity
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
+import android.content.pm.PackageManager
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlin.system.exitProcess
 
-inline fun <reified T : Activity> Context.findActivity(): T {
-    return findActivityOrNull() ?: error("No activity of type ${T::class.java.simpleName} found")
-}
+/**
+ * 进程内 Activity 管理，用于重启应用以及获取当前 Activity。
+ */
+object ActivityManager {
 
-inline fun <reified T : Activity> Context.findActivityOrNull(): T? {
-    var context = this
-    while (context is ContextWrapper) {
-        if (context is T) {
-            return context
+    /** 当前处于前台的 Activity，由 [com.yenaly.han1meviewer.base.BaseApplication] 维护。 */
+    var currentActivity: WeakReference<Activity?> = WeakReference(null)
+        internal set
+
+    /**
+     * 重启应用。
+     *
+     * @param killProcess 是否在拉起新实例后结束当前进程
+     */
+    fun restart(killProcess: Boolean = true) {
+        val intent = applicationContext.packageManager
+            .getLaunchIntentForPackage(applicationContext.packageName)
+        if (intent != null) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            applicationContext.startActivity(intent)
         }
-        context = context.baseContext
+        if (killProcess) exitProcess(0)
     }
-    return null
 }
 
-fun Context.requireComponentActivity(): ComponentActivity {
+/**
+ * 获取当前 Context 所在的 [ComponentActivity]，必要时回退到 [ActivityManager.currentActivity]。
+ */
+private fun Context.requireComponentActivity(): ComponentActivity {
     return (this as? ComponentActivity ?: findActivityOrNull<ComponentActivity>())
         ?: ActivityManager.currentActivity.get() as? ComponentActivity
         ?: error("No ComponentActivity found")
 }
 
-private val atomicInteger = AtomicInteger()
+private val requestCode = AtomicInteger()
 
+/**
+ * 以挂起方式等待 ActivityResult 返回。
+ *
+ * 注意：内部通过 [ActivityManager.currentActivity] 回退获取宿主 Activity，
+ * 因此调用时请确保当前有可用的 Activity。
+ */
 suspend fun <I, O> Context.awaitActivityResult(
     contract: ActivityResultContract<I, O>,
     input: I,
 ): O {
-    val key = "activity_rq#${atomicInteger.getAndIncrement()}"
+    val key = "activity_rq#${requestCode.getAndIncrement()}"
 
     val activity = this.requireComponentActivity()
     val lifecycle = activity.lifecycle
@@ -79,20 +99,13 @@ suspend fun <I, O> Context.awaitActivityResult(
     }
 }
 
+/**
+ * 请求指定权限，已授权时直接返回 true。
+ */
 suspend fun Context.requestPermission(key: String): Boolean {
     if (ContextCompat.checkSelfPermission(
             this, key
-        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) == PackageManager.PERMISSION_GRANTED
     ) return true
     return awaitActivityResult(ActivityResultContracts.RequestPermission(), key)
-}
-
-inline fun <reified T : Activity> Activity.startActivity() {
-    startActivity(Intent(this, T::class.java))
-}
-
-infix fun Context.browse(uri: String) {
-    val intent = Intent(Intent.ACTION_VIEW, uri.toUri())
-    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-    startActivity(intent)
 }

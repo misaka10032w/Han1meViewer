@@ -21,7 +21,7 @@ import com.yenaly.han1meviewer.util.AnimeShaders
 import com.yenaly.han1meviewer.util.ThemeUtils
 import com.developer.crashx.config.CrashConfig
 import com.yenaly.han1meviewer.base.BaseApplication
-import com.yenaly.han1meviewer.util.LanguageHelper
+import com.yenaly.han1meviewer.base.AppLocale
 import `is`.xyz.mpv.MPVLib
 import java.net.ProxySelector
 
@@ -101,7 +101,7 @@ class HanimeApplication : BaseApplication() {
             setCustomKeys {
                 key(
                     FirebaseConstants.APP_LANGUAGE,
-                    LanguageHelper.preferredLanguage.toLanguageTag()
+                    AppLocale.preferredLanguage.toLanguageTag()
                 )
                 key(
                     FirebaseConstants.VERSION_SOURCE,

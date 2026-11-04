@@ -24,7 +24,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.util.logScreenViewEvent
-import com.yenaly.han1meviewer.util.findActivity
+import com.yenaly.han1meviewer.util.findActivityOrNull
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,7 +35,8 @@ fun SettingsScaffold(
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
-    val activity = context.findActivity<MainActivity>()
+    val activity = context.findActivityOrNull<MainActivity>()
+        ?: error("No MainActivity found")
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = SettingsDestinationSpec.fromDestination(backStackEntry?.destination)
         ?: SettingsDestinationSpec.Home

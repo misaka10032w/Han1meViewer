@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.app.ShareCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -83,8 +84,6 @@ import com.yenaly.han1meviewer.util.OrientationManager
 import com.yenaly.han1meviewer.util.browse
 import com.yenaly.han1meviewer.util.copyToClipboard
 import com.yenaly.han1meviewer.util.dp
-import com.yenaly.han1meviewer.util.shareText
-import com.yenaly.han1meviewer.util.startActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -336,7 +335,13 @@ fun VideoRouteHostScreen(
                 onRequestOpenDownloadPermissionSettings = actions::openDownloadPermissionSettings,
                 onOpenWebPage = actions::openVideoWebPage,
                 onOpenOriginalComic = actions::openOriginalComic,
-                onOpenShare = { content, title -> shareText(content, title) },
+                onOpenShare = { content, title ->
+                    ShareCompat.IntentBuilder(activity)
+                        .setType("text/plain")
+                        .setText(content)
+                        .setChooserTitle(title)
+                        .startChooser()
+                },
                 onCopyText = {
                     it.copyToClipboard()
                     GlobalToasts.show(activity.getString(R.string.copy_to_clipboard), level = GlobalToasts.ToastLevel.INFO)
@@ -472,7 +477,7 @@ fun VideoRouteHostScreen(
             if (activity.resources.getBoolean(R.bool.isTablet)) {
                 activity.navController.popBackStack()
             }
-            activity.startActivity<MainActivity>()
+            activity.startActivity(Intent(activity, MainActivity::class.java))
         }
         player.onKeyframeClickListener = { view ->
             player.clickHKeyframe(view)
