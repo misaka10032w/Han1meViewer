@@ -33,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -132,6 +133,16 @@ fun HomeSettingsRouteScreen(
     var showLauncherPicker by remember { mutableStateOf(false) }
     var showApplyDeepLinksDialog by remember { mutableStateOf(false) }
     var pendingImportUri by remember { mutableStateOf<android.net.Uri?>(null) }
+
+    // 弹窗的选中回调会先更新 activeDialog 关闭弹窗；延迟两帧再重建 Activity，
+    // 避免 Activity.recreate() 阻塞主线程导致弹窗停留。
+    fun recreateAfterDialogDismiss() {
+        coroutineScope.launch {
+            withFrameNanos { }
+            withFrameNanos { }
+            activity.recreate()
+        }
+    }
 
     val backupExportSuccess = stringResource(R.string.backup_export_success)
     val backupExportFailed = stringResource(R.string.backup_export_failed)
@@ -247,7 +258,7 @@ fun HomeSettingsRouteScreen(
             if (value != Preferences.useDarkMode) {
                 saveString(HOME_USE_DARK_MODE, value)
                 ThemeUtils.applyDarkModeFromPreferences(context)
-                activity.recreate()
+                recreateAfterDialogDismiss()
             }
         },
         onAllowPipModeChange = { enabled ->
@@ -322,13 +333,13 @@ fun HomeSettingsRouteScreen(
         onThemeColorChange = { key ->
             saveString(HOME_THEME_COLOR, key)
             refreshKey++
-            activity.recreate()
+            recreateAfterDialogDismiss()
         },
         onPureBlackDarkModeChange = { enabled ->
             if (enabled != Preferences.pureBlackDarkMode) {
                 saveBoolean(HOME_PURE_BLACK_DARK_MODE, enabled)
                 refreshKey++
-                activity.recreate()
+                recreateAfterDialogDismiss()
             }
         },
         onHomeCategoryPreferencesChange = { order, hiddenKeys ->
@@ -369,7 +380,7 @@ fun HomeSettingsRouteScreen(
             if (old != value) {
                 Preferences.preferenceSp.edit { putString(HOME_APP_LANGUAGE, value) }
                 refreshKey++
-                activity.recreate()
+                recreateAfterDialogDismiss()
             }
         },
         onCheckUpdate = {
