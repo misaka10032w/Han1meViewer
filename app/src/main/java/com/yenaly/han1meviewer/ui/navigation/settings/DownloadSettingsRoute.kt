@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -54,6 +55,7 @@ fun DownloadSettingsRouteScreen(
     activity: MainActivity,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     var refreshKey by remember { mutableIntStateOf(0) }
     var showDownloadPathDialog by remember { mutableStateOf(false) }
     var showRestoreDefaultConfirm by remember { mutableStateOf(false) }
@@ -78,7 +80,7 @@ fun DownloadSettingsRouteScreen(
         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
             SafFileManager.persistUriPermission(context, result.data)
             Preferences.preferenceSp.edit { putBoolean(DOWNLOAD_USE_PRIVATE_STORAGE, false) }
-            GlobalToasts.show(context.getString(R.string.directory_saved, result.data.toString()), level = GlobalToasts.ToastLevel.SUCCESS)
+            GlobalToasts.show(resources.getString(R.string.directory_saved, result.data.toString()), level = GlobalToasts.ToastLevel.SUCCESS)
             refreshKey++
         } else {
             GlobalToasts.show(noDirectorySelected, level = GlobalToasts.ToastLevel.INFO)
@@ -237,7 +239,7 @@ fun DownloadSettingsRouteScreen(
                         importTotal = total
                         if (migrated == total) {
                             showImportProgress = false
-                            GlobalToasts.show(context.getString(R.string.import_complete, total), level = GlobalToasts.ToastLevel.SUCCESS)
+                            GlobalToasts.show(resources.getString(R.string.import_complete, total), level = GlobalToasts.ToastLevel.SUCCESS)
                             refreshKey++
                         }
                     }

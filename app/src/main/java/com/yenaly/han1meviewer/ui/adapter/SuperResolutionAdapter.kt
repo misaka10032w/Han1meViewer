@@ -10,6 +10,7 @@ import com.chad.library.adapter4.BaseQuickAdapter
 import com.chad.library.adapter4.viewholder.QuickViewHolder
 import androidx.core.graphics.toColorInt
 import com.google.android.material.color.MaterialColors
+import com.yenaly.han1meviewer.ui.theme.AppThemeState
 
 /**
  * @project Han1meViewer
@@ -20,11 +21,12 @@ class SuperResolutionAdapter(private var currentIndex: Int, items: List<String>)
     items.toMutableList()
 ) {
     private val colorPrimary: Int
-        get() = MaterialColors.getColor(
-            context,
-            androidx.appcompat.R.attr.colorPrimary,
-            Color.BLACK
-        )
+        get() = AppThemeState.primaryColorArgb.takeIf { it != 0 }
+            ?: MaterialColors.getColor(
+                context,
+                androidx.appcompat.R.attr.colorPrimary,
+                Color.BLACK
+            )
 
     init {
         isStateViewEnable = true

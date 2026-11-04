@@ -17,6 +17,7 @@ import com.google.firebase.remoteconfig.remoteConfigSettings
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.theme.ThemeColorPreset
 import com.yenaly.han1meviewer.util.AnimeShaders
 import com.yenaly.han1meviewer.util.ThemeUtils
 import com.developer.crashx.config.CrashConfig
@@ -72,7 +73,7 @@ class HanimeApplication : BaseApplication() {
         if (!isMainProcess()) return
         initCrashX()
         ThemeUtils.applyDarkModeFromPreferences(this)
-        if (Preferences.useDynamicColor){
+        if (ThemeColorPreset.fromKey(Preferences.themeColor) == ThemeColorPreset.SYSTEM) {
             DynamicColors.applyToActivitiesIfAvailable(this)
         }
         ProxySelector.setDefault(HProxySelector())

@@ -24,7 +24,6 @@ data class HomeSettingsUiState(
     val showExitConfirm: Boolean,
     val disableComments: Boolean,
     val collapseDownloadedGroup: Boolean,
-    val useDynamicColor: Boolean,
     val useCIUpdateChannel: Boolean,
     val useAnalytics: Boolean,
     val useLockScreen: Boolean,

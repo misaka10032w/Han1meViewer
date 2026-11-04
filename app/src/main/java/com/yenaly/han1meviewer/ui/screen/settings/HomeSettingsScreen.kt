@@ -596,7 +596,6 @@ private fun HomeSettingsScreenPreview() {
                 showExitConfirm = true,
                 disableComments = false,
                 collapseDownloadedGroup = false,
-                useDynamicColor = true,
                 useCIUpdateChannel = false,
                 useAnalytics = true,
                 useLockScreen = false,

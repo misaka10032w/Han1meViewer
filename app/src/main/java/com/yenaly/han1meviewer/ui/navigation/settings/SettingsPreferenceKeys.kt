@@ -12,7 +12,6 @@ object SettingsPreferenceKeys {
     const val USE_ANALYTICS = "use_analytics"
     const val FAKE_LAUNCHER_ICON = "pref_fake_launcher_icon"
     const val USE_DARK_MODE = "use_dark_mode"
-    const val USE_DYNAMIC_COLOR = "use_dynamic_color"
     const val THEME_COLOR = "theme_color"
     const val PURE_BLACK_DARK_MODE = "pure_black_dark_mode"
     const val ALLOW_RESUME_PLAYBACK = "allow_resume_playback"
