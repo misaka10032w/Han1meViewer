@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -35,6 +36,7 @@ import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.screen.settings.DelayResultUi
 import com.yenaly.han1meviewer.ui.screen.settings.DohTestResultUi
+import com.yenaly.han1meviewer.ui.screen.runAfterUiSettles
 import com.yenaly.han1meviewer.ui.screen.settings.NetworkSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.NetworkSettingsUiState
 import com.yenaly.han1meviewer.util.ActivityManager
@@ -69,6 +71,7 @@ private enum class DohConflictTarget {
 @Composable
 fun NetworkSettingsRouteScreen() {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     var refreshKey by remember { mutableIntStateOf(0) }
     var currentHost by remember { mutableStateOf(Preferences.baseUrl) }
     var isDelayTesting by remember { mutableStateOf(false) }
@@ -361,6 +364,7 @@ fun NetworkSettingsRouteScreen() {
         dismissText = stringResource(R.string.cancel),
         cancelable = false,
         onConfirm = {
+            showDomainRestartConfirm = false
             Preferences.preferenceSp.edit(commit = true) {
                 if (pendingDomainValue.isNotEmpty()) {
                     putString(NETWORK_DOMAIN_NAME, pendingDomainValue)
@@ -371,7 +375,9 @@ fun NetworkSettingsRouteScreen() {
                 putBoolean(NETWORK_APPEND_CUSTOM_MIRROR_PATH, pendingAppendCustomMirrorPath)
             }
             logout()
-            ActivityManager.restart(killProcess = true)
+            coroutineScope.runAfterUiSettles {
+                ActivityManager.restart(killProcess = true)
+            }
         },
         onDismiss = {
             pendingDomainValue = ""
@@ -402,7 +408,12 @@ fun NetworkSettingsRouteScreen() {
         confirmText = stringResource(R.string.confirm),
         dismissText = stringResource(R.string.cancel),
         cancelable = false,
-        onConfirm = { ActivityManager.restart(killProcess = true) },
+        onConfirm = {
+            showHostsRestartConfirm = false
+            coroutineScope.runAfterUiSettles {
+                ActivityManager.restart(killProcess = true)
+            }
+        },
         onDismiss = { showHostsRestartConfirm = false },
     )
 

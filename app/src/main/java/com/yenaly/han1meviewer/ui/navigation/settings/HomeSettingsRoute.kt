@@ -33,7 +33,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -68,6 +67,7 @@ import com.yenaly.han1meviewer.ui.screen.home.homepage.defaultHomeCategoryPrefer
 import com.yenaly.han1meviewer.ui.screen.home.homepage.hiddenHomeCategoryKeys
 import com.yenaly.han1meviewer.ui.screen.home.homepage.homeCategoryOrder
 import com.yenaly.han1meviewer.ui.screen.home.homepage.saveHomeCategoryPreferences
+import com.yenaly.han1meviewer.ui.screen.runAfterUiSettles
 import com.yenaly.han1meviewer.ui.theme.ThemeColorPreset
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.util.ThemeUtils
@@ -137,11 +137,7 @@ fun HomeSettingsRouteScreen(
     // 弹窗的选中回调会先更新 activeDialog 关闭弹窗；延迟两帧再重建 Activity，
     // 避免 Activity.recreate() 阻塞主线程导致弹窗停留。
     fun recreateAfterDialogDismiss() {
-        coroutineScope.launch {
-            withFrameNanos { }
-            withFrameNanos { }
-            activity.recreate()
-        }
+        coroutineScope.runAfterUiSettles { activity.recreate() }
     }
 
     val backupExportSuccess = stringResource(R.string.backup_export_success)
@@ -257,8 +253,10 @@ fun HomeSettingsRouteScreen(
         onDarkModeChange = { value ->
             if (value != Preferences.useDarkMode) {
                 saveString(HOME_USE_DARK_MODE, value)
-                ThemeUtils.applyDarkModeFromPreferences(context)
-                recreateAfterDialogDismiss()
+                // AppCompatDelegate 会自行重建 Activity；先等待弹窗关闭再切换
+                coroutineScope.runAfterUiSettles {
+                    ThemeUtils.applyDarkModeFromPreferences(context)
+                }
             }
         },
         onAllowPipModeChange = { enabled ->
@@ -516,7 +514,10 @@ fun HomeSettingsRouteScreen(
         dismissText = stringResource(R.string.cancel),
         cancelable = false,
         onConfirm = {
-            ActivityManager.restart(killProcess = true)
+            showRestartConfirmDialog = false
+            coroutineScope.runAfterUiSettles {
+                ActivityManager.restart(killProcess = true)
+            }
         },
         onDismiss = { showRestartConfirmDialog = false },
     )

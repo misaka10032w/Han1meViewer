@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
@@ -25,6 +26,8 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.theme.SpacingLarge
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
 import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun RetryableImage(
@@ -115,4 +118,18 @@ fun rememberVideoGridColumns(): Int {
 fun rememberRandomLoadingHint(): String {
     val placeholders = stringArrayResource(R.array.loading_hints)
     return remember(placeholders) { placeholders.random() }
+}
+
+/**
+ * 等待界面完成两次帧刷新后执行 [block]。
+ *
+ * 适用于先关闭弹窗、再重建 Activity 或重启应用的场景，
+ * 避免阻塞主线程导致弹窗停留在屏幕上。
+ */
+fun CoroutineScope.runAfterUiSettles(block: () -> Unit) {
+    launch {
+        withFrameNanos { }
+        withFrameNanos { }
+        block()
+    }
 }
