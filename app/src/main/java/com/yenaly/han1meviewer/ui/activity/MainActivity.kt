@@ -21,6 +21,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -29,9 +32,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.preference.PreferenceManager
-import com.google.android.material.snackbar.Snackbar
 import com.yenaly.han1meviewer.HanimeConstants.ANIME_URL
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.PermissionRequester
@@ -46,12 +49,11 @@ import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
 import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageViewModel
 import com.yenaly.han1meviewer.ui.screen.main.MainActivityContent
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
-import com.yenaly.han1meviewer.videoUrlRegex
+import com.yenaly.han1meviewer.util.ClipboardVideoLinkGuard
 import com.yenaly.yenaly_libs.ActivityManager
 import com.yenaly.yenaly_libs.base.frame.FrameActivity
-import com.yenaly.yenaly_libs.utils.showSnackBar
-import com.yenaly.yenaly_libs.utils.textFromClipboard
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 /**
@@ -64,9 +66,11 @@ class MainActivity : FrameActivity(), PermissionRequester {
     val viewModel by viewModels<HomePageViewModel>()
 
     lateinit var navController: NavHostController
+    val snackbarHostState = SnackbarHostState()
     private var showAuthGuard by mutableStateOf(true)
     private val pendingNavigationRequests = MutableSharedFlow<Intent>(extraBufferCapacity = 1)
     private var currentVideoHost: VideoPageHost? = null
+    private var pendingClipboardCheck = false
 
     var showSiteSwitchConfirm by mutableStateOf(false)
         private set
@@ -105,6 +109,7 @@ class MainActivity : FrameActivity(), PermissionRequester {
                 activity = this,
                 viewModel = viewModel,
                 pendingNavigationRequests = pendingNavigationRequests,
+                snackbarHostState = snackbarHostState,
                 showAuthGuard = showAuthGuard,
                 onOpenAccount = { navController.navigateSafely(AccountRoute) },
                 onLogoutClick = { requestLogout(false) },
@@ -211,12 +216,16 @@ class MainActivity : FrameActivity(), PermissionRequester {
     override fun onStart() {
         super.onStart()
         registerPipReceiver()
-        window.decorView.post {
-            textFromClipboard?.let {
-                videoUrlRegex.find(it)?.groupValues?.get(1)?.let { videoCode ->
-                    showFindRelatedLinkSnackBar(videoCode)
-                }
-            }
+        pendingClipboardCheck = true
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        // Android 10+ 只有在窗口获得焦点时才能读取剪贴板。
+        // 每次回到应用只检查一次，避免弹窗等焦点变化导致重复读取。
+        if (hasFocus && pendingClipboardCheck) {
+            pendingClipboardCheck = false
+            ClipboardVideoLinkGuard.findNewVideoCode()?.let(::showClipboardLinkSnackbar)
         }
     }
 
@@ -263,9 +272,16 @@ class MainActivity : FrameActivity(), PermissionRequester {
         return navController.navigateUp() || super.onSupportNavigateUp()
     }
 
-    private fun showFindRelatedLinkSnackBar(videoCode: String) {
-        showSnackBar(R.string.detect_ha1_related_link_in_clipboard, Snackbar.LENGTH_LONG) {
-            setAction(R.string.enter) {
+    private fun showClipboardLinkSnackbar(videoCode: String) {
+        lifecycleScope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            val result = snackbarHostState.showSnackbar(
+                message = getString(R.string.detect_ha1_related_link_in_clipboard),
+                actionLabel = getString(R.string.enter),
+                withDismissAction = true,
+                duration = SnackbarDuration.Long,
+            )
+            if (result == SnackbarResult.ActionPerformed) {
                 showVideoDetailFragment(videoCode)
             }
         }

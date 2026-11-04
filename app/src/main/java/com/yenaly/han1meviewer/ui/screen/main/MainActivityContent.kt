@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
@@ -58,6 +59,7 @@ fun MainActivityContent(
     activity: MainActivity,
     viewModel: HomePageViewModel,
     pendingNavigationRequests: Flow<Intent>,
+    snackbarHostState: SnackbarHostState,
     showAuthGuard: Boolean,
     onOpenAccount: () -> Unit,
     onLogoutClick: () -> Unit,
@@ -130,6 +132,7 @@ fun MainActivityContent(
         MainActivityScaffold(
             drawerState = drawerState,
             drawerEnabled = currentMainDestination.drawerEnabled,
+            snackbarHostState = snackbarHostState,
             selectedDestination = selectedDrawerDestination,
             avatarUrl = headerAvatarUrl,
             username = headerUsername,

@@ -49,6 +49,16 @@ object Preferences {
         get() = preferenceSp.getBoolean(USAGE_NOTICE_ACCEPTED, false)
         set(value) = preferenceSp.edit { putBoolean(USAGE_NOTICE_ACCEPTED, value) }
 
+    private const val LAST_HANDLED_CLIPBOARD = "last_handled_clipboard"
+
+    /**
+     * 最近一次读取并处理过的剪贴板内容。
+     * 用于避免同一段剪贴板文本在每次回到应用时重复弹出打开链接的提示。
+     */
+    var lastHandledClipboard: String
+        get() = getSpValue(LAST_HANDLED_CLIPBOARD, EMPTY_STRING)
+        set(value) = putSpValue(LAST_HANDLED_CLIPBOARD, value)
+
     val savedUserId: String
         get() = preferenceSp.getString(SAVED_USER_ID,"") ?: ""
 

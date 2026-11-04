@@ -5,8 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
-import android.text.method.LinkMovementMethod
-import android.widget.TextView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
@@ -42,12 +40,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.edit
 import androidx.core.net.toUri
-import androidx.core.text.parseAsHtml
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.analytics
@@ -473,21 +471,15 @@ fun HomeSettingsRouteScreen(
     }
 
     if (showAnalyticsDialog) {
-        val message = stringResource(R.string.about_analytics_summary).parseAsHtml()
-        val analyticsMessage = remember { message }
+        val analyticsHtml = stringResource(R.string.about_analytics_summary)
+        val analyticsMessage = remember(analyticsHtml) {
+            AnnotatedString.fromHtml(analyticsHtml)
+        }
         AlertDialog(
             onDismissRequest = {},
             title = { Text(stringResource(R.string.about_analytics)) },
             text = {
-                AndroidView(
-                    factory = { ctx ->
-                        TextView(ctx).apply {
-                            text = analyticsMessage
-                            movementMethod = LinkMovementMethod.getInstance()
-                            setPadding(0, 0, 0, 0)
-                        }
-                    },
-                )
+                Text(text = analyticsMessage)
             },
             confirmButton = {
                 TextButton(onClick = { showAnalyticsDialog = false }) {
