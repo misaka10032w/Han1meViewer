@@ -47,6 +47,11 @@ const val VIDEO_COMMENT_PREFIX = "video"
 
 const val PREVIEW_COMMENT_PREFIX = "preview"
 
+/**
+ * 新番預告在搜索頁中的類型名稱。
+ */
+const val NEW_ANIME_PREVIEW_GENRE = "新番預告"
+
 // base url
 
 @JvmField

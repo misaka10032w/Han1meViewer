@@ -115,7 +115,7 @@ fun PreviewContent(
                 FilledIconButton(onClick = {
                     onEvent(PreviewEvent.OnOpenComment(
                         uiState.currentDateLabel,
-                        uiState.routeState.currentDateCode
+                        uiState.monthHeaderState.dateCode
                     ))
                 }) {
                     BadgedBox(
@@ -249,6 +249,9 @@ fun PreviewContent(
     }
 }
 
+// 網站改版後搜索結果不再按月份區分，暫時隱藏月份切換按鈕。
+private const val SHOW_MONTH_SWITCH = false
+
 @Composable
 private fun PreviewHeaderSection(
     headerImageUrl: String?,
@@ -282,18 +285,28 @@ private fun PreviewHeaderSection(
                     )
                 )
         )
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            FilledTonalButton(onClick = onPrev, enabled = canPrev, modifier = Modifier.weight(1f)) {
-                Text(prevLabel)
-            }
-            FilledTonalButton(onClick = onNext, enabled = canNext, modifier = Modifier.weight(1f)) {
-                Text(nextLabel)
+        if (SHOW_MONTH_SWITCH) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                FilledTonalButton(
+                    onClick = onPrev,
+                    enabled = canPrev,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(prevLabel)
+                }
+                FilledTonalButton(
+                    onClick = onNext,
+                    enabled = canNext,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(nextLabel)
+                }
             }
         }
     }

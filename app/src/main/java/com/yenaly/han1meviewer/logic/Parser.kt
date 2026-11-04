@@ -292,10 +292,17 @@ object Parser {
         val title = hanimeSearchItem.selectFirst("div[class=home-rows-videos-title]")?.text()
             .logIfParseNull(Parser::hanimeSimplifiedItem.name, "title")
         if (videoCode == null || coverUrl == null || title == null) return null
+        // 新番預告的搜索結果會在封面左上角顯示發佈日期，例如「11月27日」。
+        val uploadTime = hanimeSearchItem
+            .selectFirst("div.video-card-inner > div.hidden-xs")
+            ?.text()
+            ?.trim()
+            ?.takeIf { it.isNotBlank() }
         return HanimeInfo(
             title = title,
             coverUrl = coverUrl,
             videoCode = videoCode,
+            uploadTime = uploadTime,
             itemType = HanimeInfo.SIMPLIFIED
         )
     }
@@ -737,6 +744,37 @@ object Parser {
                 latestHanime = latestHanimeList,
                 previewInfo = previewInfo
             )
+        )
+    }
+
+    /**
+     * 將「新番預告」搜索結果轉換成預覽頁使用的數據。
+     *
+     * 搜索結果只提供封面、標題、影片代碼和發佈日期；其餘欄位會在預覽頁
+     * 顯示對應卡片時，再從影片詳情頁補充。
+     */
+    fun hanimePreviewFromSearch(list: List<HanimeInfo>): HanimePreview {
+        return HanimePreview(
+            headerPicUrl = list.firstOrNull()?.coverUrl,
+            hasPrevious = false,
+            hasNext = false,
+            latestHanime = list,
+            previewInfo = list.map { it.toPreviewInfo() },
+        )
+    }
+
+    private fun HanimeInfo.toPreviewInfo(): HanimePreview.PreviewInfo {
+        return HanimePreview.PreviewInfo(
+            // 搜索結果只有中文短標題，先用 videoTitle 展示；詳情補全後再拆成主副標題。
+            title = null,
+            videoTitle = title,
+            coverUrl = coverUrl,
+            introduction = null,
+            brand = currentArtist?.takeIf { it.isNotBlank() },
+            releaseDate = uploadTime,
+            videoCode = videoCode,
+            tags = emptyList(),
+            relatedPicsUrl = emptyList(),
         )
     }
 

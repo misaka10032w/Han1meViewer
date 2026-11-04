@@ -39,7 +39,7 @@
     <string name="comment_not_found">未发现评论</string>
     <string name="hanime_list">新番列表</string>
     <string name="latest_hanime_list_monthly">%s 里番新番列表</string>
-    <string name="preview_page_updating_getchu_hint">站方正在更新新番预告页面，可先查看 Getchu 新番预告。Getchu 可能需要 VPN 才能正常访问。</string>
+    <string name="preview_page_updating_getchu_hint">暂无新番预告，可先查看 Getchu 新番预告。Getchu 可能需要 VPN 才能正常访问。</string>
     <string name="latest_hanime_comment">%s 新番评论区</string>
     <string name="view_getchu_preview">查看 Getchu 预告</string>
     <string name="getchu_preview">Getchu 新番预告</string>

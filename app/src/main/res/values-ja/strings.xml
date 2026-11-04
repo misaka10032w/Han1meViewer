@@ -39,7 +39,7 @@
     <string name="comment_not_found">コメントはありません</string>
     <string name="hanime_list">新作リスト</string>
     <string name="latest_hanime_list_monthly">%s 裏アニメ新作リスト</string>
-    <string name="preview_page_updating_getchu_hint">サイト側で新作プレビューページを更新中です。先に Getchu の新作予告を確認できます。Getchu へのアクセスには VPN が必要な場合があります。</string>
+    <string name="preview_page_updating_getchu_hint">現在、新作アニメ予告はありません。先に Getchu の新作予告を確認できます。Getchu へのアクセスには VPN が必要な場合があります。</string>
     <string name="latest_hanime_comment">%s 新作コメント欄</string>
     <string name="view_getchu_preview">Getchu 予告を見る</string>
     <string name="getchu_preview">Getchu 新作予告</string>

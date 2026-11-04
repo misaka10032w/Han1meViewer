@@ -18,6 +18,7 @@ import com.yenaly.han1meviewer.util.loadAssetAs
 import com.yenaly.han1meviewer.base.BaseViewModel
 import com.yenaly.han1meviewer.util.applicationContext
 import com.yenaly.han1meviewer.util.unsafeLazy
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -61,6 +62,15 @@ class CommentViewModel(application: Application) : BaseViewModel(application) {
 
     private val _videoCommentFlow = MutableStateFlow(emptyList<VideoComments.VideoComment>())
     val videoCommentFlow = _videoCommentFlow.asStateFlow()
+
+    private var commentRequestJob: Job? = null
+
+    /**
+     * 最近一次請求的評論目標（影片代碼或預覽月份）。
+     * 用於避免把上一個月份的預取評論誤用到新的月份。
+     */
+    var lastCommentCode: String? = null
+        private set
 
     private val _videoReplyFlow = MutableStateFlow(emptyList<VideoComments.VideoComment>())
     val videoReplyFlow = _videoReplyFlow.asStateFlow()
@@ -108,10 +118,14 @@ class CommentViewModel(application: Application) : BaseViewModel(application) {
     }
 
     fun clearCommentData(){
+        commentRequestJob?.cancel()
+        commentRequestJob = null
         _videoCommentFlow.value = emptyList()
     }
     fun getComment(type: String, code: String) {
-        viewModelScope.launch {
+        lastCommentCode = code
+        commentRequestJob?.cancel()
+        commentRequestJob = viewModelScope.launch {
             _videoCommentStateFlow.value = WebsiteState.Loading
             NetworkRepo.getComments(type, code).collect { state ->
                 _videoCommentStateFlow.value = state
