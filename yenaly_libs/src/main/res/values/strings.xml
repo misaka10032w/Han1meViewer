@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="yenaly_settings">设置</string>
-    <string name="yenaly_error_title">如果可以，给开发者反馈一下！</string>
-    <string name="yenaly_restart_app">重启软件</string>
-    <string name="yenaly_exit_app">关闭软件</string>
-    <string name="yenaly_copy">复制</string>
-</resources>

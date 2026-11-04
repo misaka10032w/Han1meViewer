@@ -21,7 +21,7 @@ import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageScreen
 import com.yenaly.han1meviewer.ui.screen.home.homepage.HomeUiEvent
 import com.yenaly.han1meviewer.ui.screen.home.homepage.LocalSearchHistoryQuery
 import com.yenaly.han1meviewer.ui.viewmodel.CheckInCalendarViewModel
-import com.yenaly.yenaly_libs.utils.copyTextToClipboard
+import com.yenaly.han1meviewer.util.copyTextToClipboard
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import java.time.LocalTime

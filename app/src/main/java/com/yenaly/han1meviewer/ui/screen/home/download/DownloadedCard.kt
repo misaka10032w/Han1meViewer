@@ -47,7 +47,7 @@ import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.logic.model.DownloadHeaderNode
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.preview.fakeDownloadedNodes
-import com.yenaly.yenaly_libs.utils.formatFileSizeV2
+import com.yenaly.han1meviewer.util.formatFileSizeV2
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
 import kotlinx.datetime.toLocalDateTime

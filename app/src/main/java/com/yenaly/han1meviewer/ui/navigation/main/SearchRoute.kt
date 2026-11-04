@@ -14,7 +14,7 @@ import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.screen.search.AdvancedSearchSheet
 import com.yenaly.han1meviewer.ui.screen.search.SearchScreen
 import com.yenaly.han1meviewer.ui.viewmodel.SearchViewModel
-import com.yenaly.yenaly_libs.utils.copyTextToClipboard
+import com.yenaly.han1meviewer.util.copyTextToClipboard
 import kotlinx.serialization.json.Json
 
 @Composable

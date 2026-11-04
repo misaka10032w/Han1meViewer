@@ -57,7 +57,6 @@ Thumbs.db
 **/profiles/
 
 # 特定项目忽略
-/yenaly_libs/local/
 /icon/temp/
 
 # 但保留gradle wrapper

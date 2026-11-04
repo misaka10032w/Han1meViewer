@@ -8,7 +8,7 @@ import com.yenaly.han1meviewer.getHanimeShareText
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.screen.home.myplaylist.PlaylistScreen
 import com.yenaly.han1meviewer.ui.viewmodel.MyPlayListViewModelV2
-import com.yenaly.yenaly_libs.utils.copyTextToClipboard
+import com.yenaly.han1meviewer.util.copyTextToClipboard
 
 @Composable
 fun MyPlaylistRouteScreen(

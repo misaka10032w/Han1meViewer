@@ -4,7 +4,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
-import com.yenaly.yenaly_libs.utils.applicationContext
+import com.yenaly.han1meviewer.util.applicationContext
 
 /**
  * 这是各种 有数据库需求的小功能 的聚集地，

@@ -71,10 +71,10 @@ import com.yenaly.han1meviewer.ui.screen.home.homepage.saveHomeCategoryPreferenc
 import com.yenaly.han1meviewer.ui.theme.ThemeColorPreset
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.util.ThemeUtils
-import com.yenaly.yenaly_libs.ActivityManager
-import com.yenaly.yenaly_libs.utils.applicationContext
-import com.yenaly.yenaly_libs.utils.browse
-import com.yenaly.yenaly_libs.utils.folderSize
+import com.yenaly.han1meviewer.util.ActivityManager
+import com.yenaly.han1meviewer.util.applicationContext
+import com.yenaly.han1meviewer.util.browse
+import com.yenaly.han1meviewer.util.folderSize
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

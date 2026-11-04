@@ -34,6 +34,7 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="${appIcon}"
         android:label="@string/hanime_app_name"
+        android:networkSecurityConfig="@xml/http_network_config"
         android:roundIcon="@mipmap/ic_launcher_new_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Hanime"

@@ -9,14 +9,12 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.biometric.BiometricManager
@@ -40,6 +38,7 @@ import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.PermissionRequester
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.base.BaseFragmentActivity
 import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.navigation.main.AccountRoute
@@ -50,18 +49,16 @@ import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageViewModel
 import com.yenaly.han1meviewer.ui.screen.main.MainActivityContent
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.util.ClipboardVideoLinkGuard
-import com.yenaly.yenaly_libs.ActivityManager
-import com.yenaly.yenaly_libs.base.frame.FrameActivity
+import com.yenaly.han1meviewer.util.ActivityManager
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import java.util.Locale
 
 /**
  * @project Hanime1
  * @author Yenaly Liew
  * @time 2022/06/08 008 17:35
  */
-class MainActivity : FrameActivity(), PermissionRequester {
+class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
     val viewModel by viewModels<HomePageViewModel>()
 
@@ -126,7 +123,6 @@ class MainActivity : FrameActivity(), PermissionRequester {
                 setKeepOnScreenCondition { !hasAuthenticated }
             }
         }
-        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
@@ -158,10 +154,6 @@ class MainActivity : FrameActivity(), PermissionRequester {
             initData()
         }
         pendingNavigationRequests.tryEmit(intent)
-    }
-
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(applyAppLocale(newBase))
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -247,25 +239,6 @@ class MainActivity : FrameActivity(), PermissionRequester {
     override fun onStop() {
         super.onStop()
         unregisterReceiver(pipActionReceiver)
-    }
-
-    private fun applyAppLocale(context: Context): Context {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        val lang = prefs.getString("app_language", "system") ?: "system"
-
-        val newLocale = when (lang) {
-            "zh-rCN" -> Locale.SIMPLIFIED_CHINESE
-            "zh" -> Locale.TRADITIONAL_CHINESE
-            "en" -> Locale.ENGLISH
-            "ja" -> Locale.JAPANESE
-            else -> Resources.getSystem().configuration.locales.get(0)
-        }
-
-        Locale.setDefault(newLocale)
-
-        val config = Configuration(context.resources.configuration)
-        config.setLocale(newLocale)
-        return context.createConfigurationContext(config)
     }
 
     override fun onSupportNavigateUp(): Boolean {

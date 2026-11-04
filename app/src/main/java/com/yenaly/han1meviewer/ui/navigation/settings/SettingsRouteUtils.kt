@@ -17,8 +17,8 @@ import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
-import com.yenaly.yenaly_libs.utils.formatBytesPerSecond
-import com.yenaly.yenaly_libs.utils.formatFileSizeV2
+import com.yenaly.han1meviewer.util.formatBytesPerSecond
+import com.yenaly.han1meviewer.util.formatFileSizeV2
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone

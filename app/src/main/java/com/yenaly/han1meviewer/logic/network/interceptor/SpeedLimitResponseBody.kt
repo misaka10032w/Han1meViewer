@@ -1,6 +1,6 @@
 package com.yenaly.han1meviewer.logic.network.interceptor
 
-import com.yenaly.yenaly_libs.utils.unsafeLazy
+import com.yenaly.han1meviewer.util.unsafeLazy
 import okhttp3.ResponseBody
 import okio.Throttler
 import okio.buffer

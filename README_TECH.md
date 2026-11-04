@@ -21,14 +21,13 @@ Han1meViewer 当前是以 Kotlin + Jetpack Compose 为主的 Android 应用，�
 - Media3 ExoPlayer、JZVD、MPV Android 播放链路。
 - Firebase Analytics、Crashlytics、Performance、Remote Config、Realtime Database。
 
-当前代码仍有少量历史 View/XML 组件，例如 JZVD 自定义 View、部分设置/播放器相关布局和 `yenaly_libs` 基础库组件，但主业务页面已经以 Compose 为主。
+当前代码仍有少量历史 View/XML 组件，例如 JZVD 自定义 View 和播放器相关布局，但主业务页面已经以 Compose 为主。
 
 ## 2. 模块结构
 
 Gradle 模块：
 
 - `:app`：主应用模块，包含 UI、业务状态、网络解析、本地数据库、播放器、下载、更新和资源。
-- `:yenaly_libs`：项目内公共库，提供基础 Activity、Fragment、ViewModel、Preference、工具类和部分 View 封装。
 - `buildSrc`：构建辅助逻辑，维护版本号、构建来源、提交 SHA 等 Gradle 侧配置。
 
 主应用关键目录：

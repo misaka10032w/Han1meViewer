@@ -14,7 +14,7 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.GlobalDialogs
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.TextInputField
-import com.yenaly.yenaly_libs.utils.findActivityOrNull
+import com.yenaly.han1meviewer.util.findActivityOrNull
 
 /**
  * @project Han1meViewer

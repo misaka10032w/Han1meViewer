@@ -4,7 +4,6 @@ import android.util.Log
 import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.request.ImageResult
-import com.yenaly.yenaly_libs.utils.applicationContext
 import com.yenaly.han1meviewer.logic.network.HDns
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit

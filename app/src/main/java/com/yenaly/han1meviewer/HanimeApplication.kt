@@ -20,8 +20,8 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.util.AnimeShaders
 import com.yenaly.han1meviewer.util.ThemeUtils
 import com.developer.crashx.config.CrashConfig
-import com.yenaly.yenaly_libs.base.YenalyApplication
-import com.yenaly.yenaly_libs.utils.LanguageHelper
+import com.yenaly.han1meviewer.base.BaseApplication
+import com.yenaly.han1meviewer.util.LanguageHelper
 import `is`.xyz.mpv.MPVLib
 import java.net.ProxySelector
 
@@ -30,16 +30,11 @@ import java.net.ProxySelector
  * @author Yenaly Liew
  * @time 2022/06/08 008 17:32
  */
-class HanimeApplication : YenalyApplication() {
+class HanimeApplication : BaseApplication() {
 
     companion object {
         const val TAG = "HanimeApplication"
     }
-
-    /**
-     * 已在 [initCrashX] 中透過 CrashX 處理
-     */
-    override val isDefaultCrashHandlerEnabled: Boolean = false
 
     private fun initCrashX() {
         CrashConfig.Builder.create()

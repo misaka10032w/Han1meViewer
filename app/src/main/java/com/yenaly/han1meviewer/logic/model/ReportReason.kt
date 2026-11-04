@@ -1,7 +1,7 @@
 package com.yenaly.han1meviewer.logic.model
 
 import android.os.Parcelable
-import com.yenaly.yenaly_libs.utils.LanguageHelper
+import com.yenaly.han1meviewer.util.LanguageHelper
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

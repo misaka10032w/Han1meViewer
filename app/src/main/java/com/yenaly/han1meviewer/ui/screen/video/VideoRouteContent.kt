@@ -15,7 +15,7 @@ import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
-import com.yenaly.yenaly_libs.utils.application
+import com.yenaly.han1meviewer.util.application
 
 @Composable
 fun VideoRouteContent(

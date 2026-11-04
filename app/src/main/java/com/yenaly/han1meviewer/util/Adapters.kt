@@ -6,7 +6,6 @@ import android.widget.TextView
 import androidx.annotation.LayoutRes
 import com.chad.library.adapter4.BaseQuickAdapter
 import com.yenaly.han1meviewer.R
-import com.yenaly.yenaly_libs.utils.applicationContext
 
 /**
  * 设置状态视图

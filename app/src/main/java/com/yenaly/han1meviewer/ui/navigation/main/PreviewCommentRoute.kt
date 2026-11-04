@@ -36,7 +36,7 @@ import com.yenaly.han1meviewer.ui.screen.video.CommentMessage
 import com.yenaly.han1meviewer.ui.screen.video.CommentScreen
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
-import com.yenaly.yenaly_libs.utils.application
+import com.yenaly.han1meviewer.util.application
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 

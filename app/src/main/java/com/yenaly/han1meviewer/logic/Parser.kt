@@ -209,7 +209,7 @@ object Parser {
         return userHomePageLink.contains("/login") || username.isNullOrBlank()
     }
 
-    private fun getString(resId: Int) = com.yenaly.yenaly_libs.utils.applicationContext.getString(resId)
+    private fun getString(resId: Int) = com.yenaly.han1meviewer.util.applicationContext.getString(resId)
     fun Element?.extractHanimeInfo(selector: String = "div[class^=horizontal-card]"): MutableList<HanimeInfo> {
         val resultList = mutableListOf<HanimeInfo>()
         this?.select(selector)?.forEach { item ->

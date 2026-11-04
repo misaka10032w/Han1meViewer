@@ -13,9 +13,9 @@ import com.yenaly.han1meviewer.ui.view.video.HMediaKernel
 import com.yenaly.han1meviewer.util.CookieString
 import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
-import com.yenaly.yenaly_libs.utils.applicationContext
-import com.yenaly.yenaly_libs.utils.getSpValue
-import com.yenaly.yenaly_libs.utils.putSpValue
+import com.yenaly.han1meviewer.util.applicationContext
+import com.yenaly.han1meviewer.util.getSpValue
+import com.yenaly.han1meviewer.util.putSpValue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.time.Duration.Companion.days
 import kotlin.time.ExperimentalTime

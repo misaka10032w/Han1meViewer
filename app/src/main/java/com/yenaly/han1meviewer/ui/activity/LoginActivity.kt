@@ -1,10 +1,7 @@
 package com.yenaly.han1meviewer.ui.activity
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
-import android.content.res.Resources
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -13,7 +10,6 @@ import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
@@ -21,11 +17,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.lifecycleScope
-import androidx.preference.PreferenceManager
 import com.yenaly.han1meviewer.HANIME_LOGIN_URL
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.USER_AGENT
+import com.yenaly.han1meviewer.base.BaseActivity
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.login
@@ -33,19 +29,13 @@ import com.yenaly.han1meviewer.ui.screen.login.LoginDialog
 import com.yenaly.han1meviewer.ui.screen.login.LoginScreen
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
-import com.yenaly.yenaly_libs.base.frame.FrameActivity
 import kotlinx.coroutines.launch
-import java.util.Locale
 
-class LoginActivity : FrameActivity() {
+class LoginActivity : BaseActivity() {
     private lateinit var scannerLauncher: ActivityResultLauncher<Intent>
     private var isRefreshing by mutableStateOf(true)
     private var showLoginDialog by mutableStateOf(false)
     private var isLoggingIn by mutableStateOf(false)
-
-    override fun setUiStyle() {
-        enableEdgeToEdge()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -188,28 +178,5 @@ class LoginActivity : FrameActivity() {
                 }
             }
         }
-    }
-
-    private fun applyAppLocale(context: Context): Context {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        val lang = prefs.getString("app_language", "system") ?: "system"
-
-        val newLocale = when (lang) {
-            "zh-rCN" -> Locale.SIMPLIFIED_CHINESE
-            "zh" -> Locale.TRADITIONAL_CHINESE
-            "en" -> Locale.ENGLISH
-            "ja" -> Locale.JAPANESE
-            else -> Resources.getSystem().configuration.locales.get(0)
-        }
-
-        Locale.setDefault(newLocale)
-
-        val config = Configuration(context.resources.configuration)
-        config.setLocale(newLocale)
-        return context.createConfigurationContext(config)
-    }
-
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(applyAppLocale(newBase))
     }
 }

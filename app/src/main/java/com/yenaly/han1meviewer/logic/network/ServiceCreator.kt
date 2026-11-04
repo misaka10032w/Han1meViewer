@@ -11,8 +11,8 @@ import com.yenaly.han1meviewer.logic.network.interceptor.GetchuInterceptor
 import com.yenaly.han1meviewer.logic.network.interceptor.SpeedLimitInterceptor
 import com.yenaly.han1meviewer.logic.network.interceptor.UrlLoggingInterceptor
 import com.yenaly.han1meviewer.logic.network.interceptor.UserAgentInterceptor
-import com.yenaly.yenaly_libs.utils.applicationContext
-import com.yenaly.yenaly_libs.utils.unsafeLazy
+import com.yenaly.han1meviewer.util.applicationContext
+import com.yenaly.han1meviewer.util.unsafeLazy
 import okhttp3.Cache
 import okhttp3.CookieJar
 import okhttp3.MediaType.Companion.toMediaType

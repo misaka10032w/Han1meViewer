@@ -9,7 +9,7 @@ import com.yenaly.han1meviewer.getHanimeShareText
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.screen.home.SubscriptionScreen
 import com.yenaly.han1meviewer.ui.viewmodel.MySubscriptionsViewModel
-import com.yenaly.yenaly_libs.utils.copyTextToClipboard
+import com.yenaly.han1meviewer.util.copyTextToClipboard
 
 @Composable
 fun SubscriptionRouteScreen(

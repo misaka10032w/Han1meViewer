@@ -131,7 +131,6 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.androidx.window)
     implementation(libs.androidx.window.java)
-    implementation(project(":yenaly_libs"))
     implementation(libs.aboutlibraries.core)
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.core.splashscreen)

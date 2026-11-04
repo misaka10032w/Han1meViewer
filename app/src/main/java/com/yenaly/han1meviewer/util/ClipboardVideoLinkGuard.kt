@@ -2,7 +2,6 @@ package com.yenaly.han1meviewer.util
 
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.videoUrlRegex
-import com.yenaly.yenaly_libs.utils.textFromClipboard
 
 /**
  * 剪贴板视频链接检测。
