@@ -2,15 +2,10 @@ package com.yenaly.han1meviewer.util
 
 import android.app.Activity
 import android.util.Log
-import androidx.fragment.app.Fragment
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
 import com.google.firebase.analytics.logEvent
-
-fun Activity.logScreenViewEvent(fragment: Fragment) {
-    logScreenViewEvent(fragment.javaClass.simpleName)
-}
 
 fun Activity.logScreenViewEvent(screenClassName: String) {
     Firebase.analytics.logEvent(FirebaseAnalytics.Event.SCREEN_VIEW) {

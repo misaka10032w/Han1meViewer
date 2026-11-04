@@ -16,7 +16,6 @@ plugins {
     alias(libs.plugins.com.google.firebase.crashlytics)
     alias(libs.plugins.com.google.firebase.firebase.pref)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.navigation.safeargs)
     id("com.mikepenz.aboutlibraries.plugin") version "14.2.1"
     id("com.github.ben-manes.versions") version "0.54.0"
 }
@@ -92,10 +91,7 @@ android {
         }
     }
     buildFeatures {
-        //noinspection DataBindingWithoutKapt
-        dataBinding = true
         buildConfig = true
-        viewBinding = true
         compose  =  true
     }
     compileOptions {
@@ -139,7 +135,6 @@ dependencies {
     implementation(libs.aboutlibraries.core)
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.core.splashscreen)
-    implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.androidx.material.icons.extended)
     // android related
 
@@ -192,13 +187,8 @@ dependencies {
 
     // view
 
-    implementation(libs.multitype)
     implementation(libs.base.recyclerview.adapter.helper4)
-    implementation(libs.expandable.textview)
     implementation(libs.spannable.x)
-    implementation(libs.about)
-    implementation(libs.circular.reveal.switch)
-    implementation(libs.drawerlayout)
 
     // firebase
 
