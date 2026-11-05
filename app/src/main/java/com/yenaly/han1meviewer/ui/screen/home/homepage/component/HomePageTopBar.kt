@@ -26,6 +26,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -52,8 +55,19 @@ fun HomePageTopBar(
     val randomHint = placeholders.random()
     Surface(
         color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 2.dp,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .drawWithContent {
+                clipRect(
+                    left = 0f,
+                    top = 0f,
+                    right = size.width,
+                    bottom = size.height + 2.dp.toPx()
+                ) {
+                    this@drawWithContent.drawContent()
+            }
+        }
+            .shadow(elevation = 2.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -67,8 +81,8 @@ fun HomePageTopBar(
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .size(28.dp),
+                    .padding(horizontal = 1.dp)
+                    .size(50.dp),
             )
             Box(
                 modifier = Modifier
