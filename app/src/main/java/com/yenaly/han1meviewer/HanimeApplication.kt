@@ -1,6 +1,5 @@
 package com.yenaly.han1meviewer
 
-import android.content.ComponentCallbacks2
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
