@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -38,7 +37,6 @@ import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 /**
  * 渲染首页顶部栏，包含抽屉入口、搜索入口和新番列表入口。
  *
- * @param onOpenDrawer 点击抽屉按钮时调用。
  * @param onSearchClick 点击搜索框时调用。
  * @param onNavigateToPreview 点击新番按钮时调用。
  * @param modifier 应用于顶部栏根布局的修饰符。
@@ -46,7 +44,6 @@ import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePageTopBar(
-    onOpenDrawer: () -> Unit,
     onSearchClick: () -> Unit,
     onNavigateToPreview: () -> Unit,
     modifier: Modifier = Modifier
@@ -65,13 +62,14 @@ fun HomePageTopBar(
                 .statusBarsPadding()
                 .padding(horizontal = 4.dp, vertical = 4.dp)
         ) {
-            IconButton(onClick = onOpenDrawer) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = stringResource(R.string.open_menu),
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
-            }
+            Icon(
+                painter = painterResource(R.drawable.ic_baseline_h_chan_single_color),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .size(28.dp),
+            )
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -116,7 +114,6 @@ fun HomePageTopBar(
 private fun HomePageTopBarPreview() {
     ComponentPreview {
         HomePageTopBar(
-            onOpenDrawer = {},
             onSearchClick = {},
             onNavigateToPreview = {}
         )

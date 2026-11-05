@@ -51,6 +51,20 @@
     <string name="getchu_story">故事</string>
     <string name="getchu_staff">製作人員</string>
     <string name="my_list">我的清單</string>
+    <string name="content_library">內容庫</string>
+    <string name="collapse_navigation">收起導航</string>
+    <string name="expand_navigation">展開導航</string>
+    <string name="quick_entries">快捷入口</string>
+    <string name="profile_check_in_desc">每日簽到領取獎勵</string>
+    <string name="profile_creator_center_desc">管理投稿與創作資料</string>
+    <string name="profile_settings_desc">播放器、網路與下載設定</string>
+    <string name="settings_pane_subtitle">管理播放、網路與下載</string>
+    <string name="content_library_favorite_desc">收藏的影片</string>
+    <string name="content_library_watch_later_desc">稍後觀看</string>
+    <string name="content_library_playlist_desc">自訂播放清單</string>
+    <string name="content_library_history_desc">觀看紀錄</string>
+    <string name="content_library_download_desc">離線下載</string>
+    <string name="content_library_pane_subtitle">收藏、紀錄與離線內容</string>
     <string name="watch_later">稍後觀看</string>
     <string name="fav_video">喜歡的影片</string>
     <string name="settings">設定</string>
@@ -118,8 +132,6 @@
     <string name="playlist_description">介紹</string>
     <string name="add_to_playlist">加入清單</string>
     <string name="player_settings">播放器設定</string>
-    <string name="tablet_mode">平板模式</string>
-    <string name="tablet_mode_summary">開啟後影片頁面與首頁橫幅將以平板佈局顯示，提供更大觀看區域</string>
     <string name="show_exit_confirm">退出確認彈窗</string>
     <string name="show_exit_confirm_summary">開啟後按下返回鍵退出 App 時將顯示確認視窗</string>
     <string name="search_grid_columns_title">影片網格列數</string>
@@ -409,7 +421,6 @@
     <string name="privacy">隱私</string>
     <string name="about_analytics_summary">您同意讓開發者收集您的裝置資訊與使用方式嗎？這對開發有很大幫助。&lt;br&gt;&lt;br&gt;資料統計服務由 Google Analytics for Firebase 提供，其隱私政策可在 &lt;a href=&quot;https://www.google.com/policies/privacy/&quot;&gt;https://www.google.com/policies/privacy/&lt;/a&gt; 檢視。&lt;br&gt;&lt;br&gt;若您同意參與資料統計，您的裝置資訊與應用使用情況將會被記錄，其包括但不限於：Android API 版本、裝置型號、語言所在地、本應用版本號、會話時長、應用功能使用次數。開發者承諾以下資訊並不會被記錄：電話號碼、電子郵件地址、IMEI。&lt;br&gt;&lt;br&gt;在您同意參與資料統計之前，您的資訊不會被記錄。&lt;br&gt;&lt;br&gt;被記錄的資料會由 Google Analytics for Firebase 進行分析，分析報表僅由此應用程式開發者存取。</string>
     <string name="about_analytics">關於使用情況統計</string>
-    <string name="refresh_page_or_login_expired">刷新一下頁面試試\n也可能登入已過期</string>
     <string name="website_blocked_msg_2">網站被加固，修改為另外一個域名可能有奇效！</string>
     <string name="website_blocked_msg_3">可以提醒一下開發者，但不要催，網站被加固跟他沒有任何關係哦～</string>
     <string name="action_not_support">此設備不支援此操作</string>
@@ -447,6 +458,7 @@
     <string name="subscribed_artists_count">已訂閱作者（%1$d）</string>
     <string name="swipe_more">向右滑動</string>
     <string name="my_account">我的</string>
+    <string name="account_profile">帳號資料</string>
     <string name="username">用戶名稱</string>
     <string name="logout">登出</string>
     <string name="change_avatar">更改頭像</string>
@@ -783,7 +795,6 @@
     <string name="announcement">公告</string>
     <string name="announcement_list">公告列表</string>
     <string name="view_all">查看全部</string>
-    <string name="open_menu">打開選單</string>
     <string name="permission_permanently_denied_title">權限被永久拒絕</string>
     <string name="storage_permission_settings_message">請前往設定開啟儲存權限，以便保存下載內容。</string>
     <string name="storage_permission_denied_toast">拒絕後將無法保存下載內容</string>

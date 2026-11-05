@@ -58,7 +58,6 @@ fun HomeSettingsScreen(
     onSearchArtistIgnoreVideoTypeChange: (Boolean) -> Unit,
     onDisableMobileDataWarningChange: (Boolean) -> Unit,
     onDisablePredictiveBackChange: (Boolean) -> Unit,
-    onTabletModeChange: (Boolean) -> Unit,
     onShowExitConfirmChange: (Boolean) -> Unit,
     onDisableCommentsChange: (Boolean) -> Unit,
     onCollapseDownloadedGroupChange: (Boolean) -> Unit,
@@ -387,24 +386,13 @@ fun HomeSettingsScreen(
             )
         }
         item {
-            SettingSwitchItem(
-                title = stringResource(R.string.tablet_mode),
-                summary = stringResource(R.string.tablet_mode_summary),
-                checked = state.tabletMode,
-                iconRes = R.drawable.ic_baseline_tablet_24,
-                onCheckedChange = onTabletModeChange,
+            SettingNavigationItem(
+                title = stringResource(R.string.search_grid_columns_title),
+                summary = stringResource(R.string.search_grid_columns_summary),
+                valueText = state.searchGridColumnsSummary,
+                iconRes = R.drawable.baseline_grid_24,
+                onClick = { showSearchGridColumnsDialog = true },
             )
-        }
-        if (state.tabletMode) {
-            item {
-                SettingNavigationItem(
-                    title = stringResource(R.string.search_grid_columns_title),
-                    summary = stringResource(R.string.search_grid_columns_summary),
-                    valueText = state.searchGridColumnsSummary,
-                    iconRes = R.drawable.baseline_grid_24,
-                    onClick = { showSearchGridColumnsDialog = true },
-                )
-            }
         }
         item {
             SettingNavigationItem(
@@ -592,7 +580,6 @@ private fun HomeSettingsScreenPreview() {
                 searchArtistIgnoreVideoType = false,
                 disableMobileDataWarning = false,
                 disablePredictiveBack = false,
-                tabletMode = false,
                 showExitConfirm = true,
                 disableComments = false,
                 collapseDownloadedGroup = false,
@@ -629,7 +616,6 @@ private fun HomeSettingsScreenPreview() {
             onSearchArtistIgnoreVideoTypeChange = {},
             onDisableMobileDataWarningChange = {},
             onDisablePredictiveBackChange = {},
-            onTabletModeChange = {},
             onShowExitConfirmChange = {},
             onDisableCommentsChange = {},
             onCollapseDownloadedGroupChange = {},

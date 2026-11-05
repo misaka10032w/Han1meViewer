@@ -95,7 +95,6 @@ private const val HOME_SEARCH_ARTIST_IGNORE_VIDEO_TYPE = "search_artist_ignore_v
 private const val HOME_DISABLE_MOBILE_DATA_WARNING = "disable_mobile_data_warning"
 private const val HOME_COLLAPSE_DOWNLOADED_GROUP = "collapse_downloaded_group"
 private const val HOME_DISABLE_PREDICTIVE_BACK = "disable_predictive_back"
-private const val HOME_TABLET_MODE = "tablet_mode"
 private const val HOME_SHOW_EXIT_CONFIRM = "show_exit_confirm"
 private const val HOME_DISABLE_COMMENTS = "disable_comments"
 private const val HOME_USE_LOCK_SCREEN = "use_lock_screen"
@@ -299,10 +298,6 @@ fun HomeSettingsRouteScreen(
         },
         onDisablePredictiveBackChange = {
             saveBoolean(HOME_DISABLE_PREDICTIVE_BACK, it)
-            refreshKey++
-        },
-        onTabletModeChange = {
-            saveBoolean(HOME_TABLET_MODE, it)
             refreshKey++
         },
         onShowExitConfirmChange = {
@@ -679,7 +674,6 @@ private fun buildHomeSettingsUiState(
         searchArtistIgnoreVideoType = Preferences.searchArtistIgnoreVideoType,
         disableMobileDataWarning = Preferences.disableMobileDataWarning,
         disablePredictiveBack = Preferences.disablePredictiveBack,
-        tabletMode = Preferences.tabletMode,
         showExitConfirm = Preferences.showExitConfirm,
         disableComments = Preferences.preferenceSp.getBoolean(HOME_DISABLE_COMMENTS, false),
         collapseDownloadedGroup = Preferences.collapseDownloadedGroup,

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -42,6 +43,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.window.core.layout.WindowSizeClass
 import cn.jzvd.JZMediaInterface
 import cn.jzvd.Jzvd
 import coil.load
@@ -138,6 +140,9 @@ fun VideoRouteHostScreen(
     var showAddHKeyframeDialog by remember { mutableStateOf<Pair<Long, String>?>(null) }
     var unsubscribeArtist by remember { mutableStateOf<HanimeVideo.Artist?>(null) }
     var showDownloadPermissionDialog by remember { mutableStateOf(false) }
+    val useLargeVideoLayout = currentWindowAdaptiveInfoV2()
+        .windowSizeClass
+        .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
 
     val actions = remember(activity, scope, viewModel, genres) {
         VideoRouteActions(
@@ -253,7 +258,7 @@ fun VideoRouteHostScreen(
                 viewModel.setPipMode(isInPip)
                 if (isInPip) {
                     viewModel.setPlayerHeightDp(MATCH_PARENT)
-                } else if (Preferences.tabletMode &&
+                } else if (useLargeVideoLayout &&
                     activity.resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
                 ) {
                     viewModel.setPlayerHeightDp(350.dp)
@@ -404,7 +409,7 @@ fun VideoRouteHostScreen(
 
     DisposableEffect(lifecycleOwner, activity, player, shell, route.videoCode) {
         val orientationManager = OrientationManager(activity) { orientation ->
-            if (!Preferences.tabletMode &&
+            if (!useLargeVideoLayout &&
                 Jzvd.CURRENT_JZVD != null &&
                 (player.state == Jzvd.STATE_PLAYING || player.state == Jzvd.STATE_PAUSE) &&
                 player.screen != Jzvd.SCREEN_TINY &&
@@ -524,7 +529,7 @@ fun VideoRouteHostScreen(
             viewModel.setAppBarExpanded(route.videoCode, verticalOffset == 0)
         }
         shell.setExpanded(expanded = viewModel.isAppBarExpanded(route.videoCode), animate = false)
-        val initialHeight = if (Preferences.tabletMode) {
+        val initialHeight = if (useLargeVideoLayout) {
             350.dp
         } else {
             250.dp
@@ -543,7 +548,7 @@ fun VideoRouteHostScreen(
         isSideRelatedCollapsed,
     ) {
         if (hostUiState.isInPipMode) return@LaunchedEffect
-        val height = if (Preferences.tabletMode) {
+        val height = if (useLargeVideoLayout) {
             if (isSideRelatedCollapsed) 500.dp else 400.dp
         } else {
             250.dp
@@ -675,7 +680,7 @@ fun VideoRouteHostScreen(
     }
 
     VideoShellContent(
-        isTabletMode = Preferences.tabletMode,
+        isExpandedLayout = useLargeVideoLayout,
         isInPipMode = hostUiState.isInPipMode,
         relatedItems = relatedItems,
         onHideRelatedInIntroChange = { viewModel.hideRelatedInIntro = it },

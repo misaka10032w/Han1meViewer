@@ -41,7 +41,6 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.base.BaseFragmentActivity
 import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
-import com.yenaly.han1meviewer.ui.navigation.main.AccountRoute
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
@@ -108,7 +107,6 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
                 pendingNavigationRequests = pendingNavigationRequests,
                 snackbarHostState = snackbarHostState,
                 showAuthGuard = showAuthGuard,
-                onOpenAccount = { navController.navigateSafely(AccountRoute) },
                 onLogoutClick = { requestLogout(false) },
                 onRequireLogin = { gotoLoginActivity() },
                 onSwitchSiteClick = { requestSiteSwitch() },

@@ -43,7 +43,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -334,7 +335,10 @@ private fun AdvancedSearchDialogHost(
 
 @Composable
 private fun rememberDialogContentMaxHeight(): Dp {
-    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+    val density = LocalDensity.current
+    val screenHeight = with(density) {
+        LocalWindowInfo.current.containerSize.height.toDp()
+    }
     return (screenHeight * 0.6f).coerceIn(240.dp, 420.dp)
 }
 

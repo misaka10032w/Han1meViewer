@@ -52,7 +52,8 @@ exoplayer = "1.11.0"
 desugarJdkLibs = "2.1.5"
 firebaseBom = "34.17.0"
 composeBom = "2026.08.00"
-compose-material3 = "1.5.0-alpha26"
+compose-material3 = "1.5.0-beta02"
+compose-material3-adaptive-navigation-suite = "1.5.0-beta02"
 ui-test-junit4 = "1.12.0"
 mpv = "v0.1.7"
 
@@ -99,6 +100,10 @@ compose-compose-bom = { group = "androidx.compose", name = "compose-bom", versio
 compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity" }
 compose-material3 = { group = "androidx.compose.material3", name = "material3",version.ref = "compose-material3" }
+compose-material3-adaptive-navigation-suite = { group = "androidx.compose.material3", name = "material3-adaptive-navigation-suite", version.ref = "compose-material3-adaptive-navigation-suite" }
+compose-material3-adaptive = { group = "androidx.compose.material3.adaptive", name = "adaptive" }
+compose-material3-adaptive-layout = { group = "androidx.compose.material3.adaptive", name = "adaptive-layout" }
+compose-material3-adaptive-navigation = { group = "androidx.compose.material3.adaptive", name = "adaptive-navigation" }
 compose-ui-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 compose-ui-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 

@@ -50,6 +50,20 @@
     <string name="getchu_story">故事</string>
     <string name="getchu_staff">制作人员</string>
     <string name="my_list">我的清单</string>
+    <string name="content_library">内容库</string>
+    <string name="collapse_navigation">收起导航</string>
+    <string name="expand_navigation">展开导航</string>
+    <string name="quick_entries">快捷入口</string>
+    <string name="profile_check_in_desc">每日签到领取奖励</string>
+    <string name="profile_creator_center_desc">管理投稿与创作数据</string>
+    <string name="profile_settings_desc">播放器、网络与下载设置</string>
+    <string name="settings_pane_subtitle">管理播放、网络与下载</string>
+    <string name="content_library_favorite_desc">收藏的影片</string>
+    <string name="content_library_watch_later_desc">稍后观看</string>
+    <string name="content_library_playlist_desc">自定义播放列表</string>
+    <string name="content_library_history_desc">观看记录</string>
+    <string name="content_library_download_desc">离线下载</string>
+    <string name="content_library_pane_subtitle">收藏、记录与离线内容</string>
     <string name="watch_later">稍后观看</string>
     <string name="fav_video">喜欢的影片</string>
     <string name="settings">设置</string>
@@ -117,8 +131,6 @@
     <string name="playlist_description">介绍</string>
     <string name="add_to_playlist">加入清单</string>
     <string name="player_settings">播放器设置</string>
-    <string name="tablet_mode">平板模式</string>
-    <string name="tablet_mode_summary">开启后影片页面与首页横幅将以平板布局显示，提供更大观看区域</string>
     <string name="show_exit_confirm">退出确认弹窗</string>
     <string name="show_exit_confirm_summary">开启后按返回键退出 App 时将显示确认窗口</string>
     <string name="search_grid_columns_title">影片网格列数</string>
@@ -399,7 +411,6 @@
     <string name="privacy">隐私</string>
     <string name="about_analytics_summary">您同意让开发者收集您的设备信息与使用情况吗？这将对开发有很大帮助。&lt;br&gt;&lt;br&gt;数据统计服务由 Google Analytics for Firebase 提供，其隐私政策可在 &lt;a href=&quot;https://www.google.com/policies/privacy/&quot;&gt;https://www.google.com/policies/privacy/&lt;/a&gt; 查看。&lt;br&gt;&lt;br&gt;若您同意参与数据统计，您的设备信息与应用使用情况将会被记录，其包括但不限于：Android API 版本、设备型号、语言所在地、本应用版本号、会话时长、应用功能使用次数。开发者承诺以下信息并不会被记录：电话号码、电子邮件地址、IMEI。&lt;br&gt;&lt;br&gt;在您同意参与数据统计之前，您的信息不会被记录。&lt;br&gt;&lt;br&gt;被记录的数据会由 Google Analytics for Firebase 进行分析，分析报表仅可被本应用开发者访问。</string>
     <string name="about_analytics">关于使用情况统计</string>
-    <string name="refresh_page_or_login_expired">刷新一下页面试试\n也可能登入已过期</string>
     <string name="website_blocked_msg_2">网站被加固，修改为另外一个域名可能有奇效！</string>
     <string name="website_blocked_msg_3">可以提醒一下开发者，但不要催，网站被加固跟他没有任何关系哦～</string>
     <string name="action_not_support">此设备不支持该操作</string>
@@ -435,6 +446,7 @@
     <string name="subscribed_artists_count">已关注作者（%1$d）</string>
     <string name="swipe_more">向右滑动</string>
     <string name="my_account">我的</string>
+    <string name="account_profile">账号资料</string>
     <string name="username">用户名</string>
     <string name="logout">登出</string>
     <string name="change_avatar">更改头像</string>
@@ -758,7 +770,6 @@
     <string name="announcement">公告</string>
     <string name="announcement_list">公告列表</string>
     <string name="view_all">查看全部</string>
-    <string name="open_menu">打开菜单</string>
     <string name="permission_permanently_denied_title">权限被永久拒绝</string>
     <string name="storage_permission_settings_message">请前往设置开启存储权限，以便保存下载内容。</string>
     <string name="storage_permission_denied_toast">拒绝后将无法保存下载内容</string>

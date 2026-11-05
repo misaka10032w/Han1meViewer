@@ -50,6 +50,20 @@
     <string name="getchu_story">ストーリー</string>
     <string name="getchu_staff">スタッフ</string>
     <string name="my_list">マイリスト</string>
+    <string name="content_library">ライブラリ</string>
+    <string name="collapse_navigation">ナビゲーションを折りたたむ</string>
+    <string name="expand_navigation">ナビゲーションを展開</string>
+    <string name="quick_entries">クイックアクション</string>
+    <string name="profile_check_in_desc">毎日チェックインして報酬を獲得</string>
+    <string name="profile_creator_center_desc">投稿と創作データを管理</string>
+    <string name="profile_settings_desc">プレイヤー、ネットワーク、ダウンロード設定</string>
+    <string name="settings_pane_subtitle">再生、ネットワーク、ダウンロードを管理</string>
+    <string name="content_library_favorite_desc">お気に入り動画</string>
+    <string name="content_library_watch_later_desc">後で見る</string>
+    <string name="content_library_playlist_desc">カスタムプレイリスト</string>
+    <string name="content_library_history_desc">視聴履歴</string>
+    <string name="content_library_download_desc">オフライン保存</string>
+    <string name="content_library_pane_subtitle">お気に入り、履歴、オフラインコンテンツ</string>
     <string name="watch_later">後で見る</string>
     <string name="fav_video">お気に入り</string>
     <string name="settings">設定</string>
@@ -117,8 +131,6 @@
     <string name="playlist_description">説明</string>
     <string name="add_to_playlist">リストに追加</string>
     <string name="player_settings">プレイヤー設定</string>
-    <string name="tablet_mode">タブレットモード</string>
-    <string name="tablet_mode_summary">有効にすると動画ページとホームのバナーがタブレットレイアウトで表示され、より広い視聴エリアを提供します</string>
     <string name="show_exit_confirm">終了確認</string>
     <string name="show_exit_confirm_summary">有効にすると戻るボタンでアプリを終了する際に確認ダイアログが表示されます</string>
     <string name="search_grid_columns_title">ビデオグリッド列数</string>
@@ -402,7 +414,6 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="privacy">プライバシー</string>
     <string name="about_analytics_summary">開発者による端末情報と利用状況の収集に同意しますか？開発に大きく役立ちます。&lt;br&gt;&lt;br&gt;データ統計サービスは Google Analytics for Firebase により提供、プライバシーポリシーは &lt;a href=&quot;https://www.google.com/policies/privacy/&quot;&gt;https://www.google.com/policies/privacy/&lt;/a&gt; で確認可。&lt;br&gt;&lt;br&gt;データ統計に参加同意すると、端末情報とアプリ利用状況が記録されます。これには以下が含まれます（ただしこれらに限定されません）：Android APIバージョン、端末モデル、言語地域、アプリバージョン、セッション時間、アプリ機能使用回数。開発者は以下の情報が記録されないことを約束：電話番号、メールアドレス、IMEI。&lt;br&gt;&lt;br&gt;データ統計参加同意前は、情報は記録されません。&lt;br&gt;&lt;br&gt;記録されたデータは Google Analytics for Firebase により分析され、分析レポートは本アプリ開発者のみがアクセス可。</string>
     <string name="about_analytics">利用状況統計について</string>
-    <string name="refresh_page_or_login_expired">ページを再読み込みしてみて\nログイン期限切れの可能性も</string>
     <string name="website_blocked_msg_2">サイトが強化された、別のドメインに変更すると効果があるかも！</string>
     <string name="website_blocked_msg_3">開発者に通知可、ただし急かさないで。サイト強化は開発者とは関係ありません～</string>
     <string name="action_not_support">この端末ではこの操作はサポートされていません</string>
@@ -438,6 +449,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="subscribed_artists_count">フォロー中の作者（%1$d）</string>
     <string name="swipe_more">右へスワイプ</string>
     <string name="my_account">マイ</string>
+    <string name="account_profile">アカウント</string>
     <string name="username">ユーザー名</string>
     <string name="logout">ログアウト</string>
     <string name="change_avatar">アバターを変更</string>
@@ -746,7 +758,6 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="announcement">お知らせ</string>
     <string name="announcement_list">お知らせ一覧</string>
     <string name="view_all">すべて表示</string>
-    <string name="open_menu">メニューを開く</string>
     <string name="permission_permanently_denied_title">権限が恒久的に拒否されました</string>
     <string name="storage_permission_settings_message">ダウンロード内容を保存するには、設定でストレージ権限を有効にしてください。</string>
     <string name="storage_permission_denied_toast">ストレージ権限がないとダウンロードを保存できません</string>

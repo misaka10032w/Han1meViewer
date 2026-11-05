@@ -40,7 +40,7 @@ import com.yenaly.han1meviewer.logic.model.HanimeInfo
 
 @Composable
 fun VideoShellContent(
-    isTabletMode: Boolean,
+    isExpandedLayout: Boolean,
     isInPipMode: Boolean,
     relatedItems: List<HanimeInfo>,
     onHideRelatedInIntroChange: (Boolean) -> Unit,
@@ -51,7 +51,7 @@ fun VideoShellContent(
 ) {
     val configuration = LocalConfiguration.current
     val isTabletLandscape =
-        isTabletMode && configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        isExpandedLayout && configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val showSideRelated = isTabletLandscape && !isInPipMode
     var isSideRelatedCollapsed by rememberSaveable { mutableStateOf(false) }
 

@@ -22,7 +22,6 @@ object SettingsPreferenceKeys {
     const val DOWNLOAD_GROUP_NAME_FROM_SERIES_NAME = "download_group_name_from_series_name"
     const val DOWNLOAD_GROUP_TRADITIONAL = "download_group_traditional"
     const val DISABLE_PREDICTIVE_BACK = "disable_predictive_back"
-    const val TABLET_MODE = "tablet_mode"
     const val SHOW_EXIT_CONFIRM = "show_exit_confirm"
     const val SEARCH_GRID_COLUMNS_COMPACT = "search_grid_columns_compact"
     const val SEARCH_GRID_COLUMNS_MEDIUM = "search_grid_columns_medium"

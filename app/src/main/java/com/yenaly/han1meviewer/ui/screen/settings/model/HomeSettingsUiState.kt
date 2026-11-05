@@ -20,7 +20,6 @@ data class HomeSettingsUiState(
     val searchArtistIgnoreVideoType: Boolean,
     val disableMobileDataWarning: Boolean,
     val disablePredictiveBack: Boolean,
-    val tabletMode: Boolean,
     val showExitConfirm: Boolean,
     val disableComments: Boolean,
     val collapseDownloadedGroup: Boolean,

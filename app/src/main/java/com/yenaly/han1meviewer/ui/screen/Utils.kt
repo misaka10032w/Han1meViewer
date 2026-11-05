@@ -16,8 +16,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -106,8 +108,11 @@ fun rememberVideoGridColumns(): Int {
     val screenWidthDp = with(density) { screenWidthPx.toDp() }
 
     val isPreview = LocalInspectionMode.current
+    val useTabletColumns = currentWindowAdaptiveInfoV2()
+        .windowSizeClass
+        .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
-    return if (!isPreview && Preferences.tabletMode) {
+    return if (!isPreview && useTabletColumns) {
         Preferences.searchGridColumnsConfig.columnsForWidthDp(screenWidthDp.value.toInt())
     } else {
         maxOf(2, ((screenWidthDp + SpacingNormal) / (VideoNormalCardMinWidth + SpacingNormal)).toInt())
