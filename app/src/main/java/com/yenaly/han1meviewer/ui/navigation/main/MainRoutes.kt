@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.ui.navigation.main
 
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.AboutAppRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframesRoute
@@ -198,6 +199,11 @@ enum class MainDestinationSpec(
     SettingsHKeyframeSettings(
         topLevelDestination = MainTopLevelDestination.Profile,
         routeClass = HKeyframeSettingsRoute::class,
+        showNavigationSuite = false,
+    ),
+    SettingsAboutApp(
+        topLevelDestination = MainTopLevelDestination.Profile,
+        routeClass = AboutAppRoute::class,
         showNavigationSuite = false,
     ),
     Search(

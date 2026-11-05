@@ -121,7 +121,7 @@ fun SubscriptionScreen(
     HanimeScaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         title = stringResource(R.string.my_subscribe),
-        onBack = navigateBack,
+        onBack = null,
         scrollBehavior = scrollBehavior,
     ) { innerPadding ->
         Box(

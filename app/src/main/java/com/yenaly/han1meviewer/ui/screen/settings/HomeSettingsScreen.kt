@@ -21,7 +21,6 @@ import com.yenaly.han1meviewer.HorizontalCardCountConfig
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SearchGridColumnsConfig
 import com.yenaly.han1meviewer.ui.component.ChoiceDialog
-import com.yenaly.han1meviewer.ui.component.SettingInfoItem
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SettingSliderItem
 import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
@@ -77,6 +76,7 @@ fun HomeSettingsScreen(
     onUpdatePopupIntervalDaysChange: (Int) -> Unit,
     onOpenFakeLauncherIcon: () -> Unit,
     onOpenOpenSourceLicense: () -> Unit,
+    onOpenAboutPage: () -> Unit,
     onClearCache: () -> Unit,
     onExportBackup: () -> Unit,
     onImportBackup: () -> Unit,
@@ -517,10 +517,11 @@ fun HomeSettingsScreen(
 
                 item { SettingsGroupTitle(stringResource(R.string.settings_group_version)) }
                 item {
-                    SettingInfoItem(
+                    SettingNavigationItem(
                         title = stringResource(R.string.about),
                         summary = state.versionSummary,
                         iconRes = R.drawable.ic_baseline_info_24,
+                        onClick = onOpenAboutPage,
                     )
                 }
             }

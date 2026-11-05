@@ -112,6 +112,7 @@ fun SettingsCategoryRouteScreen(
     onNavigateToPlayerSettings: () -> Unit,
     onNavigateToHKeyframes: () -> Unit,
     onNavigateToSharedHKeyframes: () -> Unit,
+    onNavigateToAboutPage: () -> Unit,
 ) {
     when (category) {
         SettingsCategory.Network -> {
@@ -400,6 +401,7 @@ fun SettingsCategoryRouteScreen(
         },
         onOpenFakeLauncherIcon = { showLauncherPicker = true },
         onOpenOpenSourceLicense = { showLicenseScreen = true },
+        onOpenAboutPage = onNavigateToAboutPage,
         onClearCache = {
             val cacheDir = context.cacheDir
             val folderSize = cacheDir?.folderSize ?: 0L

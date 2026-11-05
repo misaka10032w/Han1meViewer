@@ -37,6 +37,9 @@ object SharedHKeyframesRoute
 @Serializable
 object HKeyframeSettingsRoute
 
+@Serializable
+object AboutAppRoute
+
 enum class SettingsDestinationSpec(
     val routeKey: String,
     @param:StringRes val titleRes: Int,
@@ -108,6 +111,14 @@ enum class SettingsDestinationSpec(
         screenClassName = "HKeyframeSettingsScreen",
         routeClass = HKeyframeSettingsRoute::class,
         category = SettingsCategory.Keyframes,
+    ),
+    AboutApp(
+        routeKey = "about_app",
+        titleRes = R.string.about,
+        iconRes = R.drawable.ic_baseline_info_24,
+        screenClassName = "AboutAppScreen",
+        routeClass = AboutAppRoute::class,
+        category = SettingsCategory.About,
     );
 
     val route: Any
@@ -120,6 +131,7 @@ enum class SettingsDestinationSpec(
             HKeyframes -> HKeyframesRoute
             SharedHKeyframes -> SharedHKeyframesRoute
             HKeyframeSettings -> HKeyframeSettingsRoute
+            AboutApp -> AboutAppRoute
         }
 
     companion object {

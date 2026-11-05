@@ -29,6 +29,7 @@ import com.yenaly.han1meviewer.ui.screen.account.AvatarCropScreen
 import com.yenaly.han1meviewer.ui.screen.home.CreatorCenterScreen
 import com.yenaly.han1meviewer.ui.screen.library.ContentLibraryScreen
 import com.yenaly.han1meviewer.ui.screen.main.ProfileScreen
+import com.yenaly.han1meviewer.ui.navigation.settings.AboutAppRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframeSettingsRoute
@@ -52,6 +53,7 @@ import com.yenaly.han1meviewer.ui.navigation.settings.SettingsScaffold
 import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRouteScreen
 import com.yenaly.han1meviewer.ui.screen.account.AccountScreen
+import com.yenaly.han1meviewer.ui.screen.settings.AboutAppScreen
 import com.yenaly.han1meviewer.ui.viewmodel.CreatorCenterViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.UserAccountViewModel
 import kotlinx.serialization.json.Json
@@ -257,6 +259,14 @@ fun MainNavHost(
                 },
             )
         }
+        composable<AboutAppRoute> {
+            SettingsScaffold(
+                navController = navController,
+                fallbackDestination = HomeSettingsRoute,
+            ) {
+                AboutAppScreen()
+            }
+        }
         composable<HomeSettingsRoute> {
             SettingsScaffold(
                 navController = navController,
@@ -288,6 +298,9 @@ fun MainNavHost(
                     },
                     onNavigateToSharedHKeyframes = {
                         navController.navigateSettingsDestination(SharedHKeyframesRoute)
+                    },
+                    onNavigateToAboutPage = {
+                        navController.navigateSettingsDestination(AboutAppRoute)
                     },
                 )
             }
