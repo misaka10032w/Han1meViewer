@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -43,6 +44,9 @@ import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.ExpressiveEntryCard
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
+
+/** “我的”页面快捷入口卡片的统一高度。 */
+private val ProfileEntryCardHeight = 168.dp
 
 /**
  * “我的”一级页面，承载账号、签到、创作中心和设置等入口。
@@ -142,6 +146,9 @@ fun ProfileScreen(
                     icon = entry.icon,
                     title = entry.title,
                     subtitle = entry.subtitle,
+                    // 统一预留两行副标题并固定卡片高度，避免四个快捷入口大小不一致。
+                    subtitleMinLines = 2,
+                    modifier = Modifier.height(ProfileEntryCardHeight),
                     onClick = entry.onClick,
                 )
             }

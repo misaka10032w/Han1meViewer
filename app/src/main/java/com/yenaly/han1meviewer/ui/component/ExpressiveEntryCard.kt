@@ -39,6 +39,7 @@ fun ExpressiveEntryCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    subtitleMinLines: Int = 1,
     locked: Boolean = false,
 ) {
     ElevatedCard(
@@ -110,6 +111,7 @@ fun ExpressiveEntryCard(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        minLines = subtitleMinLines,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
