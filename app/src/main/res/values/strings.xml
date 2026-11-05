@@ -70,7 +70,7 @@
     <string name="profile_check_in_desc">每日簽到領取獎勵</string>
     <string name="profile_creator_center_desc">管理投稿與創作資料</string>
     <string name="profile_settings_desc">播放器、網路與下載設定</string>
-    <string name="settings_pane_subtitle">管理播放、網路與下載</string>
+    <string name="settings_pane_subtitle">做一些符合你心意的調整</string>
     <string name="settings_select_category_hint">從左側選擇設定分類</string>
     <string name="settings_category_appearance">外觀與互動</string>
     <string name="settings_category_appearance_desc">主題、語言、介面與佈局</string>

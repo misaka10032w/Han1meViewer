@@ -57,7 +57,7 @@
     <string name="profile_check_in_desc">Check in daily for rewards</string>
     <string name="profile_creator_center_desc">Manage uploads and creator stats</string>
     <string name="profile_settings_desc">Player, network and download settings</string>
-    <string name="settings_pane_subtitle">Manage playback, network and downloads</string>
+    <string name="settings_pane_subtitle">Make some adjustments that align with your wishes.</string>
     <string name="settings_select_category_hint">Choose a settings category from the left</string>
     <string name="settings_category_appearance">Appearance &amp; interaction</string>
     <string name="settings_category_appearance_desc">Theme, language, layout and display</string>

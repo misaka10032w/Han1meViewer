@@ -57,7 +57,7 @@
     <string name="profile_check_in_desc">每日签到领取奖励</string>
     <string name="profile_creator_center_desc">管理投稿与创作数据</string>
     <string name="profile_settings_desc">播放器、网络与下载设置</string>
-    <string name="settings_pane_subtitle">管理播放、网络与下载</string>
+    <string name="settings_pane_subtitle">做一些符合你心意的调整</string>
     <string name="settings_select_category_hint">从左侧选择设置分类</string>
     <string name="settings_category_appearance">外观与交互</string>
     <string name="settings_category_appearance_desc">主题、语言、界面与布局</string>

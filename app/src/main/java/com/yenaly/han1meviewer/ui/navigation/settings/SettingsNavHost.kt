@@ -22,11 +22,13 @@ import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.layout.AnimatedPane
 import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffold
-import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
+import androidx.compose.material3.adaptive.layout.PaneAdaptedValue
+import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldValue
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -138,19 +140,18 @@ private fun SettingsTwoPaneScaffold(
     content: @Composable () -> Unit,
 ) {
     val navigator = rememberListDetailPaneScaffoldNavigator<String>()
-
-    LaunchedEffect(currentScreen) {
-        if (navigator.currentDestination?.contentKey != currentScreen.contentKey) {
-            navigator.navigateTo(
-                pane = ListDetailPaneScaffoldRole.Detail,
-                contentKey = currentScreen.contentKey,
-            )
-        }
+    // 双栏设置始终同时展示列表与详情，避免路由切换时左栏被重新展开而产生滑动。
+    val fixedTwoPaneValue = remember {
+        ThreePaneScaffoldValue(
+            primary = PaneAdaptedValue.Expanded,
+            secondary = PaneAdaptedValue.Expanded,
+            tertiary = PaneAdaptedValue.Hidden,
+        )
     }
 
     ListDetailPaneScaffold(
         directive = navigator.scaffoldDirective,
-        value = navigator.scaffoldValue,
+        value = fixedTwoPaneValue,
         listPane = {
             AnimatedPane {
                 SettingsListPane(

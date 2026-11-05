@@ -57,7 +57,7 @@
     <string name="profile_check_in_desc">毎日チェックインして報酬を獲得</string>
     <string name="profile_creator_center_desc">投稿と創作データを管理</string>
     <string name="profile_settings_desc">プレイヤー、ネットワーク、ダウンロード設定</string>
-    <string name="settings_pane_subtitle">再生、ネットワーク、ダウンロードを管理</string>
+    <string name="settings_pane_subtitle">自分の好みに合うように調整する</string>
     <string name="settings_select_category_hint">左から設定カテゴリを選択</string>
     <string name="settings_category_appearance">外観と操作</string>
     <string name="settings_category_appearance_desc">テーマ、言語、レイアウトと表示</string>
