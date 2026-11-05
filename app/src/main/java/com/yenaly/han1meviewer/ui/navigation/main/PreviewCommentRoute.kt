@@ -2,6 +2,9 @@ package com.yenaly.han1meviewer.ui.navigation.main
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
@@ -15,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -34,9 +38,12 @@ import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
 import com.yenaly.han1meviewer.ui.screen.video.ChildCommentScreen
 import com.yenaly.han1meviewer.ui.screen.video.CommentMessage
 import com.yenaly.han1meviewer.ui.screen.video.CommentScreen
+import com.yenaly.han1meviewer.ui.screen.home.preview.currentDateCode as currentMonthCode
+import com.yenaly.han1meviewer.ui.screen.home.preview.shiftMonthCode
+import com.yenaly.han1meviewer.ui.screen.home.preview.toNormalDateLabel
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
-import com.yenaly.yenaly_libs.utils.application
+import com.yenaly.han1meviewer.util.application
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -50,10 +57,26 @@ fun PreviewCommentRouteScreen(
     val viewModel: CommentViewModel = viewModel(viewModelStoreOwner = activity)
     val comments = viewModel.videoCommentFlow
     val commentState = viewModel.videoCommentStateFlow
-    val commentUiState = remember(route.dateCode) {
-        viewModel.getCommentUiState(route.dateCode)
+    val currentMonth = remember { currentMonthCode() }
+    var currentDateCode by rememberSaveable { mutableStateOf(route.dateCode) }
+    val currentDateLabel = remember(currentDateCode) { toNormalDateLabel(currentDateCode) }
+    val commentUiState = remember(currentDateCode) {
+        viewModel.getCommentUiState(currentDateCode)
     }
     var childCommentId by rememberSaveable { mutableStateOf(commentUiState.childCommentId) }
+    var initialPrefetchConsumed by rememberSaveable { mutableStateOf(false) }
+
+    fun shiftCommentMonth(delta: Int) {
+        val targetDateCode = shiftMonthCode(currentDateCode, delta)
+        if (targetDateCode == currentDateCode) return
+        if (targetDateCode > currentMonth) return
+        childCommentId = null
+        viewModel.setChildCommentId(targetDateCode, null)
+        viewModel.clearVideoReplyList()
+        viewModel.clearCommentData()
+        viewModel.code = targetDateCode
+        currentDateCode = targetDateCode
+    }
     val childSheetState = rememberBottomSheetState(
         initialValue = SheetValue.Hidden,
         enabledValues = setOf(
@@ -67,15 +90,21 @@ fun PreviewCommentRouteScreen(
         .commentFlow
         .collectAsStateWithLifecycle()
         .value
-    val hasPrefetchedComments = prefetchedComments.isNotEmpty()
+    val hasPrefetchedComments = prefetchedComments.isNotEmpty() &&
+            viewModel.lastCommentCode == route.dateCode
     val reportMessages = remember { kotlinx.coroutines.flow.MutableSharedFlow<CommentMessage>() }
 
-    LaunchedEffect(route.dateCode, hasPrefetchedComments, prefetchedComments) {
-        viewModel.code = route.dateCode
-        if (hasPrefetchedComments) {
+    LaunchedEffect(currentDateCode) {
+        viewModel.code = currentDateCode
+        if (!initialPrefetchConsumed &&
+            currentDateCode == route.dateCode &&
+            hasPrefetchedComments
+        ) {
+            initialPrefetchConsumed = true
             viewModel.updateComments(prefetchedComments)
         } else {
-            viewModel.getComment(PREVIEW_COMMENT_PREFIX, route.dateCode)
+            initialPrefetchConsumed = true
+            viewModel.getComment(PREVIEW_COMMENT_PREFIX, currentDateCode)
         }
     }
 
@@ -95,18 +124,18 @@ fun PreviewCommentRouteScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(currentDateCode) {
         viewModel.postCommentFlow.collect { state ->
             if (state is WebsiteState.Success) {
-                viewModel.getComment(PREVIEW_COMMENT_PREFIX, route.dateCode)
+                viewModel.getComment(PREVIEW_COMMENT_PREFIX, currentDateCode)
             }
         }
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(currentDateCode) {
         viewModel.postReplyFlow.collect { state ->
             if (state is WebsiteState.Success) {
-                viewModel.getComment(PREVIEW_COMMENT_PREFIX, route.dateCode)
+                viewModel.getComment(PREVIEW_COMMENT_PREFIX, currentDateCode)
             }
         }
     }
@@ -134,7 +163,7 @@ fun PreviewCommentRouteScreen(
         ModalBottomSheet(
             onDismissRequest = {
                 childCommentId = null
-                viewModel.setChildCommentId(route.dateCode, null)
+                viewModel.setChildCommentId(currentDateCode, null)
                 viewModel.clearVideoReplyList()
             },
             sheetState = childSheetState,
@@ -170,7 +199,7 @@ fun PreviewCommentRouteScreen(
                     viewModel.reportComment(
                         reason.reasonKey ?: reason.value,
                         viewModel.currentUserId,
-                        "${Preferences.baseUrl}watch?v=${viewModel.code}",
+                        "${Preferences.baseUrl}watch?v=$currentDateCode",
                         comment.reportableType,
                         comment.reportableId,
                     )
@@ -200,7 +229,9 @@ fun PreviewCommentRouteScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.latest_hanime_comment, route.date)) },
+                title = {
+                    Text(stringResource(R.string.latest_hanime_comment, currentDateLabel))
+                },
                 navigationIcon = {
                     FilledIconButton(onClick = onBack) {
                         Icon(
@@ -209,96 +240,115 @@ fun PreviewCommentRouteScreen(
                         )
                     }
                 },
+                actions = {
+                    FilledIconButton(onClick = { shiftCommentMonth(-1) }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                            contentDescription = stringResource(R.string.previous_month),
+                        )
+                    }
+                    FilledIconButton(
+                        onClick = { shiftCommentMonth(1) },
+                        enabled = currentDateCode < currentMonth,
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            contentDescription = stringResource(R.string.next_month),
+                        )
+                    }
+                },
             )
         }
     ) { paddingValues ->
-        CommentScreen(
-            commentsFlow = comments,
-            commentStateFlow = commentState,
-            reportMessageFlow = reportMessages,
-            currentSortType = viewModel.currentSortType,
-            reportReasons = viewModel.reportReason,
-            isPreviewCommentPrefetched = hasPrefetchedComments,
-            isAlreadyLogin = Preferences.isAlreadyLogin,
-            onRefresh = { viewModel.getComment(PREVIEW_COMMENT_PREFIX, route.dateCode) },
-            onReply = { comment, text ->
-                if (!Preferences.isAlreadyLogin) return@CommentScreen
-                val replyTargetId = comment.replyTargetIdOrNull
-                if (replyTargetId == null) {
-                    scope.launch {
+        key(currentDateCode) {
+            CommentScreen(
+                commentsFlow = comments,
+                commentStateFlow = commentState,
+                reportMessageFlow = reportMessages,
+                currentSortType = viewModel.currentSortType,
+                reportReasons = viewModel.reportReason,
+                isPreviewCommentPrefetched = hasPrefetchedComments,
+                isAlreadyLogin = Preferences.isAlreadyLogin,
+                onRefresh = { viewModel.getComment(PREVIEW_COMMENT_PREFIX, currentDateCode) },
+                onReply = { comment, text ->
+                    if (!Preferences.isAlreadyLogin) return@CommentScreen
+                    val replyTargetId = comment.replyTargetIdOrNull
+                    if (replyTargetId == null) {
+                        scope.launch {
+                            reportMessages.emit(CommentMessage(activity.getString(R.string.there_is_a_small_issue)))
+                        }
+                        return@CommentScreen
+                    }
+                    viewModel.postReply(replyTargetId, text)
+                },
+                onReport = { comment, reason ->
+                    viewModel.reportComment(
+                        reason.reasonKey ?: reason.value,
+                        viewModel.currentUserId,
+                        "${Preferences.baseUrl}watch?v=$currentDateCode",
+                        comment.reportableType,
+                        comment.reportableId,
+                    )
+                },
+                onThumbUp = { comment ->
+                    if (!Preferences.isAlreadyLogin) return@CommentScreen
+                    if (comment.isChildComment) {
+                        viewModel.likeChildComment(
+                            true,
+                            0,
+                            comment,
+                            likeCommentStatus = comment.post.likeCommentStatus
+                        )
+                    } else {
+                        viewModel.likeComment(
+                            true,
+                            0,
+                            comment,
+                            likeCommentStatus = comment.post.likeCommentStatus
+                        )
+                    }
+                },
+                onThumbDown = { comment ->
+                    if (!Preferences.isAlreadyLogin) return@CommentScreen
+                    if (comment.isChildComment) {
+                        viewModel.likeChildComment(
+                            false,
+                            0,
+                            comment,
+                            unlikeCommentStatus = comment.post.unlikeCommentStatus
+                        )
+                    } else {
+                        viewModel.likeComment(
+                            false,
+                            0,
+                            comment,
+                            unlikeCommentStatus = comment.post.unlikeCommentStatus
+                        )
+                    }
+                },
+                onViewMoreReplies = { comment ->
+                    comment.replyTargetIdOrNull?.let {
+                        childCommentId = it
+                        viewModel.setChildCommentId(currentDateCode, it)
+                    }
+                },
+                onSortChange = viewModel::setSortType,
+                onComposeComment = { text ->
+                    viewModel.currentUserId?.let { id ->
+                        viewModel.postComment(id, currentDateCode, PREVIEW_COMMENT_PREFIX, text)
+                    } ?: scope.launch {
                         reportMessages.emit(CommentMessage(activity.getString(R.string.there_is_a_small_issue)))
                     }
-                    return@CommentScreen
-                }
-                viewModel.postReply(replyTargetId, text)
-            },
-            onReport = { comment, reason ->
-                viewModel.reportComment(
-                    reason.reasonKey ?: reason.value,
-                    viewModel.currentUserId,
-                    "${Preferences.baseUrl}watch?v=${viewModel.code}",
-                    comment.reportableType,
-                    comment.reportableId,
-                )
-            },
-            onThumbUp = { comment ->
-                if (!Preferences.isAlreadyLogin) return@CommentScreen
-                if (comment.isChildComment) {
-                    viewModel.likeChildComment(
-                        true,
-                        0,
-                        comment,
-                        likeCommentStatus = comment.post.likeCommentStatus
-                    )
-                } else {
-                    viewModel.likeComment(
-                        true,
-                        0,
-                        comment,
-                        likeCommentStatus = comment.post.likeCommentStatus
-                    )
-                }
-            },
-            onThumbDown = { comment ->
-                if (!Preferences.isAlreadyLogin) return@CommentScreen
-                if (comment.isChildComment) {
-                    viewModel.likeChildComment(
-                        false,
-                        0,
-                        comment,
-                        unlikeCommentStatus = comment.post.unlikeCommentStatus
-                    )
-                } else {
-                    viewModel.likeComment(
-                        false,
-                        0,
-                        comment,
-                        unlikeCommentStatus = comment.post.unlikeCommentStatus
-                    )
-                }
-            },
-            onViewMoreReplies = { comment ->
-                comment.replyTargetIdOrNull?.let {
-                    childCommentId = it
-                    viewModel.setChildCommentId(route.dateCode, it)
-                }
-            },
-            onSortChange = viewModel::setSortType,
-            onComposeComment = { text ->
-                viewModel.currentUserId?.let { id ->
-                    viewModel.postComment(id, viewModel.code, PREVIEW_COMMENT_PREFIX, text)
-                } ?: scope.launch {
-                    reportMessages.emit(CommentMessage(activity.getString(R.string.there_is_a_small_issue)))
-                }
-            },
-            initialFirstVisibleItemIndex = commentUiState.firstVisibleItemIndex,
-            initialFirstVisibleItemScrollOffset = commentUiState.firstVisibleItemScrollOffset,
-            onCommentScrollChange = { index, offset ->
-                viewModel.setCommentScrollState(route.dateCode, index, offset)
-            },
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-        )
+                },
+                initialFirstVisibleItemIndex = commentUiState.firstVisibleItemIndex,
+                initialFirstVisibleItemScrollOffset = commentUiState.firstVisibleItemScrollOffset,
+                onCommentScrollChange = { index, offset ->
+                    viewModel.setCommentScrollState(currentDateCode, index, offset)
+                },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+            )
+        }
     }
 }

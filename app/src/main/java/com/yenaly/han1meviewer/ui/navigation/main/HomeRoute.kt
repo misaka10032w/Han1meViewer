@@ -21,7 +21,7 @@ import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageScreen
 import com.yenaly.han1meviewer.ui.screen.home.homepage.HomeUiEvent
 import com.yenaly.han1meviewer.ui.screen.home.homepage.LocalSearchHistoryQuery
 import com.yenaly.han1meviewer.ui.viewmodel.CheckInCalendarViewModel
-import com.yenaly.yenaly_libs.utils.copyTextToClipboard
+import com.yenaly.han1meviewer.util.copyTextToClipboard
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import java.time.LocalTime
@@ -30,8 +30,6 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun HomeRouteScreen(
     activity: MainActivity,
-    isDrawerOpen: Boolean,
-    onOpenDrawer: () -> Unit,
     onNavigateToPreview: () -> Unit,
     onNavigateToSearch: (String?) -> Unit,
     onNavigateToSearchAdvanced: (Map<String, String>) -> Unit,
@@ -54,10 +52,8 @@ fun HomeRouteScreen(
     ) {
         HomePageScreen(
             viewModel = viewModel,
-            isDrawerOpen = isDrawerOpen,
             onEvent = { event ->
                 when (event) {
-                    is HomeUiEvent.OpenDrawer -> onOpenDrawer()
                     is HomeUiEvent.NavigateToPreview -> onNavigateToPreview()
                     is HomeUiEvent.OpenSearchPage -> onNavigateToSearch(event.query)
                     is HomeUiEvent.NavigateToSearchAdvanced -> onNavigateToSearchAdvanced(event.params)

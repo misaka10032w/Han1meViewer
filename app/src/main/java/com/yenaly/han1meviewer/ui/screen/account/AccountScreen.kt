@@ -75,7 +75,7 @@ import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.screen.rememberRandomLoadingHint
 import com.yenaly.han1meviewer.ui.viewmodel.UserAccountViewModel
 import com.yenaly.han1meviewer.util.pickVisualMedia
-import com.yenaly.yenaly_libs.utils.browse
+import com.yenaly.han1meviewer.util.browse
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)

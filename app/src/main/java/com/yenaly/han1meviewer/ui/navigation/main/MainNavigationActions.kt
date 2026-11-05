@@ -1,41 +1,57 @@
 package com.yenaly.han1meviewer.ui.navigation.main
 
 import android.content.Intent
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategory
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategoryRoute
 import kotlinx.serialization.json.Json
 
-private val loginRequiredDrawerItems = setOf(
-    MainDrawerDestination.FavVideo,
-    MainDrawerDestination.WatchLater,
-    MainDrawerDestination.Playlist,
-    MainDrawerDestination.Subscription,
-)
-
-fun NavHostController.navigateDrawerDestination(
-    destination: MainDrawerDestination,
+fun NavHostController.navigateTopLevelDestination(
+    destination: MainTopLevelDestination,
     isLoggedIn: Boolean,
     onRequireLogin: () -> Unit,
 ): Boolean {
-    if (destination in loginRequiredDrawerItems && !isLoggedIn) {
+    if (destination.requiresLogin && !isLoggedIn) {
         onRequireLogin()
         return false
     }
 
-    when (destination) {
-        MainDrawerDestination.Home -> navigateSafely(HomeRoute)
-        MainDrawerDestination.Settings -> navigateSafely(HomeSettingsRoute)
-        MainDrawerDestination.DailyCheckIn -> navigateSafely(DailyCheckInRoute)
-        MainDrawerDestination.WatchLater -> navigateSafely(MyWatchLaterRoute)
-        MainDrawerDestination.FavVideo -> navigateSafely(MyFavVideoRoute)
-        MainDrawerDestination.Playlist -> navigateSafely(MyPlaylistRoute)
-        MainDrawerDestination.Subscription -> navigateSafely(SubscriptionRoute)
-        MainDrawerDestination.CreatorCenter -> navigateSafely(CreatorCenterRoute)
-        MainDrawerDestination.WatchHistory -> navigateSafely(WatchHistoryRoute)
-        MainDrawerDestination.Download -> navigateSafely(DownloadRoute)
+    navigateSafely(destination.route) {
+        popUpTo(HomeRoute) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
     }
     return true
+}
+
+/**
+ * 切换设置一级分类。
+ *
+ * 只保留“设置首页 + 当前分类”，避免平板双栏反复点击分类时不断入栈。
+ */
+fun NavController.navigateSettingsCategoryDestination(category: SettingsCategory) {
+    navigateSafely(SettingsCategoryRoute(category.key)) {
+        popUpTo(HomeSettingsRoute) {
+            inclusive = false
+        }
+        launchSingleTop = true
+    }
+}
+
+/**
+ * 进入设置二级页面。
+ *
+ * 使用普通入栈，保证从二级页面返回时回到所属分类，而不是直接回到设置首页。
+ */
+fun NavController.navigateSettingsDestination(route: Any) {
+    navigateSafely(route) {
+        launchSingleTop = true
+    }
 }
 
 fun NavHostController.handleMainIntent(intent: Intent) {

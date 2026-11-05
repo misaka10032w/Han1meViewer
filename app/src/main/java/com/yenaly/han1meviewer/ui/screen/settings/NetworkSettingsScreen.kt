@@ -110,6 +110,7 @@ fun NetworkSettingsScreen(
     onDismissDelayTest: () -> Unit,
     onDismissDohTest: () -> Unit,
     onApplyProxy: (Int, String, Int) -> Unit,
+    onOpenApplyDeepLinks: () -> Unit,
 ) {
     var showDomainDialog by rememberSaveable { mutableStateOf(false) }
     var showProxyDialog by rememberSaveable { mutableStateOf(false) }
@@ -290,6 +291,15 @@ fun NetworkSettingsScreen(
                 summary = stringResource(R.string.test_doh_summary),
                 iconRes = R.drawable.baseline_doh_24,
                 onClick = onOpenDohTest,
+            )
+        }
+
+        item {
+            SettingNavigationItem(
+                title = stringResource(R.string.apply_deep_links),
+                summary = stringResource(R.string.apply_deep_links_summary),
+                iconRes = R.drawable.baseline_add_link_24,
+                onClick = onOpenApplyDeepLinks,
             )
         }
     }
@@ -845,6 +855,7 @@ private fun NetworkSettingsScreenPreview() {
             onDismissDelayTest = {},
             onDismissDohTest = {},
             onApplyProxy = { _, _, _ -> },
+            onOpenApplyDeepLinks = {},
         )
     }
 }

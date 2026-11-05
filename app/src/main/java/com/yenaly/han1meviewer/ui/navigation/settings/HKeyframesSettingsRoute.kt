@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.navigation.settings
 
 import android.content.Context
+import android.util.Base64
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
@@ -30,8 +31,7 @@ import com.yenaly.han1meviewer.ui.screen.settings.HKeyframeSettingsUiState
 import com.yenaly.han1meviewer.ui.screen.settings.HKeyframesScreen
 import com.yenaly.han1meviewer.ui.screen.settings.SharedHKeyframesScreen
 import com.yenaly.han1meviewer.ui.viewmodel.SettingsViewModel
-import com.yenaly.yenaly_libs.utils.copyToClipboard
-import com.yenaly.yenaly_libs.utils.decodeFromStringByBase64
+import com.yenaly.han1meviewer.util.copyToClipboard
 import kotlinx.serialization.json.Json
 
 private const val H_KEYFRAMES_ENABLE = "h_keyframes_enable"
@@ -132,7 +132,7 @@ private fun parseSharedHKeyframe(content: String): HKeyframeEntity? {
     return runCatching {
         val matchResult = shareRegex.find(content) ?: return@runCatching null
         val (toBase64) = matchResult.destructured
-        val toJson = toBase64.decodeFromStringByBase64()
+        val toJson = String(Base64.decode(toBase64.toByteArray(), Base64.DEFAULT))
         Json.decodeFromString<HKeyframeEntity>(toJson)
     }.getOrNull()
 }

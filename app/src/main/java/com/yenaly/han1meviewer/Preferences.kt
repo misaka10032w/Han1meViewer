@@ -13,9 +13,9 @@ import com.yenaly.han1meviewer.ui.view.video.HMediaKernel
 import com.yenaly.han1meviewer.util.CookieString
 import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
-import com.yenaly.yenaly_libs.utils.applicationContext
-import com.yenaly.yenaly_libs.utils.getSpValue
-import com.yenaly.yenaly_libs.utils.putSpValue
+import com.yenaly.han1meviewer.util.applicationContext
+import com.yenaly.han1meviewer.util.getSpValue
+import com.yenaly.han1meviewer.util.putSpValue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.time.Duration.Companion.days
 import kotlin.time.ExperimentalTime
@@ -48,6 +48,16 @@ object Preferences {
     var usageNoticeAccepted: Boolean
         get() = preferenceSp.getBoolean(USAGE_NOTICE_ACCEPTED, false)
         set(value) = preferenceSp.edit { putBoolean(USAGE_NOTICE_ACCEPTED, value) }
+
+    private const val LAST_HANDLED_CLIPBOARD = "last_handled_clipboard"
+
+    /**
+     * 最近一次读取并处理过的剪贴板内容。
+     * 用于避免同一段剪贴板文本在每次回到应用时重复弹出打开链接的提示。
+     */
+    var lastHandledClipboard: String
+        get() = getSpValue(LAST_HANDLED_CLIPBOARD, EMPTY_STRING)
+        set(value) = putSpValue(LAST_HANDLED_CLIPBOARD, value)
 
     val savedUserId: String
         get() = preferenceSp.getString(SAVED_USER_ID,"") ?: ""
@@ -359,8 +369,6 @@ object Preferences {
 
     val useDarkMode: String
         get() = preferenceSp.getString(SettingsPreferenceKeys.USE_DARK_MODE,"always_off") ?: "always_off"
-    val useDynamicColor: Boolean
-        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.USE_DYNAMIC_COLOR,false)
     val themeColor: String?
         get() = preferenceSp.getString(SettingsPreferenceKeys.THEME_COLOR, null)
     val pureBlackDarkMode: Boolean
@@ -376,9 +384,6 @@ object Preferences {
 
     val disablePredictiveBack: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.DISABLE_PREDICTIVE_BACK, false)
-
-    val tabletMode: Boolean
-        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.TABLET_MODE, false)
 
     val showExitConfirm: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.SHOW_EXIT_CONFIRM, true)

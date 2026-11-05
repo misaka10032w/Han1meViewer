@@ -18,8 +18,8 @@ import com.yenaly.han1meviewer.logic.model.HanimeSearchResult
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.util.loadAssetAs
-import com.yenaly.yenaly_libs.base.YenalyViewModel
-import com.yenaly.yenaly_libs.utils.unsafeLazy
+import com.yenaly.han1meviewer.base.BaseViewModel
+import com.yenaly.han1meviewer.util.unsafeLazy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +38,7 @@ import kotlinx.coroutines.withContext
 class SearchViewModel(
     application: Application,
     private val state: SavedStateHandle
-) : YenalyViewModel(application) {
+) : BaseViewModel(application) {
 
     private val _pageFlow = MutableStateFlow(1)
     val pageFlow = _pageFlow.asStateFlow()

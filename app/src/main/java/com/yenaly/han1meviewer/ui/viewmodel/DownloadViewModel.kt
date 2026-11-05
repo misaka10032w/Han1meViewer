@@ -6,7 +6,7 @@ import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
-import com.yenaly.yenaly_libs.base.YenalyViewModel
+import com.yenaly.han1meviewer.base.BaseViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
  * 实现分组展示和展开/折叠功能
  * 实现分组移动、重命名等
  */
-class DownloadViewModel(application: Application) : YenalyViewModel(application) {
+class DownloadViewModel(application: Application) : BaseViewModel(application) {
 
     private val _downloaded = MutableStateFlow(mutableListOf<VideoWithCategories>())
     val downloaded = _downloaded.asStateFlow()

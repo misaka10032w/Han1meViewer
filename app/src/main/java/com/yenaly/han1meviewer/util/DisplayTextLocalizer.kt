@@ -1,6 +1,6 @@
 package com.yenaly.han1meviewer.util
 
-import com.yenaly.yenaly_libs.utils.LanguageHelper
+import com.yenaly.han1meviewer.base.AppLocale
 import java.math.BigDecimal
 import java.util.Locale
 
@@ -48,7 +48,7 @@ object DisplayTextLocalizer {
         }
     }
 
-    private fun language(): String = LanguageHelper.preferredLanguage.language
+    private fun language(): String = AppLocale.preferredLanguage.language
 
     private fun String.toSimplifiedUnit(): String = when (this) {
         "分鐘", "分钟" -> "分钟"

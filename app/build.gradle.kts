@@ -16,7 +16,6 @@ plugins {
     alias(libs.plugins.com.google.firebase.crashlytics)
     alias(libs.plugins.com.google.firebase.firebase.pref)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.navigation.safeargs)
     id("com.mikepenz.aboutlibraries.plugin") version "14.2.1"
     id("com.github.ben-manes.versions") version "0.54.0"
 }
@@ -37,7 +36,7 @@ android {
         applicationId = "com.yenaly.han1meviewer"
         minSdk = property("min.sdk")?.toString()?.toIntOrNull()
         targetSdk = property("target.sdk")?.toString()?.toIntOrNull()
-        val (code, name) = createVersion(major = 1, minor = 1, patch = 0)
+        val (code, name) = createVersion(major = 1, minor = 3, patch = 0)
         versionCode = code
         versionName = name
 
@@ -92,11 +91,14 @@ android {
         }
     }
     buildFeatures {
-        //noinspection DataBindingWithoutKapt
-        dataBinding = true
         buildConfig = true
-        viewBinding = true
         compose  =  true
+    }
+    bundle {
+        language {
+            // 应用内切换语言需要打包全部语言资源
+            enableSplit = false
+        }
     }
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
@@ -135,11 +137,9 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.androidx.window)
     implementation(libs.androidx.window.java)
-    implementation(project(":yenaly_libs"))
     implementation(libs.aboutlibraries.core)
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.core.splashscreen)
-    implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.androidx.material.icons.extended)
     // android related
 
@@ -151,6 +151,10 @@ dependencies {
     implementation(platform(libs.compose.compose.bom))
     implementation(libs.compose.ui.graphics)
     implementation(libs.compose.material3)
+    implementation(libs.compose.material3.adaptive.navigation.suite)
+    implementation(libs.compose.material3.adaptive)
+    implementation(libs.compose.material3.adaptive.layout)
+    implementation(libs.compose.material3.adaptive.navigation)
     implementation(libs.androidx.activity.compose)
     implementation(libs.compose.ui.ui.tooling.preview)
     implementation(libs.androidx.ui)
@@ -192,13 +196,8 @@ dependencies {
 
     // view
 
-    implementation(libs.multitype)
     implementation(libs.base.recyclerview.adapter.helper4)
-    implementation(libs.expandable.textview)
     implementation(libs.spannable.x)
-    implementation(libs.about)
-    implementation(libs.circular.reveal.switch)
-    implementation(libs.drawerlayout)
 
     // firebase
 

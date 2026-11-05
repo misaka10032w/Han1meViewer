@@ -40,7 +40,7 @@ import com.yenaly.han1meviewer.util.SafFileManager.checkSafPermissions
 import com.yenaly.han1meviewer.util.SafFileManager.scanAndImportHanimeDownloads
 import com.yenaly.han1meviewer.util.openDownloadedHanimeVideoLocally
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
-import com.yenaly.yenaly_libs.utils.application
+import com.yenaly.han1meviewer.util.application
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -129,9 +129,13 @@ fun DownloadRouteScreen(
                 GlobalToasts.show(deleteSuccess, level = GlobalToasts.ToastLevel.SUCCESS)
             }
 
-            is DownloadEvent.OnBatchDelete -> event.videos.forEach { video ->
-                viewModel.deleteDownloadHanimeBy(video.video.videoCode, video.video.quality)
-                SafFileManager.deleteDownloadVideoFolder(context, video.video.videoCode)
+            is DownloadEvent.OnBatchDelete -> {
+                scope.launch(Dispatchers.IO) {
+                    event.videos.forEach { video ->
+                        viewModel.deleteDownloadHanimeBy(video.video.videoCode, video.video.quality)
+                        SafFileManager.deleteDownloadVideoFolder(context, video.video.videoCode)
+                    }
+                }
             }
 
             is DownloadEvent.OnBatchMoveGroup -> event.videos.forEach { video ->
@@ -301,9 +305,11 @@ fun DownloadRouteScreen(
             confirmText = application.getString(R.string.confirm),
             dismissText = application.getString(R.string.cancel),
             onConfirm = {
-                SafFileManager.deleteDownloadVideoFolder(context, video.video.videoCode)
-                viewModel.deleteDownloadHanimeBy(video.video.videoCode, video.video.quality)
                 showDeleteVideoConfirm = null
+                scope.launch(Dispatchers.IO) {
+                    SafFileManager.deleteDownloadVideoFolder(context, video.video.videoCode)
+                    viewModel.deleteDownloadHanimeBy(video.video.videoCode, video.video.quality)
+                }
             },
             onDismiss = { showDeleteVideoConfirm = null },
         )

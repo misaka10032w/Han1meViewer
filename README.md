@@ -144,10 +144,9 @@ Telegram 群组：[https://t.me/Han1meViewer](https://t.me/Han1meViewer)
 
 ## 🧱 当前架构
 
-📦 项目采用多模块 Gradle 结构：
+📦 项目采用单应用模块 + `buildSrc` 的 Gradle 结构：
 
 - `:app`：主应用模块，包含界面、导航、业务 ViewModel、网络解析、数据库、下载 Worker、播放器和资源文件。
-- `:yenaly_libs`：项目内公共基础库，封装通用 Activity、Fragment、ViewModel、偏好设置、工具类和基础组件。
 - `buildSrc`：构建配置辅助代码，用于版本号、构建类型和提交信息等 Gradle 逻辑。
 
 🗂️ 主应用采用分层组织：
@@ -273,7 +272,6 @@ Han1meViewer/
 │   ├── src/main/java/.../util    通用工具
 │   ├── src/main/java/.../worker  WorkManager 任务
 │   └── src/main/res              资源文件、主题、布局、图标、小组件
-├── yenaly_libs/                  项目内公共库
 ├── buildSrc/                     Gradle 构建辅助代码
 ├── gradle/libs.versions.toml     依赖版本目录
 ├── README.md                     项目说明

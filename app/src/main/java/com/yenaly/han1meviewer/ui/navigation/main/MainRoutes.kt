@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.ui.navigation.main
 
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.AboutAppRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframesRoute
@@ -9,6 +10,7 @@ import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.MpvPlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategoryRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRoute
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
@@ -58,6 +60,12 @@ data class SearchRoute(
 object PreviewRoute
 
 @Serializable
+object ContentLibraryRoute
+
+@Serializable
+object ProfileRoute
+
+@Serializable
 object GetchuPreviewRoute
 
 @Serializable
@@ -79,134 +87,154 @@ data class VideoRoute(
 )
 
 enum class MainDestinationSpec(
-    val drawerDestination: MainDrawerDestination?,
+    val topLevelDestination: MainTopLevelDestination?,
     val routeClass: KClass<*>,
-    val drawerEnabled: Boolean,
+    val showNavigationSuite: Boolean,
 ) {
     Home(
-        drawerDestination = MainDrawerDestination.Home,
+        topLevelDestination = MainTopLevelDestination.Home,
         routeClass = HomeRoute::class,
-        drawerEnabled = true,
-    ),
-    WatchHistory(
-        drawerDestination = MainDrawerDestination.WatchHistory,
-        routeClass = WatchHistoryRoute::class,
-        drawerEnabled = false,
-    ),
-    MyFavVideo(
-        drawerDestination = MainDrawerDestination.FavVideo,
-        routeClass = MyFavVideoRoute::class,
-        drawerEnabled = false,
-    ),
-    MyWatchLater(
-        drawerDestination = MainDrawerDestination.WatchLater,
-        routeClass = MyWatchLaterRoute::class,
-        drawerEnabled = false,
-    ),
-    MyPlaylist(
-        drawerDestination = MainDrawerDestination.Playlist,
-        routeClass = MyPlaylistRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = true,
     ),
     Subscription(
-        drawerDestination = MainDrawerDestination.Subscription,
+        topLevelDestination = MainTopLevelDestination.Subscription,
         routeClass = SubscriptionRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = true,
+    ),
+    ContentLibrary(
+        topLevelDestination = MainTopLevelDestination.ContentLibrary,
+        routeClass = ContentLibraryRoute::class,
+        showNavigationSuite = true,
+    ),
+    Profile(
+        topLevelDestination = MainTopLevelDestination.Profile,
+        routeClass = ProfileRoute::class,
+        showNavigationSuite = true,
+    ),
+    WatchHistory(
+        topLevelDestination = MainTopLevelDestination.ContentLibrary,
+        routeClass = WatchHistoryRoute::class,
+        showNavigationSuite = false,
+    ),
+    MyFavVideo(
+        topLevelDestination = MainTopLevelDestination.ContentLibrary,
+        routeClass = MyFavVideoRoute::class,
+        showNavigationSuite = false,
+    ),
+    MyWatchLater(
+        topLevelDestination = MainTopLevelDestination.ContentLibrary,
+        routeClass = MyWatchLaterRoute::class,
+        showNavigationSuite = false,
+    ),
+    MyPlaylist(
+        topLevelDestination = MainTopLevelDestination.ContentLibrary,
+        routeClass = MyPlaylistRoute::class,
+        showNavigationSuite = false,
     ),
     DailyCheckIn(
-        drawerDestination = MainDrawerDestination.DailyCheckIn,
+        topLevelDestination = MainTopLevelDestination.Profile,
         routeClass = DailyCheckInRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
     ),
     Download(
-        drawerDestination = MainDrawerDestination.Download,
+        topLevelDestination = MainTopLevelDestination.ContentLibrary,
         routeClass = DownloadRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
     ),
     CreatorCenter(
-        drawerDestination = MainDrawerDestination.CreatorCenter,
+        topLevelDestination = MainTopLevelDestination.Profile,
         routeClass = CreatorCenterRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
     ),
     Account(
-        drawerDestination = null,
+        topLevelDestination = MainTopLevelDestination.Profile,
         routeClass = AccountRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
     ),
     AvatarCrop(
-        drawerDestination = null,
+        topLevelDestination = null,
         routeClass = AvatarCropRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
     ),
     SettingsHome(
-        drawerDestination = MainDrawerDestination.Settings,
+        topLevelDestination = MainTopLevelDestination.Profile,
         routeClass = HomeSettingsRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
+    ),
+    SettingsCategory(
+        topLevelDestination = MainTopLevelDestination.Profile,
+        routeClass = SettingsCategoryRoute::class,
+        showNavigationSuite = false,
     ),
     SettingsPlayer(
-        drawerDestination = MainDrawerDestination.Settings,
+        topLevelDestination = MainTopLevelDestination.Profile,
         routeClass = PlayerSettingsRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
     ),
     SettingsNetwork(
-        drawerDestination = MainDrawerDestination.Settings,
+        topLevelDestination = MainTopLevelDestination.Profile,
         routeClass = NetworkSettingsRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
     ),
     SettingsDownload(
-        drawerDestination = MainDrawerDestination.Settings,
+        topLevelDestination = MainTopLevelDestination.Profile,
         routeClass = DownloadSettingsRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
     ),
     SettingsMpv(
-        drawerDestination = MainDrawerDestination.Settings,
+        topLevelDestination = MainTopLevelDestination.Profile,
         routeClass = MpvPlayerSettingsRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
     ),
     SettingsHKeyframes(
-        drawerDestination = MainDrawerDestination.Settings,
+        topLevelDestination = MainTopLevelDestination.Profile,
         routeClass = HKeyframesRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
     ),
     SettingsSharedHKeyframes(
-        drawerDestination = MainDrawerDestination.Settings,
+        topLevelDestination = MainTopLevelDestination.Profile,
         routeClass = SharedHKeyframesRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
     ),
     SettingsHKeyframeSettings(
-        drawerDestination = MainDrawerDestination.Settings,
+        topLevelDestination = MainTopLevelDestination.Profile,
         routeClass = HKeyframeSettingsRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
+    ),
+    SettingsAboutApp(
+        topLevelDestination = MainTopLevelDestination.Profile,
+        routeClass = AboutAppRoute::class,
+        showNavigationSuite = false,
     ),
     Search(
-        drawerDestination = null,
+        topLevelDestination = null,
         routeClass = SearchRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
     ),
     Preview(
-        drawerDestination = null,
+        topLevelDestination = null,
         routeClass = PreviewRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
     ),
     GetchuPreview(
-        drawerDestination = null,
+        topLevelDestination = null,
         routeClass = GetchuPreviewRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
     ),
     GetchuPreviewDetail(
-        drawerDestination = null,
+        topLevelDestination = null,
         routeClass = GetchuPreviewDetailRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
     ),
     PreviewComment(
-        drawerDestination = null,
+        topLevelDestination = null,
         routeClass = PreviewCommentRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
     ),
     Video(
-        drawerDestination = null,
+        topLevelDestination = null,
         routeClass = VideoRoute::class,
-        drawerEnabled = false,
+        showNavigationSuite = false,
     );
 
     companion object {

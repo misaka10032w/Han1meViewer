@@ -68,10 +68,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -93,6 +91,7 @@ import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.han1meviewer.ui.screen.rememberRandomLoadingHint
+import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
 import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
 import com.yenaly.han1meviewer.ui.theme.VideoSimplifiedCardMinWidth
@@ -623,21 +622,17 @@ fun SearchResultsGrid(
     }
     LaunchedEffect(state) { if (state !is PageLoadingState.Loading) isLoadingMore = false }
     Box(modifier = modifier.fillMaxSize()) {
-        val normalCardWidth = VideoNormalCardMinWidth
-        val simplifiedCardWidth = VideoSimplifiedCardMinWidth
         val useNormalGrid = videos.firstOrNull()?.itemType == NORMAL
-        val density = LocalDensity.current
-        val screenWidthDp = with(density) { LocalWindowInfo.current.containerSize.width.toDp().value.toInt() }
-        val columns = if (Preferences.tabletMode) {
-            GridCells.Fixed(Preferences.searchGridColumnsConfig.columnsForWidthDp(screenWidthDp))
-        } else {
-            GridCells.Adaptive(
-                minSize = if (useNormalGrid) normalCardWidth else simplifiedCardWidth,
-            )
-        }
+        val columns = rememberVideoGridColumns(
+            minCardWidth = if (useNormalGrid) {
+                VideoNormalCardMinWidth
+            } else {
+                VideoSimplifiedCardMinWidth
+            },
+        )
 
         LazyVerticalGrid(
-            columns = columns,
+            columns = GridCells.Fixed(columns),
             state = gridState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(SpacingNormal),

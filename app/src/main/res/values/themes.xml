@@ -1,29 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.Hanime1" parent="Theme.Material3.Dark.NoActionBar">
-        <!-- Status bar color. -->
-        <!--        <item name="android:statusBarColor">?android:colorBackground</item>-->
-        <!--        <item name="android:navigationBarColor">?android:colorBackground</item>-->
-        <item name="android:windowTranslucentStatus">false</item>
-        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
-    </style>
-
-
-    <style name="Theme.Hanime1.Main" parent="Theme.Hanime1">
-        <item name="android:windowTranslucentStatus">true</item>
-    </style>
-
-    <style name="Theme.Hanime1.Preview" parent="Theme.Hanime1">
-        <item name="android:windowTranslucentStatus">true</item>
-    </style>
-
-    <style name="Theme.Hanime1.About" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="android:forceDarkAllowed" tools:targetApi="q">true</item>
-        <item name="android:windowTranslucentNavigation">true</item>
-        <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
-    </style>
-
     <style name="Theme.Hanime" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:windowTranslucentStatus">false</item>
         <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
@@ -75,42 +51,4 @@
         <item name="colorSurfaceContainerHigh">@color/md_theme_surfaceContainerHigh</item>
         <item name="colorSurfaceContainerHighest">@color/md_theme_surfaceContainerHighest</item>
     </style>
-
-    <style name="RoundCornerImageView">
-        <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">8dp</item>
-    </style>
-
-    <style name="TopRoundCornerImageView" parent="">
-        <!-- 上左圆角 -->
-        <item name="cornerFamilyTopLeft">rounded</item>
-        <item name="cornerSizeTopLeft">8dp</item>
-
-        <!-- 上右圆角 -->
-        <item name="cornerFamilyTopRight">rounded</item>
-        <item name="cornerSizeTopRight">8dp</item>
-
-        <!-- 下左直角 -->
-        <item name="cornerFamilyBottomLeft">cut</item>
-        <item name="cornerSizeBottomLeft">0dp</item>
-
-        <!-- 下右直角 -->
-        <item name="cornerFamilyBottomRight">cut</item>
-        <item name="cornerSizeBottomRight">0dp</item>
-    </style>
-    <!-- 启动页面专用主题 -->
-    <style name="Theme.Hanime1.Splash" parent="Theme.SplashScreen">
-        <!-- 背景颜色 -->
-        <item name="windowSplashScreenBackground">@color/per90_dark_red</item>
-
-        <!-- 启动图标，可以是 mipmap/logo.xml 或图片 -->
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_new</item>
-
-        <!-- 图标缩放动画持续时间 -->
-        <item name="windowSplashScreenAnimationDuration">500</item>
-
-        <!-- 是否保留主题背景直到 Activity 绘制完成 -->
-        <item name="postSplashScreenTheme">@style/Theme.Hanime1.Main</item>
-    </style>
-
 </resources>

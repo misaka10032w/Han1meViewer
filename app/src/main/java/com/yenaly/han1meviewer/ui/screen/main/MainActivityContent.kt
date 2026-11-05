@@ -6,11 +6,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,15 +30,17 @@ import com.yenaly.han1meviewer.logic.exception.CloudFlareBlockedException
 import com.yenaly.han1meviewer.logic.model.github.Latest
 import com.yenaly.han1meviewer.logic.state.PageState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.component.ChoiceDialog
 import com.yenaly.han1meviewer.ui.component.UpdateDialog
 import com.yenaly.han1meviewer.ui.component.GlobalDialogHost
+import com.yenaly.han1meviewer.ui.navigation.settings.buildDomainOptions
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.GlobalToastHost
 import com.yenaly.han1meviewer.ui.component.UsageNoticeDialog
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
 import com.yenaly.han1meviewer.ui.navigation.main.MainNavHost
 import com.yenaly.han1meviewer.ui.navigation.main.handleMainIntent
-import com.yenaly.han1meviewer.ui.navigation.main.navigateDrawerDestination
+import com.yenaly.han1meviewer.ui.navigation.main.navigateTopLevelDestination
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageViewModel
@@ -58,8 +59,8 @@ fun MainActivityContent(
     activity: MainActivity,
     viewModel: HomePageViewModel,
     pendingNavigationRequests: Flow<Intent>,
+    snackbarHostState: SnackbarHostState,
     showAuthGuard: Boolean,
-    onOpenAccount: () -> Unit,
     onLogoutClick: () -> Unit,
     onRequireLogin: () -> Unit,
     onSwitchSiteClick: () -> Unit,
@@ -71,15 +72,11 @@ fun MainActivityContent(
             activity.window.setBackgroundDrawable(windowBackground.toArgb().toDrawable())
         }
         val composeNavController = rememberNavController()
-        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
         var currentMainDestination by remember { mutableStateOf(MainDestinationSpec.Home) }
         var pendingUpdate by remember { mutableStateOf<Latest?>(null) }
         var showUsageNotice by remember { mutableStateOf(!Preferences.usageNoticeAccepted) }
-        val loginFirst = stringResource(R.string.login_first)
         val updateDownloadBackground = stringResource(R.string.update_download_background)
-        val isDrawerOpen =
-            drawerState.currentValue == DrawerValue.Open || drawerState.targetValue == DrawerValue.Open
 
         val homeState by viewModel.homePageFlow.collectAsStateWithLifecycle()
         val isLoggedIn by Preferences.loginStateFlow.collectAsStateWithLifecycle()
@@ -93,8 +90,7 @@ fun MainActivityContent(
         } else {
             null
         }
-        val headerIsLoading = isLoggedIn && homeState is PageState.Loading
-        val selectedDrawerDestination = currentMainDestination.drawerDestination
+        val selectedTopLevelDestination = currentMainDestination.topLevelDestination
 
         LaunchedEffect(composeNavController) {
             onNavigateControllerReady(composeNavController)
@@ -128,48 +124,28 @@ fun MainActivityContent(
             }
         }
         MainActivityScaffold(
-            drawerState = drawerState,
-            drawerEnabled = currentMainDestination.drawerEnabled,
-            selectedDestination = selectedDrawerDestination,
-            avatarUrl = headerAvatarUrl,
-            username = headerUsername,
-            isLoggedIn = isLoggedIn,
-            isLoading = headerIsLoading,
-            currentSite = Preferences.baseUrl,
-            onAvatarClick = {
-                if (isLoggedIn) {
-                    scope.launch { drawerState.close() }
-                    onOpenAccount()
-                } else {
-                    onRequireLogin()
-                }
-            },
-            onAvatarLongClick = {
-                onLogoutClick()
-            },
-            onSwitchSiteClick = onSwitchSiteClick,
-            onDrawerItemSelected = { destination ->
-                val handled = composeNavController.navigateDrawerDestination(
+            selectedDestination = selectedTopLevelDestination,
+            showNavigationSuite = currentMainDestination.showNavigationSuite,
+            snackbarHostState = snackbarHostState,
+            onDestinationSelected = { destination ->
+                composeNavController.navigateTopLevelDestination(
                     destination = destination,
                     isLoggedIn = isLoggedIn,
-                    onRequireLogin = { GlobalToasts.show(loginFirst, level = GlobalToasts.ToastLevel.WARNING) },
+                    onRequireLogin = onRequireLogin,
                 )
-                if (handled) {
-                    scope.launch { drawerState.close() }
-                }
-                handled
             },
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 MainNavHost(
                     activity = activity,
                     navController = composeNavController,
-                    isDrawerOpen = isDrawerOpen,
-                    onOpenDrawer = {
-                        if (currentMainDestination.drawerEnabled) {
-                            scope.launch { drawerState.open() }
-                        }
-                    },
+                    isLoggedIn = isLoggedIn,
+                    avatarUrl = headerAvatarUrl,
+                    username = headerUsername,
+                    currentSite = Preferences.baseUrl,
+                    onRequireLogin = onRequireLogin,
+                    onSwitchSiteClick = onSwitchSiteClick,
+                    onLogoutClick = onLogoutClick,
                     onDestinationChanged = { destination ->
                         currentMainDestination = destination
                     },
@@ -214,19 +190,12 @@ fun MainActivityContent(
         }
 
         if (activity.showSiteSwitchConfirm) {
-            AlertDialog(
-                onDismissRequest = { activity.dismissSiteSwitch() },
-                title = { Text(stringResource(R.string.confirm_switch_site)) },
-                confirmButton = {
-                    TextButton(onClick = { activity.confirmSiteSwitch() }) {
-                        Text(stringResource(R.string.sure))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { activity.dismissSiteSwitch() }) {
-                        Text(stringResource(R.string.no))
-                    }
-                },
+            ChoiceDialog(
+                title = stringResource(R.string.confirm_switch_site),
+                options = buildDomainOptions(activity),
+                selectedValue = Preferences.baseUrl,
+                onDismiss = { activity.dismissSiteSwitch() },
+                onSelect = { targetUrl -> activity.switchSite(targetUrl) },
             )
         }
 

@@ -12,7 +12,7 @@ import com.yenaly.han1meviewer.logic.model.Playlists
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
-import com.yenaly.yenaly_libs.base.YenalyViewModel
+import com.yenaly.han1meviewer.base.BaseViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class PlaylistSubViewModel(application: Application) : YenalyViewModel(application) {
+class PlaylistSubViewModel(application: Application) : BaseViewModel(application) {
 
     var playlistPage = 1
     var playlistCode: String? = null

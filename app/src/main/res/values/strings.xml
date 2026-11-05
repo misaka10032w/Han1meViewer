@@ -1,6 +1,18 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <string name="hanime_app_name" translatable="false" tools:ignore="Typos">Han1meViewer</string>
+    <string name="hanime_app_name" translatable="false" tools:ignore="Typos">HANi</string>
+    <string name="app_launcher_name" translatable="false" tools:ignore="Typos">HANi</string>
+    <string name="about_app_subtitle">Han1meViewer · 使用 Kotlin 開發的 Android 客戶端，用於瀏覽、搜尋、播放和管理 hanime 公開影片內容。</string>
+    <string name="about_disclaimer_title">說明與免責聲明</string>
+    <string name="about_disclaimer_origin_title">專案來源與許可</string>
+    <string name="about_disclaimer_origin">本應用無官方網站，GitHub Release 與 CI 建置產物是唯一下載及更新管道；與 hanime1.me 及其關聯方無任何隸屬、合作或授權關係。專案 Fork 自 YenalyLiew/Han1meViewer，原專案採用 Apache License 2.0。</string>
+    <string name="about_disclaimer_data_title">資料與版權</string>
+    <string name="about_disclaimer_data">本應用僅透過一般網路請求與 HTML DOM 解析取得公開頁面資訊，不存取網站後端資料庫，不進行注入攻擊、繞過授權或取得非公開使用者資料。影片、圖文及相關內容版權歸原網站或原始製作、發行方所有。</string>
+    <string name="about_disclaimer_region_title">使用限制與地區說明</string>
+    <string name="about_disclaimer_region">本應用不向中國大陸使用者提供服務，也不提供任何翻牆、破解或突破網路限制的功能。本應用僅用於技術研究、學習交流與行動端體驗最佳化，不提供商業化服務；使用者應自行遵守所在地區法律法規及目標網站規則。</string>
+    <string name="about_last_updated">最後更新：%1$s</string>
+    <string name="about_last_updated_date" translatable="false">2026-11-05</string>
+    <string name="about_support_original">建議透過官方管道支持原站內容。</string>
     <string name="home_page">首頁</string>
     <string name="latest_hanime">最新裏番</string>
     <string name="latest_upload">最新上傳</string>
@@ -14,8 +26,6 @@
     <string name="brand">品牌</string>
     <string name="release_date">發佈日期</string>
     <string name="duration">影片長度</string>
-    <string name="alert">提示</string>
-    <string name="alert_cancel_all_tags">確認將會取消你所選的所有Tag</string>
     <string name="confirm">確認</string>
     <string name="cancel">取消</string>
     <string name="pair_widely">模糊搜尋</string>
@@ -42,19 +52,65 @@
     <string name="comment_not_found">未發現評論</string>
     <string name="hanime_list">新番列表</string>
     <string name="latest_hanime_list_monthly">%s 裏番新番列表</string>
-    <string name="preview_page_updating">站方正在更新新番預告頁面，請嘗試查看其他月份</string>
-    <string name="preview_page_updating_getchu_hint">站方正在更新新番預告頁面，可先查看 Getchu 新番預告。Getchu 可能需要 VPN 才能正常訪問。</string>
+    <string name="preview_page_updating_getchu_hint">暫無新番預告，可先查看 Getchu 新番預告。Getchu 可能需要 VPN 才能正常訪問。</string>
     <string name="latest_hanime_comment">%s 新番評論區</string>
     <string name="view_getchu_preview">查看 Getchu 預告</string>
     <string name="getchu_preview">Getchu 新番預告</string>
     <string name="getchu_preview_title">Getchu %s 新番預告</string>
     <string name="getchu_preview_detail">Getchu 新番詳情</string>
-    <string name="getchu_sample_images">樣品圖</string>
     <string name="getchu_series">系列商品</string>
     <string name="getchu_product_intro">商品介紹</string>
     <string name="getchu_story">故事</string>
     <string name="getchu_staff">製作人員</string>
     <string name="my_list">我的清單</string>
+    <string name="content_library">內容庫</string>
+    <string name="collapse_navigation">收起導航</string>
+    <string name="expand_navigation">展開導航</string>
+    <string name="quick_entries">快捷入口</string>
+    <string name="profile_check_in_desc">每日簽到領取獎勵</string>
+    <string name="profile_creator_center_desc">管理投稿與創作資料</string>
+    <string name="profile_settings_desc">播放器、網路與下載設定</string>
+    <string name="settings_pane_subtitle">做一些符合你心意的調整</string>
+    <string name="settings_select_category_hint">從左側選擇設定分類</string>
+    <string name="settings_category_appearance">外觀與互動</string>
+    <string name="settings_category_appearance_desc">主題、語言、介面與佈局</string>
+    <string name="settings_category_playback">播放</string>
+    <string name="settings_category_playback_desc">清晰度、播放器與播放行為</string>
+    <string name="settings_category_network">網路</string>
+    <string name="settings_category_network_desc">網路、深層連結與連線</string>
+    <string name="settings_category_download">下載</string>
+    <string name="settings_category_download_desc">下載目錄與任務行為</string>
+    <string name="settings_category_keyframes">關鍵幀</string>
+    <string name="settings_category_keyframes_desc">H 關鍵幀與共享關鍵幀</string>
+    <string name="settings_category_privacy">隱私與安全</string>
+    <string name="settings_category_privacy_desc">資料統計、應用鎖與偽裝圖示</string>
+    <string name="settings_category_data">資料</string>
+    <string name="settings_category_data_desc">備份、還原與快取</string>
+    <string name="settings_category_about">關於</string>
+    <string name="settings_category_about_desc">更新、意見回饋與開源許可</string>
+    <string name="settings_group_interface">介面與佈局</string>
+    <string name="settings_group_app">應用</string>
+    <string name="settings_group_backup">備份與儲存</string>
+    <string name="settings_group_feedback">意見回饋與支援</string>
+    <string name="settings_group_version">版本資訊</string>
+    <string name="about_app_info">應用資訊</string>
+    <string name="about_build_type">建置類型</string>
+    <string name="about_build_commit">提交</string>
+    <string name="about_package_name">套件名稱</string>
+    <string name="about_current_site">目前站點</string>
+    <string name="about_android_version">Android 版本</string>
+    <string name="about_device_model">裝置型號</string>
+    <string name="about_project_support">專案與支援</string>
+    <string name="about_github_repo">GitHub 儲存庫</string>
+    <string name="about_github_repo_summary">查看原始碼與版本發佈</string>
+    <string name="about_easter_egg_toast">彩蛋正在孵化中，敬請期待</string>
+    <string name="about_thanks">感謝所有貢獻者與使用者的支持</string>
+    <string name="content_library_favorite_desc">收藏的影片</string>
+    <string name="content_library_watch_later_desc">稍後觀看</string>
+    <string name="content_library_playlist_desc">自訂播放清單</string>
+    <string name="content_library_history_desc">觀看紀錄</string>
+    <string name="content_library_download_desc">離線下載</string>
+    <string name="content_library_pane_subtitle">收藏、紀錄與離線內容</string>
     <string name="watch_later">稍後觀看</string>
     <string name="fav_video">喜歡的影片</string>
     <string name="settings">設定</string>
@@ -68,7 +124,6 @@
     <string name="add_to_fav">加入喜歡</string>
     <string name="share">分享</string>
     <string name="video_language">影片語言</string>
-    <string name="other">其他</string>
     <string name="about">關於</string>
     <string name="check_update">檢查更新</string>
     <string name="new_version_found">已發現新版本</string>
@@ -78,7 +133,6 @@
     <string name="check_update_success">當前有新版本：%s，點擊查看</string>
     <string name="current_version">當前版本：%s</string>
     <string name="already_latest_update">已經是最新版本！</string>
-    <string name="search_placeholder">今天想看點什麼呢</string>
     <string name="downloading">正在下載</string>
     <string name="downloading_s">正在下載：%1$s</string>
     <string name="downloading_update_percent">正在下載更新 %d%%</string>
@@ -99,7 +153,6 @@
     <string name="update_error_download_network">下載更新失敗：網路連線中斷（%s），請檢查網路後重試。</string>
     <string name="update_error_download_invalid_payload">下載更新失敗：取得的檔案不是有效的安裝包，請稍後重試或前往 GitHub Releases 手動下載。</string>
     <string name="downloaded">已下載</string>
-    <string name="start_download">開始下載</string>
     <string name="cancel_download">取消下載</string>
     <string name="local_playback">本地觀看</string>
     <string name="download_path">下載路徑</string>
@@ -122,11 +175,8 @@
     <string name="prepare_to_delete_s">你現在正要準備刪除\n%s</string>
     <string name="playlist_title">標題</string>
     <string name="playlist_description">介紹</string>
-    <string name="open_playlist_drawer">打開播放清單列表</string>
     <string name="add_to_playlist">加入清單</string>
     <string name="player_settings">播放器設定</string>
-    <string name="tablet_mode">平板模式</string>
-    <string name="tablet_mode_summary">開啟後影片頁面與首頁橫幅將以平板佈局顯示，提供更大觀看區域</string>
     <string name="show_exit_confirm">退出確認彈窗</string>
     <string name="show_exit_confirm_summary">開啟後按下返回鍵退出 App 時將顯示確認視窗</string>
     <string name="search_grid_columns_title">影片網格列數</string>
@@ -141,7 +191,6 @@
     <string name="search_grid_columns_range_expanded" translatable="false">901-1200dp</string>
     <string name="search_grid_columns_range_large" translatable="false">≥1201dp</string>
     <string name="current_slide_sensitivity">當前靈敏度：%s</string>
-    <string name="network">網路</string>
     <string name="proxy">代理</string>
     <string name="port">埠</string>
     <string name="direct">直接連接</string>
@@ -163,7 +212,6 @@
     <string name="h_keyframe_title_prefix">影片代號：</string>
     <string name="manage">管理</string>
     <string name="h_keyframe_manage">關鍵H幀管理</string>
-    <string name="h_keyframe">關鍵H幀</string>
     <string name="when_countdown_remind">何時開始倒數計時提醒</string>
     <string name="show_prompt_when_countdown">倒數計時顯示提示</string>
     <string name="will_remind_before_d_seconds">將會在 %d 秒前倒數計時提醒</string>
@@ -234,7 +282,6 @@
     <string name="doh_bootstrap_ips_summary">可輸入 DoH 服務本身的多個 IP，以逗號分隔。內建預設會自動提供，自訂 URL 留空時使用系統解析</string>
     <string name="doh_timeout_seconds">解析超時（秒）</string>
     <string name="doh_timeout_seconds_summary">DoH 請求的連線與讀取超時，建議 5–15 秒</string>
-    <string name="doh_enabled_summary">已啟用</string>
     <string name="doh_disabled_summary">已關閉</string>
     <string name="password">密碼</string>
     <string name="try_login_here">試試在這裡登入</string>
@@ -242,10 +289,8 @@
     <string name="login_failed">登入失敗</string>
     <string name="login_success">登入成功</string>
     <string name="account_or_password_wrong">帳號或密碼可能錯誤</string>
-    <string name="login_tips">該方法只能保持登入 2 個小時… 還是推薦使用網頁登入，\n但網頁是不走 Hosts 的，所以可能需要 VPN</string>
     <string name="update">更新</string>
     <string name="use_ci_update_channel">使用 CI 更新通道。</string>
-    <string name="use_ci_update_channel_summary">CI 更新頻道能更快地取得最新變更\n但不保證穩定性</string>
     <string name="update_popup_interval_days">檢查更新跳出視窗間隔天數</string>
     <string name="update_failed">更新失敗</string>
     <string name="update_download_background">在背景下載更新</string>
@@ -259,11 +304,9 @@
     <string name="which_days">%d天</string>
     <string name="last_update_popup_check_time">最近更新視窗跳出時刻：\n%s</string>
     <string name="no_update_popup_yet">最近還沒跳出過更新視窗哦</string>
-    <string name="no_description">您似乎還沒有寫介紹…</string>
     <string name="share_to_others_tip">複製以下內容，分享給其他人，可以透過頂部右側添加按鈕來將其存入設備：\n%s</string>
     <string name="delete_playlist">刪除播放清單</string>
     <string name="delete_the_playlist">刪除該播放清單</string>
-    <string name="s_copy_to_clipboard">「%1$s」已複製到剪貼簿</string>
     <string name="detect_ha1_related_link_in_clipboard">檢測到剪貼簿裡存在Hanime1相關連結</string>
     <string name="enter">進入</string>
     <string name="sure_to_logout">你確定要登出嗎？</string>
@@ -282,7 +325,6 @@
     <string name="pause_then_long_press">先暫停再長按</string>
     <string name="long_press_to_add_h_keyframe">請長按🥵添加關鍵H幀</string>
     <string name="video_deleted_sure_to_delete_item">影片已被刪除或移動，是否刪除該條目？</string>
-    <string name="watching_this_video_now">當前正在觀看該影片哦~</string>
     <string name="delete_failed">刪除失敗</string>
     <string name="delete_fav">刪除喜歡</string>
     <string name="attention">注意！</string>
@@ -294,7 +336,6 @@
     <string name="default_">預設</string>
     <string name="alternative">備用</string>
     <string name="loading">載入中…</string>
-    <string name="slide_to_choose_list">請從右向左滑動選擇列表</string>
     <string name="create_new_playlist">創建新清單</string>
     <string name="delete_watch_later">刪除待看</string>
     <string name="long_press_to_cancel_watch_later">長按可以取消待看！</string>
@@ -310,7 +351,6 @@
     <string name="watch_history_minutes_short" translatable="false">%1$dm</string>
     <string name="watch_history_watched_at">觀看於 %1$s</string>
     <string name="watch_history_released_at">發佈於 %1$s</string>
-    <string name="watch_history_progress_minutes">已觀看約 %1$d 分鐘</string>
     <string name="online">在線</string>
     <string name="popular">熱門</string>
     <string name="watch_history_online_help">下拉重新整理，滑到底部自動載入更多。</string>
@@ -341,15 +381,11 @@
     <string name="send_failed">發送失敗！</string>
     <string name="sending_reply">發表回覆中</string>
     <string name="send_success">發送成功！</string>
-    <string name="sending_comment">發表評論中</string>
     <string name="there_is_a_small_issue">出了點小問題…</string>
-    <string name="fav_failed">喜歡失敗</string>
-    <string name="cancel_fav">取消喜歡</string>
     <string name="already_in_queue">在佇列中</string>
     <string name="added_to_download_queue">已加入下載佇列</string>
     <string name="s_view_times">%1$s次</string>
     <string name="liked">已喜歡</string>
-    <string name="cannot_download_here">暫時無法從這裡下載！</string>
     <string name="long_press_share_to_copy">長按分享可以複製到剪貼簿中</string>
     <string name="sure_to_download">確定要下載嗎？</string>
     <string name="go_to_official">轉到官網</string>
@@ -364,8 +400,6 @@
     <string name="clear_success">清除成功</string>
     <string name="clear_failed">清除發生意外</string>
     <string name="cache_empty">當前快取為空，無需清理哦</string>
-    <string name="do_not_check_update_again">別再檢查更新了！</string>
-    <string name="take_me_to_download">帶我去下載</string>
     <string name="d_speed_times">%.1f倍</string>
     <string name="high">高</string>
     <string name="moderately_high">較高</string>
@@ -374,8 +408,6 @@
     <string name="low">低</string>
     <string name="very_low">很低</string>
     <string name="extremely_low">極低</string>
-    <string name="update_failed_tips">如果你發現軟體有重大問題但是提示更新失敗，請直接去 Github Releases 介面查看是否有最新版下載\n\n
-還有我竟然發現有人花錢買這 APP，真沒必要！</string>
     <string name="shared_h_keyframe_detected_msg">注意：如果你也有和對方相同代號的關鍵H幀，那麼你自己的將會被覆蓋\n
 \n
 標題：%1$s\n
@@ -389,19 +421,16 @@
 · 無VPN用戶，使用 hanime1.me 並開啟內建 Hosts\n
 · 日本用戶，使用 hanime1.com\n
 · 其他地區用戶，使用 hanime1.me 並關閉內建 Hosts</string>
-    <string name="do_not_use_japan_ip">不要使用日本IP位址!!!</string>
     <string name="website_blocked_msg">看到這裡說明他們網站被加固了，能不能恢復只能聽天命了…</string>
     <string name="not_logged_in_currently">當前未登入</string>
     <string name="login_state_expired">登入狀態已失效，已自動登出，請重新登入</string>
     <string name="parse_error_msg">可能這個網址解析起來不大一樣…</string>
-    <string name="network_unstable_msg">可能是你的網路不穩定，多刷新！</string>
     <string name="unknown_download_error">未知下載錯誤</string>
     <string name="download_task_completed">下載任務已完成！</string>
     <string name="download_completed_s">下載完畢：%1$s</string>
     <string name="this_data_exists">該檔案已存在！</string>
     <string name="download_failed_s_exists">下載失敗：%1$s 已存在</string>
     <string name="download_task_failed">下載任務失敗！</string>
-    <string name="download_task_failed_s">下載任務失敗：%1$s</string>
     <string name="download_task_failed_s_reason_s">下載失敗：%1$s\n原因為：%2$s</string>
     <string name="download_task_retrying">下載暫時中斷，正在重試</string>
     <string name="download_task_retrying_s_reason_s">下載暫時中斷：%1$s\n原因：%2$s\n稍後會自動繼續。</string>
@@ -425,26 +454,20 @@
     <string name="switch_player_kernel">切換播放器內核</string>
     <string name="switch_to_year">切換至年</string>
     <string name="switch_to_year_month">切換至年月</string>
-    <string name="subscribe_failed">訂閱失敗</string>
-    <string name="subscribe_success">訂閱成功</string>
-    <string name="unsubscribe_success">取消訂閱成功</string>
     <string name="subscribe">訂閱</string>
     <string name="subscribed">已訂閱</string>
     <string name="unsubscribe_artist">取消訂閱該作者</string>
     <string name="sure_to_unsubscribe">確定要取消訂閱嗎？</string>
     <string name="action_app_open_by_default_settings_not_support">此設備不支援從程式中開啟預設介面</string>
     <string name="sure_to_redownload">確定要重新下載嗎？</string>
-    <string name="subscription">訂閱</string>
     <string name="analytics_summary">長按了解開啟對開發者的重要性</string>
     <string name="analytics_title">使用情況統計</string>
     <string name="privacy">隱私</string>
     <string name="about_analytics_summary">您同意讓開發者收集您的裝置資訊與使用方式嗎？這對開發有很大幫助。&lt;br&gt;&lt;br&gt;資料統計服務由 Google Analytics for Firebase 提供，其隱私政策可在 &lt;a href=&quot;https://www.google.com/policies/privacy/&quot;&gt;https://www.google.com/policies/privacy/&lt;/a&gt; 檢視。&lt;br&gt;&lt;br&gt;若您同意參與資料統計，您的裝置資訊與應用使用情況將會被記錄，其包括但不限於：Android API 版本、裝置型號、語言所在地、本應用版本號、會話時長、應用功能使用次數。開發者承諾以下資訊並不會被記錄：電話號碼、電子郵件地址、IMEI。&lt;br&gt;&lt;br&gt;在您同意參與資料統計之前，您的資訊不會被記錄。&lt;br&gt;&lt;br&gt;被記錄的資料會由 Google Analytics for Firebase 進行分析，分析報表僅由此應用程式開發者存取。</string>
     <string name="about_analytics">關於使用情況統計</string>
-    <string name="refresh_page_or_login_expired">刷新一下頁面試試\n也可能登入已過期</string>
     <string name="website_blocked_msg_2">網站被加固，修改為另外一個域名可能有奇效！</string>
     <string name="website_blocked_msg_3">可以提醒一下開發者，但不要催，網站被加固跟他沒有任何關係哦～</string>
     <string name="action_not_support">此設備不支援此操作</string>
-    <string name="get_file_info_failed">獲取檔案資訊失敗</string>
     <string name="download_settings">下載設定</string>
     <string name="download_count_limit">同時下載數量限制</string>
     <string name="download_speed_limit">下載速度限制</string>
@@ -452,7 +475,6 @@
     <string name="check_video_exists_in_download">我注意到你好像下載過畫質為 %s 的該影片</string>
     <string name="retry">重試</string>
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="oss_license">本軟體所使用的開源項目</string>
     <string name="open_source_license">開源許可</string>
     <string name="confirm_to_exit">退出確認</string>
     <string name="finished_masturbating">已經〇完了嗎🥵？</string>
@@ -467,21 +489,7 @@
     <string name="usage_notice_accept">我已閱讀並同意</string>
     <string name="usage_notice_accept_countdown">請閱讀 %1$d 秒</string>
     <string name="usage_notice_decline">不同意並退出</string>
-    <string-array name="lang_display_names">
-        <item>跟随系统</item>
-        <item>简体中文</item>
-        <item>繁體中文</item>
-        <item>日本語</item>
-        <item>English</item>
-    </string-array>
 
-    <string-array name="lang_values">
-        <item>system</item>
-        <item>zh-rCN</item>
-        <item>zh</item>
-        <item>ja</item>
-        <item>en</item>
-    </string-array>
     <string name="app_lang">語言</string>
     <string name="app_lang_sum">選擇應用程式語言</string>
     <string name="auth_request">請驗證身份🥵</string>
@@ -494,6 +502,7 @@
     <string name="subscribed_artists_count">已訂閱作者（%1$d）</string>
     <string name="swipe_more">向右滑動</string>
     <string name="my_account">我的</string>
+    <string name="account_profile">帳號資料</string>
     <string name="username">用戶名稱</string>
     <string name="logout">登出</string>
     <string name="change_avatar">更改頭像</string>
@@ -509,13 +518,11 @@
     <string name="crop_avatar">裁剪頭像</string>
     <string name="updating">更新中…</string>
     <string name="changing">更改中…</string>
-    <string name="uploading">上傳中…</string>
     <string name="title_activity_qrcode_scanner">手動錄入cookies</string>
     <string name="scan_for_cookies">手動錄入cookies</string>
     <string name="cookies_import_desc">引導圖片</string>
     <string name="cookies_import_title">如何導入</string>
     <string name="cookies_import_dismiss">我知道了</string>
-    <string name="manual_import_cookies">手動導入</string>
     <string name="import_cookies_intro">此種導入方式也可以緩解因cloudflare引起的登入攔截\n1. 在網頁版登入之後，想辦法獲取Cookies，只要你能獲取到，手機和電腦都行。\n 2. 格式大概如圖所示，注意！頭尾不應包含雙引號，並且不應是格式化後的Cookies序列。\n 使用「手動導入」按鈕的導入。\n 如果導入完成之後刷新頁面還是顯示未登入的狀態，那就檢查你的Cookies。</string>
     <string name="request_camera">請授予相機權限以掃碼</string>
     <string name="allow_pip_disc">允許返回桌面時進入畫中畫模式  （需要開啟畫中畫權限）</string>
@@ -532,7 +539,6 @@
     <string name="select_fake_icon">選擇顯示在桌面的圖標</string>
     <string name="fake_icon_hint">設定成功，應用可能會關閉，應用圖標可能會稍晚些刷新，期間會提示應用未安裝。</string>
     <string name="current_node_latency">當前CDN節點延遲</string>
-    <string name="testing">測試中…</string>
     <string name="test_doh">測試 DoH</string>
     <string name="test_doh_summary">檢查目前 DoH 設定是否可解析網域</string>
     <string name="doh_test_result">DoH 測試結果</string>
@@ -554,7 +560,6 @@
     <string name="not_checked_yet">今日尚未打卡</string>
     <string name="checkin">打卡</string>
     <string name="clear_checkin">清除</string>
-    <string name="current_streak">連續</string>
     <string name="best_streak">最高連續</string>
     <string name="day_unit">天</string>
     <string name="mon">一</string>
@@ -590,7 +595,6 @@
     <string name="calendar_dialog_title">預約手沖日？</string>
     <string name="calendar_dialog_message">要為 %1$s 建立一個「預約手沖」的日曆提醒嗎？\n到了那天記得準時報到！🫡</string>
     <string name="calendar_dialog_confirm">建立提醒</string>
-    <string name="calendar_dialog_dismiss">不用了</string>
     <string name="no_calendar_app">找不到日曆應用</string>
     <string name="egg_three">3 次了！你是魔鬼嗎？👹</string>
     <string name="egg_four">4 次！功力大成！🧘</string>
@@ -599,15 +603,11 @@
     <string name="streak_title">連續達成</string>
     <string name="egg_god">%1$d 次…你已經超越人類極限了 🫠</string>
     <string name="egg_nice">%1$d 次！Nice～ 😏</string>
-    <string name="egg_streak">連續 %1$d 天！手不能停！🫡</string>
     <string name="egg_singles">光棍節快樂…今天不打嗎？😢</string>
     <string name="widget_description">手沖打卡小部件，桌面即可簽到</string>
-    <string name="widget_checkin">打卡</string>
     <string name="add_widget">添加桌面小工具</string>
     <string name="widget_not_supported">你的桌面不支援直接添加小工具</string>
-    <string name="widget_pick_hint">請在手沖打卡小工具上點擊添加</string>
     <string name="widget_today_label">今日已沖</string>
-    <string name="widget_month_label">本月</string>
     <string name="checkin_report">打卡报表</string>
     <string name="report_year">年度</string>
     <string name="report_month">月度</string>
@@ -625,7 +625,6 @@
     <string name="view_checkin">查看</string>
     <string name="dialog_existing_records">已打卡记录</string>
     <string name="dialog_max_reached">今日打卡已达上限 (20次)</string>
-    <string name="checkin_type_label">类型</string>
     <string name="checkin_type_masturbation">自慰</string>
     <string name="checkin_type_wet_dream">梦遗</string>
     <string name="checkin_type_sex">做爱</string>
@@ -650,7 +649,6 @@
     <string name="fault_prompt">出現錯誤，請聯絡開發者！</string>
     <string name="read_download_dir_title">讀取下載目錄</string>
     <string name="read_download_dir_message">讀取當前下載目錄中已下載的文件，用於將之前下載的文件恢復到列表中。\n每個視頻單元文件結構應為：\n[視頻代碼]/xxx.mp4、xxx.png、info.json</string>
-    <string name="read_success">讀取成功</string>
     <string name="reading_download_dir">正在讀取…</string>
     <string name="import_result_title">導入完成</string>
     <string name="import_success_count">成功導入 %d 個</string>
@@ -660,7 +658,6 @@
     <string name="import_fail_reason_exception">讀取或解析失敗</string>
     <string name="import_fail_suggestion">請檢查對應文件夾，確保包含 info.json 與視頻文件（xxx.mp4、xxx.png）。缺少或損壞的文件會導致導入失敗。</string>
     <string name="select_custom_directory">請先選擇一個自訂目錄</string>
-    <string name="some_videos_moved_or_deleted">部分影片被移動或刪除，請檢查。</string>
     <string name="directory_saved">目錄已保存:%s</string>
     <string name="no_directory_selected">未選擇目錄，未作變更</string>
     <string name="select_download_folder">選擇您的下載資料夾</string>
@@ -668,8 +665,6 @@
     <string name="restore_default_path">恢復預設儲存路徑</string>
     <string name="restore_default_message">確定要恢復為應用內部儲存嗎？\n\n● 當前下載的檔案不會被移動\n● 後續下載將儲存到應用內部\n● 應用解除安裝後檔案將被清除\n● 選擇外部路徑後，可以使用檔案遷移功能移出</string>
     <string name="default_path_restored">已恢復預設儲存路徑</string>
-    <string name="already_default_path">當前已是預設路徑</string>
-    <string name="already_default_message">您正在使用應用內部儲存空間。\n\n如需更改，可以指定外部儲存路徑來更好地管理檔案。</string>
     <string name="understood">明白了</string>
     <string name="confirm_import">是否進行導出？</string>
     <string name="import_warning">導出中請勿關閉 APP，以免造成檔案損壞！</string>
@@ -684,9 +679,6 @@
     <string name="pref_export_downloads_summary">導出私有下載目錄中的所有下載項到自訂目錄</string>
     <string name="save_failed_title">保存失敗</string>
     <string name="save_failed_message">由於外部儲存權限或其他原因，影片資訊檔案保存失敗。\n已自動切換到應用私有路徑。\n如果你是解除安裝重新安裝的應用可嘗試清理Download/Han1meViewer目錄後在設定切換下載位置再試，否則將繼續使用私有目錄，並請在解除安裝或清除資料之前移出檔案！</string>
-    <string name="zero_percent" translatable="false">0%</string>
-    <string name="download_category">下載設定</string>
-    <string name="download_category_summary">點擊可設定路徑，長按可恢復預設路徑</string>
     <string name="whats_wrong_with_him">他有什麼問題？</string>
     <string name="submit">提交</string>
     <string name="report_reason_hint">請先選擇一個檢舉理由</string>
@@ -701,8 +693,6 @@
     <string name="sort_most_dislikes">最多點踩</string>
     <string name="sort_comment">評論排序</string>
     <string name="theme">主題與外觀</string>
-    <string name="dynamic_color_title">動態配色</string>
-    <string name="dynamic_color_summary">開啟後跟隨系統主題色，僅支援Android 12以上</string>
     <string name="dark_theme">深色主題</string>
     <string name="follow_system">跟隨系統</string>
     <string name="always_off">總是關閉</string>
@@ -710,10 +700,8 @@
     <string name="category_instant_noodle">泡麵番</string>
     <string name="category_motion_anime">動態動畫</string>
     <string name="category_3d_animation">3D動畫</string>
-    <string name="category_doujin">同人作品</string>
     <string name="category_cosplay">Cosplay</string>
     <string name="new_anime_trailers">新番預告片</string>
-    <string name="download_test" translatable="false">测试下载</string>
     <string name="permission_error">權限錯誤，請嘗試重新指定資料夾！</string>
     <string name="resume_playback_title">續播功能</string>
     <string name="resume_playback_summary">如有播放記錄，將自動跳轉到上次退出位置</string>
@@ -741,7 +729,6 @@
     <string name="mpv_advanced_settings">MPV 播放核心設定</string>
     <string name="mpv_settings_disabled_summary">僅當播放核心為 MPV 播放器時可設定</string>
     <string name="mpv_advanced_settings_summary">設定畫質、效能與網路快取等進階選項</string>
-    <string name="player_settings_base">基礎播放設定</string>
     <string name="player_settings_quality_performance">畫質與效能</string>
     <string name="player_settings_network_cache">網路與快取</string>
     <string name="mpv_profile">渲染品質級別 (profile)</string>
@@ -766,7 +753,6 @@
     <string name="custom_parameters">自訂參數</string>
     <string name="custom_parameters_summary">設定播放器啟動參數/設定，格式為key,parameters，使用英文分號分隔</string>
     <string name="advanced">進階</string>
-    <string name="advanced_summary">可能會影響播放穩定性</string>
     <string name="custom_parameters_example">例如：vo,gpu;profile,gpu-hq;framedrop,no</string>
     <string name="custom_parameters_title">注意：因播放器平台不同，部分參數可能不會生效</string>
     <string name="decoding_sw">軟體解碼 (SW: no)</string>
@@ -794,22 +780,14 @@
     <string name="horizontal_card_count_range_compact" translatable="false">350-599dp</string>
     <string name="horizontal_card_count_range_medium" translatable="false">600-839dp</string>
     <string name="horizontal_card_count_range_expanded" translatable="false">≥840dp</string>
-    <string name="video_group_error">取得影片群組錯誤：</string>
-    <string name="video_group_empty">影片群組為空</string>
-    <string name="default_group_rename_not_allowed">預設群組（%s）不允許重新命名！</string>
-    <string name="default_group_delete_not_allowed">預設群組（%s）不允許刪除！</string>
     <string name="new_group_name">新群組名稱</string>
     <string name="rename_group">重新命名群組</string>
     <string name="current_group_name">目前群組名稱：%s</string>
     <string name="group_name_empty">群組名稱不能為空</string>
-    <string name="group_name_unchanged">名稱未做更改</string>
     <string name="group_renamed">群組已重新命名為 %s</string>
     <string name="modify_video_group">修改該影片的群組：%s</string>
-    <string name="group_modify_success">修改成功！%1$s，ID:%2$s</string>
-    <string name="unknown_group_id">發生錯誤：未知群組id！</string>
     <string name="unknown_error">未知錯誤</string>
     <string name="ungrouped">未分組</string>
-    <string name="group_title_format" translatable="false">%1$s (%2$d)</string>
     <string name="create_new_group">建立新群組</string>
     <string name="create_group_success">建立成功！%s</string>
     <string name="group_name">群組名稱</string>
@@ -824,7 +802,6 @@
     <string name="download_group_name_quick_tc_sc_conversion">快速繁簡轉換</string>
     <string name="download_group_script_simplified">簡體</string>
     <string name="download_group_script_traditional">繁體</string>
-    <string name="coming_soon">敬請期待</string>
     <string name="disable_mobile_data_warning">關閉流量提醒</string>
     <string name="disable_mobile_data_warning_summary">開啟後使用行動流量播放時將不再提醒</string>
     <string name="mpv_socks5_warning">注意：MPV播放核心不支援Socks代理，可能會播放失敗</string>
@@ -839,8 +816,6 @@
     <string name="ai_decensored">AI解碼</string>
     <string name="china_av">國產AV</string>
     <string name="chinese_amateur">國產素人</string>
-    <string name="view_count">觀看次數</string>
-    <string name="mpv_adv_setting_hint" translatable="false">key1,value1;key2,value2;......</string>
     <string name="delete_group">刪除群組</string>
     <string name="delete_group_confirm">確定要刪除群組 「%1$s」 嗎？該群組下的影片將移動到預設群組。</string>
     <string name="animation_2_5d" translatable="false">2.5D</string>
@@ -851,18 +826,12 @@
     <string name="webview_version_unknown">\n⚠️ 無法識別WebView版本</string>
     <string name="version_check_failed">\n⚠️ 版本檢查失敗</string>
     <string name="switch_site">切換站點</string>
-    <string name="current_site">當前站點：</string>
     <string name="confirm_switch_site">確定要切換站點嗎？</string>
-    <string name="webview_exception">系統 WebView 元件異常，Cloudflare驗證頁面載入失敗！</string>
     <string name="disable_predictive_back_title">關閉預測性返回動畫</string>
-    <string name="disable_predictive_back_summary">開啟後，返回手勢只有在鬆手後才會觸發返回，避免觀看影片時因誤觸返回手勢而暫停播放</string>
     <string name="play_trailer">播放預告</string>
     <string name="load_complete">載入完畢！</string>
     <string name="search_video_hint">搜尋影片…</string>
     <string name="recent_searches">最近搜尋</string>
-    <string name="search_suggestions">搜尋建議</string>
-    <string name="no_matching_search_history">暫無匹配的搜尋歷史</string>
-    <string name="search_enter_keywords">輸入關鍵字搜尋影片</string>
     <string name="search_no_results">沒有搜尋到結果</string>
     <string name="search_load_failed_with_reason">載入失敗：%1$s</string>
     <string name="load_failed_with_reason">載入失敗：%1$s</string>
@@ -870,7 +839,6 @@
     <string name="announcement">公告</string>
     <string name="announcement_list">公告列表</string>
     <string name="view_all">查看全部</string>
-    <string name="open_menu">打開選單</string>
     <string name="permission_permanently_denied_title">權限被永久拒絕</string>
     <string name="storage_permission_settings_message">請前往設定開啟儲存權限，以便保存下載內容。</string>
     <string name="storage_permission_denied_toast">拒絕後將無法保存下載內容</string>
@@ -920,6 +888,8 @@
     </string-array>
 
     <string name="theme_color">主題色</string>
+    <string name="theme_color_preset_title">預設配色</string>
+    <string name="theme_color_preset_subtitle">選擇一套強調色</string>
     <string name="theme_color_system">跟隨系統</string>
     <string name="theme_color_default">（預設）姨媽紅</string>
     <string name="theme_color_blue">胖次藍</string>
@@ -945,7 +915,6 @@
     <string name="cloudflare_ip_block_warning">檢測到您的IP歸屬地為日本，或已被CloudFlare列入黑名單。這並非APP本身的問題，CloudFlare出於安全考慮會定期封鎖部分高風險IP。建議您嘗試切換VPN節點或更換網路環境後重試。</string>
     <string name="cloudflare_network_mismatch">目前網路環境無法通過驗證。如果您正在使用內建 hosts 存取，請注意：CloudFlare 驗證頁面暫不支援透過自訂 hosts 解析，可能導致驗證節點與應用主站解析到不同區域，兩者存取環境不一致，從而造成驗證失敗。此問題暫時無法解決，建議您切換至更「乾淨」的 IP 或網路環境後重試。</string>
     <string name="ssl_handshake_error">SSL 安全連線失敗，可能是系統時間異常、網路被攔截或憑證驗證失敗。請檢查時間設定並切換其他網路環境後重試。</string>
-    <string name="parse_page_failed">網站頁面解析失敗，可能是頁面結構發生了變更。請聯繫開發者跟進，或暫時使用網頁版作為替代。</string>
     <string name="home_error_dns">無法解析伺服器地址，請檢查網路連線或 DNS 設定後重試。</string>
     <string name="home_error_timeout">連線逾時，目前網路可能較慢或伺服器暫時無回應，請稍後重試。</string>
     <string name="home_error_ssl">安全連線失敗，請檢查系統時間是否正確，或切換網路後重試。</string>
@@ -993,4 +962,7 @@
         <item>搓手手期待ing……</item>
         <item>◝(⑅•ᴗ•⑅)◜..°♡ 傳送中……</item>
     </string-array>
+    <string name="meow">喵~</string>
+    <string name="hiss">哈——</string>
+    <string name="growl">嗚——</string>
 </resources>

@@ -1,37 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <dimen name="video_cover_height">108dp</dimen>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <dimen name="video_cover_width">185dp</dimen>
-    <dimen name="video_cover_simplified_width_large">150dp</dimen>
-    <dimen name="video_cover_simplified_height_large">220dp</dimen>
     <dimen name="video_cover_simplified_width">120dp</dimen>
-    <dimen name="video_cover_simplified_height">176dp</dimen>
-    <dimen name="video_cover_simplified_width_small">90dp</dimen>
-    <dimen name="video_cover_simplified_height_small">132dp</dimen>
-    <dimen name="video_cover_height_small">72dp</dimen>
-    <dimen name="video_cover_weight_small">128dp</dimen>
-    <dimen name="video_cover_height_medium">96dp</dimen>
-    <dimen name="hanime_preview_news_pic_width">120dp</dimen>
-    <dimen name="hanime_preview_news_pic_height">90dp</dimen>
-    <dimen name="avatar_size">36dp</dimen>
-    <dimen name="subscribe_avatar_size">58dp</dimen>
-    <dimen name="subscribe_text_width">78dp</dimen>
 
     <!-- use for comment align -->
-    <dimen name="comment_content_margin">44dp</dimen>
-    <dimen name="comment_button_margin">32dp</dimen>
 
     <dimen name="view_view_and_time_icon_size">14dp</dimen>
     <dimen name="video_view_and_time_and_duration">12sp</dimen>
     <dimen name="err_tip_text_size">24sp</dimen>
-    <dimen name="main_avatar_size">80dp</dimen>
     <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="fragment_horizontal_margin">16dp</dimen>
-    <dimen name="fragment_vertical_margin">16dp</dimen>
-    <dimen name="indicator_size">8dp</dimen>
-    <dimen name="indicator_margin">4dp</dimen>
-    <dimen name="bottom_sheet_min_height">450dp</dimen>
     <dimen name="player_control_bar_margin">15dp</dimen>
     <!-- 覆写Material slider左右padding -->
-    <dimen name="mtrl_slider_track_side_padding">0dp</dimen>
+    <dimen name="mtrl_slider_track_side_padding" tools:override="true" tools:ignore="UnusedResources">0dp</dimen>
 </resources>

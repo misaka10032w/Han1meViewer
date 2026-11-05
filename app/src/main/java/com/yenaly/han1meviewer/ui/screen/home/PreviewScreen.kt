@@ -28,7 +28,6 @@ import com.yenaly.han1meviewer.ui.preview.fakeNewHanimeInfo
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
 import com.yenaly.han1meviewer.ui.viewmodel.PreviewViewModel
-import com.yenaly.han1meviewer.ui.navigation.main.shiftMonthCodeForPreview
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewContent
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewEvent
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewImageViewerDialog
@@ -36,6 +35,7 @@ import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewImageViewerState
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewMonthHeaderState
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewRouteUiState
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewUiState
+import com.yenaly.han1meviewer.ui.screen.home.preview.currentDateCode as currentMonthCode
 import com.yenaly.han1meviewer.ui.screen.home.preview.shiftMonthCode
 import com.yenaly.han1meviewer.ui.screen.home.preview.toNormalDateLabel
 import kotlinx.coroutines.launch
@@ -109,7 +109,9 @@ fun PreviewScreen(
     }
     var imageViewerState by remember { mutableStateOf<PreviewImageViewerState?>(null) }
     var monthAnimationDirection by remember { mutableIntStateOf(1) }
-    val currentDateCode = routeState.currentDateCode
+    // 月份切換暫時隱藏，數據直接使用搜索結果首頁；評論區仍使用當前自然月。
+    val currentMonth = remember { currentMonthCode() }
+    val currentDateCode = currentMonth
     val selectedIndex = routeState.selectedIndex
 
     val currentDateLabel = remember(currentDateCode) { toNormalDateLabel(currentDateCode) }
@@ -139,9 +141,13 @@ fun PreviewScreen(
         is WebsiteState.Success -> displayState.info.hasPrevious
         is WebsiteState.Error -> true
     }
+    // 某個月加載失敗或結果為空時，仍然要允許回到後面的月份。
     val canNext = when (displayState) {
-        is WebsiteState.Success -> displayState.info.hasNext
-        else -> false
+        is WebsiteState.Loading -> false
+        is WebsiteState.Success ->
+            displayState.info.hasNext || currentDateCode < currentMonth
+
+        is WebsiteState.Error -> currentDateCode < currentMonth
     }
     val monthHeaderState = remember(
         currentDateCode,
@@ -208,21 +214,25 @@ fun PreviewScreen(
             PreviewEvent.OnOpenGetchuPreview -> onNavigateToGetchuPreview()
             is PreviewEvent.OnOpenComment -> onNavigateToPreviewComment(event.label, event.dateCode)
             PreviewEvent.OnRetryLoad -> {
-                val code = uiState.routeState.currentDateCode
-                previewViewModel.getHanimePreview(code)
-                previewViewModel.preloadPreview(shiftMonthCodeForPreview(code, -1))
-                previewViewModel.preloadPreview(shiftMonthCodeForPreview(code, 1))
-                PreviewCommentPrefetcher.here(commentViewModel).fetch(PREVIEW_COMMENT_PREFIX, code)
+                previewViewModel.getHanimePreview(currentDateCode)
+                PreviewCommentPrefetcher.here(commentViewModel)
+                    .fetch(PREVIEW_COMMENT_PREFIX, currentDateCode)
             }
         }
     }
 
     LaunchedEffect(currentDateCode) {
         previewViewModel.getHanimePreview(currentDateCode)
-        previewViewModel.preloadPreview(shiftMonthCodeForPreview(currentDateCode, -1))
-        previewViewModel.preloadPreview(shiftMonthCodeForPreview(currentDateCode, 1))
         PreviewCommentPrefetcher.here(commentViewModel).fetch(PREVIEW_COMMENT_PREFIX, currentDateCode)
-        routeState = routeState.copy(selectedIndex = 0)
+    }
+
+    // 數據刷新後項目數量可能變少，避免記住的卡片索引越界。
+    LaunchedEffect(previewInfoList.size) {
+        if (previewInfoList.isNotEmpty() &&
+            routeState.selectedIndex !in previewInfoList.indices
+        ) {
+            routeState = routeState.copy(selectedIndex = 0)
+        }
     }
 
     LaunchedEffect(uiState.routeState.selectedIndex, previewInfoList.size) {
@@ -240,6 +250,13 @@ fun PreviewScreen(
         val pagerPage = previewPagerState.currentPage.coerceIn(previewInfoList.indices)
         if (pagerPage != uiState.routeState.selectedIndex) {
             routeState = routeState.copy(selectedIndex = pagerPage)
+        }
+    }
+
+    // 搜索結果只有封面與標題，卡片顯示時再異步補全詳情。
+    LaunchedEffect(currentDateCode, previewPagerState.currentPage, previewInfoList.size) {
+        previewInfoList.getOrNull(previewPagerState.currentPage)?.videoCode?.let { videoCode ->
+            previewViewModel.enrichPreview(currentDateCode, videoCode)
         }
     }
 

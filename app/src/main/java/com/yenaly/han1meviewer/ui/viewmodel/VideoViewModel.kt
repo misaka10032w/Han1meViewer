@@ -25,8 +25,8 @@ import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
 import com.yenaly.han1meviewer.util.TagLocalizer
-import com.yenaly.yenaly_libs.base.YenalyViewModel
-import com.yenaly.yenaly_libs.utils.dp
+import com.yenaly.han1meviewer.base.BaseViewModel
+import com.yenaly.han1meviewer.util.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -52,7 +52,7 @@ import kotlin.math.abs
  * @author Yenaly Liew
  * @time 2022/06/17 017 19:01
  */
-class VideoViewModel(application: Application) : YenalyViewModel(application) {
+class VideoViewModel(application: Application) : BaseViewModel(application) {
 
     data class IntroScrollState(
         val firstVisibleItemIndex: Int = 0,
