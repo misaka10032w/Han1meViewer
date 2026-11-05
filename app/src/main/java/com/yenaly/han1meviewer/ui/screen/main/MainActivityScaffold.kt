@@ -143,45 +143,45 @@ fun MainActivityScaffold(
         }
     }
 
-    if (isBottomNavigation) {
-        val bottomNavigationType = if (
-            windowSizeClass.isHeightAtLeastBreakpoint(
-                WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
-            )
-        ) {
-            NavigationSuiteType.ShortNavigationBarCompact
-        } else {
-            NavigationSuiteType.ShortNavigationBarMedium
-        }
-        NavigationSuiteScaffold(
-            navigationSuiteType = bottomNavigationType,
-            state = navigationSuiteState,
-            navigationItems = {
-                MainTopLevelDestination.entries.forEach { destination ->
-                    NavigationSuiteItem(
-                        selected = selectedDestination == destination,
-                        onClick = { onDestinationSelected(destination) },
-                        icon = {
-                            Icon(
-                                imageVector = destination.icon,
-                                contentDescription = null,
-                            )
-                        },
-                        label = { Text(stringResource(destination.titleRes)) },
-                        navigationSuiteType = bottomNavigationType,
-                    )
-                }
-            },
-        ) {
-            ScaffoldContent(
-                modifier = Modifier.nestedScroll(nestedScrollConnection),
-                snackbarHostState = snackbarHostState,
-                content = content,
-            )
-        }
+    val bottomNavigationType = if (
+        windowSizeClass.isHeightAtLeastBreakpoint(
+            WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
+        )
+    ) {
+        NavigationSuiteType.ShortNavigationBarCompact
     } else {
+        NavigationSuiteType.ShortNavigationBarMedium
+    }
+
+    // 始终使用同一个 NavigationSuiteScaffold 及其 content 调用点，只切换导航类型。
+    // 如果按 isBottomNavigation 在外部写 if/else 两套布局，横竖屏切换时 content
+    // 会被整体移除并重新创建，播放页的播放器也会随之重建导致播放中断。
+    NavigationSuiteScaffold(
+        navigationSuiteType = if (isBottomNavigation) {
+            bottomNavigationType
+        } else {
+            NavigationSuiteType.None
+        },
+        state = navigationSuiteState,
+        navigationItems = {
+            MainTopLevelDestination.entries.forEach { destination ->
+                NavigationSuiteItem(
+                    selected = selectedDestination == destination,
+                    onClick = { onDestinationSelected(destination) },
+                    icon = {
+                        Icon(
+                            imageVector = destination.icon,
+                            contentDescription = null,
+                        )
+                    },
+                    label = { Text(stringResource(destination.titleRes)) },
+                    navigationSuiteType = bottomNavigationType,
+                )
+            }
+        },
+    ) {
         Row(modifier = Modifier.fillMaxSize()) {
-            if (showNavigationSuite) {
+            if (!isBottomNavigation && showNavigationSuite) {
                 WideNavigationRail(
                     state = railState,
                     modifier = Modifier.fillMaxHeight(),
@@ -245,7 +245,14 @@ fun MainActivityScaffold(
             ScaffoldContent(
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxHeight(),
+                    .fillMaxHeight()
+                    .then(
+                        if (isBottomNavigation) {
+                            Modifier.nestedScroll(nestedScrollConnection)
+                        } else {
+                            Modifier
+                        }
+                    ),
                 snackbarHostState = snackbarHostState,
                 content = content,
             )
