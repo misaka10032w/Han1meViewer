@@ -79,7 +79,7 @@ fun MainActivityScaffold(
         WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND
     )
     val isBottomNavigation = !isMediumWidth
-    var railExpanded by rememberSaveable { mutableStateOf(true) }
+    var railExpanded by rememberSaveable { mutableStateOf(false) }
     var bottomBarVisible by rememberSaveable { mutableStateOf(true) }
     val shouldExpandRail = isExpandedWidth && railExpanded
 
