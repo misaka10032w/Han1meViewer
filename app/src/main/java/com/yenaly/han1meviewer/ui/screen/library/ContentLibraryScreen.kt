@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.ui.screen.library
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,6 +21,7 @@ import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +36,7 @@ import androidx.window.core.layout.WindowSizeClass
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.ExpressiveEntryCard
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
+import com.yenaly.han1meviewer.ui.screen.LocalVideoGridAvailableWidth
 import com.yenaly.han1meviewer.ui.navigation.main.DownloadRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.main.FavVideoRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.main.MyPlaylistRouteScreen
@@ -122,12 +125,19 @@ fun ContentLibraryScreen(
         },
         detailPane = {
             AnimatedPane {
-                ContentLibraryDetailPane(
-                    entry = detailEntry,
-                    onBack = closeDetail,
-                    onNavigateToVideo = onNavigateToVideo,
-                    onNavigateToLocalVideo = onNavigateToLocalVideo,
-                )
+                BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                    // 双栏时视频网格使用详情面板的实际宽度，而不是整个窗口宽度。
+                    CompositionLocalProvider(
+                        LocalVideoGridAvailableWidth provides maxWidth,
+                    ) {
+                        ContentLibraryDetailPane(
+                            entry = detailEntry,
+                            onBack = closeDetail,
+                            onNavigateToVideo = onNavigateToVideo,
+                            onNavigateToLocalVideo = onNavigateToLocalVideo,
+                        )
+                    }
+                }
             }
         },
     )
