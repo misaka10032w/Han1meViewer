@@ -33,7 +33,7 @@
         android:enableOnBackInvokedCallback="true"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="${appIcon}"
-        android:label="@string/hanime_app_name"
+        android:label="@string/app_launcher_name"
         android:networkSecurityConfig="@xml/http_network_config"
         android:roundIcon="@mipmap/ic_launcher_new_round"
         android:supportsRtl="true"
@@ -114,7 +114,7 @@
             android:enabled="true"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_new"
-            android:label="@string/hanime_app_name"
+            android:label="@string/app_launcher_name"
             android:targetActivity=".ui.activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

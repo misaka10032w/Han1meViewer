@@ -80,6 +80,16 @@
     <string name="settings_group_backup">备份与存储</string>
     <string name="settings_group_feedback">反馈与支持</string>
     <string name="settings_group_version">版本信息</string>
+    <string name="about_app_subtitle">Han1meViewer · 使用 Kotlin 开发的 Android 客户端，用于浏览、搜索、播放和管理 hanime 公开视频内容。</string>
+    <string name="about_disclaimer_title">说明与免责声明</string>
+    <string name="about_disclaimer_origin_title">项目来源与许可</string>
+    <string name="about_disclaimer_origin">本应用无官方网站，GitHub Release 与 CI 构建产物是唯一下载及更新渠道；与 hanime1.me 及其关联方无任何隶属、合作或授权关系。项目 Fork 自 YenalyLiew/Han1meViewer，原项目采用 Apache License 2.0。</string>
+    <string name="about_disclaimer_data_title">数据与版权</string>
+    <string name="about_disclaimer_data">本应用仅通过常规网络请求和 HTML DOM 解析获取公开页面信息，不访问网站后端数据库，不进行注入攻击、绕过授权或获取非公开用户数据。视频、图文及相关内容版权归原网站或原始制作、发行方所有。</string>
+    <string name="about_disclaimer_region_title">使用限制与地区说明</string>
+    <string name="about_disclaimer_region">本应用不面向中国大陆用户提供服务，也不提供任何翻墙、破解或突破网络限制的功能。本应用仅用于技术研究、学习交流和移动端体验优化，不提供商业化服务；使用者应遵守所在地区法律法规及目标网站规则。</string>
+    <string name="about_last_updated">最后更新：%1$s</string>
+    <string name="about_support_original">建议通过官方渠道支持原站内容。</string>
     <string name="about_app_info">应用信息</string>
     <string name="about_build_type">构建类型</string>
     <string name="about_build_commit">提交</string>

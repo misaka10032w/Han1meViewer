@@ -80,6 +80,16 @@
     <string name="settings_group_backup">バックアップとストレージ</string>
     <string name="settings_group_feedback">フィードバックとサポート</string>
     <string name="settings_group_version">バージョン情報</string>
+    <string name="about_app_subtitle">Han1meViewer · Kotlin で開発された Android クライアント。hanime の公開動画コンテンツの閲覧、検索、再生、管理を行います。</string>
+    <string name="about_disclaimer_title">説明と免責事項</string>
+    <string name="about_disclaimer_origin_title">プロジェクトの出典とライセンス</string>
+    <string name="about_disclaimer_origin">本アプリには公式サイトがありません。GitHub Release と CI ビルドが唯一のダウンロードおよび更新チャネルです。hanime1.me およびその関連会社とは一切の提携、協力、許諾関係がありません。本プロジェクトは YenalyLiew/Han1meViewer から Fork したもので、元プロジェクトは Apache License 2.0 を採用しています。</string>
+    <string name="about_disclaimer_data_title">データと著作権</string>
+    <string name="about_disclaimer_data">本アプリは通常のネットワークリクエストと HTML DOM 解析によって公開ページの情報のみを取得します。サイトのバックエンドデータベースへのアクセス、インジェクション攻撃、認可の回避、非公開ユーザーデータの取得は行いません。動画、画像、テキストなどの著作権は元サイトまたは制作者・配信者に帰属します。</string>
+    <string name="about_disclaimer_region_title">利用制限と地域について</string>
+    <string name="about_disclaimer_region">本アプリは中国本土のユーザー向けには提供されておらず、VPN、クラック、ネットワーク制限の回避機能も提供しません。技術研究、学習、モバイル体験の最適化のみを目的とし、商業サービスではありません。ユーザーは地域の法令および対象サイトの規則を遵守してください。</string>
+    <string name="about_last_updated">最終更新：%1$s</string>
+    <string name="about_support_original">公式チャンネルを通じて元サイトを支援してください。</string>
     <string name="about_app_info">アプリ情報</string>
     <string name="about_build_type">ビルド種別</string>
     <string name="about_build_commit">コミット</string>

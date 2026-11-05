@@ -80,6 +80,16 @@
     <string name="settings_group_backup">Backup &amp; storage</string>
     <string name="settings_group_feedback">Feedback &amp; support</string>
     <string name="settings_group_version">Version info</string>
+    <string name="about_app_subtitle">Han1meViewer · A Kotlin Android client for browsing, searching, playing and managing public hanime video content.</string>
+    <string name="about_disclaimer_title">Notes &amp; disclaimer</string>
+    <string name="about_disclaimer_origin_title">Project source &amp; license</string>
+    <string name="about_disclaimer_origin">This app has no official website. GitHub Releases and CI builds are the only download and update channels. It is not affiliated with, endorsed by, or authorized by hanime1.me or its affiliates. This project is forked from YenalyLiew/Han1meViewer under the Apache License 2.0.</string>
+    <string name="about_disclaimer_data_title">Data &amp; copyright</string>
+    <string name="about_disclaimer_data">This app only retrieves publicly available page information through regular network requests and HTML DOM parsing. It does not access the site\'s backend database, perform injection attacks, bypass authorization, or obtain non-public user data. All videos, images, text and related content remain the property of the original site or their respective creators and distributors.</string>
+    <string name="about_disclaimer_region_title">Usage limits &amp; region</string>
+    <string name="about_disclaimer_region">This app is not provided for users in mainland China, and does not provide any VPN, cracking, or network-restriction circumvention features. It is intended only for technical research, learning, and mobile experience optimization, and is not a commercial service. Users must comply with their local laws and the target site\'s rules.</string>
+    <string name="about_last_updated">Last updated: %1$s</string>
+    <string name="about_support_original">Please support the original site through official channels.</string>
     <string name="about_app_info">App info</string>
     <string name="about_build_type">Build type</string>
     <string name="about_build_commit">Commit</string>
