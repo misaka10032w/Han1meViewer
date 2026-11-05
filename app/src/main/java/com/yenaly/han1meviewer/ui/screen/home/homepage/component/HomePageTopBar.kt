@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.home.homepage.component
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -22,7 +23,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,7 +40,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * 渲染首页顶部栏，包含抽屉入口、搜索入口和新番列表入口。
@@ -53,6 +62,12 @@ fun HomePageTopBar(
 ) {
     val placeholders = stringArrayResource(R.array.search_placeholders)
     val randomHint = placeholders.random()
+    val scope = rememberCoroutineScope()
+    var clickCount by remember { mutableIntStateOf(0) }
+    val activity = LocalActivity.current
+    val meow = stringResource(R.string.meow)
+    val hiss = stringResource(R.string.hiss)
+    val growl = stringResource(R.string.growl)
     Surface(
         color = MaterialTheme.colorScheme.surface,
         modifier = modifier
@@ -82,7 +97,23 @@ fun HomePageTopBar(
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .padding(horizontal = 1.dp)
-                    .size(50.dp),
+                    .size(50.dp)
+                    .clickable{
+                        clickCount++
+                        when(clickCount){
+                            3 -> {GlobalToasts.show(message = meow, level = GlobalToasts.ToastLevel.INFO)}
+                            6 -> {GlobalToasts.show(message = "$meow $meow", level = GlobalToasts.ToastLevel.SUCCESS)}
+                            9 -> {GlobalToasts.show(message = hiss, level = GlobalToasts.ToastLevel.WARNING)}
+                            12 -> {
+                                GlobalToasts.show(message = growl, level = GlobalToasts.ToastLevel.ERROR)
+                                scope.launch {
+                                    delay(1000.milliseconds)
+                                    activity?.finish()
+                                }
+                            }
+                        }
+
+                    },
             )
             Box(
                 modifier = Modifier

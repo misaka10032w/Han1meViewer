@@ -927,4 +927,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="download_auto_group_reuse">既存のグループを使用します：%s</string>
     <string name="download_auto_group_create">新しいグループを作成します：%s</string>
     <string name="download_group_script_simplified">簡体字</string>
+    <string name="meow">ニャー</string>
+    <string name="hiss">シャーッ</string>
+    <string name="growl">シャーッ</string>
 </resources>

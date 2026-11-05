@@ -960,4 +960,7 @@
         <item>搓手手期待ing……</item>
         <item>◝(⑅•ᴗ•⑅)◜..°♡ 傳送中……</item>
     </string-array>
+    <string name="meow">喵~</string>
+    <string name="hiss">哈——</string>
+    <string name="growl">嗚——</string>
 </resources>

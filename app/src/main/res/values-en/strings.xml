@@ -923,4 +923,7 @@ Recommendations are as follows:\n
         <item>Excitedly rubbing hands together in anticipation…</item>
         <item>◝(⑅•ᴗ•⑅)◜..°♡ Teleporting…</item>
     </string-array>
+    <string name="meow">Meow~</string>
+    <string name="hiss">hiss!</string>
+    <string name="growl">hsss-grrr</string>
 </resources>
