@@ -5,6 +5,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategory
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategoryRoute
 import kotlinx.serialization.json.Json
 
 fun NavHostController.navigateTopLevelDestination(
@@ -28,13 +30,26 @@ fun NavHostController.navigateTopLevelDestination(
 }
 
 /**
- * 设置页内部跳转时只保留“设置首页 + 当前分类”，避免平板双栏反复点击后不断入栈。
+ * 切换设置一级分类。
+ *
+ * 只保留“设置首页 + 当前分类”，避免平板双栏反复点击分类时不断入栈。
  */
-fun NavController.navigateSettingsDestination(route: Any) {
-    navigateSafely(route) {
+fun NavController.navigateSettingsCategoryDestination(category: SettingsCategory) {
+    navigateSafely(SettingsCategoryRoute(category.key)) {
         popUpTo(HomeSettingsRoute) {
             inclusive = false
         }
+        launchSingleTop = true
+    }
+}
+
+/**
+ * 进入设置二级页面。
+ *
+ * 使用普通入栈，保证从二级页面返回时回到所属分类，而不是直接回到设置首页。
+ */
+fun NavController.navigateSettingsDestination(route: Any) {
+    navigateSafely(route) {
         launchSingleTop = true
     }
 }

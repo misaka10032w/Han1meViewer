@@ -37,15 +37,18 @@ import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframesRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframesRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframesTopBarActions
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.settings.MpvPlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.MpvPlayerSettingsRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRouteScreen
-import com.yenaly.han1meviewer.ui.navigation.settings.SettingsScaffold
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategory
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategoryRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategoryRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsDestinationSpec
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsHomeRouteScreen
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsScaffold
 import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRouteScreen
 import com.yenaly.han1meviewer.ui.screen.account.AccountScreen
@@ -54,7 +57,8 @@ import com.yenaly.han1meviewer.ui.viewmodel.UserAccountViewModel
 import kotlinx.serialization.json.Json
 
 private fun NavBackStackEntry?.isSettingsRoute(): Boolean {
-    return SettingsDestinationSpec.fromDestination(this?.destination) != null
+    return this?.destination?.hasRoute<SettingsCategoryRoute>() == true ||
+            SettingsDestinationSpec.fromDestination(this?.destination) != null
 }
 
 @Composable
@@ -258,19 +262,32 @@ fun MainNavHost(
                 navController = navController,
                 fallbackDestination = HomeRoute,
             ) {
-                HomeSettingsRouteScreen(
+                SettingsHomeRouteScreen(
+                    onOpenCategory = { category ->
+                        navController.navigateSettingsCategoryDestination(category)
+                    },
+                )
+            }
+        }
+        composable<SettingsCategoryRoute> { entry ->
+            val route = entry.toRoute<SettingsCategoryRoute>()
+            val category = SettingsCategory.fromKey(route.categoryKey)
+                ?: SettingsCategory.Appearance
+            SettingsScaffold(
+                navController = navController,
+                fallbackDestination = HomeSettingsRoute,
+            ) {
+                SettingsCategoryRouteScreen(
+                    category = category,
                     activity = activity,
                     onNavigateToPlayerSettings = {
                         navController.navigateSettingsDestination(PlayerSettingsRoute)
                     },
-                    onNavigateToHKeyframeSettings = {
-                        navController.navigateSettingsDestination(HKeyframeSettingsRoute)
+                    onNavigateToHKeyframes = {
+                        navController.navigateSettingsDestination(HKeyframesRoute)
                     },
-                    onNavigateToDownloadSettings = {
-                        navController.navigateSettingsDestination(DownloadSettingsRoute)
-                    },
-                    onNavigateToNetworkSettings = {
-                        navController.navigateSettingsDestination(NetworkSettingsRoute)
+                    onNavigateToSharedHKeyframes = {
+                        navController.navigateSettingsDestination(SharedHKeyframesRoute)
                     },
                 )
             }

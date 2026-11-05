@@ -20,6 +20,7 @@ data class DownloadSettingsUiState(
     val downloadSpeedLimitIndex: Int,
     val downloadSpeedLimitSummary: String,
     val downloadAutoGroup: Boolean = true,
+    val collapseDownloadedGroup: Boolean = false,
 )
 
 @Composable
@@ -33,6 +34,7 @@ fun DownloadSettingsScreen(
     onDownloadCountLimitChange: (Int) -> Unit,
     onDownloadSpeedLimitChange: (Int) -> Unit,
     onDownloadAutoGroupChange: (Boolean) -> Unit,
+    onCollapseDownloadedGroupChange: (Boolean) -> Unit,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = 8.dp),
@@ -87,6 +89,16 @@ fun DownloadSettingsScreen(
                 onCheckedChange = onDownloadAutoGroupChange,
             )
         }
+
+        item {
+            SettingSwitchItem(
+                title = stringResource(R.string.collapse_downloaded_groups),
+                summary = stringResource(R.string.collapse_downloaded_groups_summary),
+                checked = state.collapseDownloadedGroup,
+                iconRes = R.drawable.ic_baseline_fold_24,
+                onCheckedChange = onCollapseDownloadedGroupChange,
+            )
+        }
     }
 }
 
@@ -102,6 +114,7 @@ private fun DownloadSettingsScreenPreview() {
                 downloadSpeedLimitIndex = 0,
                 downloadSpeedLimitSummary = "无限制",
                 downloadAutoGroup = true,
+                collapseDownloadedGroup = false,
             ),
             maxDownloadCountLimit = 10,
             maxDownloadSpeedLimitIndex = 5,
@@ -111,6 +124,7 @@ private fun DownloadSettingsScreenPreview() {
             onDownloadCountLimitChange = {},
             onDownloadSpeedLimitChange = {},
             onDownloadAutoGroupChange = {},
+            onCollapseDownloadedGroupChange = {},
         )
     }
 }

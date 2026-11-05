@@ -2,22 +2,17 @@ package com.yenaly.han1meviewer.ui.navigation.settings
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
 import android.os.Build
-import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -44,7 +39,6 @@ import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.edit
-import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.analytics
@@ -93,7 +87,6 @@ private const val HOME_USE_DARK_MODE = "use_dark_mode"
 private const val HOME_ALLOW_RESUME_PLAYBACK = "allow_resume_playback"
 private const val HOME_SEARCH_ARTIST_IGNORE_VIDEO_TYPE = "search_artist_ignore_video_type"
 private const val HOME_DISABLE_MOBILE_DATA_WARNING = "disable_mobile_data_warning"
-private const val HOME_COLLAPSE_DOWNLOADED_GROUP = "collapse_downloaded_group"
 private const val HOME_DISABLE_PREDICTIVE_BACK = "disable_predictive_back"
 private const val HOME_SHOW_EXIT_CONFIRM = "show_exit_confirm"
 private const val HOME_DISABLE_COMMENTS = "disable_comments"
@@ -113,13 +106,35 @@ private const val HOME_HORIZONTAL_CARD_COUNT_EXPANDED = "horizontal_card_count_e
 @SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeSettingsRouteScreen(
+fun SettingsCategoryRouteScreen(
+    category: SettingsCategory,
     activity: MainActivity,
     onNavigateToPlayerSettings: () -> Unit,
-    onNavigateToHKeyframeSettings: () -> Unit,
-    onNavigateToDownloadSettings: () -> Unit,
-    onNavigateToNetworkSettings: () -> Unit,
+    onNavigateToHKeyframes: () -> Unit,
+    onNavigateToSharedHKeyframes: () -> Unit,
 ) {
+    when (category) {
+        SettingsCategory.Network -> {
+            NetworkSettingsRouteScreen()
+            return
+        }
+
+        SettingsCategory.Download -> {
+            DownloadSettingsRouteScreen(activity = activity)
+            return
+        }
+
+        SettingsCategory.Keyframes -> {
+            HKeyframeSettingsRouteScreen(
+                onNavigateToHKeyframes = onNavigateToHKeyframes,
+                onNavigateToSharedHKeyframes = onNavigateToSharedHKeyframes,
+            )
+            return
+        }
+
+        else -> Unit
+    }
+
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val versionState by AppViewModel.versionFlow.collectAsStateWithLifecycle()
@@ -130,7 +145,6 @@ fun HomeSettingsRouteScreen(
     var showRestartConfirmDialog by remember { mutableStateOf(false) }
     var showAnalyticsDialog by remember { mutableStateOf(false) }
     var showLauncherPicker by remember { mutableStateOf(false) }
-    var showApplyDeepLinksDialog by remember { mutableStateOf(false) }
     var pendingImportUri by remember { mutableStateOf<android.net.Uri?>(null) }
 
     // 弹窗的选中回调会先更新 activeDialog 关闭弹窗；延迟两帧再重建 Activity，
@@ -149,7 +163,6 @@ fun HomeSettingsRouteScreen(
     val clearSuccess = stringResource(R.string.clear_success)
     val clearFailed = stringResource(R.string.clear_failed)
     val fakeIconHint = stringResource(R.string.fake_icon_hint)
-    val actionNotSupport = stringResource(R.string.action_app_open_by_default_settings_not_support)
 
     val exportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
@@ -237,6 +250,7 @@ fun HomeSettingsRouteScreen(
     }
 
     HomeSettingsScreen(
+        category = category,
         state = uiState,
         onVideoLanguageChange = { value ->
             if (value != Preferences.videoLanguage) {
@@ -308,10 +322,6 @@ fun HomeSettingsRouteScreen(
             saveBoolean(HOME_DISABLE_COMMENTS, it)
             refreshKey++
         },
-        onCollapseDownloadedGroupChange = {
-            saveBoolean(HOME_COLLAPSE_DOWNLOADED_GROUP, it)
-            refreshKey++
-        },
         onSearchGridColumnsConfigChange = { config ->
             saveInt(HOME_SEARCH_GRID_COLUMNS_COMPACT, config.compactColumns)
             saveInt(HOME_SEARCH_GRID_COLUMNS_MEDIUM, config.mediumColumns)
@@ -368,9 +378,6 @@ fun HomeSettingsRouteScreen(
             refreshKey++
         },
         onOpenPlayerSettings = onNavigateToPlayerSettings,
-        onOpenHKeyframeSettings = onNavigateToHKeyframeSettings,
-        onOpenDownloadSettings = onNavigateToDownloadSettings,
-        onOpenNetworkSettings = onNavigateToNetworkSettings,
         onOpenAppLanguageSettings = { value ->
             val old = Preferences.preferenceSp.getString(HOME_APP_LANGUAGE, "system") ?: "system"
             if (old != value) {
@@ -391,12 +398,8 @@ fun HomeSettingsRouteScreen(
             Preferences.preferenceSp.edit { putInt(HOME_UPDATE_POPUP_INTERVAL_DAYS, it) }
             refreshKey++
         },
-        onOpenApplyDeepLinks = {
-            showApplyDeepLinksDialog = true
-        },
         onOpenFakeLauncherIcon = { showLauncherPicker = true },
         onOpenOpenSourceLicense = { showLicenseScreen = true },
-        onOpenAbout = {},
         onClearCache = {
             val cacheDir = context.cacheDir
             val folderSize = cacheDir?.folderSize ?: 0L
@@ -571,54 +574,6 @@ fun HomeSettingsRouteScreen(
         }
     }
 
-    if (showApplyDeepLinksDialog) {
-        AlertDialog(
-            onDismissRequest = { showApplyDeepLinksDialog = false },
-            title = { Text(stringResource(R.string.apply_deep_links)) },
-            text = {
-                Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text(stringResource(R.string.apply_deep_links_summary))
-                    Text(stringResource(R.string.apply_deep_links_tips))
-                    Image(
-                        painter = painterResource(R.drawable.apply_deep_links),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    showApplyDeepLinksDialog = false
-                    try {
-                        val intent = Intent().apply {
-                            action = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS
-                            } else {
-                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                            }
-                            addCategory(Intent.CATEGORY_DEFAULT)
-                            data = "package:${context.packageName}".toUri()
-                            flags = Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
-                        }
-                        activity.startActivity(intent)
-                    } catch (e: Exception) {
-                        GlobalToasts.show(actionNotSupport, level = GlobalToasts.ToastLevel.WARNING)
-                        e.printStackTrace()
-                    }
-                }) {
-                    Text(stringResource(R.string.go_to_settings))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showApplyDeepLinksDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
-        )
-    }
 }
 
 private data class LauncherItem(

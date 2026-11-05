@@ -59,6 +59,28 @@
     <string name="profile_creator_center_desc">管理投稿與創作資料</string>
     <string name="profile_settings_desc">播放器、網路與下載設定</string>
     <string name="settings_pane_subtitle">管理播放、網路與下載</string>
+    <string name="settings_select_category_hint">從左側選擇設定分類</string>
+    <string name="settings_category_appearance">外觀與互動</string>
+    <string name="settings_category_appearance_desc">主題、語言、介面與佈局</string>
+    <string name="settings_category_playback">播放</string>
+    <string name="settings_category_playback_desc">清晰度、播放器與播放行為</string>
+    <string name="settings_category_network">網路</string>
+    <string name="settings_category_network_desc">網路、深層連結與連線</string>
+    <string name="settings_category_download">下載</string>
+    <string name="settings_category_download_desc">下載目錄與任務行為</string>
+    <string name="settings_category_keyframes">關鍵幀</string>
+    <string name="settings_category_keyframes_desc">H 關鍵幀與共享關鍵幀</string>
+    <string name="settings_category_privacy">隱私與安全</string>
+    <string name="settings_category_privacy_desc">資料統計、應用鎖與偽裝圖示</string>
+    <string name="settings_category_data">資料</string>
+    <string name="settings_category_data_desc">備份、還原與快取</string>
+    <string name="settings_category_about">關於</string>
+    <string name="settings_category_about_desc">更新、意見回饋與開源許可</string>
+    <string name="settings_group_interface">介面與佈局</string>
+    <string name="settings_group_app">應用</string>
+    <string name="settings_group_backup">備份與儲存</string>
+    <string name="settings_group_feedback">意見回饋與支援</string>
+    <string name="settings_group_version">版本資訊</string>
     <string name="content_library_favorite_desc">收藏的影片</string>
     <string name="content_library_watch_later_desc">稍後觀看</string>
     <string name="content_library_playlist_desc">自訂播放清單</string>
@@ -78,7 +100,6 @@
     <string name="add_to_fav">加入喜歡</string>
     <string name="share">分享</string>
     <string name="video_language">影片語言</string>
-    <string name="other">其他</string>
     <string name="about">關於</string>
     <string name="check_update">檢查更新</string>
     <string name="new_version_found">已發現新版本</string>
@@ -146,7 +167,6 @@
     <string name="search_grid_columns_range_expanded" translatable="false">901-1200dp</string>
     <string name="search_grid_columns_range_large" translatable="false">≥1201dp</string>
     <string name="current_slide_sensitivity">當前靈敏度：%s</string>
-    <string name="network">網路</string>
     <string name="proxy">代理</string>
     <string name="port">埠</string>
     <string name="direct">直接連接</string>
