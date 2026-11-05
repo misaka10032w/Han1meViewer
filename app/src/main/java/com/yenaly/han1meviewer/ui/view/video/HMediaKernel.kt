@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.view.video
 
+import android.app.ActivityManager
 import android.content.Context
 import android.content.pm.ActivityInfo
 import android.graphics.SurfaceTexture
@@ -96,6 +97,54 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
 
     companion object {
         const val TAG = "ExoMediaKernel"
+
+        private const val MIB = 1024 * 1024
+
+        /** 起播只需要 1 秒缓冲，卡顿后重新起播需要 2 秒。 */
+        private const val BUFFER_FOR_PLAYBACK_MS = 1_000
+        private const val BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS = 2_000
+
+        /**
+         *
+         * #676 部分情况下会OOM，减少内存预算
+         * 按普通 Java 堆大小选择播放缓冲配置。
+         *
+         * Media3 默认会按 125 MB 视频 + 12.5 MB 音频准备缓冲，在 256 MB 堆的设备上，
+         * 加上图片缓存后很容易直接 OOM。这里根据 `ActivityManager.memoryClass`
+         * 分档限制缓冲，既照顾低内存设备，也尽量不牺牲大堆设备的播放体验。
+         */
+        @OptIn(UnstableApi::class)
+        private fun createLoadControl(context: Context): LoadControl {
+            val memoryClassMb = context.getSystemService(ActivityManager::class.java)
+                ?.memoryClass
+                ?.takeIf { it > 0 }
+                ?: 256
+
+            // targetBufferBytes 是视频、音频、字幕等所有轨道的合计上限。
+            val (targetBufferBytes, minBufferMs, maxBufferMs) = when {
+                memoryClassMb <= 256 -> Triple(48 * MIB, 10_000, 20_000)
+                memoryClassMb <= 384 -> Triple(64 * MIB, 15_000, 30_000)
+                else -> Triple(96 * MIB, 20_000, 40_000)
+            }
+            Log.i(
+                TAG,
+                "memoryClass=${memoryClassMb}MB, " +
+                        "targetBuffer=${targetBufferBytes / MIB}MB, " +
+                        "bufferRange=${minBufferMs / 1_000}s-${maxBufferMs / 1_000}s",
+            )
+
+            return DefaultLoadControl.Builder()
+                .setBufferDurationsMs(
+                    minBufferMs,
+                    maxBufferMs,
+                    BUFFER_FOR_PLAYBACK_MS,
+                    BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS,
+                )
+                .setTargetBufferBytes(targetBufferBytes)
+                // 优先按内存上限停止加载，避免低内存设备被缓冲撑爆。
+                .setPrioritizeTimeOverSizeThresholds(false)
+                .build()
+        }
     }
 
     private var _exoPlayer: ExoPlayer? = null
@@ -130,11 +179,7 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
             val videoTrackSelectionFactory = AdaptiveTrackSelection.Factory()
             val trackSelector = DefaultTrackSelector(context, videoTrackSelectionFactory)
 
-            val loadControl: LoadControl = DefaultLoadControl.Builder()
-                // .setBufferDurationsMs(360000, 600000, 1000, 5000)
-                // .setPrioritizeTimeOverSizeThresholds(false)
-                // .setTargetBufferBytes(C.LENGTH_UNSET)
-                .build()
+            val loadControl: LoadControl = createLoadControl(context)
 
 
             val bandwidthMeter = DefaultBandwidthMeter.Builder(context).build()

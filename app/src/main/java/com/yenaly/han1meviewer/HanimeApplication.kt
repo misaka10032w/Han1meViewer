@@ -1,6 +1,8 @@
 package com.yenaly.han1meviewer
 
+import android.content.ComponentCallbacks2
 import android.content.ComponentName
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Process
 import android.util.Log
@@ -23,6 +25,9 @@ import com.yenaly.han1meviewer.util.ThemeUtils
 import com.developer.crashx.config.CrashConfig
 import com.yenaly.han1meviewer.base.BaseApplication
 import com.yenaly.han1meviewer.base.AppLocale
+import coil3.ImageLoader
+import coil3.SingletonImageLoader
+import coil3.memory.MemoryCache
 import `is`.xyz.mpv.MPVLib
 import java.net.ProxySelector
 
@@ -31,10 +36,37 @@ import java.net.ProxySelector
  * @author Yenaly Liew
  * @time 2022/06/08 008 17:32
  */
-class HanimeApplication : BaseApplication() {
+class HanimeApplication : BaseApplication(), SingletonImageLoader.Factory {
 
     companion object {
         const val TAG = "HanimeApplication"
+
+        /**
+         * 全局图片内存缓存上限。
+         *
+         * Coil3 默认会使用堆的 20%，在 256 MB 堆的设备上约 51 MB；再叠加播放器缓冲后
+         * 很容易触发 OOM。统一限制到 32 MB，并让所有页面共用同一个 ImageLoader。
+         */
+        private const val IMAGE_MEMORY_CACHE_BYTES = 32L * 1024 * 1024
+    }
+
+    override fun newImageLoader(context: Context): ImageLoader {
+        return ImageLoader.Builder(context)
+            .memoryCache {
+                MemoryCache.Builder()
+                    .maxSizeBytes(IMAGE_MEMORY_CACHE_BYTES)
+                    .build()
+            }
+            .build()
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        // #676 部分情况下会OOM，设置内存上限
+        // UI_HIDDEN 是官方推荐释放 Bitmap 等界面资源的等级，同时也能覆盖后台内存压力。
+        if (level >= TRIM_MEMORY_UI_HIDDEN) {
+            SingletonImageLoader.get(this).memoryCache?.clear()
+        }
     }
 
     private fun initCrashX() {
