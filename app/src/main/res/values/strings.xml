@@ -888,6 +888,8 @@
     </string-array>
 
     <string name="theme_color">主題色</string>
+    <string name="theme_color_preset_title">預設配色</string>
+    <string name="theme_color_preset_subtitle">選擇一套強調色</string>
     <string name="theme_color_system">跟隨系統</string>
     <string name="theme_color_default">（預設）姨媽紅</string>
     <string name="theme_color_blue">胖次藍</string>

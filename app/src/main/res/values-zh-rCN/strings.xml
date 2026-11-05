@@ -856,6 +856,8 @@
         <item>搜索一下，打开不可以色色的新世界！</item>
     </string-array>
     <string name="theme_color">主题色</string>
+    <string name="theme_color_preset_title">预设配色</string>
+    <string name="theme_color_preset_subtitle">选择一套强调色</string>
     <string name="theme_color_system">跟随系统</string>
     <string name="theme_color_default">姨妈红</string>
     <string name="theme_color_blue">胖次蓝</string>

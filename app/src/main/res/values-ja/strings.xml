@@ -844,6 +844,8 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
         <item>検索して、ちょっとハレンチな新世界を開いちゃおう！</item>
     </string-array>
     <string name="theme_color">テーマカラー</string>
+    <string name="theme_color_preset_title">プリセット配色</string>
+    <string name="theme_color_preset_subtitle">アクセントカラーを選択</string>
     <string name="theme_color_system">システムに従う</string>
     <string name="theme_color_default">クリムゾンレッド</string>
     <string name="theme_color_blue">アズールブルー</string>

@@ -851,6 +851,8 @@ Recommendations are as follows:\n
         <item>Search now, and open the gate to an ecchi new world!</item>
     </string-array>
     <string name="theme_color">Theme Color</string>
+    <string name="theme_color_preset_title">Color presets</string>
+    <string name="theme_color_preset_subtitle">Choose an accent color</string>
     <string name="theme_color_system">Follow System</string>
     <string name="theme_color_default">Crimson Red</string>
     <string name="theme_color_blue">Azure Blue</string>

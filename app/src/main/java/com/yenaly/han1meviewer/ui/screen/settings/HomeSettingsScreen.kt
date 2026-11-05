@@ -29,6 +29,7 @@ import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategory
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.HomeCategoryLayoutDialog
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.HorizontalCardCountDialog
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.SearchGridColumnsDialog
+import com.yenaly.han1meviewer.ui.screen.settings.dialog.ThemeColorPresetDialog
 import com.yenaly.han1meviewer.ui.screen.settings.model.HomeSettingsUiState
 import com.yenaly.han1meviewer.ui.theme.ThemeColorPreset
 
@@ -149,13 +150,11 @@ fun HomeSettingsScreen(
         },
     )
 
-    ChoiceDialog(
+    ThemeColorPresetDialog(
         visible = activeDialog == HomeSettingsChoiceDialog.ThemeColor,
-        title = stringResource(R.string.theme_color),
-        options = ThemeColorPreset.entries
-            .filter { state.dynamicColorEnabled || it != ThemeColorPreset.SYSTEM }
-            .map { stringResource(it.displayNameRes) to it.key },
-        selectedValue = state.themeColorKey,
+        presets = ThemeColorPreset.entries
+            .filter { state.dynamicColorEnabled || it != ThemeColorPreset.SYSTEM },
+        selectedKey = state.themeColorKey,
         onDismiss = { activeDialog = null },
         onSelect = {
             activeDialog = null
