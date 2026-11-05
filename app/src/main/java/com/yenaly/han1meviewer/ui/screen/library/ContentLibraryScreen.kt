@@ -20,8 +20,12 @@ import androidx.compose.material3.adaptive.layout.ListDetailPaneScaffoldRole
 import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -57,11 +61,20 @@ fun ContentLibraryScreen(
         ContentLibraryEntry.entries.firstOrNull { !it.requiresLogin || isLoggedIn }
             ?: ContentLibraryEntry.entries.first()
     }
+    // 双栏模式下切换分类只替换详情内容，不再向 navigator 追加新的 Detail 页面。
+    var selectedEntryName by rememberSaveable { mutableStateOf<String?>(null) }
+    val selectedEntry = selectedEntryName?.let { name ->
+        ContentLibraryEntry.entries.firstOrNull { it.name == name }
+    }
+    val detailEntry = selectedEntry
+        ?: navigator.currentDestination?.contentKey
+        ?: defaultEntry
     val useTwoPane = currentWindowAdaptiveInfoV2()
         .windowSizeClass
         .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
 
     val closeDetail: () -> Unit = {
+        selectedEntryName = null
         scope.launch {
             if (!navigator.navigateBack(BackNavigationBehavior.PopUntilContentChange)) {
                 navigator.navigateTo(
@@ -91,11 +104,16 @@ fun ContentLibraryScreen(
                         if (entry.requiresLogin && !isLoggedIn) {
                             onRequireLogin()
                         } else {
-                            scope.launch {
-                                navigator.navigateTo(
-                                    pane = ListDetailPaneScaffoldRole.Detail,
-                                    contentKey = entry,
-                                )
+                            selectedEntryName = entry.name
+                            if (navigator.currentDestination?.pane !=
+                                ListDetailPaneScaffoldRole.Detail
+                            ) {
+                                scope.launch {
+                                    navigator.navigateTo(
+                                        pane = ListDetailPaneScaffoldRole.Detail,
+                                        contentKey = entry,
+                                    )
+                                }
                             }
                         }
                     },
@@ -104,9 +122,8 @@ fun ContentLibraryScreen(
         },
         detailPane = {
             AnimatedPane {
-                val entry = navigator.currentDestination?.contentKey ?: defaultEntry
                 ContentLibraryDetailPane(
-                    entry = entry,
+                    entry = detailEntry,
                     onBack = closeDetail,
                     onNavigateToVideo = onNavigateToVideo,
                     onNavigateToLocalVideo = onNavigateToLocalVideo,
