@@ -33,8 +33,6 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.preference.PreferenceManager
-import com.yenaly.han1meviewer.HanimeConstants.ANIME_URL
-import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.PermissionRequester
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
@@ -266,21 +264,12 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
         showSiteSwitchConfirm = false
     }
 
-    fun confirmSiteSwitch() {
+    fun switchSite(targetUrl: String) {
         showSiteSwitchConfirm = false
-        val currentSite = Preferences.baseUrl
-        val avSite = HANIME_URL[3]
-        val selectedBaseUrl = Preferences.selectedBaseUrl
-        if (currentSite in ANIME_URL) {
-            Preferences.preferenceSp.edit(true) {
-                putString(SettingsPreferenceKeys.SELECTED_BASE_URL, currentSite)
-                putString(SettingsPreferenceKeys.DOMAIN_NAME, avSite)
-            }
-        } else {
-            Preferences.preferenceSp.edit(true) {
-                putString(SettingsPreferenceKeys.SELECTED_BASE_URL, selectedBaseUrl)
-                putString(SettingsPreferenceKeys.DOMAIN_NAME, selectedBaseUrl)
-            }
+        if (targetUrl == Preferences.baseUrl) return
+        Preferences.preferenceSp.edit(true) {
+            putString(SettingsPreferenceKeys.SELECTED_BASE_URL, targetUrl)
+            putString(SettingsPreferenceKeys.DOMAIN_NAME, targetUrl)
         }
         Handler(Looper.getMainLooper()).postDelayed({
             ActivityManager.restart(killProcess = true)

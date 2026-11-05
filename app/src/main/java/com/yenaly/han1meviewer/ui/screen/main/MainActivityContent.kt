@@ -30,8 +30,10 @@ import com.yenaly.han1meviewer.logic.exception.CloudFlareBlockedException
 import com.yenaly.han1meviewer.logic.model.github.Latest
 import com.yenaly.han1meviewer.logic.state.PageState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.component.ChoiceDialog
 import com.yenaly.han1meviewer.ui.component.UpdateDialog
 import com.yenaly.han1meviewer.ui.component.GlobalDialogHost
+import com.yenaly.han1meviewer.ui.navigation.settings.buildDomainOptions
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.GlobalToastHost
 import com.yenaly.han1meviewer.ui.component.UsageNoticeDialog
@@ -188,19 +190,12 @@ fun MainActivityContent(
         }
 
         if (activity.showSiteSwitchConfirm) {
-            AlertDialog(
-                onDismissRequest = { activity.dismissSiteSwitch() },
-                title = { Text(stringResource(R.string.confirm_switch_site)) },
-                confirmButton = {
-                    TextButton(onClick = { activity.confirmSiteSwitch() }) {
-                        Text(stringResource(R.string.sure))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { activity.dismissSiteSwitch() }) {
-                        Text(stringResource(R.string.no))
-                    }
-                },
+            ChoiceDialog(
+                title = stringResource(R.string.confirm_switch_site),
+                options = buildDomainOptions(activity),
+                selectedValue = Preferences.baseUrl,
+                onDismiss = { activity.dismissSiteSwitch() },
+                onSelect = { targetUrl -> activity.switchSite(targetUrl) },
             )
         }
 
