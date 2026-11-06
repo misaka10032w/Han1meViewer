@@ -3,6 +3,7 @@ package com.yenaly.han1meviewer.ui.screen.main
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -47,6 +48,9 @@ import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 
 /** “我的”页面快捷入口卡片的统一高度。 */
 private val ProfileEntryCardHeight = 168.dp
+
+/** 快捷入口卡片的最小宽度，同时保证窄屏下至少两列。 */
+private val ProfileEntryCardMinWidth = 160.dp
 
 /**
  * “我的”一级页面，承载账号、签到、创作中心和设置等入口。
@@ -102,55 +106,64 @@ fun ProfileScreen(
         onBack = null,
         modifier = modifier,
     ) { paddingValues ->
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 160.dp),
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                start = 20.dp,
-                end = 20.dp,
-                top = paddingValues.calculateTopPadding() + 16.dp,
-                bottom = paddingValues.calculateBottomPadding() + 24.dp,
-            ),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            item(
-                key = "profile_header",
-                span = { GridItemSpan(maxLineSpan) },
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val horizontalPadding = 20.dp
+            val itemSpacing = 12.dp
+            val columns = maxOf(
+                2,
+                ((maxWidth - horizontalPadding * 2 + itemSpacing) /
+                        (ProfileEntryCardMinWidth + itemSpacing)).toInt(),
+            )
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(columns),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    start = horizontalPadding,
+                    end = horizontalPadding,
+                    top = paddingValues.calculateTopPadding() + 16.dp,
+                    bottom = paddingValues.calculateBottomPadding() + 24.dp,
+                ),
+                horizontalArrangement = Arrangement.spacedBy(itemSpacing),
+                verticalArrangement = Arrangement.spacedBy(itemSpacing),
             ) {
-                ProfileHeaderCard(
-                    avatarUrl = avatarUrl,
-                    displayName = displayName,
-                    currentSite = currentSite,
-                    onClick = onAccountClick,
-                    onLongClick = onAvatarLongClick,
-                )
-            }
-            item(
-                key = "profile_section",
-                span = { GridItemSpan(maxLineSpan) },
-            ) {
-                Text(
-                    text = stringResource(R.string.quick_entries),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(top = 12.dp, bottom = 2.dp),
-                )
-            }
-            items(
-                items = entries,
-                key = { it.title },
-                span = { GridItemSpan(1) },
-            ) { entry ->
-                ExpressiveEntryCard(
-                    icon = entry.icon,
-                    title = entry.title,
-                    subtitle = entry.subtitle,
-                    // 统一预留两行副标题并固定卡片高度，避免四个快捷入口大小不一致。
-                    subtitleMinLines = 2,
-                    modifier = Modifier.height(ProfileEntryCardHeight),
-                    onClick = entry.onClick,
-                )
+                item(
+                    key = "profile_header",
+                    span = { GridItemSpan(maxLineSpan) },
+                ) {
+                    ProfileHeaderCard(
+                        avatarUrl = avatarUrl,
+                        displayName = displayName,
+                        currentSite = currentSite,
+                        onClick = onAccountClick,
+                        onLongClick = onAvatarLongClick,
+                    )
+                }
+                item(
+                    key = "profile_section",
+                    span = { GridItemSpan(maxLineSpan) },
+                ) {
+                    Text(
+                        text = stringResource(R.string.quick_entries),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(top = 12.dp, bottom = 2.dp),
+                    )
+                }
+                items(
+                    items = entries,
+                    key = { it.title },
+                    span = { GridItemSpan(1) },
+                ) { entry ->
+                    ExpressiveEntryCard(
+                        icon = entry.icon,
+                        title = entry.title,
+                        subtitle = entry.subtitle,
+                        // 统一预留两行副标题并固定卡片高度，避免四个快捷入口大小不一致。
+                        subtitleMinLines = 2,
+                        modifier = Modifier.height(ProfileEntryCardHeight),
+                        onClick = entry.onClick,
+                    )
+                }
             }
         }
     }

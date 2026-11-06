@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -29,6 +31,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -210,24 +213,38 @@ private fun ContentLibraryEntryList(
     onEntryClick: (ContentLibraryEntry) -> Unit,
     contentPadding: PaddingValues,
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 150.dp),
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = contentPadding,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        items(
-            items = ContentLibraryEntry.entries,
-            key = { it.name },
-        ) { entry ->
-            ExpressiveEntryCard(
-                icon = entry.icon,
-                title = stringResource(entry.titleRes),
-                subtitle = stringResource(entry.descriptionRes),
-                locked = entry.requiresLogin && !isLoggedIn,
-                onClick = { onEntryClick(entry) },
-            )
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val layoutDirection = LocalLayoutDirection.current
+        val horizontalPadding =
+            contentPadding.calculateStartPadding(layoutDirection) +
+                contentPadding.calculateEndPadding(layoutDirection)
+        val itemSpacing = 12.dp
+        val minCardWidth = 150.dp
+        val columns = maxOf(
+            2,
+            ((maxWidth - horizontalPadding + itemSpacing) /
+                (minCardWidth + itemSpacing)).toInt(),
+        )
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(columns),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = contentPadding,
+            horizontalArrangement = Arrangement.spacedBy(itemSpacing),
+            verticalArrangement = Arrangement.spacedBy(itemSpacing),
+        ) {
+            items(
+                items = ContentLibraryEntry.entries,
+                key = { it.name },
+            ) { entry ->
+                ExpressiveEntryCard(
+                    icon = entry.icon,
+                    title = stringResource(entry.titleRes),
+                    subtitle = stringResource(entry.descriptionRes),
+                    subtitleMinLines = 2,
+                    locked = entry.requiresLogin && !isLoggedIn,
+                    onClick = { onEntryClick(entry) },
+                )
+            }
         }
     }
 }
