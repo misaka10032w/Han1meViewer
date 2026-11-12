@@ -60,6 +60,7 @@ interface HanimeMyListService {
         @Query("page") page: Int,
     ): Response<ResponseBody>
 
+    // 2026-11 網站改版：email 輸入框已 disabled（瀏覽器不會提交該欄位），故不再上傳 email
     @FormUrlEncoded
     @POST("user/{userid}")
     suspend fun updateUserAccountProfile(
@@ -68,7 +69,6 @@ interface HanimeMyListService {
         @Field("_method") method: String = "patch",
         @Field("type") type: String = "profile",
         @Field("name") name: String,
-        @Field("email") email: String,
         @Header("X-CSRF-TOKEN") csrfToken_1: String? = csrfToken,
     ): Response<ResponseBody>
 

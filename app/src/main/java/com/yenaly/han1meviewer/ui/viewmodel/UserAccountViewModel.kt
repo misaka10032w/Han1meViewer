@@ -45,7 +45,7 @@ class UserAccountViewModel(application: Application) : BaseViewModel(application
         }
     }
 
-    fun updateProfile(name: String, email: String) {
+    fun updateProfile(name: String) {
         val account = (_accountState.value as? WebsiteState.Success)?.info ?: return
         if (_submittingState.value != UserAccountSubmittingState.Idle) return
         viewModelScope.launch {
@@ -55,7 +55,6 @@ class UserAccountViewModel(application: Application) : BaseViewModel(application
                 userId = account.userId,
                 csrfToken = account.csrfToken,
                 name = name,
-                email = email,
             ).collect { state ->
                 _actionFlow.emit(UserAccountActionEvent(UserAccountAction.ProfileUpdated, state))
                 if (state is WebsiteState.Success) {
