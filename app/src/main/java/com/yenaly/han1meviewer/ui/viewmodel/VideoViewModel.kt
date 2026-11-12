@@ -92,7 +92,7 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
 
     var fromDownload = false
 
-    // 平板横屏模式下，左栏不显示相关视频（右栏已显示）
+    // 相关影片在别处展示时（独立标签页开关开启，或平板横屏分栏布局），简介底部不显示相关列表
     var hideRelatedInIntro by mutableStateOf(false)
     var hKeyframes: HKeyframeEntity? = null
     private val _videoList = MutableLiveData<List<HanimeInfo>>()

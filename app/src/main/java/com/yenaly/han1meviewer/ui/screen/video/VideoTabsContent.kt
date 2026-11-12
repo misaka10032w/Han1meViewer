@@ -19,7 +19,20 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.launch
 
+/**
+ * 播放页标签的种类。
+ *
+ * 页面分发不再依赖下标（评论关闭、本地下载、相关影片开关都会改变 tab 数量），
+ * 而是根据 [VideoTabItem.kind] 映射到对应的页面内容。
+ */
+enum class VideoTabKind {
+    INTRODUCTION,
+    COMMENT,
+    RELATED,
+}
+
 data class VideoTabItem(
+    val kind: VideoTabKind,
     @param:StringRes val titleRes: Int,
     val badgeCount: Int = 0,
 )

@@ -34,6 +34,8 @@
     <string name="series_video">Series Videos</string>
     <string name="auto_play_next">Auto-play</string>
     <string name="related_video">Related Videos</string>
+    <string name="related_video_as_tab">Related videos as a separate tab</string>
+    <string name="related_video_as_tab_summary">Adds a Related tab after Introduction and Comments on the play page. On tablets in landscape, tabs move to the right and the player is centered vertically</string>
     <string name="now_playing">Now Playing</string>
     <string name="view_more_replies">View %1$d replies</string>
     <string name="comment_not_found">Comments Not Found</string>

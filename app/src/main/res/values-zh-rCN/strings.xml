@@ -34,6 +34,8 @@
     <string name="series_video">系列影片</string>
     <string name="auto_play_next">自动续播</string>
     <string name="related_video">相关影片</string>
+    <string name="related_video_as_tab">相关影片独立标签页</string>
+    <string name="related_video_as_tab_summary">开启后播放页在“简介、评论”后新增“相关影片”标签页；平板横屏下标签页移至右侧，播放器垂直居中</string>
     <string name="now_playing">现正播放</string>
     <string name="view_more_replies">查看 %1$d 条回复</string>
     <string name="comment_not_found">未发现评论</string>

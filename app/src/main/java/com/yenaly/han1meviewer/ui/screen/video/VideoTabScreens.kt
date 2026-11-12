@@ -1,5 +1,11 @@
 package com.yenaly.han1meviewer.ui.screen.video
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetValue
@@ -11,6 +17,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
@@ -20,9 +29,12 @@ import com.yenaly.han1meviewer.getHanimeShareText
 import com.yenaly.han1meviewer.logic.entity.CheckInRecordEntity
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
+import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
+import com.yenaly.han1meviewer.ui.component.content.EmptyContent
+import com.yenaly.han1meviewer.ui.component.content.LoadingContent
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
@@ -128,6 +140,58 @@ fun RenderVideoIntroductionContent(
             downloadGroups = viewModel.downloadGroups.collectAsStateWithLifecycle().value,
             recommendedGroupId = viewModel.recommendedGroupId.collectAsStateWithLifecycle().value,
         )
+    }
+}
+
+/**
+ * 「相关影片」标签页内容。
+ *
+ * 仅在「相关影片独立标签页」开关开启且非本地下载时出现；
+ * 复用简介底部的 [RelatedVideosSection]，独立成可滚动页面。
+ */
+@Composable
+fun RenderVideoRelatedContent(
+    viewModel: VideoViewModel,
+    onOpenVideo: (HanimeInfo) -> Unit,
+) {
+    val videoState = viewModel.hanimeVideoStateFlow.collectAsStateWithLifecycle().value
+    val video = viewModel.hanimeVideoFlow.collectAsStateWithLifecycle().value
+    val relatedVideos = video?.relatedHanimes.orEmpty()
+
+    HanimeTheme {
+        when {
+            video == null && videoState is VideoLoadingState.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    LoadingContent()
+                }
+            }
+
+            relatedVideos.isEmpty() -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    EmptyContent(hint = stringResource(R.string.here_is_empty))
+                }
+            }
+
+            else -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .navigationBarsPadding(),
+                ) {
+                    RelatedVideosSection(
+                        videos = relatedVideos,
+                        onOpenVideo = onOpenVideo,
+                    )
+                }
+            }
+        }
     }
 }
 
