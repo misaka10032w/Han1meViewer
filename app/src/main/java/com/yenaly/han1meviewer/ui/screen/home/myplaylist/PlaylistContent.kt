@@ -114,7 +114,8 @@ fun PlaylistContent(
                 }
                 LazyVerticalGrid(
                     state = gridState,
-                    columns = GridCells.Fixed(getColumnCount(180)),
+                    // 较窄手机上避免退化成单列，保证播放清单卡片至少两列
+                    columns = GridCells.Fixed(maxOf(2, getColumnCount(180))),
                     contentPadding = PaddingValues(8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
