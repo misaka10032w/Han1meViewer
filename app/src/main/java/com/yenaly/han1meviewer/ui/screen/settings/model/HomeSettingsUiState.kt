@@ -17,6 +17,7 @@ data class HomeSettingsUiState(
     val showPlayedIndicator: Boolean,
     val watchedProgressThreshold: Int,
     val searchPagination: Boolean,
+    val relatedVideoAsTab: Boolean,
     val searchArtistIgnoreVideoType: Boolean,
     val disableMobileDataWarning: Boolean,
     val disablePredictiveBack: Boolean,

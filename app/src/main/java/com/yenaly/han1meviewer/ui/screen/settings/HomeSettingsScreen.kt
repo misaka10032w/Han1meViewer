@@ -58,6 +58,7 @@ fun HomeSettingsScreen(
     onShowPlayedIndicatorChange: (Boolean) -> Unit,
     onWatchedProgressThresholdChange: (Int) -> Unit,
     onSearchPaginationChange: (Boolean) -> Unit,
+    onRelatedVideoAsTabChange: (Boolean) -> Unit,
     onSearchArtistIgnoreVideoTypeChange: (Boolean) -> Unit,
     onDisableMobileDataWarningChange: (Boolean) -> Unit,
     onDisablePredictiveBackChange: (Boolean) -> Unit,
@@ -267,6 +268,15 @@ fun HomeSettingsScreen(
                         checked = state.searchPagination,
                         iconRes = R.drawable.baseline_paging_24,
                         onCheckedChange = onSearchPaginationChange,
+                    )
+                }
+                item {
+                    SettingSwitchItem(
+                        title = stringResource(R.string.related_video_as_tab),
+                        summary = stringResource(R.string.related_video_as_tab_summary),
+                        checked = state.relatedVideoAsTab,
+                        iconRes = R.drawable.ic_baseline_list_24,
+                        onCheckedChange = onRelatedVideoAsTabChange,
                     )
                 }
 

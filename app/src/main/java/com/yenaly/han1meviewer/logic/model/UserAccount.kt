@@ -9,6 +9,8 @@ data class UserAccount(
     val joinedLabel: String?,
     val subscriberCount: Int,
     val videoCount: Int,
+    // 網站上 email 是否可編輯（2026-11 改版後 email 輸入框為 disabled 唯讀），預設 true 兼容舊版
+    val emailEditable: Boolean = true,
 )
 
 enum class UserAccountAction {

@@ -235,7 +235,11 @@ fun SettingSliderItem(
         }
         Slider(
             state = sliderState,
-            onValueChange = { onValueChange(it.roundToInt()) },
+            onValueChange = {
+                // SliderState 不会自动跟随手势，必须同步写入当前拖动位置。
+                sliderState.value = it
+                onValueChange(it.roundToInt())
+            },
         )
     }
 }

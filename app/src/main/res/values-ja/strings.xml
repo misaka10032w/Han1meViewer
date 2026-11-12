@@ -34,6 +34,8 @@
     <string name="series_video">シリーズ作品</string>
     <string name="auto_play_next">自動再生</string>
     <string name="related_video">関連動画</string>
+    <string name="related_video_as_tab">関連動画をタブで表示</string>
+    <string name="related_video_as_tab_summary">再生ページの「あらすじ・コメント」の後に「関連動画」タブを追加します。タブレット横画面ではタブが右側に移動し、プレイヤーが縦方向の中央に配置されます</string>
     <string name="now_playing">再生中</string>
     <string name="view_more_replies">返信%1$d件を表示</string>
     <string name="comment_not_found">コメントはありません</string>

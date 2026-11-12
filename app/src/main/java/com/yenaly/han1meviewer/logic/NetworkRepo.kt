@@ -179,14 +179,12 @@ object NetworkRepo {
         userId: String,
         csrfToken: String?,
         name: String,
-        email: String,
     ) = websiteIOFlow(
         request = {
             HanimeNetwork.myListService.updateUserAccountProfile(
                 userId = userId,
                 csrfToken = csrfToken,
                 name = name,
-                email = email,
             )
         },
         permittedSuccessCode = intArrayOf(302),

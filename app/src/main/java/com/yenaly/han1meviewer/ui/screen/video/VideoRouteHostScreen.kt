@@ -683,14 +683,21 @@ fun VideoRouteHostScreen(
         isExpandedLayout = useLargeVideoLayout,
         isInPipMode = hostUiState.isInPipMode,
         relatedItems = relatedItems,
+        relatedAsTab = Preferences.relatedVideoAsTab,
         onHideRelatedInIntroChange = { viewModel.hideRelatedInIntro = it },
-        onSideRelatedCollapsedChange = { isSideRelatedCollapsed = it },
+        onSidePaneCollapsedChange = { isSideRelatedCollapsed = it },
+        onTabsBesidePlayerChange = { beside ->
+            if (beside) viewModel.setAppBarBottomInsetPx(0)
+        },
         onOpenVideo = { item -> activity.showVideoDetailFragment(item.videoCode) },
         mainHostFactory = {
+            shell.restoreCollapsedStructure()
             shell.mainHostView.also { view ->
                 (view.parent as? ViewGroup)?.removeView(view)
             }
         },
+        playerHostFactory = { shell.takePlayerHost() },
+        tabsHostFactory = { shell.takeTabsHost() },
         modifier = Modifier.fillMaxSize(),
     )
 
@@ -764,24 +771,37 @@ private class VideoRouteShell(
         }
     }
 
+    /** [videoPlayerHost] 在折叠工具栏中的原始布局参数，拆分后复原用。 */
+    private val videoPlayerHostParams = CollapsingToolbarLayout.LayoutParams(
+        MATCH_PARENT,
+        WRAP_CONTENT,
+    ).apply {
+        collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PARALLAX
+        parallaxMultiplier = 1f
+    }
+
+    /** [videoTabsHost] 在 CoordinatorLayout 中的原始布局参数（含滚动避让行为），拆分后复原用。 */
+    private val videoTabsHostParams = CoordinatorLayout.LayoutParams(
+        MATCH_PARENT,
+        MATCH_PARENT,
+    ).apply {
+        behavior = AppBarLayout.ScrollingViewBehavior()
+    }
+
     private val videoPlayerHost = FrameLayout(context).apply {
-        layoutParams = CollapsingToolbarLayout.LayoutParams(
-            MATCH_PARENT,
-            WRAP_CONTENT,
-        ).apply {
-            collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PARALLAX
-            parallaxMultiplier = 1f
-        }
+        layoutParams = videoPlayerHostParams
     }
 
     private val videoTabsHost = ComposeView(context).apply {
-        layoutParams = CoordinatorLayout.LayoutParams(
-            MATCH_PARENT,
-            MATCH_PARENT,
-        ).apply {
-            behavior = AppBarLayout.ScrollingViewBehavior()
-        }
+        layoutParams = videoTabsHostParams
     }
+
+    /**
+     * 平板横屏分栏布局中 tabs 是否已被拆出 CoordinatorLayout。
+     *
+     * 拆出后 tabs 不再位于 AppBar 下方，避让 AppBar 的滚动内边距应固定为 0。
+     */
+    private var tabsDetachedFromCoordinator = false
 
     init {
         videoPlayerHost.addView(playerView, ViewGroup.LayoutParams(MATCH_PARENT, 250.dp))
@@ -793,6 +813,36 @@ private class VideoRouteShell(
 
     val mainHostView: View
         get() = rootView
+
+    /** 把 tabs 宿主拆出 CoordinatorLayout，交给 Compose 分栏布局挂载到右栏。 */
+    fun takeTabsHost(): ComposeView {
+        tabsDetachedFromCoordinator = true
+        (videoTabsHost.parent as? ViewGroup)?.removeView(videoTabsHost)
+        videoTabsHost.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+        return videoTabsHost
+    }
+
+    /** 把播放器宿主拆出折叠工具栏，交给 Compose 分栏布局挂载到左栏。 */
+    fun takePlayerHost(): FrameLayout {
+        (videoPlayerHost.parent as? ViewGroup)?.removeView(videoPlayerHost)
+        videoPlayerHost.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+        return videoPlayerHost
+    }
+
+    /** 恢复手机布局结构：播放器宿主回到折叠工具栏，tabs 回到 CoordinatorLayout。 */
+    fun restoreCollapsedStructure() {
+        tabsDetachedFromCoordinator = false
+        if (videoPlayerHost.parent !== collapsingToolbarLayout) {
+            (videoPlayerHost.parent as? ViewGroup)?.removeView(videoPlayerHost)
+            videoPlayerHost.layoutParams = videoPlayerHostParams
+            collapsingToolbarLayout.addView(videoPlayerHost)
+        }
+        if (videoTabsHost.parent !== rootView) {
+            (videoTabsHost.parent as? ViewGroup)?.removeView(videoTabsHost)
+            videoTabsHost.layoutParams = videoTabsHostParams
+            rootView.addView(videoTabsHost, 0)
+        }
+    }
 
     fun setTabsHostContent(content: @Composable () -> Unit) {
         videoTabsHost.setViewCompositionStrategy(
@@ -813,7 +863,12 @@ private class VideoRouteShell(
 
     fun setOnOffsetChanged(onChanged: (totalScrollRange: Int, verticalOffset: Int) -> Unit) {
         appBarLayout.addOnOffsetChangedListener { appBar, verticalOffset ->
-            onChanged(appBar.totalScrollRange, verticalOffset)
+            if (tabsDetachedFromCoordinator) {
+                // tabs 已拆至右栏，不再需要避让 AppBar 的滚动内边距
+                onChanged(0, 0)
+            } else {
+                onChanged(appBar.totalScrollRange, verticalOffset)
+            }
         }
     }
 

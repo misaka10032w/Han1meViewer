@@ -841,8 +841,14 @@ object Parser {
             .throwIfParseNull(Parser::userAccountPage.name, "avatarUrl")
         val username = parseBody.selectFirst("input[name=name]")?.attr("value")?.trim()
             .throwIfParseNull(Parser::userAccountPage.name, "username")
-        val email = parseBody.selectFirst("input[name=email]")?.attr("value")?.trim()
+        // 2026-11 網站改版：email 輸入框不再帶 name 屬性，改為 id="email"（且 disabled 唯讀），
+        // 新版選擇器優先，舊版 input[name=email] 作為回退相容。
+        val emailInput = parseBody.selectFirst("#email")
+            ?: parseBody.selectFirst("input[name=email]")
+        val email = emailInput?.attr("value")?.trim()
             .throwIfParseNull(Parser::userAccountPage.name, "email")
+        // 網站將 email 設為 disabled（唯讀）時，App 端的編輯狀態與其保持同步
+        val emailEditable = emailInput?.hasAttr("disabled") == false
         val userIdText = parseBody.selectFirst("div.profile-sub-stats-id")?.text()
             .throwIfParseNull(Parser::userAccountPage.name, "userId")
         val userId = Regex("""\d+""").find(userIdText)?.value
@@ -863,6 +869,7 @@ object Parser {
                 joinedLabel = joinedLabel,
                 subscriberCount = statNumbers.getOrElse(0) { 0 },
                 videoCount = statNumbers.getOrElse(1) { 0 },
+                emailEditable = emailEditable,
             )
         )
     }

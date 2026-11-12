@@ -157,6 +157,16 @@ object Preferences {
     val autoPlayNext: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.AUTO_PLAY_NEXT, false)
 
+    /**
+     * 播放頁中「相關影片」是否作為跟隨在簡介、評論之後的獨立標籤頁顯示。
+     *
+     * 開啟後簡介底部不再內嵌相關影片列表；平板橫屏下標籤頁整體移至右側，
+     * 左欄僅剩播放器並垂直置中。關閉時平板橫屏同樣將標籤頁移至右側，
+     * 但相關影片顯示在播放器下方（與右側標籤頁互換位置）。
+     */
+    val relatedVideoAsTab: Boolean
+        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.RELATED_VIDEO_AS_TAB, false)
+
     val searchPagination: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.SEARCH_PAGINATION, false)
 

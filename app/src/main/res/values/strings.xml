@@ -47,6 +47,8 @@
     <string name="series_video">系列影片</string>
     <string name="auto_play_next">自動續播</string>
     <string name="related_video">相關影片</string>
+    <string name="related_video_as_tab">相關影片獨立標籤頁</string>
+    <string name="related_video_as_tab_summary">開啟後播放頁在「簡介、評論」後新增「相關影片」標籤頁；平板橫屏下標籤頁移至右側，播放器垂直置中</string>
     <string name="now_playing">現正播放</string>
     <string name="view_more_replies">查看 %1$d 則回覆</string>
     <string name="comment_not_found">未發現評論</string>
