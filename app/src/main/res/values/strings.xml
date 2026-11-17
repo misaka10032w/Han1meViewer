@@ -835,6 +835,9 @@
     <string name="search_video_hint">搜尋影片…</string>
     <string name="recent_searches">最近搜尋</string>
     <string name="search_no_results">沒有搜尋到結果</string>
+    <string name="hide_watched">隱藏已觀看</string>
+    <string name="show_watched">顯示已觀看</string>
+    <string name="search_all_results_watched_hidden">目前結果均已觀看，已被隱藏</string>
     <string name="search_load_failed_with_reason">載入失敗：%1$s</string>
     <string name="load_failed_with_reason">載入失敗：%1$s</string>
     <string name="more">更多</string>

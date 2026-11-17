@@ -796,6 +796,9 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="search_video_hint">動画を検索…</string>
     <string name="recent_searches">最近の検索</string>
     <string name="search_no_results">検索結果が見つかりません</string>
+    <string name="hide_watched">視聴済みを非表示</string>
+    <string name="show_watched">視聴済みを表示</string>
+    <string name="search_all_results_watched_hidden">現在の検索結果はすべて視聴済みのため非表示にしました</string>
     <string name="search_load_failed_with_reason">読み込み失敗：%1$s</string>
     <string name="load_failed_with_reason">読み込み失敗：%1$s</string>
     <string name="more">もっと見る</string>

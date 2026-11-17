@@ -80,6 +80,13 @@ class SearchViewModel(
         get() = state["broad"] ?: false
         set(value) { state["broad"] = value }
 
+    /**
+     * 搜索结果中是否隐藏已观看的视频（由搜索结果页右侧按钮切换）。
+     */
+    var hideWatched: Boolean
+        get() = state["hideWatched"] ?: false
+        set(value) { state["hideWatched"] = value }
+
     var duration: String?
         get() = state["duration"]
         set(value) { state["duration"] = value }
@@ -196,16 +203,14 @@ class SearchViewModel(
                     )
                     _totalPagesFlow.value = state.info.totalPages
                     val list = state.info.list
-                    val updatedList = if (Preferences.showPlayedIndicator) {
-                        val codes = list.map { it.videoCode }
-                        val watchedCodes = withContext(Dispatchers.IO) {
-                            DatabaseRepo.WatchHistory.getWatched(codes).toSet()
-                        }
-                        list.map { item ->
-                            item.copy(watched = watchedCodes.contains(item.videoCode))
-                        }
-                    } else {
-                        list
+                    // 无论是否显示“已观看”角标，都查询已观看状态，
+                    // 这样搜索结果页的“隐藏已观看”过滤始终可用。
+                    val codes = list.map { it.videoCode }
+                    val watchedCodes = withContext(Dispatchers.IO) {
+                        DatabaseRepo.WatchHistory.getWatched(codes).toSet()
+                    }
+                    val updatedList = list.map { item ->
+                        item.copy(watched = watchedCodes.contains(item.videoCode))
                     }
                     if (Preferences.searchPagination) {
                         _searchFlow.value = updatedList
