@@ -8,6 +8,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
 import android.view.Surface
+import com.yenaly.han1meviewer.FirebaseConstants
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.ResolutionLinkMap
 import com.yenaly.han1meviewer.ui.player.HanimePlayerController.Companion.RESUME_THRESHOLD_MS
@@ -16,6 +17,7 @@ import com.yenaly.han1meviewer.ui.player.kernel.KernelType
 import com.yenaly.han1meviewer.ui.player.kernel.MediaRequest
 import com.yenaly.han1meviewer.ui.player.kernel.PlayerKernel
 import com.yenaly.han1meviewer.ui.player.kernel.PlayerKernelFactory
+import com.yenaly.han1meviewer.util.HAnalytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -216,6 +218,13 @@ class HanimePlayerController(
     private fun startPlayback() {
         val quality = qualityLinks.getOrNull(_uiState.value.currentQualityIndex) ?: return
         Log.i(TAG, "startPlayback: ${quality.first} -> ${quality.second}")
+        // 起播埋点：记录清晰度与内核类型，用于分析用户清晰度偏好与播放环境
+        HAnalytics.logEvent(
+            FirebaseConstants.EVENT_PLAYBACK_START,
+            FirebaseConstants.PARAM_QUALITY to quality.first,
+            FirebaseConstants.PARAM_KERNEL to kernelType.name,
+            FirebaseConstants.PARAM_METHOD to "start",
+        )
         _uiState.update { it.copy(state = PlayerState.PREPARING) }
         reprepareKernel(positionMs = 0L)
     }
@@ -225,6 +234,13 @@ class HanimePlayerController(
      */
     fun retry() {
         if (!_uiState.value.hasMedia) return
+        // 重试埋点：重试次数可反映播放失败的真实规模
+        HAnalytics.logEvent(
+            FirebaseConstants.EVENT_PLAYBACK_START,
+            FirebaseConstants.PARAM_QUALITY to (qualityLinks.getOrNull(_uiState.value.currentQualityIndex)?.first),
+            FirebaseConstants.PARAM_KERNEL to kernelType.name,
+            FirebaseConstants.PARAM_METHOD to "retry",
+        )
         _uiState.update { it.copy(state = PlayerState.PREPARING) }
         reprepareKernel(positionMs = 0L)
     }
@@ -236,6 +252,13 @@ class HanimePlayerController(
         if (!_uiState.value.hasMedia) return
         if (index == _uiState.value.currentQualityIndex) return
         val position = kernel.currentPositionMs
+        // 切清晰度埋点
+        HAnalytics.logEvent(
+            FirebaseConstants.EVENT_VIDEO_QUALITY_SWITCH,
+            FirebaseConstants.PARAM_FROM_QUALITY to (qualityLinks.getOrNull(_uiState.value.currentQualityIndex)?.first),
+            FirebaseConstants.PARAM_QUALITY to (qualityLinks.getOrNull(index)?.first),
+            FirebaseConstants.PARAM_KERNEL to kernelType.name,
+        )
         _uiState.update { it.copy(currentQualityIndex = index, state = PlayerState.PREPARING) }
         Log.i(TAG, "switchQuality: ${_uiState.value.qualities.getOrNull(index)} @$position")
         reprepareKernel(positionMs = position)
@@ -427,6 +450,14 @@ class HanimePlayerController(
         stopTicker()
         abandonAudioFocus()
         Log.e(TAG, "onError: $error")
+        // 播放器错误埋点：事件 + Crashlytics non-fatal（含内核与清晰度上下文）
+        HAnalytics.logError(
+            eventName = FirebaseConstants.EVENT_PLAYER_ERROR,
+            source = "player",
+            throwable = error,
+            FirebaseConstants.PARAM_KERNEL to kernelType.name,
+            FirebaseConstants.PARAM_QUALITY to (qualityLinks.getOrNull(_uiState.value.currentQualityIndex)?.first),
+        )
         _uiState.update { it.copy(state = PlayerState.ERROR) }
     }
 

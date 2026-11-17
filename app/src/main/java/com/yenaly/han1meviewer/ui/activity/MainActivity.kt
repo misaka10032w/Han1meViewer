@@ -35,6 +35,7 @@ import androidx.navigation.NavHostController
 import androidx.preference.PreferenceManager
 import com.yenaly.han1meviewer.PermissionRequester
 import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.FirebaseConstants
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.base.BaseFragmentActivity
 import com.yenaly.han1meviewer.logout
@@ -47,6 +48,7 @@ import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageViewModel
 import com.yenaly.han1meviewer.ui.screen.main.MainActivityContent
 import com.yenaly.han1meviewer.util.ActivityManager
 import com.yenaly.han1meviewer.util.ClipboardVideoLinkGuard
+import com.yenaly.han1meviewer.util.HAnalytics
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
@@ -251,6 +253,11 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
                 duration = SnackbarDuration.Long,
             )
             if (result == SnackbarResult.ActionPerformed) {
+                // 剪贴板链接跳转埋点
+                HAnalytics.logEvent(
+                    FirebaseConstants.EVENT_CLIPBOARD_LINK_OPEN,
+                    FirebaseConstants.PARAM_VIDEO_CODE to videoCode,
+                )
                 showVideoDetailFragment(videoCode)
             }
         }
@@ -267,6 +274,12 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
     fun switchSite(targetUrl: String) {
         showSiteSwitchConfirm = false
         if (targetUrl == Preferences.baseUrl) return
+        // 站点切换埋点
+        HAnalytics.logEvent(
+            FirebaseConstants.EVENT_SITE_SWITCH,
+            FirebaseConstants.PARAM_FROM_URL to Preferences.baseUrl,
+            FirebaseConstants.PARAM_TO_URL to targetUrl,
+        )
         Preferences.preferenceSp.edit(true) {
             putString(SettingsPreferenceKeys.SELECTED_BASE_URL, targetUrl)
             putString(SettingsPreferenceKeys.DOMAIN_NAME, targetUrl)
@@ -292,6 +305,8 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
     fun confirmLogout() {
         showLogoutConfirm = false
+        // 登出埋点
+        HAnalytics.logEvent(FirebaseConstants.EVENT_LOGOUT)
         if (logoutCloseCurrentPage) {
             navController.popBackStack()
         }

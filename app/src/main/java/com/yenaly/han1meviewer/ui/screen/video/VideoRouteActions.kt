@@ -6,6 +6,7 @@ import android.provider.Settings
 import androidx.core.net.toUri
 import com.yenaly.han1meviewer.HAdvancedSearch
 import com.yenaly.han1meviewer.HCacheManager
+import com.yenaly.han1meviewer.FirebaseConstants
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.getHanimeVideoDownloadLink
@@ -19,6 +20,7 @@ import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.navigation.main.SearchRoute
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
+import com.yenaly.han1meviewer.util.HAnalytics
 import com.yenaly.han1meviewer.util.browse
 import com.yenaly.han1meviewer.util.copyToClipboard
 import com.yenaly.han1meviewer.util.requestPostNotificationPermission
@@ -220,6 +222,13 @@ class VideoRouteActions(
                 groupId = autoGroup?.id,
             ),
             redownload = redownload,
+        )
+        // 下载启动埋点
+        HAnalytics.logEvent(
+            FirebaseConstants.EVENT_DOWNLOAD_START,
+            FirebaseConstants.PARAM_VIDEO_CODE to viewModel.videoCode,
+            FirebaseConstants.PARAM_QUALITY to quality,
+            FirebaseConstants.PARAM_REDOWNLOAD to redownload,
         )
         GlobalToasts.show(
             context.getString(R.string.added_to_download_queue),

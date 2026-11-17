@@ -26,6 +26,7 @@ import coil3.request.ImageRequest
 import coil3.toBitmap
 import com.yenaly.han1meviewer.DOWNLOAD_NOTIFICATION_CHANNEL
 import com.yenaly.han1meviewer.EMPTY_STRING
+import com.yenaly.han1meviewer.FirebaseConstants
 import com.yenaly.han1meviewer.HFileManager
 import com.yenaly.han1meviewer.HFileManager.createVideoName
 import com.yenaly.han1meviewer.R
@@ -35,6 +36,7 @@ import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.network.ServiceCreator
 import com.yenaly.han1meviewer.logic.state.DownloadState
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
+import com.yenaly.han1meviewer.util.HAnalytics
 import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.util.await
 import com.yenaly.han1meviewer.util.createFileIfNotExists
@@ -295,6 +297,7 @@ class HanimeDownloadWorker(
                 HFileManager.getDownloadVideoFolder(context, videoCode).deleteRecursively()
                 DatabaseRepo.HanimeDownload.delete(videoCode)
                 if (shouldDelete) {
+                    logDownloadResult("deleted")
                     return@withContext Result.success()
                 }
             }
@@ -305,6 +308,7 @@ class HanimeDownloadWorker(
                         ?: return@withContext run {
                             Log.d(TAG, "entity is null, create new raf failed")
                             val reason = context.getString(R.string.download_error_file_info)
+                            logDownloadResult("failure", "file_info")
                             showFailureNotification(reason)
                             mainScope.launch {
                                 GlobalToasts.show(
@@ -335,6 +339,7 @@ class HanimeDownloadWorker(
             if (entity.downloadedLength >= entity.length && entity.length > 0) {
                 DatabaseRepo.HanimeDownload.update(entity.copy(state = DownloadState.Finished))
                 showSuccessNotification()
+                logDownloadResult("finished")
                 return@withContext Result.success(
                     workDataOf(DownloadState.STATE to DownloadState.Finished.mask)
                 )
@@ -352,6 +357,7 @@ class HanimeDownloadWorker(
                 DatabaseRepo.HanimeDownload.update(
                     entity.copy(state = DownloadState.Queued)
                 )
+                logDownloadResult("queued")
                 return@withContext Result.success()
             }
 
@@ -395,6 +401,7 @@ class HanimeDownloadWorker(
                     val canWrite = (requestNeedRange && response.code == 206) || (!requestNeedRange && response.isSuccessful)
                     if (!canWrite) {
                         val reason = response.toDownloadErrorMessage(requestNeedRange)
+                        logDownloadResult("failure", "http_${response.code}")
                         showFailureNotification(reason)
                         mainScope.launch {
                             GlobalToasts.show(context.getString(R.string.download_task_failed_s_reason_s, hanimeName, reason), level = GlobalToasts.ToastLevel.ERROR)
@@ -450,6 +457,7 @@ class HanimeDownloadWorker(
                 }
 
                 showSuccessNotification()
+                logDownloadResult("finished")
                 result = Result.success(
                     workDataOf(DownloadState.STATE to DownloadState.Finished.mask)
                 )
@@ -457,12 +465,14 @@ class HanimeDownloadWorker(
             } catch (e: Exception) {
                 result = if (e is CancellationException || e.isStoppedCancellation()) {
                     cancelDownloadNotification()
+                    logDownloadResult("paused", e.javaClass.simpleName)
                     mainScope.launch { GlobalToasts.show(context.getString(R.string.download_error_cancelled), level = GlobalToasts.ToastLevel.INFO) }
                     Result.success(
                         workDataOf(DownloadState.STATE to DownloadState.Paused.mask)
                     )
                 } else if (e.isRetryableNetworkError() && runAttemptCount < MAX_WORK_RETRY_COUNT) {
                     val reason = e.toDownloadErrorMessage()
+                    logDownloadResult("retry", e.javaClass.simpleName)
                     showRetryNotification(reason)
                     mainScope.launch {
                         GlobalToasts.show(context.getString(R.string.download_task_retrying_s_reason_s, hanimeName, reason), level = GlobalToasts.ToastLevel.WARNING)
@@ -471,6 +481,7 @@ class HanimeDownloadWorker(
                     Result.retry()
                 } else {
                     val reason = e.toDownloadErrorMessage()
+                    logDownloadResult("failure", e.javaClass.simpleName)
                     showFailureNotification(reason)
                     e.printStackTrace()
                     mainScope.launch {
@@ -503,6 +514,22 @@ class HanimeDownloadWorker(
 
     private fun IOException.isStreamResetCancel(): Boolean {
         return message?.contains("stream was reset: CANCEL", ignoreCase = true) == true
+    }
+
+    /**
+     * 下载任务结果埋点。
+     *
+     * @param state finished / failure / retry / paused / queued / deleted
+     * @param reason 失败/重试原因摘要（异常类名或 http_状态码），便于聚合
+     */
+    private fun logDownloadResult(state: String, reason: String? = null) {
+        HAnalytics.logEvent(
+            FirebaseConstants.EVENT_DOWNLOAD_RESULT,
+            FirebaseConstants.PARAM_VIDEO_CODE to videoCode,
+            FirebaseConstants.PARAM_QUALITY to quality,
+            FirebaseConstants.PARAM_RESULT to state,
+            FirebaseConstants.PARAM_REASON to reason,
+        )
     }
 
     private fun Exception.isStoppedCancellation(): Boolean {

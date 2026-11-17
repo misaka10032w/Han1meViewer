@@ -26,6 +26,7 @@ import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.util.AnimeShaders
+import com.yenaly.han1meviewer.util.HAnalytics
 import com.yenaly.han1meviewer.util.ThemeUtils
 import `is`.xyz.mpv.MPVLib
 import okhttp3.OkHttpClient
@@ -152,6 +153,8 @@ class HanimeApplication : BaseApplication(), SingletonImageLoader.Factory {
                     BuildConfig.VERSION_SOURCE
                 )
             }
+            // 网络环境上下文键（站点/镜像/代理/DoH 等），崩溃时用于还原用户网络配置
+            HAnalytics.updateNetworkContextKeys()
         }
         // 用于处理 Firebase Remote Config 初始化
         Firebase.remoteConfig.apply {

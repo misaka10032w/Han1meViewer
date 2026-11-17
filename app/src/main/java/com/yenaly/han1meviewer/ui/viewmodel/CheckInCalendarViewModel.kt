@@ -2,12 +2,14 @@ package com.yenaly.han1meviewer.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.yenaly.han1meviewer.FirebaseConstants
 import com.yenaly.han1meviewer.logic.dao.CheckInRecordDatabase
 import com.yenaly.han1meviewer.logic.dao.HistoryDatabase
 import com.yenaly.han1meviewer.logic.entity.CheckInRecordEntity
 import com.yenaly.han1meviewer.logic.entity.SideDishEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.DailyCheckInUiState
+import com.yenaly.han1meviewer.util.HAnalytics
 import com.yenaly.han1meviewer.util.application
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -103,6 +105,11 @@ class CheckInCalendarViewModel : ViewModel() {
                 feeling = feeling
             )
             dao.insert(record)
+            // 签到打卡埋点：只记录打卡类型，不记录自由文本备注
+            HAnalytics.logEvent(
+                FirebaseConstants.EVENT_DAILY_CHECKIN,
+                FirebaseConstants.PARAM_METHOD to type,
+            )
             upgradeSideDishesForRecords(listOf(record))
             reloadDateAndStats(date)
         }

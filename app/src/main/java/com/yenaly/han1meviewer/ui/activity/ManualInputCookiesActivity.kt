@@ -7,10 +7,12 @@ import androidx.activity.compose.setContent
 import com.yenaly.han1meviewer.base.BaseActivity
 import com.yenaly.han1meviewer.ui.screen.login.ManualInputCookiesScreen
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
+import com.yenaly.han1meviewer.util.HAnalytics
 
 class ManualInputCookiesActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        HAnalytics.logScreenView("ManualInputCookies", "ManualInputCookiesActivity")
         setContent {
             HanimeTheme {
                 ManualInputCookiesScreen(
