@@ -134,13 +134,13 @@ Telegram 群组：[https://t.me/Han1meViewer](https://t.me/Han1meViewer)
 
 ## 📷 截图预览
 
-![readme0](readme_01.png) ![readme1](readme_02.png)
+![readme0](docs/images/readme_01.png) ![readme1](docs/images/readme_02.png)
 
-![readme2](readme_03.png) ![readme3](readme_04.png)
+![readme2](docs/images/readme_03.png) ![readme3](docs/images/readme_04.png)
 
-![readme4](readme_05.png) ![readme5](readme_06.png)
+![readme4](docs/images/readme_05.png) ![readme5](docs/images/readme_06.png)
 
-![readme6](readme_07.png)
+![readme6](docs/images/readme_07.png)
 
 ## 🧱 当前架构
 
@@ -273,6 +273,7 @@ Han1meViewer/
 │   ├── src/main/java/.../worker  WorkManager 任务
 │   └── src/main/res              资源文件、主题、布局、图标、小组件
 ├── buildSrc/                     Gradle 构建辅助代码
+├── docs/                         文档、README 截图与工具（images/、mpv-trim/、HanimeAnnouncementManagerWebUI/）
 ├── gradle/libs.versions.toml     依赖版本目录
 ├── README.md                     项目说明
 └── README_TECH.md                历史技术说明与部分实现笔记
