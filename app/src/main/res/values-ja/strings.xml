@@ -435,6 +435,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="download_error_cancelled">ダウンロードを一時停止しました。</string>
     <string name="download_error_storage">ダウンロードファイルを書き込めません。空き容量、フォルダ権限、またはダウンロード先を確認してください。</string>
     <string name="download_error_range_not_supported">サーバーが保存位置からの再開に対応していません。このタスクを削除して再ダウンロードしてください。</string>
+    <string name="download_error_link_invalid">ダウンロードリンクの有効期限が切れたか、サーバーに拒否されました。このタスクを削除して再ダウンロードしてください。</string>
     <string name="download_error_file_info">ファイルサイズまたはダウンロード情報を取得できません。後でもう一度お試しください。</string>
     <string name="custom">カスタム</string>
     <string name="show_bottom_progress">下部プログレスバー表示</string>

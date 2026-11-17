@@ -444,6 +444,7 @@
     <string name="download_error_cancelled">下載已暫停。</string>
     <string name="download_error_storage">無法寫入下載檔案，請檢查儲存空間、目錄權限或重新選擇下載目錄。</string>
     <string name="download_error_range_not_supported">伺服器不支援從斷點位置繼續下載，請刪除該任務後重新下載。</string>
+    <string name="download_error_link_invalid">下載連結已失效或被伺服器拒絕，請刪除該任務後重新下載。</string>
     <string name="download_error_file_info">無法取得檔案大小或下載資訊，請稍後重試。</string>
     <string name="custom">自訂</string>
     <string name="show_bottom_progress">顯示底部進度條</string>

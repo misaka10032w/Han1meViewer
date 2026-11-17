@@ -268,7 +268,13 @@ class HanimeDownloadWorker(
                     response.header("Content-Length")?.toLongOrNull()?.takeIf { it > 0 }
                         ?: response.contentLengthFromContentRange()
                 } else {
-                    response.contentLengthFromContentRange()
+                    // #683: 服务器忽略 Range 请求头时会返回 200，此时 Content-Length 即完整大小；
+                    // 206 时 Content-Length 只有分片大小（恒为 1），必须解析 Content-Range。
+                    if (response.code == 200) {
+                        response.header("Content-Length")?.toLongOrNull()?.takeIf { it > 0 }
+                    } else {
+                        response.contentLengthFromContentRange()
+                    }
                 }
             }
         } catch (e: CancellationException) {
@@ -398,9 +404,35 @@ class HanimeDownloadWorker(
                     if (requestNeedRange) requestBuilder.header("Range", "bytes=$downloadedLength-")
                     val request = requestBuilder.build()
                     response = ServiceCreator.downloadClient.newCall(request).await()
-                    val canWrite = (requestNeedRange && response.code == 206) || (!requestNeedRange && response.isSuccessful)
+
+                    // #683: 服务器不支持断点续传时，按 RFC 9110 会忽略 Range 请求头，
+                    // 直接返回 200 和完整文件内容。此时应放弃断点、从头写入该响应，
+                    // 而不是判定为失败（否则每次重试都会以同样方式失败）。
+                    if (requestNeedRange && response.code == 200) {
+                        Log.i(TAG, "download: server ignored Range header (200), restart from beginning")
+                        logDownloadResult("restart", "range_ignored")
+                        downloadedLength = 0
+                        raf?.seek(0L)
+                        safChannel?.position(0L)
+                    }
+                    // #683: 断点已不可满足（如服务器上文件发生了变化），同样放弃断点，
+                    // 重发不带 Range 的请求，自动从头重新下载。
+                    else if (requestNeedRange && response.code == 416) {
+                        Log.i(TAG, "download: 416 Range Not Satisfiable, restart from beginning")
+                        logDownloadResult("restart", "range_not_satisfiable")
+                        downloadedLength = 0
+                        raf?.seek(0L)
+                        safChannel?.position(0L)
+                        response.closeQuietly()
+                        response = null
+                        continue
+                    }
+
+                    val canWrite = if (requestNeedRange) {
+                        response.code == 206 || response.code == 200
+                    } else response.isSuccessful
                     if (!canWrite) {
-                        val reason = response.toDownloadErrorMessage(requestNeedRange)
+                        val reason = response.toDownloadErrorMessage()
                         logDownloadResult("failure", "http_${response.code}")
                         showFailureNotification(reason)
                         mainScope.launch {
@@ -519,7 +551,7 @@ class HanimeDownloadWorker(
     /**
      * 下载任务结果埋点。
      *
-     * @param state finished / failure / retry / paused / queued / deleted
+     * @param state finished / failure / retry / paused / queued / deleted / restart
      * @param reason 失败/重试原因摘要（异常类名或 http_状态码），便于聚合
      */
     private fun logDownloadResult(state: String, reason: String? = null) {
@@ -569,13 +601,12 @@ class HanimeDownloadWorker(
         }
     }
 
-    private fun Response.toDownloadErrorMessage(requestNeedRange: Boolean): String {
+    private fun Response.toDownloadErrorMessage(): String {
         return when {
-            requestNeedRange && code == 416 -> {
-                context.getString(R.string.download_error_range_not_supported)
-            }
-            requestNeedRange -> context.getString(R.string.download_error_range_not_supported)
             code in 500..599 -> context.getString(R.string.download_error_network)
+            // 401/403/404 通常是下载链接已失效（如签名过期），不再误报为「不支持断点续传」
+            code == 401 || code == 403 || code == 404 ->
+                context.getString(R.string.download_error_link_invalid)
             else -> message.takeIf { it.isNotBlank() } ?: context.getString(R.string.unknown_download_error)
         }
     }
