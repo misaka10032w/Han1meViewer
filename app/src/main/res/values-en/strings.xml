@@ -803,6 +803,9 @@ Recommendations are as follows:\n
     <string name="search_video_hint">Search videos…</string>
     <string name="recent_searches">Recent Searches</string>
     <string name="search_no_results">No results found</string>
+    <string name="hide_watched">Hide watched</string>
+    <string name="show_watched">Show watched</string>
+    <string name="search_all_results_watched_hidden">All current results are watched and hidden</string>
     <string name="search_load_failed_with_reason">Load failed: %1$s</string>
     <string name="load_failed_with_reason">Load failed: %1$s</string>
     <string name="more">More</string>

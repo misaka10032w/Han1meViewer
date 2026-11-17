@@ -37,6 +37,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -133,6 +135,7 @@ fun SearchScreen(
     var isSearchFocused by remember { mutableStateOf(false) }
     var isCriteriaVisible by rememberSaveable { mutableStateOf(true) }
     var isLeavingScreen by remember { mutableStateOf(false) }
+    var hideWatched by rememberSaveable { mutableStateOf(viewModel.hideWatched) }
 
     val refreshState = rememberPullToRefreshState()
     val gridState = rememberLazyGridState(
@@ -346,7 +349,13 @@ fun SearchScreen(
                 }
                 doSearch(resetScroll = true)
             }
-        }, ::handleBack, onOpenAdvancedSearch, { isSearchFocused = it }, focusReq)
+        }, ::handleBack, onOpenAdvancedSearch, { isSearchFocused = it }, focusReq,
+            showWatchedFilter = hasSearched,
+            hideWatched = hideWatched,
+            onToggleHideWatched = {
+                hideWatched = !hideWatched
+                viewModel.hideWatched = hideWatched
+            })
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         AnimatedVisibility(
@@ -395,11 +404,22 @@ fun SearchScreen(
         ) {
             if (hasSearched) {
                 // 已触发搜索，显示结果
-                val showResults = searchResults.ifEmpty {
+                val rawResults = searchResults.ifEmpty {
                     (searchState as? PageLoadingState.Success)?.info?.list ?: emptyList()
                 }
+                // 隐藏已观看的视频
+                val showResults =
+                    if (hideWatched) rawResults.filterNot { it.watched == true } else rawResults
+                val allResultsWatched =
+                    hideWatched && rawResults.isNotEmpty() && showResults.isEmpty()
                 Box(Modifier.fillMaxSize()) {
-                    if (!isRefreshing) SearchStateIndicator(searchState, showResults.size)
+                    if (!isRefreshing) {
+                        if (allResultsWatched) {
+                            EmptyContent(hint = stringResource(R.string.search_all_results_watched_hidden))
+                        } else {
+                            SearchStateIndicator(searchState, showResults.size)
+                        }
+                    }
                     if (showResults.isNotEmpty()) {
                         SearchResultsGrid(
                             showResults,
@@ -459,7 +479,10 @@ fun SearchAppBar(
     query: String, onQueryChange: (String) -> Unit, onSearch: () -> Unit,
     onBack: () -> Unit, onOpenAdvancedSearch: () -> Unit,
     onFocusChanged: (Boolean) -> Unit, focusRequester: FocusRequester,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showWatchedFilter: Boolean = false,
+    hideWatched: Boolean = false,
+    onToggleHideWatched: () -> Unit = {},
 ) {
     val kb = LocalSoftwareKeyboardController.current
     Surface(
@@ -517,6 +540,19 @@ fun SearchAppBar(
                     stringResource(R.string.clear_checkin),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+            // 右侧按钮：隐藏/显示已观看的搜索结果
+            if (showWatchedFilter) {
+                IconButton(onClick = onToggleHideWatched) {
+                    Icon(
+                        imageVector = if (hideWatched) Icons.Filled.VisibilityOff else Icons.Outlined.VisibilityOff,
+                        contentDescription = stringResource(
+                            if (hideWatched) R.string.show_watched else R.string.hide_watched
+                        ),
+                        tint = if (hideWatched) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
             Text(
                 stringResource(R.string.advanced),

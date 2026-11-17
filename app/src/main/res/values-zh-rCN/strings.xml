@@ -808,6 +808,9 @@
     <string name="search_video_hint">搜索影片…</string>
     <string name="recent_searches">最近搜索</string>
     <string name="search_no_results">没有搜索到结果</string>
+    <string name="hide_watched">隐藏已观看</string>
+    <string name="show_watched">显示已观看</string>
+    <string name="search_all_results_watched_hidden">当前结果均已观看，已被隐藏</string>
     <string name="search_load_failed_with_reason">加载失败：%1$s</string>
     <string name="load_failed_with_reason">加载失败：%1$s</string>
     <string name="more">更多</string>
