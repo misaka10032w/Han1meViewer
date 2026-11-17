@@ -10,8 +10,10 @@ import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.ui.component.GlobalDialogs
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
 import com.yenaly.han1meviewer.util.SafFileManager
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -32,6 +34,29 @@ import java.io.OutputStream
 object HCacheManager {
 
     private const val CACHE_INFO_FILE = "info.json"
+    private const val TAG = "HanimeDownload"
+
+    /** 应用级作用域：后台写入不随页面销毁而取消 */
+    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    /**
+     * 后台保存 HanimeVideo 信息（不阻塞调用方，也不随页面退出而取消）。
+     * 用于下载入队后补写 info.json——SAF 目录可能很慢（如 DownloadsProvider），
+     * 不能让它挡在"加入下载队列"前面。
+     *
+     * 注意：此协程生命周期长于调用方（可能是已销毁的 Activity），
+     * 因此内部只持有 applicationContext，避免写入期间钉住整个 Activity。
+     */
+    fun saveHanimeVideoInfoDetached(context: Context, videoCode: String, info: HanimeVideo) {
+        val appContext = context.applicationContext
+        appScope.launch {
+            val startAt = System.currentTimeMillis()
+            Log.d(TAG, "元数据落盘开始（后台）：videoCode=$videoCode")
+            runCatching { saveHanimeVideoInfo(appContext, videoCode, info) }
+                .onFailure { Log.e(TAG, "❌ 后台保存视频信息失败: $videoCode", it) }
+            Log.d(TAG, "元数据落盘结束：videoCode=$videoCode, 耗时=${System.currentTimeMillis() - startAt}ms")
+        }
+    }
 
     /**
      * 保存 HanimeVideo 信息，用于下载后直接在 APP 内观看

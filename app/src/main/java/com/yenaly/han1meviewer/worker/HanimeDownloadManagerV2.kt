@@ -1,12 +1,13 @@
 package com.yenaly.han1meviewer.worker
 
 import android.util.Log
-import androidx.lifecycle.Observer
 import androidx.work.ExistingWorkPolicy
-import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.await
 import androidx.work.workDataOf
+import com.google.common.util.concurrent.FutureCallback
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
@@ -14,30 +15,52 @@ import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.state.DownloadState
 import com.yenaly.han1meviewer.util.applicationContext
 import com.yenaly.han1meviewer.util.runSuspendCatching
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * 优化后的下载管理器，利用 Channel 和 Semaphore 限制并发下载数，
- * 同时通过监听 WorkManager 的任务状态实现“等待任务完成后释放许可”的逻辑。
+ * 通过轮询 WorkManager 的任务状态等待完成并释放许可。
  */
 object HanimeDownloadManagerV2 {
 
     private const val TAG = "HanimeDownloadManager"
 
     const val MAX_CONCURRENT_DOWNLOAD_DEF = 2
+
+    /** 轮询 WorkManager 任务状态的间隔 */
+    private const val WORK_COMPLETION_POLL_INTERVAL_MS = 5_000L
+
+    /** 任务异常终止（DB 未终态化）后的自动重排次数上限，超过则标记失败，防止死循环 */
+    private const val MAX_ANOMALY_RELAUNCH = 3
+
+    // 注意：必须声明在 maxConcurrentDownloadCount 之前——
+    // 其 setter 会 trySend，而 init 块按声明顺序执行
+    private val downloadChannel = Channel<DownloadMsg>(capacity = Channel.UNLIMITED)
+
     var maxConcurrentDownloadCount = 0
         set(value) {
             field = if (value > 0) value else Int.MAX_VALUE
             // 如果更新并发数，重新创建 semaphore
             semaphore = Semaphore(field)
+            // 并发数变化（尤其是调大）后立即尝试推进等待队列，
+            // 否则要等到下一个活跃任务完成才会有任务被拉起
+            downloadChannel.trySend(DownloadMsg.ProcessNext)
         }
 
     private val workManager = WorkManager.getInstance(applicationContext)
@@ -53,6 +76,9 @@ object HanimeDownloadManagerV2 {
     // Channel 内部状态：保存正在下载任务与等待队列
     private val activeDownloads = linkedMapOf<String, HanimeDownloadWorker.Args>()
     private val waitingQueue = ArrayDeque<HanimeDownloadWorker.Args>()
+
+    // 任务异常终止后的重排次数（videoCode -> 次数），用于防止病态任务无限重排
+    private val anomalyRelaunchCounts = mutableMapOf<String, Int>()
 
     // 协程 Scope，用于管理 channel 与任务协程
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -90,8 +116,6 @@ object HanimeDownloadManagerV2 {
         data object ProcessNext : DownloadMsg()
     }
 
-    private val downloadChannel = Channel<DownloadMsg>(capacity = Channel.UNLIMITED)
-
     init {
         scope.launch {
             for (msg in downloadChannel) {
@@ -102,10 +126,11 @@ object HanimeDownloadManagerV2 {
                         } else if (waitingQueue.any { it.videoCode == msg.args.videoCode }) {
                             Log.d(TAG, "任务已在等待队列：${msg.args.videoCode}")
                         } else {
-                            // Unknown 代表任务刚添加，未开始状态流转
-                            if (activeDownloads.size < maxConcurrentDownloadCount &&
-                                (msg.state == DownloadState.Downloading || msg.state == DownloadState.Unknown)
-                            ) {
+                            // Paused/Finished/Failed 的任务不参与自动调度
+                            val schedulable = msg.state != DownloadState.Paused &&
+                                    msg.state != DownloadState.Finished &&
+                                    msg.state != DownloadState.Failed
+                            if (activeDownloads.size < maxConcurrentDownloadCount && schedulable) {
                                 Log.d(TAG, "添加任务：${msg.args.videoCode}")
                                 activeDownloads[msg.args.videoCode] = msg.args
                                 launchDownload(msg.args, msg.redownload, msg.waiting)
@@ -174,6 +199,11 @@ object HanimeDownloadManagerV2 {
 
                     DownloadMsg.ProcessNext -> processNext()
                 }
+
+                // 自愈：每处理完一条消息都尝试推进等待队列。
+                // 否则一旦出现"槽位被误占/无人触发 ProcessNext"的情况（比如历史版本的
+                // 观察者泄漏），等待队列里的任务会在有空位时也永远无人启动。
+                if (waitingQueue.isNotEmpty()) processNext()
             }
         }
     }
@@ -252,18 +282,61 @@ object HanimeDownloadManagerV2 {
                 Log.d(TAG, "launchDownload (waiting): ${args.videoCode}")
                 markQueued(args)
             } else {
-                // 使用 semaphore.withPermit 来确保同时只有规定数量的任务在执行
-                semaphore.withPermit {
-                    Log.d(TAG, "launchDownload (start): ${args.videoCode}")
-                    // 启动 WorkManager 任务
-                    val workId = startWork(args, redownload)
-                    // 阻塞等待 WorkManager 任务完成
-                    awaitWorkCompletion(args.videoCode, workId.toString())
+                try {
+                    // 使用 semaphore.withPermit 来确保同时只有规定数量的任务在执行
+                    semaphore.withPermit {
+                        Log.d(TAG, "launchDownload (start): ${args.videoCode}")
+                        // 启动 WorkManager 任务
+                        val workId = startWork(args, redownload)
+                        Log.d(TAG, "WorkManager 已入队：videoCode=${args.videoCode}, workId=$workId, redownload=$redownload")
+                        // 轮询等待 WorkManager 任务完成
+                        awaitWorkCompletion(args.videoCode, workId.toString())
+                    }
+                } catch (e: CancellationException) {
+                    // 本协程被取消才真正向上抛（finally 仍会清理槽位）
+                    currentCoroutineContext().ensureActive()
+                    Log.e(TAG, "launchDownload 异常：${args.videoCode}", e)
+                } catch (t: Throwable) {
+                    // startWork / 等待过程中的意外异常不能让槽位永久泄漏
+                    Log.e(TAG, "launchDownload 异常：${args.videoCode}", t)
+                } finally {
+                    // 下载完成或取消后，从 active 中移除，并尝试启动下一个任务
+                    activeDownloads.remove(args.videoCode)
+                    Log.d(TAG, "launchDownload (end): ${args.videoCode}")
+                    // 对账：work 结束后 DB 仍是 Queued/Downloading，说明 worker 未能
+                    // 正常终态化（典型：finally 写库被协程取消打断）。重新入队重试，
+                    // 而不是把任务留在"卡在队列中"的孤儿状态。
+                    withContext(NonCancellable) {
+                        val entity = DatabaseRepo.HanimeDownload.find(
+                            args.videoCode, args.quality.orEmpty()
+                        )
+                        if (entity != null && (
+                                    entity.state == DownloadState.Queued ||
+                                    entity.state == DownloadState.Downloading ||
+                                    // Unknown: UI 占位入库的新任务，若 Worker 异常终止也可安全重排
+                                    entity.state == DownloadState.Unknown
+                                    )
+                        ) {
+                            val count = anomalyRelaunchCounts.merge(args.videoCode, 1, Int::plus) ?: 1
+                            if (count <= MAX_ANOMALY_RELAUNCH) {
+                                Log.w(
+                                    TAG,
+                                    "任务异常终止（state=${entity.state}），重新入队：${args.videoCode} ($count/$MAX_ANOMALY_RELAUNCH)"
+                                )
+                                downloadChannel.trySend(DownloadMsg.Add(args, state = entity.state))
+                            } else {
+                                Log.e(TAG, "任务反复异常终止，标记为失败：${args.videoCode}")
+                                anomalyRelaunchCounts.remove(args.videoCode)
+                                DatabaseRepo.HanimeDownload.update(
+                                    entity.copy(state = DownloadState.Failed)
+                                )
+                            }
+                        } else {
+                            anomalyRelaunchCounts.remove(args.videoCode)
+                        }
+                    }
+                    downloadChannel.trySend(DownloadMsg.ProcessNext)
                 }
-                // 下载完成或取消后，从 active 中移除，并尝试启动下一个任务
-                activeDownloads.remove(args.videoCode)
-                Log.d(TAG, "launchDownload (end): ${args.videoCode}")
-                downloadChannel.send(DownloadMsg.ProcessNext)
             }
         }
     }
@@ -323,8 +396,10 @@ object HanimeDownloadManagerV2 {
     ) {
         val entity = DatabaseRepo.HanimeDownload.find(args.videoCode, args.quality.orEmpty())
         if (entity == null) {
+            Log.d(TAG, "入库占位 work 已入队（waiting=true）：videoCode=${args.videoCode}")
             startWork(args, redownload = redownload, waiting = true)
         } else {
+            Log.d(TAG, "占位 work 无需创建（DB 已有记录），仅标记 Queued：videoCode=${args.videoCode}")
             DatabaseRepo.HanimeDownload.update(entity.copy(state = DownloadState.Queued))
         }
     }
@@ -345,26 +420,66 @@ object HanimeDownloadManagerV2 {
     private suspend fun deleteWork(args: HanimeDownloadWorker.Args) = startWork(args, delete = true)
 
     /**
-     * 通过观察 WorkManager 的 LiveData 来阻塞等待任务完成
+     * 等待指定 work 结束。
+     *
+     * 旧实现用 LiveData observeForever 按 workId 过滤 unique work 列表，存在两个问题：
+     * 1. work 被 REPLACE（同名重新入队）或被清理后，旧的 workId 从 unique name
+     *    列表里永远消失，观察者永远匹配不到，协程永久挂起，信号量许可和
+     *    activeDownloads 槽位被永久占用（僵尸槽位），等待队列再也无法推进；
+     * 2. 观察依赖 Room InvalidationTracker 的推送，一旦漏推同样挂死。
+     *
+     * 改为轮询 WorkManager 真值：任务结束（含 CANCELLED）或 workId 消失
+     * （被替换/删除，原 work 不可能继续下载）都视为结束，不会永久挂起。
      */
-    private suspend fun awaitWorkCompletion(videoCode: String, workId: String) =
-        suspendCancellableCoroutine { cont ->
-            val liveData = workManager.getWorkInfosForUniqueWorkLiveData(videoCode)
-            Log.d(TAG, "获取 LiveData：$videoCode")
-            val observer = object : Observer<List<WorkInfo>> {
-                override fun onChanged(value: List<WorkInfo>) {
-                    val info = value.firstOrNull { it.id.toString() == workId } ?: return
-                    if (info.state.isFinished) {
-                        Log.d(TAG, "任务完成，移除 observer：$videoCode")
-                        liveData.removeObserver(this)
-                        cont.resume(Unit)
-                    }
+    private suspend fun awaitWorkCompletion(videoCode: String, workId: String) {
+        while (true) {
+            val infos = try {
+                workManager.getWorkInfosForUniqueWork(videoCode).awaitFuture()
+            } catch (e: CancellationException) {
+                // 只有"本协程"被取消才向上抛；future 自身被取消（少见）
+                // 在 JVM 上同样是 CancellationException，需区分，否则任务会脱离管理
+                currentCoroutineContext().ensureActive()
+                Log.w(TAG, "awaitWorkCompletion future 被取消：$videoCode")
+                null
+            } catch (t: Throwable) {
+                // 查询失败（瞬时 binder 异常等）不视为结束，下轮重试
+                Log.w(TAG, "awaitWorkCompletion 查询失败：$videoCode, ${t.message}")
+                null
+            }
+            if (infos != null) {
+                val info = infos.firstOrNull { it.id.toString() == workId }
+                if (info == null || info.state.isFinished) {
+                    Log.d(TAG, "任务结束：$videoCode (state=${info?.state})")
+                    return
                 }
             }
-            CoroutineScope(Dispatchers.Main).launch {
-                liveData.observeForever(observer)
-                Log.d(TAG, "添加 observer：$videoCode")
-            }
-            cont.invokeOnCancellation { liveData.removeObserver(observer) }
+            delay(WORK_COMPLETION_POLL_INTERVAL_MS.milliseconds)
+        }
+    }
+
+    /**
+     * 挂起等待 ListenableFuture 完成。
+     *
+     * 用 Futures.addCallback 而非 addListener+get()：
+     * 回调只在 future 完成后触发、直接把值/异常传给协程，
+     * 全程无任何潜在阻塞调用（IDE 也不会再报
+     * "Possibly blocking call in non-blocking context"）。
+     * 直接执行器下，回调运行在完成 future 的线程上。
+     */
+    private suspend fun <T> ListenableFuture<T>.awaitFuture(): T =
+        suspendCancellableCoroutine { cont ->
+            Futures.addCallback(
+                this,
+                object : FutureCallback<T> {
+                    override fun onSuccess(result: T) {
+                        cont.resume(result)
+                    }
+
+                    override fun onFailure(t: Throwable) {
+                        cont.resumeWithException(t)
+                    }
+                },
+            ) { it.run() }
+            cont.invokeOnCancellation { cancel(false) }
         }
 }
