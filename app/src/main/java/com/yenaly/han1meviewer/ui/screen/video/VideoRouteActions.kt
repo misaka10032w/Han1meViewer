@@ -3,6 +3,7 @@ package com.yenaly.han1meviewer.ui.screen.video
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
+import android.util.Log
 import androidx.core.net.toUri
 import com.yenaly.han1meviewer.HAdvancedSearch
 import com.yenaly.han1meviewer.HCacheManager
@@ -13,7 +14,9 @@ import com.yenaly.han1meviewer.getHanimeVideoDownloadLink
 import com.yenaly.han1meviewer.getHanimeVideoLink
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
+import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
+import com.yenaly.han1meviewer.logic.state.DownloadState
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
@@ -32,6 +35,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.Serializable
+
+private const val TAG = "HanimeDownload"
 
 class VideoRouteActions(
     private val context: Context,
@@ -199,12 +204,22 @@ class VideoRouteActions(
         redownload: Boolean = false,
         autoGroupName: String? = null,
     ) {
+        Log.d(
+            TAG,
+            "▶ 确认下载：videoCode=${viewModel.videoCode}, quality=${getCheckedQuality()}, " +
+                    "redownload=$redownload, autoGroup=${autoGroupName ?: "无"}"
+        )
         context.requestPostNotificationPermission()
         val quality = getCheckedQuality()
-        withContext(Dispatchers.IO) {
-            HCacheManager.saveHanimeVideoInfo(context, viewModel.videoCode, videoData)
-        }
+        // 注意顺序：先入队并提示，再后台补写 info.json。
+        // info.json 的 SAF 写入可能很慢（如 DownloadsProvider，数秒），
+        // 若放在 addTask 之前：toast 迟迟不出现，且用户在 toast 前退出
+        // 播放页会取消整个协程，任务根本不会加入队列。
         val autoGroup = autoGroupName?.let { resolveAutoGroup(videoData, it) }
+        Log.d(
+            TAG,
+            "分组解析完成：videoCode=${viewModel.videoCode}, groupId=${autoGroup?.id ?: "不分组"}"
+        )
         autoGroup?.createdName?.let { name ->
             GlobalToasts.show(
                 context.getString(R.string.download_auto_group_created, name),
@@ -223,6 +238,29 @@ class VideoRouteActions(
             ),
             redownload = redownload,
         )
+        Log.d(TAG, "已提交下载队列（addTask）：videoCode=${viewModel.videoCode}, quality=$quality")
+        // 占位入库：让任务立刻出现在下载列表（列表读 DB，而 Worker 要先完成
+        // 慢速 SAF 目录走建/探长才会入库，期间可能长达十几秒）。
+        // length=0 的占位由 Worker 的"长度补全"分支补全真实值。
+        if (DatabaseRepo.HanimeDownload.find(viewModel.videoCode, quality.orEmpty()) == null) {
+            DatabaseRepo.HanimeDownload.insert(
+                HanimeDownloadEntity(
+                    groupId = autoGroup?.id ?: DownloadGroupEntity.DEFAULT_GROUP_ID,
+                    coverUrl = videoData.coverUrl,
+                    coverUri = null,
+                    title = videoData.title,
+                    addDate = System.currentTimeMillis(),
+                    videoCode = viewModel.videoCode,
+                    videoUri = "",
+                    quality = quality.orEmpty(),
+                    videoUrl = videoData.videoUrls[quality]?.link.orEmpty(),
+                    length = 0,
+                    downloadedLength = 0,
+                    state = DownloadState.Unknown,
+                )
+            )
+            Log.d(TAG, "占位实体已入库（length 待 Worker 补全）：videoCode=${viewModel.videoCode}")
+        }
         // 下载启动埋点
         HAnalytics.logEvent(
             FirebaseConstants.EVENT_DOWNLOAD_START,
@@ -234,6 +272,8 @@ class VideoRouteActions(
             context.getString(R.string.added_to_download_queue),
             level = GlobalToasts.ToastLevel.SUCCESS,
         )
+        // 后台补写 info.json（应用级作用域，页面退出不影响）
+        HCacheManager.saveHanimeVideoInfoDetached(context, viewModel.videoCode, videoData)
     }
 
     private data class ResolvedGroup(val id: Int, val createdName: String?)

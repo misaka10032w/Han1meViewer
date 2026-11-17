@@ -254,6 +254,9 @@ object DatabaseRepo {
         suspend fun find(videoCode: String) =
             hanimeDownloadDao.find(videoCode)
 
+        suspend fun updateCoverUri(videoCode: String, quality: String, coverUri: String) =
+            hanimeDownloadDao.updateCoverUri(videoCode, quality, coverUri)
+
         suspend fun insertDefaultGroup() =
             downloadGroupDao.insertDefaultGroup()
 

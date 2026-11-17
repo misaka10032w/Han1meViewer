@@ -43,6 +43,7 @@ import com.yenaly.han1meviewer.util.createFileIfNotExists
 import com.yenaly.han1meviewer.util.saveTo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -191,9 +192,16 @@ class HanimeDownloadWorker(
     private val dbScope = CoroutineScope(Dispatchers.IO)
 
     override suspend fun doWork(): Result {
+        Log.i(
+            TAG,
+            "▶ Worker 开始：videoCode=$videoCode, quality=$quality, redownload=$shouldRedownload, " +
+                    "waiting=$isInWaitingQueue, delete=$shouldDelete, attempt=$runAttemptCount"
+        )
         if (fastPathCancel) return Result.success()
         setForeground(createForegroundInfo())
-        return download()
+        val result = download()
+        Log.i(TAG, "■ Worker 结束：videoCode=$videoCode, result=$result")
+        return result
     }
 
     private suspend fun createNewRaf(file: File): HanimeDownloadEntity? {
@@ -210,7 +218,12 @@ class HanimeDownloadWorker(
                     raf = RandomAccessFile(file, "rwd")
                 }
 
-                val len = fetchContentLength() ?: return@withContext null
+                val len = fetchContentLength()
+                if (len == null) {
+                    Log.e(TAG, "❌ 文件长度获取失败：videoCode=$videoCode, url=${downloadUrl.take(80)}...")
+                    return@withContext null
+                }
+                Log.i(TAG, "文件长度获取成功：videoCode=$videoCode, length=$len")
                 if (len > 0) {
                     // 创建数据库记录
                     val entity = HanimeDownloadEntity(
@@ -228,6 +241,7 @@ class HanimeDownloadWorker(
                         state = DownloadState.Queued
                     )
                     DatabaseRepo.HanimeDownload.insert(entity)
+                    Log.i(TAG, "📥 实体入库：videoCode=$videoCode, quality=$quality, length=$len")
                     // 预写入长度（只有 File 支持）
                     raf?.setLength(len)
                     return@withContext entity
@@ -343,6 +357,7 @@ class HanimeDownloadWorker(
             }
 
             if (entity.downloadedLength >= entity.length && entity.length > 0) {
+                Log.i(TAG, "已是完成状态，直接返回：videoCode=$videoCode, ${entity.downloadedLength}/${entity.length}")
                 DatabaseRepo.HanimeDownload.update(entity.copy(state = DownloadState.Finished))
                 showSuccessNotification()
                 logDownloadResult("finished")
@@ -351,7 +366,35 @@ class HanimeDownloadWorker(
                 )
             }
 
+            Log.i(
+                TAG,
+                "实体就绪：videoCode=$videoCode, state=${entity.state}, " +
+                        "downloaded=${entity.downloadedLength}/${entity.length}, " +
+                        "hasCover=${entity.coverUri != null}"
+            )
+
+            // UI 层占位入库的实体 length=0，此处补全真实长度
+            if (entity.length <= 0) {
+                val len = fetchContentLength()
+                if (len == null || len <= 0) {
+                    Log.e(TAG, "❌ 占位实体长度补全失败：videoCode=$videoCode")
+                    DatabaseRepo.HanimeDownload.delete(videoCode, quality)
+                    logDownloadResult("failure", "placeholder_len")
+                    return@withContext Result.failure(
+                        workDataOf(DownloadState.STATE to DownloadState.Failed.mask)
+                    )
+                }
+                entity = entity.copy(
+                    length = len,
+                    // 占位实体的 videoUri 为空，本地播放需要它，一并补上
+                    videoUri = safUri?.toString() ?: file.toUri().toString()
+                )
+                DatabaseRepo.HanimeDownload.update(entity)
+                Log.i(TAG, "占位实体长度已补全：videoCode=$videoCode, length=$len")
+            }
+
             if (entity.downloadedLength < 0 || entity.downloadedLength > entity.length) {
+                Log.w(TAG, "断点异常，重置为 0：videoCode=$videoCode, ${entity.downloadedLength}/${entity.length}")
                 entity = entity.copy(downloadedLength = 0, state = DownloadState.Queued)
                 DatabaseRepo.HanimeDownload.update(entity)
             }
@@ -360,6 +403,7 @@ class HanimeDownloadWorker(
                 updateCoverImage(entity)
             }
             if (isInWaitingQueue) {
+                Log.i(TAG, "等待队列占位路径，仅入库不下载：videoCode=$videoCode")
                 DatabaseRepo.HanimeDownload.update(
                     entity.copy(state = DownloadState.Queued)
                 )
@@ -404,6 +448,11 @@ class HanimeDownloadWorker(
                     if (requestNeedRange) requestBuilder.header("Range", "bytes=$downloadedLength-")
                     val request = requestBuilder.build()
                     response = ServiceCreator.downloadClient.newCall(request).await()
+                    Log.i(
+                        TAG,
+                        "HTTP 响应：videoCode=$videoCode, code=${response.code}, " +
+                                "断点=$downloadedLength/${entity.length}" + if (requestNeedRange) "（Range）" else "（从头）"
+                    )
 
                     // #683: 服务器不支持断点续传时，按 RFC 9110 会忽略 Range 请求头，
                     // 直接返回 200 和完整文件内容。此时应放弃断点、从头写入该响应，
@@ -488,6 +537,7 @@ class HanimeDownloadWorker(
                     throw IOException("Download incomplete: $downloadedLength/${entity.length}")
                 }
 
+                Log.i(TAG, "✅ 下载写入完成：videoCode=$videoCode, $downloadedLength/${entity.length}")
                 showSuccessNotification()
                 logDownloadResult("finished")
                 result = Result.success(
@@ -527,12 +577,23 @@ class HanimeDownloadWorker(
                 val state = DownloadState.from(
                     result.outputData.getInt(DownloadState.STATE, DownloadState.Unknown.mask)
                 )
-                DatabaseRepo.HanimeDownload.update(
-                    entity.copy(
-                        state = if (shouldRetry) DownloadState.Queued else state,
-                        downloadedLength = downloadedLength
+                // 协程被取消时 suspend 调用会立即抛 CancellationException，
+                // 必须用 NonCancellable 保护终态写库，否则实体可能永远停留在
+                // Queued/Downloading（文件其实已下完，界面上却显示卡在队列中）
+                withContext(NonCancellable) {
+                    val finalState = if (shouldRetry) DownloadState.Queued else state
+                    DatabaseRepo.HanimeDownload.update(
+                        entity.copy(
+                            state = finalState,
+                            downloadedLength = downloadedLength
+                        )
                     )
-                )
+                    Log.i(
+                        TAG,
+                        "💾 终态落库：videoCode=$videoCode, state=$finalState, " +
+                                "downloaded=$downloadedLength/${entity.length}"
+                    )
+                }
                 raf?.closeQuietly()
                 safChannel?.closeQuietly()
                 safPfd?.closeQuietly()
@@ -630,8 +691,10 @@ class HanimeDownloadWorker(
             if (isSuccess && uri != null) {
                 val coverUriStr = uri.toString()
                 withContext(Dispatchers.IO) {
-                    DatabaseRepo.HanimeDownload.update(
-                        entity.copy(coverUri = coverUriStr)
+                    // 必须只更新 coverUri 字段：此处 entity 是封面开始下载前的旧快照，
+                    // 整行 update 会把期间已变化的状态（state/downloadedLength）冲掉
+                    DatabaseRepo.HanimeDownload.updateCoverUri(
+                        entity.videoCode, entity.quality, coverUriStr
                     )
                 }
                 entity.coverUri = coverUriStr
