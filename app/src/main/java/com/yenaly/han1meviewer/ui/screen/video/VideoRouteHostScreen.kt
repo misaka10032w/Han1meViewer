@@ -707,10 +707,16 @@ fun VideoRouteHostScreen(
                 else activity.onBackPressedDispatcher.onBackPressed()
             },
             onGoHome = {
-                if (activity.resources.getBoolean(R.bool.isTablet)) {
-                    activity.navController.popBackStack(HomeRoute, false)
+                // 清空返回栈、让主页回到栈顶。MainActivity 是 singleTask，
+                // 直接 startActivity 只会触发 onNewIntent 而不会清栈，按钮会显得无响应。
+                val navController = activity.navController
+                if (!navController.popBackStack(HomeRoute, false)) {
+                    // 返回栈中没有主页（例如外部深链直接进入视频页）时，导航回主页并清栈
+                    navController.navigate(HomeRoute) {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                        launchSingleTop = true
+                    }
                 }
-                activity.startActivity(Intent(activity, MainActivity::class.java))
             },
             onToggleFullscreen = {
                 if (fullscreen) exitFullscreen() else enterFullscreen()
