@@ -51,8 +51,26 @@ import java.io.OutputStream
 object SafFileManager {
 
     const val KEY_TREE_URI = "saf_download_path"
+    private const val TAG = "SafFileManager"
+    private const val NO_MEDIA_NAME = ".nomedia"
+    private const val NO_MEDIA_MIME = "application/octet-stream"
     private val VIDEO_EXTENSIONS = setOf("mp4", "mkv", "avi", "flv", "mov", "webm")
     private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "webp")
+
+    /**
+     * 匹配 DocumentsProvider 对重名 .nomedia 自动改名产生的副本，
+     * 如 " (1).nomedia"、"(2).nomedia"、".nomedia (3)"。
+     * 这种文件名对 MediaScanner 无效（它只认 ".nomedia"），纯属垃圾文件。
+     */
+    private val noMediaDupRegex = Regex("""^\s*\(\d+\)\.nomedia$|^\.nomedia\s*\(\d+\)$""")
+
+    /**
+     * 串行化 SAF 目录创建与 .nomedia 检查/创建。
+     * 并发下载（多个 Worker）同时走到 findFile/createFile 时，DocumentsProvider
+     * 不会复用同名文件/目录，而是自动改名为 " (1).xxx"，必须用锁消除这个竞态。
+     * synchronized 可重入，getDownloadVideoFolderSaf 内部再调 ensureNoMedia 不会死锁。
+     */
+    private val safFolderLock = Any()
 
     private fun isSafReady(): Boolean = !Preferences.safDownloadPath.isNullOrBlank()
     fun buildOpenDirectoryIntent(): Intent {
@@ -93,7 +111,10 @@ object SafFileManager {
      *
      * 1. 检查SAF是否已初始化（已授权URI）
      * 2. 从Preferences获取保存的URI并验证有效性
-     * 3. 确保目录存在.nomedia文件
+     *
+     * 注意：不会在用户选择的根目录上创建 .nomedia——用户可能选择的是
+     * 整个存储根目录等大范围路径，那样会把无关的媒体文件全部从相册里隐藏掉。
+     * .nomedia 由 [getDownloadVideoFolderSaf] 创建在应用自己的目录上。
      *
      * @return 有效的下载目录DocumentFile对象，若未准备就绪或URI无效则返回null
      */
@@ -102,7 +123,6 @@ object SafFileManager {
         val uri = runCatching { Preferences.safDownloadPath?.toUri() }.getOrNull() ?: return null
         val tree = DocumentFile.fromTreeUri(context, uri) ?: return null
         if (!tree.isDirectory) return null
-        tree.ensureNoMedia()
         return tree
     }
 
@@ -110,17 +130,22 @@ object SafFileManager {
      * 获取指定视频代码对应的下载目录（自动创建嵌套目录结构）
      *
      * 目录结构：/SAF根目录/[HANIME_DOWNLOAD_FOLDER]/[videoCode]/
-     * 会自动创建.nomedia文件
+     * 会在应用自己的 [HANIME_DOWNLOAD_FOLDER] 目录及视频目录上创建 .nomedia 防止媒体扫描
      *
      * @param videoCode 视频唯一标识码
      * @return 视频存储目录DocumentFile对象，若根目录无效或创建失败则返回null
      */
     fun getDownloadVideoFolderSaf(context: Context, videoCode: String): DocumentFile? {
-        val root = getAppDownloadFolderSaf(context) ?: return null
-        val hanime = root.ensureChildDir(HANIME_DOWNLOAD_FOLDER) ?: return null
-        val videoDir = hanime.ensureChildDir(videoCode) ?: return null
-        videoDir.ensureNoMedia()
-        return videoDir
+        // 整个目录创建流程加锁：并发的 findFile/createDirectory 同样会被
+        // DocumentsProvider 改名成 "xxx (1)" 目录，必须与 ensureNoMedia 一起串行化
+        synchronized(safFolderLock) {
+            val root = getAppDownloadFolderSaf(context) ?: return null
+            val hanime = root.ensureChildDir(HANIME_DOWNLOAD_FOLDER) ?: return null
+            hanime.ensureNoMedia()
+            val videoDir = hanime.ensureChildDir(videoCode) ?: return null
+            videoDir.ensureNoMedia()
+            return videoDir
+        }
     }
 
     /**
@@ -183,11 +208,38 @@ object SafFileManager {
     }
 
     /**
-     * 确保当前目录下存在.nomedia文件（不存在则创建）
+     * 确保当前目录下存在 .nomedia 文件（不存在则创建），并清理历史遗留的重名副本。
+     *
+     * 旧实现为 `findFile(".nomedia") == null` 时 `createFile`，存在两个问题：
+     * 1. 并发竞态：多个下载任务同时走到这里，都查不到 .nomedia，都去 createFile。
+     *    DocumentsProvider 不会复用同名文件，而是自动改名为 " (1).nomedia"、" (2).nomedia"……
+     *    （.nomedia 的 base name 为空 + 去重序号），且这种文件名对 MediaScanner 无效；
+     * 2. 部分 ROM / 第三方 DocumentsProvider 的列表接口会隐藏 "." 开头的文件，
+     *    导致 findFile 永远查不到，每次调用都会新建一个被改名的副本，越积越多。
+     *
+     * 现在的做法：进程内加锁消除竞态；发现 "(N).nomedia" 之类的重名副本直接删除；
+     * createFile 后校验实际文件名，若被改名则说明目录里其实已存在 .nomedia
+     * （只是列表里看不到），删掉多余副本。
      */
     private fun DocumentFile.ensureNoMedia() {
-        if (findFile(".nomedia") == null) {
-            createFile("application/octet-stream", ".nomedia")
+        synchronized(safFolderLock) {
+            runCatching {
+                val children = listFiles()
+                // 清理历史版本遗留的重名副本（它们起不到防扫描作用，只会越积越多）
+                children.forEach { child ->
+                    val name = child.name ?: return@forEach
+                    if (name != NO_MEDIA_NAME && child.isFile && noMediaDupRegex.matches(name)) {
+                        child.delete()
+                    }
+                }
+                if (children.none { it.name == NO_MEDIA_NAME }) {
+                    val created = createFile(NO_MEDIA_MIME, NO_MEDIA_NAME)
+                    if (created != null && created.name != NO_MEDIA_NAME) {
+                        // 被改名说明目录里其实已经有 .nomedia（被 provider 的列表隐藏了），删掉多余副本
+                        created.delete()
+                    }
+                }
+            }.onFailure { Log.w(TAG, "⚠️ ensureNoMedia 失败: ${it.message}") }
         }
     }
 
@@ -206,14 +258,7 @@ object SafFileManager {
         fileName: String
     ): Uri? {
         if (!isSafReady()) return null
-        val treeUri = Preferences.safDownloadPath?.toUri() ?: return null
-        val docTree = DocumentFile.fromTreeUri(context, treeUri) ?: return null
-        val rootDir = docTree.findFile(HANIME_DOWNLOAD_FOLDER)
-            ?: docTree.createDirectory(HANIME_DOWNLOAD_FOLDER)
-            ?: return null
-        val videoDir = rootDir.findFile(videoCode)
-            ?: rootDir.createDirectory(videoCode)
-            ?: return null
+        val videoDir = getDownloadVideoFolderSaf(context, videoCode) ?: return null
         val ext = fileName.substringAfterLast('.', "")
         val mimeType = mimeForExt(ext)
         val target = videoDir.findFile(fileName)
@@ -290,6 +335,8 @@ object SafFileManager {
             Log.e("Migrate", "创建/获取 HANIME_DOWNLOAD_FOLDER 失败")
             return@launch
         }
+        // 迁移后的内容立即防止媒体扫描
+        hanimeDownloadDoc.ensureNoMedia()
 
         val folders = hanimeDownloadFolder.listFiles { it.isDirectory } ?: arrayOf()
         val total = folders.size
