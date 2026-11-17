@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
+import com.yenaly.han1meviewer.FirebaseConstants
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.base.BaseViewModel
 import com.yenaly.han1meviewer.logic.NetworkRepo
@@ -15,6 +16,7 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.screen.video.CommentSortType
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
+import com.yenaly.han1meviewer.util.HAnalytics
 import com.yenaly.han1meviewer.util.applicationContext
 import com.yenaly.han1meviewer.util.loadAssetAs
 import com.yenaly.han1meviewer.util.unsafeLazy
@@ -182,7 +184,10 @@ class CommentViewModel(application: Application) : BaseViewModel(application) {
     ) {
         viewModelScope.launch {
             NetworkRepo.postComment(csrfToken, currentUserId, targetUserId, type, text)
-                .collect(_postCommentFlow::emit)
+                .collect { state ->
+                    _postCommentFlow.emit(state)
+                    logCommentPostEvent(type = type, isReply = false, state = state)
+                }
         }
     }
 
@@ -192,7 +197,36 @@ class CommentViewModel(application: Application) : BaseViewModel(application) {
     ) {
         viewModelScope.launch {
             NetworkRepo.postCommentReply(csrfToken, replyCommentId, text)
-                .collect(_postReplyFlow::emit)
+                .collect { state ->
+                    _postReplyFlow.emit(state)
+                    logCommentPostEvent(type = null, isReply = true, state = state)
+                }
+        }
+    }
+
+    /**
+     * 评论发送结果埋点。
+     */
+    private fun logCommentPostEvent(
+        type: String?,
+        isReply: Boolean,
+        state: WebsiteState<Unit>,
+    ) {
+        when (state) {
+            is WebsiteState.Success -> HAnalytics.logEvent(
+                FirebaseConstants.EVENT_COMMENT_POST,
+                FirebaseConstants.PARAM_METHOD to (type ?: "reply"),
+                FirebaseConstants.PARAM_RESULT to "success",
+            )
+
+            is WebsiteState.Error -> HAnalytics.logEvent(
+                FirebaseConstants.EVENT_COMMENT_POST,
+                FirebaseConstants.PARAM_METHOD to (type ?: "reply"),
+                FirebaseConstants.PARAM_RESULT to "failure",
+                FirebaseConstants.PARAM_REASON to state.throwable.message,
+            )
+
+            WebsiteState.Loading -> Unit
         }
     }
 

@@ -4,8 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import com.yenaly.han1meviewer.FirebaseConstants
 import com.yenaly.han1meviewer.ui.activity.CloudflareActivity
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
+import com.yenaly.han1meviewer.util.HAnalytics
 import okhttp3.Interceptor
 import okhttp3.Response
 import java.util.concurrent.CountDownLatch
@@ -21,6 +23,12 @@ class CloudflareInterceptor(
         if (response.code == 403 && response.header("cf-mitigated") == "challenge") {
             response.close()
             val url = request.url.toString()
+
+            // Cloudflare 质询埋点：记录被质询的域名，用于评估 CDN 拦截规模
+            HAnalytics.logEvent(
+                FirebaseConstants.EVENT_CLOUDFLARE_CHALLENGE,
+                FirebaseConstants.PARAM_SOURCE to request.url.host,
+            )
 
             // 用 CountDownLatch 代替同步锁
             val latch = CountDownLatch(1)

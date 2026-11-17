@@ -318,16 +318,12 @@ fun VideoRouteHostScreen(
 
     // ---------------- PiP ----------------
 
-    /** PiP 是否允许（与 MainActivity.onUserLeaveHint 读取同一偏好）。 */
-    val pipAllowed = remember(activity) {
-        android.preference.PreferenceManager
-            .getDefaultSharedPreferences(activity)
-            .getBoolean("allow_pip_mode", true)
-    }
+    /** PiP 是否允许（与 MainActivity.onUserLeaveHint 读取同一偏好）。
+     *  每次重组直接读取（SharedPreferences 首次加载后在内存），设置页改动后不会残留旧值。 */
+    val pipAllowed = Preferences.allowPipMode
 
-    /** PiP 是否满足进入条件（播放或暂停中）。 */
-    val pipEligible = playerUiState.state == PlayerState.PLAYING ||
-            playerUiState.state == PlayerState.PAUSED
+    /** PiP 是否满足进入条件（仅播放中；暂停/停止/播完等非播放状态一律不进 PiP，issue #684）。 */
+    val pipEligible = playerUiState.state == PlayerState.PLAYING
 
     /**
      * PiP 窗口宽高比：按视频实际比例（PiP 支持范围外时收敛到边界），
@@ -402,6 +398,24 @@ fun VideoRouteHostScreen(
     ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !isInPipMode) {
             runCatching { activity.setPictureInPictureParams(buildPipParams(true, pipEligible)) }
+        }
+    }
+
+    // 离开播放页时必须显式关闭 autoEnter（issue #684）：
+    // setPictureInPictureParams 登记在 Activity 级、留驻系统，不会随本页销毁而失效。
+    // 若不清除，只要本页播放/暂停过一次，之后从 App 任意页面回桌面，
+    // 系统都会把已 release 的播放器塞进 PiP 小窗（黑屏死窗口）。
+    DisposableEffect(activity) {
+        onDispose {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                runCatching {
+                    activity.setPictureInPictureParams(
+                        PictureInPictureParams.Builder()
+                            .setAutoEnterEnabled(false)
+                            .build()
+                    )
+                }
+            }
         }
     }
 
@@ -1046,8 +1060,8 @@ fun VideoRouteHostScreen(
                         val b = playerWindowBounds
                         val rectValid = b.width > 0 && b.height > 0 &&
                                 b.right <= size.width && b.bottom <= size.height
-                        val sx0 = if (rectValid) b.width / size.width.toFloat() else 1f
-                        val sy0 = if (rectValid) b.height / size.height.toFloat() else 1f
+                        val sx0 = if (rectValid) b.width / size.width else 1f
+                        val sy0 = if (rectValid) b.height / size.height else 1f
                         transformOrigin = TransformOrigin(0f, 0f)
                         scaleX = lerp(sx0, 1f, p)
                         scaleY = lerp(sy0, 1f, p)

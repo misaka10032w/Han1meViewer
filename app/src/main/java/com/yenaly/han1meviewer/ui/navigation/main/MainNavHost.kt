@@ -58,6 +58,7 @@ import com.yenaly.han1meviewer.ui.screen.main.ProfileScreen
 import com.yenaly.han1meviewer.ui.screen.settings.AboutAppScreen
 import com.yenaly.han1meviewer.ui.viewmodel.CreatorCenterViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.UserAccountViewModel
+import com.yenaly.han1meviewer.util.HAnalytics
 import kotlinx.serialization.json.Json
 
 private fun NavBackStackEntry?.isSettingsRoute(): Boolean {
@@ -89,6 +90,13 @@ fun MainNavHost(
 
     LaunchedEffect(destinationSpec) {
         destinationSpec?.let(onDestinationChanged)
+        // 主导航页面的 screen_view 埋点（设置页在 SettingsNavHost 中另行记录）
+        destinationSpec?.let {
+            HAnalytics.logScreenView(
+                screenName = it.name,
+                screenClassName = it.routeClass.simpleName ?: it.name,
+            )
+        }
     }
 
     val isExpandedWidth = currentWindowAdaptiveInfoV2()

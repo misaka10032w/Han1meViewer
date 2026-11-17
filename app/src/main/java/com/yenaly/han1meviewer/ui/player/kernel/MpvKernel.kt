@@ -474,7 +474,10 @@ class MpvKernel(
     }
 
     override val isPlaying: Boolean
-        get() = !MPVLib.getPropertyBoolean("pause")
+        // 属性读取失败(null)时保守判定为「未播放」：
+        // setSpeedIndex 等调用方依赖 !isPlaying 补暂停，误报 true 会导致
+        // 暂停中的视频切倍速后意外开播；误报 false 仅多一次无害的 pause()。
+        get() = MPVLib.getPropertyBoolean("pause") == false
 
     override val currentPositionMs: Long
         get() = ((MPVLib.getPropertyDouble("time-pos") ?: 0.0).toLong()) * 1000
@@ -552,6 +555,9 @@ class MpvKernel(
         }
 
         override fun eventProperty(property: String, value: String) = Unit
+
+        // tag 版 MPVLib 接口新增的重载（本应用不观察 MPVNode 属性）
+        override fun eventProperty(property: String, value: `is`.xyz.mpv.MPVNode) = Unit
 
         override fun eventProperty(property: String, value: Double) {
             when (property) {

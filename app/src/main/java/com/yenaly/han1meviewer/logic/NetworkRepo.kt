@@ -24,6 +24,7 @@ import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.replaceBackupMediaCdnHost
+import com.yenaly.han1meviewer.util.HAnalytics
 import com.yenaly.han1meviewer.util.applicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -50,6 +51,7 @@ object NetworkRepo {
     //<editor-fold desc="Hanime">
 
     fun getHomePage() = websiteIOFlow(
+        source = "home_page",
         request = { HanimeNetwork.hanimeService.getHomePage(Preferences.homeUrl) },
         action = Parser::homePageVer2
     )
@@ -59,6 +61,7 @@ object NetworkRepo {
         sort: String?, broad: Boolean, date: String?,
         duration: String?, tags: Set<String>, brands: Set<String>,
     ) = pageIOFlow(
+        source = "search",
         request = {
             HanimeNetwork.hanimeService.getHanimeSearchResult(
                 page, query, genre, sort,
@@ -70,11 +73,13 @@ object NetworkRepo {
     )
 
     fun getHanimeVideo(videoCode: String) = videoIOFlow(
+        source = "video",
         request = { HanimeNetwork.hanimeService.getHanimeVideo(videoCode) },
         action = Parser::hanimeVideoVer2
     )
 
     fun getHanimePreview(date: String) = websiteIOFlow(
+        source = "preview",
         request = { HanimeNetwork.hanimeService.getHanimePreview(date) },
         action = Parser::hanimePreview
     )
@@ -102,11 +107,13 @@ object NetworkRepo {
         }
         emit(WebsiteState.Success(Parser.hanimePreviewFromSearch(list)))
     }.catch { e ->
+        HAnalytics.logNetworkError("preview", e)
         emit(WebsiteState.Error(handleException(e)))
     }.flowOn(Dispatchers.IO)
 
     //获取订阅或者可以说是关注列表及它们的更新
     fun getMySubscriptions(page: Int) = websiteIOFlow(
+        source = "subscriptions",
         request = { HanimeNetwork.hanimeService.getMySubscriptions(page) },
         action = Parser::getMySubscriptions
     )
@@ -115,6 +122,7 @@ object NetworkRepo {
     //<editor-fold desc="My List">
 
     fun getMyListItems(userId: String, listType: Any, page: Int) = pageIOFlow(
+        source = "my_list",
         request = {
             when (listType) {
                 is String ->
@@ -131,6 +139,7 @@ object NetworkRepo {
     )
 
     fun getMyPlayListItems(page: Int = 1, listCode: String = "0") = pageIOFlow(
+        source = "my_playlist",
         request = {
             HanimeNetwork.myListService.getMyPlayListItems(listCode, page)
         },
@@ -142,6 +151,7 @@ object NetworkRepo {
         sort: OnlineWatchHistorySort,
         page: Int,
     ) = pageIOFlow(
+        source = "online_watch_history",
         request = {
             HanimeNetwork.myListService.getOnlineWatchHistories(userId, sort.value, page)
         },
@@ -149,6 +159,7 @@ object NetworkRepo {
     )
 
     fun getUserAccountPage(userId: String) = websiteIOFlow(
+        source = "account_page",
         request = { HanimeNetwork.myListService.getUserAccountPage(userId) },
         action = Parser::userAccountPage,
     )
@@ -158,6 +169,7 @@ object NetworkRepo {
         sort: CreatorSort,
         page: Int,
     ) = pageIOFlow(
+        source = "uploaded_videos",
         request = {
             HanimeNetwork.myListService.getUploadedVideos(userId, sort.value, page)
         },
@@ -169,6 +181,7 @@ object NetworkRepo {
         sort: CreatorSort,
         page: Int,
     ) = pageIOFlow(
+        source = "uploading_videos",
         request = {
             HanimeNetwork.myListService.getUploadingVideos(userId, sort.value, page)
         },
@@ -180,6 +193,7 @@ object NetworkRepo {
         csrfToken: String?,
         name: String,
     ) = websiteIOFlow(
+        source = "update_profile",
         request = {
             HanimeNetwork.myListService.updateUserAccountProfile(
                 userId = userId,
@@ -206,6 +220,7 @@ object NetworkRepo {
         newPassword: String,
         newPasswordConfirm: String,
     ) = websiteIOFlow(
+        source = "update_password",
         request = {
             HanimeNetwork.myListService.updateUserAccountPassword(
                 userId = userId,
@@ -232,6 +247,7 @@ object NetworkRepo {
         csrfToken: String?,
         avatarFile: File,
     ) = websiteIOFlow(
+        source = "update_avatar",
         request = {
             val imageRequestBody = avatarFile.asRequestBody("image/jpeg".toMediaType())
             val imagePart = MultipartBody.Part.createFormData(
@@ -264,6 +280,7 @@ object NetworkRepo {
         position: Int,
         csrfToken: String?,
     ) = websiteIOFlow(
+        source = "delete_watch_history",
         request = {
             HanimeNetwork.myListService.deleteOnlineWatchHistory(
                 videoCode = videoCode,
@@ -285,6 +302,7 @@ object NetworkRepo {
         position: Int,
         token: String?,
     ) = websiteIOFlow(
+        source = "delete_my_list",
         request = {
             HanimeNetwork.myListService.deleteMyListItems(
                 itemId = itemId,
@@ -302,6 +320,7 @@ object NetworkRepo {
     }
 
     fun getPlaylists(page: Int, userId: String ) = websiteIOFlow(
+        source = "playlists",
         request = { HanimeNetwork.myListService.getPlaylists(userId, page) },
         action = Parser::playlists
     )
@@ -312,6 +331,7 @@ object NetworkRepo {
         currentUserId: String?,
         token: String?,
     ) = websiteIOFlow(
+        source = "fav_video",
         request = {
             HanimeNetwork.myListService.addToMyFavVideo(
                 videoCode, if (likeStatus) "1" else EMPTY_STRING,
@@ -333,6 +353,7 @@ object NetworkRepo {
         currentUserId: String?,
         token: String?,
     ) = websiteIOFlow(
+        source = "rate_video",
         request = {
             HanimeNetwork.myListService.rateVideo(
                 videoCode = videoCode,
@@ -356,6 +377,7 @@ object NetworkRepo {
         description: String,
         csrfToken: String?,
     ) = websiteIOFlow(
+        source = "create_playlist",
         request = {
             HanimeNetwork.myListService.createPlaylist(
                 csrfToken, videoCode, title, description
@@ -373,6 +395,7 @@ object NetworkRepo {
         isChecked: Boolean,
         csrfToken: String?,
     ) = websiteIOFlow(
+        source = "add_to_list",
         request = {
             HanimeNetwork.myListService.addToMyList(
                 csrfToken, listCode, videoCode, isChecked
@@ -390,6 +413,7 @@ object NetworkRepo {
         delete: Boolean,
         csrfToken: String?,
     ) = websiteIOFlow(
+        source = "modify_playlist",
         request = {
             HanimeNetwork.myListService.modifyPlaylist(
                 listCode, title, description,
@@ -412,11 +436,13 @@ object NetworkRepo {
     //<editor-fold desc="Comment">
 
     fun getComments(type: String, code: String) = websiteIOFlow(
+        source = "comments",
         request = { HanimeNetwork.commentService.getComments(type, code) },
         action = Parser::comments
     )
 
     fun getCommentReply(commentId: String) = websiteIOFlow(
+        source = "comment_reply",
         request = { HanimeNetwork.commentService.getCommentReply(commentId) },
         action = Parser::commentReply
     )
@@ -428,6 +454,7 @@ object NetworkRepo {
         type: String,
         text: String,
     ) = websiteIOFlow(
+        source = "post_comment",
         request = {
             HanimeNetwork.commentService.postComment(
                 csrfToken, currentUserId,
@@ -444,6 +471,7 @@ object NetworkRepo {
         replyCommentId: String,
         text: String,
     ) = websiteIOFlow(
+        source = "post_comment_reply",
         request = {
             HanimeNetwork.commentService.postCommentReply(
                 csrfToken, replyCommentId, text
@@ -466,6 +494,7 @@ object NetworkRepo {
         unlikeCommentStatus: Boolean, // 你之前有沒有點過踩，1是0否
         commentPosition: Int, comment: VideoComments.VideoComment,
     ) = websiteIOFlow(
+        source = "like_comment",
         request = {
             HanimeNetwork.commentService.likeComment(
                 csrfToken, commentPlace.value, foreignId,
@@ -492,6 +521,7 @@ object NetworkRepo {
         reportableType: String?,
         reportableId: String?
     ) = websiteIOFlow(
+        source = "report_comment",
         request = {
             HanimeNetwork.commentService.submitReport(
                 userId = currentUserId,
@@ -516,6 +546,7 @@ object NetworkRepo {
         // 这里表示目标状态
         status: Boolean,
     ) = websiteIOFlow(
+        source = "subscribe_artist",
         request = {
             HanimeNetwork.subscriptionService.subscribeArtist(
                 csrfToken, userId, artistId,
@@ -539,6 +570,7 @@ object NetworkRepo {
         when (e) {
             is CancellationException -> throw e
             else -> {
+                HAnalytics.logNetworkError("version_check", e)
                 e.printStackTrace()
                 emit(WebsiteState.Error(e))
             }
@@ -568,15 +600,18 @@ object NetworkRepo {
             emit(WebsiteState.Error(IllegalStateException(getString(R.string.account_or_password_wrong))))
         }
     }.catch { e ->
+        HAnalytics.logNetworkError("login", e)
         emit(WebsiteState.Error(handleException(e)))
     }.flowOn(Dispatchers.IO)
 
     /**
      * 用于单网页的情况
      *
+     * @param source 埋点来源标识，用于网络错误归因
      * @param permittedSuccessCode 用于处理特殊情况，比如[NetworkRepo.modifyPlaylist]需要302成功
      */
     private fun <T> websiteIOFlow(
+        source: String,
         request: suspend () -> Response<ResponseBody>,
         permittedSuccessCode: IntArray? = null,
         action: (String) -> WebsiteState<T>,
@@ -590,6 +625,7 @@ object NetworkRepo {
             requestResult.throwRequestException()
         }
     }.catch { e ->
+        HAnalytics.logNetworkError(source, e)
         emit(WebsiteState.Error(handleException(e)))
     }.flowOn(Dispatchers.IO)
 
@@ -597,6 +633,7 @@ object NetworkRepo {
      * 用于有page分页的情况
      */
     private fun <T> pageIOFlow(
+        source: String,
         request: suspend () -> Response<ResponseBody>,
         action: (String) -> PageLoadingState<T>,
     ) = flow {
@@ -608,6 +645,7 @@ object NetworkRepo {
             requestResult.throwRequestException()
         }
     }.catch { e ->
+        HAnalytics.logNetworkError(source, e)
         emit(PageLoadingState.Error(handleException(e)))
     }.flowOn(Dispatchers.IO)
 
@@ -615,6 +653,7 @@ object NetworkRepo {
      * 用于影片界面
      */
     private fun <T> videoIOFlow(
+        source: String,
         request: suspend () -> Response<ResponseBody>,
         action: (String) -> VideoLoadingState<T>,
     ) = flow {
@@ -626,6 +665,7 @@ object NetworkRepo {
             requestResult.throwRequestException()
         }
     }.catch { e ->
+        HAnalytics.logNetworkError(source, e)
         emit(VideoLoadingState.Error(handleException(e)))
     }.flowOn(Dispatchers.IO)
 

@@ -553,8 +553,8 @@ Room 主要用于：
 - `ui/component/AnnouncementDialog.kt`
 - `ui/screen/home/HomePageScreen.kt`
 - `logic/model/Announcement.kt`
-- `HanimeAnnouncementManagerWebUI/HanimeAnnouncementManager.html`
-- `HanimeAnnouncementManagerWebUI/PermitAdmin.py`
+- `docs/HanimeAnnouncementManagerWebUI/HanimeAnnouncementManager.html`
+- `docs/HanimeAnnouncementManagerWebUI/PermitAdmin.py`
 
 应用侧链路：
 

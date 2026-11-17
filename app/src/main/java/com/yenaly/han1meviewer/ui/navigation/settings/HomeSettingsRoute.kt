@@ -627,7 +627,7 @@ private fun buildHomeSettingsUiState(
         darkModeLabel = darkModeLabel,
         appLanguage = appLanguageValue,
         appLanguageLabel = appLanguageLabel,
-        allowPipMode = Preferences.preferenceSp.getBoolean(HOME_ALLOW_PIP_MODE, false),
+        allowPipMode = Preferences.allowPipMode,
         allowResumePlayback = Preferences.allowResumePlayback,
         showPlayedIndicator = Preferences.showPlayedIndicator,
         watchedProgressThreshold = Preferences.watchedProgressThreshold,

@@ -9,7 +9,9 @@ import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.yenaly.han1meviewer.EMPTY_STRING
+import com.yenaly.han1meviewer.FirebaseConstants
 import com.yenaly.han1meviewer.HCacheManager
 import com.yenaly.han1meviewer.HanimeResolution
 import com.yenaly.han1meviewer.R
@@ -25,6 +27,7 @@ import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
+import com.yenaly.han1meviewer.util.HAnalytics
 import com.yenaly.han1meviewer.util.TagLocalizer
 import com.yenaly.han1meviewer.util.dp
 import kotlinx.coroutines.Dispatchers
@@ -195,6 +198,13 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
 
     fun setPipMode(isInPipMode: Boolean) {
         _videoHostUiStateFlow.update { it.copy(isInPipMode = isInPipMode) }
+        // 画中画使用埋点（只在进入时记录，避免退出时重复）
+        if (isInPipMode) {
+            HAnalytics.logEvent(
+                FirebaseConstants.EVENT_VIDEO_PIP,
+                FirebaseConstants.PARAM_VIDEO_CODE to videoCode,
+            )
+        }
     }
 
     fun setPlayerHeightDp(playerHeightDp: Int) {
@@ -259,6 +269,14 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
             return
         }
         if (videoIntroUiStateMap[videoCode]?.introRestored == true) return
+        // 观看影片埋点：使用 GA4 标准 view_item 事件
+        HAnalytics.logEvent(
+            FirebaseAnalytics.Event.VIEW_ITEM,
+            FirebaseAnalytics.Param.ITEM_ID to videoCode,
+            FirebaseConstants.PARAM_VIDEO_CODE to videoCode,
+            FirebaseConstants.PARAM_FROM_DOWNLOAD to fromDownload,
+            FirebaseConstants.PARAM_IS_LOCAL to (localUri != null),
+        )
         viewModelScope.launch {
             val flow = if (fromDownload) {
                 HCacheManager.loadHanimeVideoInfo(application,videoCode).map { hv ->
@@ -337,6 +355,30 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
                 videoCode, likeStatus, currentUserId, csrfToken
             ).collect { state ->
                 _addToFavVideoFlow.emit(state)
+                // 收藏/取消收藏埋点：GA4 标准 add_to_wishlist / remove_from_wishlist 事件
+                when (state) {
+                    is WebsiteState.Success -> HAnalytics.logEvent(
+                        if (likeStatus) {
+                            // SDK 无 REMOVE_FROM_WISHLIST 常量，使用 GA4 标准事件名
+                            "remove_from_wishlist"
+                        } else {
+                            FirebaseAnalytics.Event.ADD_TO_WISHLIST
+                        },
+                        FirebaseAnalytics.Param.ITEM_ID to videoCode,
+                        FirebaseConstants.PARAM_VIDEO_CODE to videoCode,
+                        FirebaseConstants.PARAM_RESULT to "success",
+                    )
+
+                    is WebsiteState.Error -> HAnalytics.logEvent(
+                        FirebaseAnalytics.Event.ADD_TO_WISHLIST,
+                        FirebaseAnalytics.Param.ITEM_ID to videoCode,
+                        FirebaseConstants.PARAM_VIDEO_CODE to videoCode,
+                        FirebaseConstants.PARAM_RESULT to "failure",
+                        FirebaseConstants.PARAM_REASON to state.throwable.message,
+                    )
+
+                    WebsiteState.Loading -> Unit
+                }
                 if (likeStatus) {
                     _hanimeVideoFlow.update { it?.rateVideo(isPositive = true) }
                 } else {
@@ -360,7 +402,22 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
             ).collect { state ->
                 _addToFavVideoFlow.emit(state)
                 if (state is WebsiteState.Success) {
+                    // 点赞/点踩埋点
+                    HAnalytics.logEvent(
+                        "rate_video",
+                        FirebaseConstants.PARAM_VIDEO_CODE to videoCode,
+                        FirebaseConstants.PARAM_METHOD to if (isPositive) "like" else "dislike",
+                        FirebaseConstants.PARAM_RESULT to "success",
+                    )
                     _hanimeVideoFlow.update { it?.rateVideo(isPositive) }
+                } else if (state is WebsiteState.Error) {
+                    HAnalytics.logEvent(
+                        "rate_video",
+                        FirebaseConstants.PARAM_VIDEO_CODE to videoCode,
+                        FirebaseConstants.PARAM_METHOD to if (isPositive) "like" else "dislike",
+                        FirebaseConstants.PARAM_RESULT to "failure",
+                        FirebaseConstants.PARAM_REASON to state.throwable.message,
+                    )
                 }
             }
         }
@@ -419,9 +476,23 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
             NetworkRepo.subscribeArtist(csrfToken, userId, artistId, true).collect { state ->
                 _subscribeArtistFlow.emit(state)
                 if (state is WebsiteState.Success) {
+                    HAnalytics.logEvent(
+                        FirebaseConstants.EVENT_SUBSCRIBE_ARTIST,
+                        FirebaseConstants.PARAM_METHOD to artistId,
+                        FirebaseConstants.PARAM_IS_CANCEL to false,
+                        FirebaseConstants.PARAM_RESULT to "success",
+                    )
                     _hanimeVideoFlow.update {
                         it?.copy(artist = it.artist?.copy(post = it.artist.post?.copy(isSubscribed = true)))
                     }
+                } else if (state is WebsiteState.Error) {
+                    HAnalytics.logEvent(
+                        FirebaseConstants.EVENT_SUBSCRIBE_ARTIST,
+                        FirebaseConstants.PARAM_METHOD to artistId,
+                        FirebaseConstants.PARAM_IS_CANCEL to false,
+                        FirebaseConstants.PARAM_RESULT to "failure",
+                        FirebaseConstants.PARAM_REASON to state.throwable.message,
+                    )
                 }
             }
         }
@@ -435,9 +506,23 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
             NetworkRepo.subscribeArtist(csrfToken, userId, artistId, false).collect { state ->
                 _subscribeArtistFlow.emit(state)
                 if (state is WebsiteState.Success) {
+                    HAnalytics.logEvent(
+                        FirebaseConstants.EVENT_SUBSCRIBE_ARTIST,
+                        FirebaseConstants.PARAM_METHOD to artistId,
+                        FirebaseConstants.PARAM_IS_CANCEL to true,
+                        FirebaseConstants.PARAM_RESULT to "success",
+                    )
                     _hanimeVideoFlow.update {
                         it?.copy(artist = it.artist?.copy(post = it.artist.post?.copy(isSubscribed = false)))
                     }
+                } else if (state is WebsiteState.Error) {
+                    HAnalytics.logEvent(
+                        FirebaseConstants.EVENT_SUBSCRIBE_ARTIST,
+                        FirebaseConstants.PARAM_METHOD to artistId,
+                        FirebaseConstants.PARAM_IS_CANCEL to true,
+                        FirebaseConstants.PARAM_RESULT to "failure",
+                        FirebaseConstants.PARAM_REASON to state.throwable.message,
+                    )
                 }
             }
         }
