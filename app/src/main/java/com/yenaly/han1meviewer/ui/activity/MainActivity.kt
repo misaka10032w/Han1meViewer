@@ -379,9 +379,7 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
         val currentFragment = currentVideoHost
-
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val allowPip = prefs.getBoolean("allow_pip_mode", true)
+        val allowPip = Preferences.allowPipMode
 
         Log.i("pipmode", "enter pip mode?\n$currentFragment\nallowpip:$allowPip\n")
 

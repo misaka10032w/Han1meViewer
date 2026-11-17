@@ -114,6 +114,9 @@ object Preferences {
 
     // 設定 相關
 
+    val allowPipMode: Boolean
+        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.ALLOW_PIP_MODE, true)
+
     val switchPlayerKernel: String
         get() = preferenceSp.getString(
             SettingsPreferenceKeys.SWITCH_PLAYER_KERNEL,

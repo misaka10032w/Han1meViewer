@@ -488,10 +488,9 @@ class HanimePlayerController(
     val isPlaying: Boolean
         get() = kernel.isPlaying
 
-    /** 是否处于可进 PiP 的状态（播放或暂停中）。 */
+    /** 是否处于可进 PiP 的状态（仅播放中；暂停/停止等非播放状态不进 PiP，issue #684）。 */
     val isActiveForPip: Boolean
-        get() = _uiState.value.state == PlayerState.PLAYING ||
-                _uiState.value.state == PlayerState.PAUSED
+        get() = _uiState.value.state == PlayerState.PLAYING
 
     /** 当前播放位置（ms），页面保存观看历史时直接读取。 */
     val currentPositionMs: Long
