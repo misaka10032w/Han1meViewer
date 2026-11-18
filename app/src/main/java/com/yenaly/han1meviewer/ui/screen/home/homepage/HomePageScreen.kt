@@ -25,10 +25,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.state.PageState
 import com.yenaly.han1meviewer.logic.state.dataOrNull
+import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.PageContent
 import com.yenaly.han1meviewer.ui.component.PullRefreshOverlay
@@ -37,6 +40,7 @@ import com.yenaly.han1meviewer.ui.component.isFirstPageError
 import com.yenaly.han1meviewer.ui.component.isFirstPageLoading
 import com.yenaly.han1meviewer.ui.screen.home.homepage.component.HomePageTopBar
 import com.yenaly.han1meviewer.ui.screen.rememberRandomLoadingHint
+import com.yenaly.han1meviewer.util.findActivityOrNull
 import com.yenaly.han1meviewer.util.toNetworkErrorMessageRes
 
 /**
@@ -65,8 +69,17 @@ fun HomePageScreen(
         }
     }
 
+    val homeLifecycleOwner = LocalLifecycleOwner.current
     BackHandler(enabled = Preferences.showExitConfirm) {
-        onEvent(HomeUiEvent.ShowExitDialog)
+        if (homeLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+            onEvent(HomeUiEvent.ShowExitDialog)
+        } else {
+            // 页面转场进行中（NavDisplay 会把未 settle 场景的 lifecycle 压至 STARTED），
+            // 此时本页的 BackHandler 仍处于分发链顶端，直接弹退出确认会突兀闪现。
+            // 改为交给 Navigator：若正处于推入转场则弹出刚进入的页面；
+            // 若正处于弹出转场（已回到栈底，goBack 返回 false）则吞掉本次返回，等转场结束。
+            context.findActivityOrNull<MainActivity>()?.navigator?.goBack()
+        }
     }
 
     val isCurrentlyRefreshing = (pageState as? PageState.Success)?.isRefreshing == true

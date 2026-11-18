@@ -799,6 +799,7 @@ Recommendations are as follows:\n
     <string name="switch_site">Switch Site</string>
     <string name="confirm_switch_site">Are you sure you want to switch site?</string>
     <string name="disable_predictive_back_title">Disable Predictive Back Animation</string>
+    <string name="disable_predictive_back_summary">When disabled, dragging the back gesture no longer previews pages; releasing still navigates back normally</string>
     <string name="play_trailer">Play Trailer</string>
     <string name="load_complete">Load complete !</string>
     <string name="search_video_hint">Search videos…</string>

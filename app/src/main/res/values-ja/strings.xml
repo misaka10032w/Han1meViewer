@@ -792,6 +792,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="switch_site">サイト切替</string>
     <string name="confirm_switch_site">サイトを切り替えますか？</string>
     <string name="disable_predictive_back_title">予測型バックアニメーションを無効化</string>
+    <string name="disable_predictive_back_summary">無効にすると、バックジェスチャーのドラッグ中にページプレビューが表示されなくなります（指を離すと通常どおり戻ります）</string>
     <string name="play_trailer">予告編を再生</string>
     <string name="load_complete">読み込み完了！</string>
     <string name="search_video_hint">動画を検索…</string>
