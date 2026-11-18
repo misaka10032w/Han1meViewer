@@ -72,7 +72,13 @@ class MySubscriptionsViewModel : ViewModel() {
                         }
                         if (info.subscriptionsVideos.isNotEmpty()) {
                             _loadedPage.value = currentPage
-                            cachedVideos.addAll(info.subscriptionsVideos)
+                            // 翻页边界可能重叠：加载下一页期间若有新投稿，按时间排序的
+                            // 两页会在边界返回重复条目；订阅列表以 videoCode 为 Lazy key，
+                            // 重复会抛 "Key was already used" 崩溃，拼接时跳过已有条目。
+                            val newVideos = info.subscriptionsVideos.filter { incoming ->
+                                cachedVideos.none { it.videoCode == incoming.videoCode }
+                            }
+                            cachedVideos.addAll(newVideos)
                             currentPage++
                             Log.i("getMySubscriptions","currentPage:$currentPage")
                         } else {
