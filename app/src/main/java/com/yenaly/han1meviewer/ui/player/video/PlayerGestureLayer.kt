@@ -121,6 +121,10 @@ fun Modifier.playerGestures(
                 var gestureDownVolume = 0
                 var gestureDownBrightness = 0f
                 var targetPosition = 0L
+                // 时长未知时（C.TIME_UNSET / <=0，如视频仍在加载、流信息未就绪），
+                // 进度手势不产出有效目标：coerceIn(0, TIME_UNSET) 是空区间会直接抛
+                // IllegalArgumentException（线上崩溃），结束时也不能 seek 到无效位置。
+                var targetPositionValid = false
 
                 while (true) {
                     val event = awaitPointerEvent()
@@ -161,21 +165,20 @@ fun Modifier.playerGestures(
                     if (dragging) {
                         if (horizontal) {
                             val duration = currentDuration()
-                            val delta = dx * duration / (size.width * sensitivity)
-                            targetPosition = (gestureDownPosition + delta.toLong())
-                                .coerceIn(0L, duration)
-                            currentOnIndicator(
-                                GestureIndicatorData(
-                                    type = GestureIndicatorType.Progress,
-                                    percent = if (duration > 0) {
-                                        targetPosition.toFloat() / duration
-                                    } else {
-                                        0f
-                                    },
-                                    text = PlayerUtils.stringForTime(targetPosition),
-                                    subtitle = PlayerUtils.stringForTime(duration),
+                            if (duration > 0) {
+                                targetPositionValid = true
+                                val delta = dx * duration / (size.width * sensitivity)
+                                targetPosition = (gestureDownPosition + delta.toLong())
+                                    .coerceIn(0L, duration)
+                                currentOnIndicator(
+                                    GestureIndicatorData(
+                                        type = GestureIndicatorType.Progress,
+                                        percent = targetPosition.toFloat() / duration,
+                                        text = PlayerUtils.stringForTime(targetPosition),
+                                        subtitle = PlayerUtils.stringForTime(duration),
+                                    )
                                 )
-                            )
+                            }
                         } else {
                             val deltaY = -dy
                             if (changeBrightness) {
@@ -219,7 +222,7 @@ fun Modifier.playerGestures(
                 }
 
                 if (dragging) {
-                    if (horizontal) {
+                    if (horizontal && targetPositionValid) {
                         currentOnSeekTo(targetPosition)
                     }
                     currentOnIndicator(null)
