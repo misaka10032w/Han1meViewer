@@ -177,6 +177,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.compose.ui.ui.tooling)
     implementation(libs.androidx.navigation.compose)
+    // NavHost 2.10 预测性返回事件分发（PredictiveBackSanitizer 直接使用其 API）
+    implementation(libs.androidx.navigationevent.compose)
     implementation(libs.androidx.material.icons.core)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)

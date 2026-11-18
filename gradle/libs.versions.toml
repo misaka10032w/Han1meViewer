@@ -25,6 +25,7 @@ roomRuntime = "2.8.4"
 roomKtx = "2.8.4"
 roomCompiler = "2.8.4"
 navigation = "2.10.2"
+navigationevent = "1.2.0"
 preferenceKtx = "1.2.1"
 window = "1.5.1"
 workRuntime = "2.11.2"
@@ -54,6 +55,7 @@ androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", versi
 androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "materialIconsCore" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation" }
+androidx-navigationevent-compose = { module = "androidx.navigationevent:navigationevent-compose", version.ref = "navigationevent" }
 androidx-window-core = { module = "androidx.window:window-core", version.ref = "window" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilCompose" }
