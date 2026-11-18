@@ -39,6 +39,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.window.core.layout.WindowSizeClass
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.navigation.canNavigateSafely
 import com.yenaly.han1meviewer.ui.navigation.main.navigateSettingsCategoryDestination
 import com.yenaly.han1meviewer.ui.screen.settings.SettingsCategoryItem
 import com.yenaly.han1meviewer.util.findActivityOrNull
@@ -60,6 +61,9 @@ fun SettingsScaffold(
         ?: SettingsScreenDestination.Home
 
     fun navigateBack() {
+        // 返回手势/转场进行中时直接跳过：此时若 pop 失败去走 fallback 导航，
+        // 会以另一种方式并发修改返回栈，重新引入与 NavHost 返回事件处理器的竞态。
+        if (!navController.canNavigateSafely()) return
         if (!navController.popBackStack()) {
             navController.navigate(fallbackDestination)
         }

@@ -27,6 +27,7 @@ import androidx.navigation.toRoute
 import androidx.window.core.layout.WindowSizeClass
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
+import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.AboutAppRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRouteScreen
@@ -83,7 +84,7 @@ fun MainNavHost(
     val destinationSpec = MainDestinationSpec.fromDestination(backStackEntry?.destination)
     var pendingAvatarCropResult by remember { mutableStateOf<String?>(null) }
 
-    val onBack: () -> Unit = { navController.popBackStack() }
+    val onBack: () -> Unit = { navController.popBackStackSafely() }
     val onNavigateToVideo: (String) -> Unit = { code -> navController.navigateSafely(VideoRoute(code)) }
     val onNavigateToLocalVideo: (String, String?) -> Unit =
         { code, uri -> navController.navigateSafely(VideoRoute(code, uri)) }
@@ -135,28 +136,19 @@ fun MainNavHost(
             }
         },
         // 弹出（返回）新页面进入：从左侧滑入，由 0.9 放大恢复，营造“浮上来”的感觉
-        popEnterTransition = {
-            if (suppressSettingsPaneTransition(initialState, targetState)) {
-                EnterTransition.None
-            } else {
-                slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.End,
-                    initialOffset = { it / 3 },
-                    animationSpec = tween(450, easing = FastOutSlowInEasing)
-                ) + scaleIn(initialScale = 0.9f) + fadeIn(animationSpec = tween(450))
-            }
-        },
+        popEnterTransition = { popEnterSpec(suppressSettingsPaneTransition(initialState, targetState)) },
         // 弹出（返回）旧页面退出：向右侧滑出，同时淡出
-        popExitTransition = {
-            if (suppressSettingsPaneTransition(initialState, targetState)) {
-                ExitTransition.None
-            } else {
-                slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.End,
-                    animationSpec = tween(450, easing = FastOutSlowInEasing)
-                ) + fadeOut(animationSpec = tween(300))
-            }
-        }
+        popExitTransition = { popExitSpec(suppressSettingsPaneTransition(initialState, targetState)) },
+        // 预测性返回（Navigation 2.10 新增分支）：手势返回时 NavHost 改走这两个参数，
+        // 默认值是 fadeIn + scaleOut(0.7f)（系统样式的“中心缩放”），会盖掉上面自定义的
+        // pop 动画。这里显式指定为与 popEnter/popExit 完全一致，保持旧观感，
+        // 且手势拖动过程中动画会跟随手指进度预览（seekable）。
+        predictivePopEnterTransition = { _ ->
+            popEnterSpec(suppressSettingsPaneTransition(initialState, targetState))
+        },
+        predictivePopExitTransition = { _ ->
+            popExitSpec(suppressSettingsPaneTransition(initialState, targetState))
+        },
     ) {
         composable<HomeRoute> {
             HomeRouteScreen(
@@ -459,3 +451,37 @@ fun MainNavHost(
 
 private fun NavBackStackEntry.isAutoPlayVideo(): Boolean =
     destination.hasRoute<VideoRoute>() && toRoute<VideoRoute>().autoPlay
+
+/**
+ * 返回（pop）时新页面进入动画：从左侧滑入（偏移 1/3 宽度）、由 0.9 放大恢复，
+ * 营造“浮上来”的感觉。同时用于 [NavHost] 的 popEnterTransition 与
+ * predictivePopEnterTransition，保证程序化返回与手势返回观感一致。
+ */
+private fun AnimatedContentTransitionScope<NavBackStackEntry>.popEnterSpec(
+    suppressed: Boolean,
+): EnterTransition =
+    if (suppressed) {
+        EnterTransition.None
+    } else {
+        slideIntoContainer(
+            towards = AnimatedContentTransitionScope.SlideDirection.End,
+            initialOffset = { it / 3 },
+            animationSpec = tween(450, easing = FastOutSlowInEasing)
+        ) + scaleIn(initialScale = 0.9f) + fadeIn(animationSpec = tween(450))
+    }
+
+/**
+ * 返回（pop）时旧页面退出动画：向右侧滑出并淡出。
+ * 同时用于 [NavHost] 的 popExitTransition 与 predictivePopExitTransition。
+ */
+private fun AnimatedContentTransitionScope<NavBackStackEntry>.popExitSpec(
+    suppressed: Boolean,
+): ExitTransition =
+    if (suppressed) {
+        ExitTransition.None
+    } else {
+        slideOutOfContainer(
+            towards = AnimatedContentTransitionScope.SlideDirection.End,
+            animationSpec = tween(450, easing = FastOutSlowInEasing)
+        ) + fadeOut(animationSpec = tween(300))
+    }

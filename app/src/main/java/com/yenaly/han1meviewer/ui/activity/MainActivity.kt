@@ -43,6 +43,7 @@ import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
+import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
 import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageViewModel
 import com.yenaly.han1meviewer.ui.screen.main.MainActivityContent
@@ -308,7 +309,7 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
         // 登出埋点
         HAnalytics.logEvent(FirebaseConstants.EVENT_LOGOUT)
         if (logoutCloseCurrentPage) {
-            navController.popBackStack()
+            navController.popBackStackSafely()
         }
         logoutWithRefresh()
     }
