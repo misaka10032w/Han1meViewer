@@ -55,18 +55,21 @@ fun NavController.navigateSettingsDestination(route: Any) {
 }
 
 fun NavHostController.handleMainIntent(intent: Intent) {
+    // Intent/深链驱动的导航不走 canNavigateSafely 门槛（force = true）：
+    // 到达时用户必然不在应用内的返回手势中，而冷启动首帧栈顶可能尚未
+    // RESUMED，若受门槛拦截会被静默丢弃。
     if (intent.action == Intent.ACTION_VIEW) {
         val uri = intent.data ?: return
         when (uri.scheme) {
             "http", "https" -> {
                 val videoCode = uri.getQueryParameter("v")
                 if (videoCode != null) {
-                    navigateSafely(VideoRoute(videoCode))
+                    navigateSafely(VideoRoute(videoCode), force = true)
                 }
             }
 
             "file", "content" -> {
-                navigateSafely(VideoRoute("-1", uri.toString()))
+                navigateSafely(VideoRoute("-1", uri.toString()), force = true)
             }
         }
         return
@@ -74,7 +77,7 @@ fun NavHostController.handleMainIntent(intent: Intent) {
 
     intent.getStringExtra("startSearchFromTag")?.let { tag ->
         intent.removeExtra("startSearchFromTag")
-        navigateSafely(SearchRoute(query = tag))
+        navigateSafely(SearchRoute(query = tag), force = true)
         return
     }
 
@@ -82,13 +85,13 @@ fun NavHostController.handleMainIntent(intent: Intent) {
     val map = intent.getSerializableExtra("startSearchFromMap") as? HashMap<String, String>
     if (map != null) {
         intent.removeExtra("startSearchFromMap")
-        navigateSafely(SearchRoute(advancedSearchJson = Json.encodeToString(map)))
+        navigateSafely(SearchRoute(advancedSearchJson = Json.encodeToString(map)), force = true)
         return
     }
 
     val videoCode = intent.getStringExtra("startVideoCode")
     if (!videoCode.isNullOrEmpty()) {
         intent.removeExtra("startVideoCode")
-        navigateSafely(VideoRoute(videoCode))
+        navigateSafely(VideoRoute(videoCode), force = true)
     }
 }

@@ -101,7 +101,9 @@ import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.TextInputField
 import com.yenaly.han1meviewer.ui.navigation.main.HomeRoute
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
+import com.yenaly.han1meviewer.ui.navigation.canNavigateSafely
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
+import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import com.yenaly.han1meviewer.ui.player.HanimePlayerController
 import com.yenaly.han1meviewer.ui.player.PlayerState
 import com.yenaly.han1meviewer.ui.player.kernel.KernelType
@@ -679,7 +681,7 @@ fun VideoRouteHostScreen(
             onPendingDownloadPromptChange = { pendingDownloadPrompt = it },
             getCheckedQuality = { checkedQuality },
             setCheckedQuality = { checkedQuality = it },
-            onStoragePermissionDenied = { activity.navController.popBackStack() },
+            onStoragePermissionDenied = { activity.navController.popBackStackSafely() },
             onRequestUnsubscribeConfirm = { artist -> unsubscribeArtist = artist },
             onRequestDownloadPermissionSettings = { showDownloadPermissionDialog = true },
         )
@@ -710,7 +712,10 @@ fun VideoRouteHostScreen(
                 // 清空返回栈、让主页回到栈顶。MainActivity 是 singleTask，
                 // 直接 startActivity 只会触发 onNewIntent 而不会清栈，按钮会显得无响应。
                 val navController = activity.navController
-                if (!navController.popBackStack(HomeRoute, false)) {
+                // 返回手势/转场进行中时直接跳过，避免与库内部的返回事件处理器竞态。
+                if (navController.canNavigateSafely() &&
+                    !navController.popBackStack(HomeRoute, false)
+                ) {
                     // 返回栈中没有主页（例如外部深链直接进入视频页）时，导航回主页并清栈
                     navController.navigate(HomeRoute) {
                         popUpTo(navController.graph.id) { inclusive = true }
@@ -1117,7 +1122,7 @@ fun VideoRouteHostScreen(
             dismissButton = {
                 TextButton(onClick = {
                     showDownloadPermissionDialog = false
-                    activity.navController.popBackStack()
+                    activity.navController.popBackStackSafely()
                 }) {
                     Text(activity.getString(R.string.cancel))
                 }
