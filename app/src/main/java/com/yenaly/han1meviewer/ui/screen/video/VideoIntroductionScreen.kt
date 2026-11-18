@@ -1002,8 +1002,14 @@ private fun PlaylistBottomSheet(
     onDismiss: () -> Unit,
     onOpenVideo: (HanimeInfo) -> Unit,
 ) {
-    val playingIndex = remember(playlist) {
-        playlist.video.indexOfFirst { it.isPlaying }.coerceAtLeast(0)
+    // 服务器合集数据偶发包含重复 videoCode 条目（首页 CategoryRow 已遭遇过同类问题），
+    // 本列表以 videoCode 为 LazyColumn key，重复条目会抛
+    // IllegalArgumentException: Key "xxx" was already used，先按 videoCode 去重。
+    val uniquePlaylistVideos = remember(playlist) {
+        playlist.video.distinctBy { it.videoCode }
+    }
+    val playingIndex = remember(uniquePlaylistVideos) {
+        uniquePlaylistVideos.indexOfFirst { it.isPlaying }.coerceAtLeast(0)
     }
     var autoPlayNext by remember { mutableStateOf(Preferences.autoPlayNext) }
 
@@ -1091,7 +1097,7 @@ private fun PlaylistBottomSheet(
                 contentPadding = PaddingValues(bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                items(playlist.video, key = { it.videoCode }) { item ->
+                items(uniquePlaylistVideos, key = { it.videoCode }) { item ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
