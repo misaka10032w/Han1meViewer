@@ -176,7 +176,11 @@ dependencies {
     implementation(libs.androidx.ui)
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.compose.ui.ui.tooling)
-    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    // NavDisplay 预测性返回事件分发（PredictiveBackSanitizer 直接使用其 API）
+    implementation(libs.androidx.navigationevent.compose)
     implementation(libs.androidx.material.icons.core)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)

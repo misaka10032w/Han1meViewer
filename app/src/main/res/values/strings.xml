@@ -831,6 +831,7 @@
     <string name="switch_site">切換站點</string>
     <string name="confirm_switch_site">確定要切換站點嗎？</string>
     <string name="disable_predictive_back_title">關閉預測性返回動畫</string>
+    <string name="disable_predictive_back_summary">關閉後，返回手勢拖動過程中不再播放頁面預覽動畫，放開後仍會正常返回</string>
     <string name="play_trailer">播放預告</string>
     <string name="load_complete">載入完畢！</string>
     <string name="search_video_hint">搜尋影片…</string>

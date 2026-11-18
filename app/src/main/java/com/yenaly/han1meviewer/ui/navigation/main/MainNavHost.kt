@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -17,17 +18,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.toRoute
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.scene.Scene
+import androidx.navigation3.ui.NavDisplay
 import androidx.window.core.layout.WindowSizeClass
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
-import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+import com.yenaly.han1meviewer.ui.navigation.NavigationState
+import com.yenaly.han1meviewer.ui.navigation.SanitizedPredictiveBackOwner
 import com.yenaly.han1meviewer.ui.navigation.settings.AboutAppRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRouteScreen
@@ -62,15 +64,11 @@ import com.yenaly.han1meviewer.ui.viewmodel.UserAccountViewModel
 import com.yenaly.han1meviewer.util.HAnalytics
 import kotlinx.serialization.json.Json
 
-private fun NavBackStackEntry?.isSettingsRoute(): Boolean {
-    return this?.destination?.hasRoute<SettingsCategoryRoute>() == true ||
-            SettingsDestinationSpec.fromDestination(this?.destination) != null
-}
-
 @Composable
 fun MainNavHost(
     activity: MainActivity,
-    navController: NavHostController,
+    navigator: Navigator,
+    navigationState: NavigationState,
     isLoggedIn: Boolean,
     avatarUrl: String?,
     username: String?,
@@ -80,18 +78,18 @@ fun MainNavHost(
     onLogoutClick: () -> Unit,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
 ) {
-    val backStackEntry by navController.currentBackStackEntryAsState()
-    val destinationSpec = MainDestinationSpec.fromDestination(backStackEntry?.destination)
+    val currentKey = navigationState.currentKey
+    val destinationSpec = MainDestinationSpec.fromKey(currentKey)
     var pendingAvatarCropResult by remember { mutableStateOf<String?>(null) }
 
-    val onBack: () -> Unit = { navController.popBackStackSafely() }
-    val onNavigateToVideo: (String) -> Unit = { code -> navController.navigateSafely(VideoRoute(code)) }
+    val onBack: () -> Unit = { navigator.goBack() }
+    val onNavigateToVideo: (String) -> Unit = { code -> navigator.navigateSafely(VideoRoute(code)) }
     val onNavigateToLocalVideo: (String, String?) -> Unit =
-        { code, uri -> navController.navigateSafely(VideoRoute(code, uri)) }
+        { code, uri -> navigator.navigateSafely(VideoRoute(code, uri)) }
 
     LaunchedEffect(destinationSpec) {
         destinationSpec?.let(onDestinationChanged)
-        // 主导航页面的 screen_view 埋点（设置页在 SettingsNavHost 中另行记录）
+        // 主导航页面的 screen_view 埋点（设置页在 SettingsScaffold 中另行记录）
         destinationSpec?.let {
             HAnalytics.logScreenView(
                 screenName = it.name,
@@ -103,67 +101,22 @@ fun MainNavHost(
     val isExpandedWidth = currentWindowAdaptiveInfoV2()
         .windowSizeClass
         .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
-    val suppressSettingsPaneTransition: (NavBackStackEntry, NavBackStackEntry) -> Boolean =
-        { initial, target ->
-            isExpandedWidth && initial.isSettingsRoute() && target.isSettingsRoute()
-        }
 
-    NavHost(
-        navController = navController,
-        startDestination = HomeRoute,
-        // 新页面进入：从右侧滑入，同时伴随淡入，且带有回弹感
-        enterTransition = {
-            when {
-                targetState.isAutoPlayVideo() -> EnterTransition.None
-                // 双栏设置只切换右侧内容，左栏保持不动。
-                suppressSettingsPaneTransition(initialState, targetState) -> EnterTransition.None
-                else -> slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Start,
-                    animationSpec = tween(450, easing = FastOutSlowInEasing)
-                ) + fadeIn(animationSpec = tween(450))
-            }
-        },
-        // 旧页面退出：向左轻微偏移，同时缩小并淡出，营造被“压在下面”的感觉
-        exitTransition = {
-            when {
-                targetState.isAutoPlayVideo() -> ExitTransition.None
-                suppressSettingsPaneTransition(initialState, targetState) -> ExitTransition.None
-                else -> slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Start,
-                    targetOffset = { it / 3 }, // 只偏移 1/3 的宽度
-                    animationSpec = tween(450, easing = FastOutSlowInEasing)
-                ) + scaleOut(targetScale = 0.9f) + fadeOut(animationSpec = tween(300))
-            }
-        },
-        // 弹出（返回）新页面进入：从左侧滑入，由 0.9 放大恢复，营造“浮上来”的感觉
-        popEnterTransition = { popEnterSpec(suppressSettingsPaneTransition(initialState, targetState)) },
-        // 弹出（返回）旧页面退出：向右侧滑出，同时淡出
-        popExitTransition = { popExitSpec(suppressSettingsPaneTransition(initialState, targetState)) },
-        // 预测性返回（Navigation 2.10 新增分支）：手势返回时 NavHost 改走这两个参数，
-        // 默认值是 fadeIn + scaleOut(0.7f)（系统样式的“中心缩放”），会盖掉上面自定义的
-        // pop 动画。这里显式指定为与 popEnter/popExit 完全一致，保持旧观感，
-        // 且手势拖动过程中动画会跟随手指进度预览（seekable）。
-        predictivePopEnterTransition = { _ ->
-            popEnterSpec(suppressSettingsPaneTransition(initialState, targetState))
-        },
-        predictivePopExitTransition = { _ ->
-            popExitSpec(suppressSettingsPaneTransition(initialState, targetState))
-        },
-    ) {
-        composable<HomeRoute> {
+    val entryProvider = entryProvider<NavKey> {
+        screen<HomeRoute> {
             HomeRouteScreen(
                 activity = activity,
-                onNavigateToPreview = { navController.navigateSafely(PreviewRoute) },
-                onNavigateToSearch = { query -> navController.navigateSafely(SearchRoute(query = query)) },
+                onNavigateToPreview = { navigator.navigateSafely(PreviewRoute) },
+                onNavigateToSearch = { query -> navigator.navigateSafely(SearchRoute(query = query)) },
                 onNavigateToSearchAdvanced = { params ->
-                    navController.navigateSafely(
+                    navigator.navigateSafely(
                         SearchRoute(advancedSearchJson = Json.encodeToString(params))
                     )
                 },
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
-        composable<ContentLibraryRoute> {
+        screen<ContentLibraryRoute> {
             ContentLibraryScreen(
                 isLoggedIn = isLoggedIn,
                 onRequireLogin = onRequireLogin,
@@ -171,7 +124,7 @@ fun MainNavHost(
                 onNavigateToLocalVideo = onNavigateToLocalVideo,
             )
         }
-        composable<ProfileRoute> {
+        screen<ProfileRoute> {
             ProfileScreen(
                 isLoggedIn = isLoggedIn,
                 avatarUrl = avatarUrl,
@@ -179,70 +132,70 @@ fun MainNavHost(
                 currentSite = currentSite,
                 onAccountClick = {
                     if (isLoggedIn) {
-                        navController.navigateSafely(AccountRoute)
+                        navigator.navigateSafely(AccountRoute)
                     } else {
                         onRequireLogin()
                     }
                 },
                 onAvatarLongClick = onLogoutClick,
-                onDailyCheckInClick = { navController.navigateSafely(DailyCheckInRoute) },
+                onDailyCheckInClick = { navigator.navigateSafely(DailyCheckInRoute) },
                 onCreatorCenterClick = {
                     if (isLoggedIn) {
-                        navController.navigateSafely(CreatorCenterRoute)
+                        navigator.navigateSafely(CreatorCenterRoute)
                     } else {
                         onRequireLogin()
                     }
                 },
-                onSettingsClick = { navController.navigateSafely(HomeSettingsRoute) },
+                onSettingsClick = { navigator.navigateSafely(HomeSettingsRoute) },
                 onSwitchSiteClick = onSwitchSiteClick,
             )
         }
-        composable<WatchHistoryRoute> {
+        screen<WatchHistoryRoute> {
             WatchHistoryRouteScreen(
                 onBack = onBack,
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
-        composable<MyFavVideoRoute> {
+        screen<MyFavVideoRoute> {
             FavVideoRouteScreen(
                 onBack = onBack,
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
-        composable<MyWatchLaterRoute> {
+        screen<MyWatchLaterRoute> {
             WatchLaterRouteScreen(
                 onBack = onBack,
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
-        composable<MyPlaylistRoute> {
+        screen<MyPlaylistRoute> {
             MyPlaylistRouteScreen(
                 onBack = onBack,
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
-        composable<SubscriptionRoute> {
+        screen<SubscriptionRoute> {
             SubscriptionRouteScreen(
                 onBack = onBack,
-                onNavigateToSearch = { query -> navController.navigateSafely(SearchRoute(query = query)) },
+                onNavigateToSearch = { query -> navigator.navigateSafely(SearchRoute(query = query)) },
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
-        composable<DailyCheckInRoute> {
+        screen<DailyCheckInRoute> {
             DailyCheckInRouteScreen(
                 activity = activity,
                 onBack = onBack,
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
-        composable<DownloadRoute> {
+        screen<DownloadRoute> {
             DownloadRouteScreen(
                 onBack = onBack,
                 onNavigateToVideo = onNavigateToVideo,
                 onNavigateToLocalVideo = onNavigateToLocalVideo,
             )
         }
-        composable<CreatorCenterRoute> {
+        screen<CreatorCenterRoute> {
             val creatorViewModel: CreatorCenterViewModel = viewModel()
             CreatorCenterScreen(
                 viewModel = creatorViewModel,
@@ -251,13 +204,13 @@ fun MainNavHost(
                 onOpenUploadingVideo = { item -> onNavigateToLocalVideo("-1", item.remoteVideoUrl) },
             )
         }
-        composable<AccountRoute> {
+        screen<AccountRoute> {
             val accountViewModel: UserAccountViewModel = viewModel()
             AccountScreen(
                 viewModel = accountViewModel,
                 onBack = onBack,
                 onOpenAvatarCrop = { sourceUri ->
-                    navController.navigateSafely(AvatarCropRoute(sourceUri))
+                    navigator.navigateSafely(AvatarCropRoute(sourceUri))
                 },
                 pendingAvatarCropResult = pendingAvatarCropResult,
                 onAvatarCropResultConsumed = { pendingAvatarCropResult = null },
@@ -265,10 +218,9 @@ fun MainNavHost(
                 onLogout = { activity.requestLogout(closeCurrentPageOnConfirm = true) },
             )
         }
-        composable<AvatarCropRoute> {
-            val route = it.toRoute<AvatarCropRoute>()
+        screen<AvatarCropRoute> { key ->
             AvatarCropScreen(
-                sourceUri = route.sourceUri,
+                sourceUri = key.sourceUri,
                 onBack = onBack,
                 onConfirm = { file ->
                     pendingAvatarCropResult = file.absolutePath
@@ -276,92 +228,91 @@ fun MainNavHost(
                 },
             )
         }
-        composable<AboutAppRoute> {
+        screen<AboutAppRoute> {
             SettingsScaffold(
-                navController = navController,
+                navigator = navigator,
                 fallbackDestination = HomeSettingsRoute,
             ) {
                 AboutAppScreen()
             }
         }
-        composable<HomeSettingsRoute> {
+        screen<HomeSettingsRoute> {
             SettingsScaffold(
-                navController = navController,
+                navigator = navigator,
                 fallbackDestination = HomeRoute,
             ) {
                 SettingsHomeRouteScreen(
                     onOpenCategory = { category ->
-                        navController.navigateSettingsCategoryDestination(category)
+                        navigator.navigateSettingsCategoryDestination(category)
                     },
                 )
             }
         }
-        composable<SettingsCategoryRoute> { entry ->
-            val route = entry.toRoute<SettingsCategoryRoute>()
-            val category = SettingsCategory.fromKey(route.categoryKey)
+        screen<SettingsCategoryRoute> { key ->
+            val category = SettingsCategory.fromKey(key.categoryKey)
                 ?: SettingsCategory.Appearance
             SettingsScaffold(
-                navController = navController,
+                navigator = navigator,
                 fallbackDestination = HomeSettingsRoute,
             ) {
                 SettingsCategoryRouteScreen(
                     category = category,
                     activity = activity,
                     onNavigateToPlayerSettings = {
-                        navController.navigateSettingsDestination(PlayerSettingsRoute)
+                        navigator.navigateSettingsDestination(PlayerSettingsRoute)
                     },
                     onNavigateToHKeyframes = {
-                        navController.navigateSettingsDestination(HKeyframesRoute)
+                        navigator.navigateSettingsDestination(HKeyframesRoute)
                     },
                     onNavigateToSharedHKeyframes = {
-                        navController.navigateSettingsDestination(SharedHKeyframesRoute)
+                        navigator.navigateSettingsDestination(SharedHKeyframesRoute)
                     },
                     onNavigateToAboutPage = {
-                        navController.navigateSettingsDestination(AboutAppRoute)
+                        navigator.navigateSettingsDestination(AboutAppRoute)
                     },
                 )
             }
         }
-        composable<PlayerSettingsRoute> {
+        screen<PlayerSettingsRoute> {
             SettingsScaffold(
-                navController = navController,
+                navigator = navigator,
                 fallbackDestination = HomeSettingsRoute,
             ) {
                 PlayerSettingsRouteScreen(
                     onNavigateToMpvSettings = {
-                        navController.navigateSettingsDestination(MpvPlayerSettingsRoute)
+                        navigator.navigateSettingsDestination(MpvPlayerSettingsRoute)
                     },
                 )
             }
         }
-        composable<NetworkSettingsRoute> {
+        screen<NetworkSettingsRoute> {
             SettingsScaffold(
-                navController = navController,
+                navigator = navigator,
                 fallbackDestination = HomeSettingsRoute,
             ) {
                 NetworkSettingsRouteScreen()
             }
         }
-        composable<DownloadSettingsRoute> {
+        screen<DownloadSettingsRoute> {
             SettingsScaffold(
-                navController = navController,
+                navigator = navigator,
                 fallbackDestination = HomeSettingsRoute,
             ) {
                 DownloadSettingsRouteScreen(activity = activity)
             }
         }
-        composable<MpvPlayerSettingsRoute> {
+        screen<MpvPlayerSettingsRoute> {
             SettingsScaffold(
-                navController = navController,
+                navigator = navigator,
                 fallbackDestination = PlayerSettingsRoute,
             ) {
                 MpvPlayerSettingsRouteScreen()
             }
         }
-        composable<HKeyframesRoute> {
+        screen<HKeyframesRoute> {
             var showImportDialog by remember { mutableStateOf(false) }
             SettingsScaffold(
-                navController = navController,
+                navigator = navigator,
                 fallbackDestination = HKeyframeSettingsRoute,
                 actions = {
                     HKeyframesTopBarActions(onImportClick = { showImportDialog = true })
@@ -374,9 +325,9 @@ fun MainNavHost(
                 )
             }
         }
-        composable<SharedHKeyframesRoute> {
+        screen<SharedHKeyframesRoute> {
             SettingsScaffold(
-                navController = navController,
+                navigator = navigator,
                 fallbackDestination = HKeyframeSettingsRoute,
             ) {
                 SharedHKeyframesRouteScreen(
@@ -384,104 +335,157 @@ fun MainNavHost(
                 )
             }
         }
-        composable<HKeyframeSettingsRoute> {
+        screen<HKeyframeSettingsRoute> {
             SettingsScaffold(
-                navController = navController,
+                navigator = navigator,
                 fallbackDestination = HomeSettingsRoute,
             ) {
                 HKeyframeSettingsRouteScreen(
                     onNavigateToHKeyframes = {
-                        navController.navigateSettingsDestination(HKeyframesRoute)
+                        navigator.navigateSettingsDestination(HKeyframesRoute)
                     },
                     onNavigateToSharedHKeyframes = {
-                        navController.navigateSettingsDestination(SharedHKeyframesRoute)
+                        navigator.navigateSettingsDestination(SharedHKeyframesRoute)
                     },
                 )
             }
         }
-        composable<SearchRoute> {
+        screen<SearchRoute> { key ->
             SearchRouteScreen(
-                route = it.toRoute(),
+                route = key,
                 onBack = onBack,
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
-        composable<PreviewRoute> {
+        screen<PreviewRoute> {
             PreviewRouteScreen(
                 activity = activity,
                 onBack = onBack,
                 onNavigateToGetchuPreview = {
-                    navController.navigateSafely(GetchuPreviewRoute)
+                    navigator.navigateSafely(GetchuPreviewRoute)
                 },
                 onNavigateToPreviewComment = { date, dateCode ->
-                    navController.navigateSafely(PreviewCommentRoute(date, dateCode))
+                    navigator.navigateSafely(PreviewCommentRoute(date, dateCode))
                 },
                 onNavigateToVideo = onNavigateToVideo,
             )
         }
-        composable<GetchuPreviewRoute> {
+        screen<GetchuPreviewRoute> {
             GetchuPreviewRouteScreen(
                 onBack = onBack,
-                onNavigateToDetail = { id -> navController.navigateSafely(GetchuPreviewDetailRoute(id)) },
+                onNavigateToDetail = { id -> navigator.navigateSafely(GetchuPreviewDetailRoute(id)) },
             )
         }
-        composable<GetchuPreviewDetailRoute> {
+        screen<GetchuPreviewDetailRoute> { key ->
             GetchuPreviewDetailRouteScreen(
-                route = it.toRoute(),
+                route = key,
                 onBack = onBack,
-                onNavigateToDetail = { id -> navController.navigateSafely(GetchuPreviewDetailRoute(id)) },
-                onNavigateToVideoUrl = { url -> navController.navigateSafely(VideoRoute("-1", url)) },
+                onNavigateToDetail = { id -> navigator.navigateSafely(GetchuPreviewDetailRoute(id)) },
+                onNavigateToVideoUrl = { url -> navigator.navigateSafely(VideoRoute("-1", url)) },
             )
         }
-        composable<PreviewCommentRoute> {
+        screen<PreviewCommentRoute> { key ->
             PreviewCommentRouteScreen(
                 activity = activity,
-                route = it.toRoute(),
+                route = key,
                 onBack = onBack,
             )
         }
-        composable<VideoRoute> {
+        screen<VideoRoute> { key ->
             VideoRouteScreen(
                 activity = activity,
-                route = it.toRoute(),
+                route = key,
             )
         }
     }
+
+    // 清洗系统返回手势 progress（部分 OEM ROM 会下发 NaN，导致 NavDisplay 内部
+    // seekTo 抛 IllegalArgumentException 崩溃），再交给 NavDisplay 使用；
+    // 对返回行为本身完全透明。
+    SanitizedPredictiveBackOwner {
+        NavDisplay(
+            backStack = navigationState.entriesInUse,
+            onBack = { navigator.goBack() },
+            entryDecorators = listOf(
+                rememberSaveableStateHolderNavEntryDecorator<NavKey>(),
+                rememberViewModelStoreNavEntryDecorator<NavKey>(),
+            ),
+            // 新页面进入：从右侧滑入，同时伴随淡入
+            // 旧页面退出：向左轻微偏移（1/3 宽度）并缩小、淡出，营造“压在下面”的感觉
+            transitionSpec = {
+                when {
+                    targetState.topKey().isAutoPlayVideo() ->
+                        EnterTransition.None togetherWith ExitTransition.None
+                    // 双栏设置只切换右侧内容，左栏保持不动。
+                    suppressSettingsPaneTransition(isExpandedWidth) ->
+                        EnterTransition.None togetherWith ExitTransition.None
+                    else -> slideIntoContainer(
+                        towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                        animationSpec = tween(450, easing = FastOutSlowInEasing)
+                    ) + fadeIn(animationSpec = tween(450)) togetherWith
+                        slideOutOfContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                            targetOffset = { it / 3 },
+                            animationSpec = tween(450, easing = FastOutSlowInEasing)
+                        ) + scaleOut(targetScale = 0.9f) + fadeOut(animationSpec = tween(300))
+                }
+            },
+            // 返回（pop/预测返回）：新页面从左侧滑入（1/3 宽度）并放大恢复，
+            // 旧页面向右滑出淡出
+            popTransitionSpec = { mainPopTransform(suppressSettingsPaneTransition(isExpandedWidth)) },
+            predictivePopTransitionSpec = { _ ->
+                mainPopTransform(suppressSettingsPaneTransition(isExpandedWidth))
+            },
+            entryProvider = entryProvider,
+        )
+    }
 }
 
-private fun NavBackStackEntry.isAutoPlayVideo(): Boolean =
-    destination.hasRoute<VideoRoute>() && toRoute<VideoRoute>().autoPlay
+/** Scene 的栈顶 key（SinglePaneScene 下即当前展示的页面路由）。 */
+private fun Scene<*>.topKey(): Any? =
+    entries.lastOrNull()?.metadata?.get(NAV_KEY_METADATA)
 
 /**
- * 返回（pop）时新页面进入动画：从左侧滑入（偏移 1/3 宽度）、由 0.9 放大恢复，
- * 营造“浮上来”的感觉。同时用于 [NavHost] 的 popEnterTransition 与
- * predictivePopEnterTransition，保证程序化返回与手势返回观感一致。
+ * [entry] 的封装：在 metadata 中携带原始 key。
+ * NavEntry.key 在 Navigation 3 中是私有的（对外只暴露 contentKey 字符串），
+ * 转场方向判断（如自动连播、双栏设置切换）需要原始类型化 key，故经由此通道传递。
  */
-private fun AnimatedContentTransitionScope<NavBackStackEntry>.popEnterSpec(
+private inline fun <reified K : NavKey> EntryProviderScope<NavKey>.screen(
+    noinline content: @Composable (K) -> Unit,
+) {
+    entry<K>(metadata = { mapOf(NAV_KEY_METADATA to it) }, content = content)
+}
+
+private const val NAV_KEY_METADATA = "com.yenaly.han1meviewer.NAV_KEY"
+
+private fun Any?.isAutoPlayVideo(): Boolean = (this as? VideoRoute)?.autoPlay == true
+
+private fun Any?.isSettingsKey(): Boolean =
+    SettingsDestinationSpec.fromKey(this) != null || this is SettingsCategoryRoute
+
+private fun AnimatedContentTransitionScope<Scene<NavKey>>.suppressSettingsPaneTransition(
+    isExpandedWidth: Boolean,
+): Boolean =
+    isExpandedWidth && initialState.topKey().isSettingsKey() && targetState.topKey().isSettingsKey()
+
+/**
+ * 返回（pop）转场：新页面从左侧滑入（偏移 1/3 宽度）、由 0.9 放大恢复，
+ * 营造“浮上来”的感觉；旧页面向右滑出并淡出。
+ * pop 与 predictivePop 共用，保证程序化返回与手势返回观感一致。
+ */
+private fun AnimatedContentTransitionScope<Scene<NavKey>>.mainPopTransform(
     suppressed: Boolean,
-): EnterTransition =
+): androidx.compose.animation.ContentTransform =
     if (suppressed) {
-        EnterTransition.None
+        EnterTransition.None togetherWith ExitTransition.None
     } else {
         slideIntoContainer(
             towards = AnimatedContentTransitionScope.SlideDirection.End,
             initialOffset = { it / 3 },
             animationSpec = tween(450, easing = FastOutSlowInEasing)
-        ) + scaleIn(initialScale = 0.9f) + fadeIn(animationSpec = tween(450))
-    }
-
-/**
- * 返回（pop）时旧页面退出动画：向右侧滑出并淡出。
- * 同时用于 [NavHost] 的 popExitTransition 与 predictivePopExitTransition。
- */
-private fun AnimatedContentTransitionScope<NavBackStackEntry>.popExitSpec(
-    suppressed: Boolean,
-): ExitTransition =
-    if (suppressed) {
-        ExitTransition.None
-    } else {
-        slideOutOfContainer(
-            towards = AnimatedContentTransitionScope.SlideDirection.End,
-            animationSpec = tween(450, easing = FastOutSlowInEasing)
-        ) + fadeOut(animationSpec = tween(300))
+        ) + scaleIn(initialScale = 0.9f) + fadeIn(animationSpec = tween(450)) togetherWith
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.End,
+                animationSpec = tween(450, easing = FastOutSlowInEasing)
+            ) + fadeOut(animationSpec = tween(300))
     }
