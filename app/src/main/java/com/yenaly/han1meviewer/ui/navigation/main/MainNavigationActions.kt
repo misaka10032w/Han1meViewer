@@ -1,15 +1,17 @@
 package com.yenaly.han1meviewer.ui.navigation.main
 
 import android.content.Intent
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
-import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+import com.yenaly.han1meviewer.ui.navigation.topLevelKeyFor
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategory
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategoryRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import kotlinx.serialization.json.Json
 
-fun NavHostController.navigateTopLevelDestination(
+/**
+ * 切换顶层 Tab（底部 NavigationSuite）。目标 Tab 的返回栈与状态自动保留。
+ */
+fun Navigator.navigateTopLevelDestination(
     destination: MainTopLevelDestination,
     isLoggedIn: Boolean,
     onRequireLogin: () -> Unit,
@@ -19,57 +21,52 @@ fun NavHostController.navigateTopLevelDestination(
         return false
     }
 
-    navigateSafely(destination.route) {
-        popUpTo(HomeRoute) {
-            saveState = true
-        }
-        launchSingleTop = true
-        restoreState = true
-    }
+    navigate(topLevelKeyFor(destination, state))
     return true
 }
 
 /**
  * 切换设置一级分类。
  *
- * 只保留“设置首页 + 当前分类”，避免平板双栏反复点击分类时不断入栈。
+ * 只保留“设置首页 + 当前分类”，避免平板双栏反复点击分类时不断入栈
+ * （对应 Navigation 2 时代的 `popUpTo(HomeSettingsRoute){inclusive=false}`）。
  */
-fun NavController.navigateSettingsCategoryDestination(category: SettingsCategory) {
-    navigateSafely(SettingsCategoryRoute(category.key)) {
-        popUpTo(HomeSettingsRoute) {
-            inclusive = false
+fun Navigator.navigateSettingsCategoryDestination(category: SettingsCategory) {
+    val stack = state.currentStack
+    val baseIndex = stack.indexOfFirst { it == HomeSettingsRoute }
+    if (baseIndex >= 0) {
+        // 保留设置首页及其以下的条目，替换其上的分类页
+        while (stack.size > baseIndex + 1) {
+            stack.removeAt(stack.size - 1)
         }
-        launchSingleTop = true
+        stack.add(SettingsCategoryRoute(category.key))
+    } else {
+        navigateSafely(SettingsCategoryRoute(category.key))
     }
 }
 
 /**
- * 进入设置二级页面。
- *
- * 使用普通入栈，保证从二级页面返回时回到所属分类，而不是直接回到设置首页。
+ * 进入设置二级页面（普通入栈，保证返回时回到所属分类）。
  */
-fun NavController.navigateSettingsDestination(route: Any) {
-    navigateSafely(route) {
-        launchSingleTop = true
-    }
+fun Navigator.navigateSettingsDestination(route: androidx.navigation3.runtime.NavKey) {
+    navigateSafely(route)
 }
 
-fun NavHostController.handleMainIntent(intent: Intent) {
-    // Intent/深链驱动的导航不走 canNavigateSafely 门槛（force = true）：
-    // 到达时用户必然不在应用内的返回手势中，而冷启动首帧栈顶可能尚未
-    // RESUMED，若受门槛拦截会被静默丢弃。
+fun Navigator.handleMainIntent(intent: Intent) {
+    // Intent/深链驱动的导航不走节流：冷启动首帧可能尚无用户手势，
+    // 且到达时用户必然不在应用内的返回操作中，被节流拦截会被静默丢弃。
     if (intent.action == Intent.ACTION_VIEW) {
         val uri = intent.data ?: return
         when (uri.scheme) {
             "http", "https" -> {
                 val videoCode = uri.getQueryParameter("v")
                 if (videoCode != null) {
-                    navigateSafely(VideoRoute(videoCode), force = true)
+                    navigate(VideoRoute(videoCode))
                 }
             }
 
             "file", "content" -> {
-                navigateSafely(VideoRoute("-1", uri.toString()), force = true)
+                navigate(VideoRoute("-1", uri.toString()))
             }
         }
         return
@@ -77,7 +74,7 @@ fun NavHostController.handleMainIntent(intent: Intent) {
 
     intent.getStringExtra("startSearchFromTag")?.let { tag ->
         intent.removeExtra("startSearchFromTag")
-        navigateSafely(SearchRoute(query = tag), force = true)
+        navigate(SearchRoute(query = tag))
         return
     }
 
@@ -85,13 +82,13 @@ fun NavHostController.handleMainIntent(intent: Intent) {
     val map = intent.getSerializableExtra("startSearchFromMap") as? HashMap<String, String>
     if (map != null) {
         intent.removeExtra("startSearchFromMap")
-        navigateSafely(SearchRoute(advancedSearchJson = Json.encodeToString(map)), force = true)
+        navigate(SearchRoute(advancedSearchJson = Json.encodeToString(map)))
         return
     }
 
     val videoCode = intent.getStringExtra("startVideoCode")
     if (!videoCode.isNullOrEmpty()) {
         intent.removeExtra("startVideoCode")
-        navigateSafely(VideoRoute(videoCode), force = true)
+        navigate(VideoRoute(videoCode))
     }
 }

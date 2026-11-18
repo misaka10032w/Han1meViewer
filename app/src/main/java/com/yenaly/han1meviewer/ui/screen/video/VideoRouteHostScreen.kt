@@ -99,11 +99,7 @@ import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.GlobalDialogs
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.TextInputField
-import com.yenaly.han1meviewer.ui.navigation.main.HomeRoute
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
-import com.yenaly.han1meviewer.ui.navigation.canNavigateSafely
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
-import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import com.yenaly.han1meviewer.ui.player.HanimePlayerController
 import com.yenaly.han1meviewer.ui.player.PlayerState
 import com.yenaly.han1meviewer.ui.player.kernel.KernelType
@@ -560,13 +556,8 @@ fun VideoRouteHostScreen(
         if (isFullscreen) {
             exitFullscreen()
         }
-        val navController = activity.navController
-        val currentId = navController.currentBackStackEntry?.destination?.id
-        navController.navigateSafely(VideoRoute(next.videoCode, autoPlay = true)) {
-            if (currentId != null) {
-                popUpTo(currentId) { inclusive = true }
-            }
-        }
+        // 替换栈顶视频页（对应 Navigation 2 时代的 popUpTo(current){inclusive=true}）
+        activity.navigator.replaceTop(VideoRoute(next.videoCode, autoPlay = true))
     }
 
     LaunchedEffect(controller) {
@@ -681,7 +672,7 @@ fun VideoRouteHostScreen(
             onPendingDownloadPromptChange = { pendingDownloadPrompt = it },
             getCheckedQuality = { checkedQuality },
             setCheckedQuality = { checkedQuality = it },
-            onStoragePermissionDenied = { activity.navController.popBackStackSafely() },
+            onStoragePermissionDenied = { activity.navigator.goBack() },
             onRequestUnsubscribeConfirm = { artist -> unsubscribeArtist = artist },
             onRequestDownloadPermissionSettings = { showDownloadPermissionDialog = true },
         )
@@ -711,17 +702,8 @@ fun VideoRouteHostScreen(
             onGoHome = {
                 // 清空返回栈、让主页回到栈顶。MainActivity 是 singleTask，
                 // 直接 startActivity 只会触发 onNewIntent 而不会清栈，按钮会显得无响应。
-                val navController = activity.navController
-                // 返回手势/转场进行中时直接跳过，避免与库内部的返回事件处理器竞态。
-                if (navController.canNavigateSafely() &&
-                    !navController.popBackStack(HomeRoute, false)
-                ) {
-                    // 返回栈中没有主页（例如外部深链直接进入视频页）时，导航回主页并清栈
-                    navController.navigate(HomeRoute) {
-                        popUpTo(navController.graph.id) { inclusive = true }
-                        launchSingleTop = true
-                    }
-                }
+                // Navigation 3：切到 Home 栈并修剪到栈底；其他 Tab 状态保留。
+                activity.navigator.goHome()
             },
             onToggleFullscreen = {
                 if (fullscreen) exitFullscreen() else enterFullscreen()
@@ -1122,7 +1104,7 @@ fun VideoRouteHostScreen(
             dismissButton = {
                 TextButton(onClick = {
                     showDownloadPermissionDialog = false
-                    activity.navController.popBackStackSafely()
+                    activity.navigator.goBack()
                 }) {
                     Text(activity.getString(R.string.cancel))
                 }
