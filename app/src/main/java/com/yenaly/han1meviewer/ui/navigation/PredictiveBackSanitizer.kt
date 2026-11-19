@@ -4,7 +4,6 @@ import androidx.activity.BackEventCompat
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -12,7 +11,8 @@ import androidx.navigationevent.NavigationEvent
 import androidx.navigationevent.NavigationEventDispatcher
 import androidx.navigationevent.NavigationEventDispatcherOwner
 import androidx.navigationevent.NavigationEventInput
-import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
+import androidx.navigationevent.findViewTreeNavigationEventDispatcherOwner
+import androidx.navigationevent.setViewTreeNavigationEventDispatcherOwner
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.util.findActivityOrNull
 
@@ -21,7 +21,7 @@ import com.yenaly.han1meviewer.util.findActivityOrNull
  *
  * ## 背景
  *
- * Navigation 2.10 起，NavHost 通过 `LocalNavigationEventDispatcherOwner` 获取
+ * Navigation 3 的 NavDisplay 通过 `LocalNavigationEventDispatcherOwner` 获取
  * 事件分发器，把系统返回手势的 progress 直接喂给内部的
  * `SeekableTransitionState.seekTo(progress)`。部分 OEM ROM 的
  * `BackEvent.getProgress()` 会下发 NaN（线上崩溃 be2c60c93bf91a82759adbdccb82807c：
@@ -32,19 +32,30 @@ import com.yenaly.han1meviewer.util.findActivityOrNull
  *
  * ## 方案
  *
- * 在 NavHost 外层用 [CompositionLocalProvider] 替换掉默认的
- * [NavigationEventDispatcherOwner]，给它一个“自带清洗输入源”的独立分发器：
+ * 建立一个"自带清洗输入源"的独立 [NavigationEventDispatcher]，并把它注入到
+ * Activity decorView 的 ViewTree 上：
  *
  * - 桥接器以一个 [OnBackPressedCallback] 的身份挂在 Activity 的
  *   OnBackPressedDispatcher 上（与官方 OnBackInvokedInput 的行为一致：当
- *   NavHost 没有 enabled 的 handler 时自动 disable，把事件还给排在后面的
- *   其他 callback 或系统默认行为，如 finish()）；
+ *   没有 enabled 的 handler 时自动 disable，把事件还给排在后面的其他
+ *   callback 或系统默认行为）；
  * - 手势事件经 [BackEventCompat] 到达后，将 progress 清洗为有限值并夹取到
  *   [0, 1]，再送入独立分发器；
- * - NavHost 从独立分发器拿到的事件永远是安全的。
+ * - NavDisplay 及其他组件通过 ViewTree 解析出清洗后的分发器，拿到的事件
+ *   永远是安全的。
  *
- * 因此该层对返回行为完全透明：手势提交、取消、快速轻扫、程序化
- * onBackPressed() 的语义都与未包装时一致。
+ * ## 为什么用 ViewTree 而不是 CompositionLocalProvider
+ *
+ * `LocalNavigationEventDispatcherOwner` 的解析优先级是「显式 provide >
+ * ViewTree」。M3 的 ModalBottomSheet 等组件自身是独立 Dialog 窗口，
+ * androidx.activity 的 ComponentDialog 会把自己的 dispatcher 挂到
+ * Dialog decorView 的 ViewTree 上，sheet 内的 PredictiveBackHandler
+ * 据此注册到 Dialog 级 dispatcher。若这里用 CompositionLocalProvider
+ * 显式 provide，会遮蔽 Dialog 子树的 ViewTree 值，导致 sheet 的返回
+ * handler 注册到 NavDisplay 的分发器（收不到 Dialog 窗口的返回事件），
+ * 且 M3 Wrapper 的 cancel() 被置空，表现为返回手势/按键完全无响应。
+ * 注入 ViewTree 则天然分层：Dialog 子树命中自己 decorView 上的 owner，
+ * Activity 子树命中清洗层。
  */
 @Composable
 fun SanitizedPredictiveBackOwner(content: @Composable () -> Unit) {
@@ -54,18 +65,36 @@ fun SanitizedPredictiveBackOwner(content: @Composable () -> Unit) {
         content()
         return
     }
-    val bridge = remember(activity) { SanitizingBackBridge(activity) }
-    DisposableEffect(activity, bridge) {
-        onDispose { bridge.dispose() }
+    // 在 remember 计算块内同步挂 ViewTree tag（父级先于 NavDisplay 组合执行，
+    // 保证 NavDisplay 组合期读取 LocalNavigationEventDispatcherOwner 时 tag 已就位）。
+    val bridge = remember(activity) {
+        val decorView = activity.window?.decorView
+        val previousOwner = decorView?.findViewTreeNavigationEventDispatcherOwner()
+        val bridge = SanitizingBackBridge(activity)
+        decorView?.setViewTreeNavigationEventDispatcherOwner(bridge)
+        bridge.restoreViewTreeOwner = {
+            decorView?.setViewTreeNavigationEventDispatcherOwner(previousOwner)
+        }
+        bridge
     }
-    CompositionLocalProvider(LocalNavigationEventDispatcherOwner provides bridge, content = content)
+    DisposableEffect(activity, bridge) {
+        onDispose {
+            bridge.restoreViewTreeOwner?.invoke()
+            bridge.restoreViewTreeOwner = null
+            bridge.dispose()
+        }
+    }
+    content()
 }
 
 private class SanitizingBackBridge(
     activity: ComponentActivity,
 ) : NavigationEventDispatcherOwner {
 
-    /** 提供给 NavHost 使用的独立分发器。 */
+    /** 退出组合时恢复 decorView 上原有的 ViewTree owner（由 [SanitizedPredictiveBackOwner] 注入）。 */
+    var restoreViewTreeOwner: (() -> Unit)? = null
+
+    /** 提供给 NavDisplay 使用的独立分发器。 */
     val dispatcher = NavigationEventDispatcher()
 
     /**

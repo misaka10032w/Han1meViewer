@@ -30,7 +30,9 @@ import com.yenaly.han1meviewer.logic.entity.CheckInRecordEntity
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
+import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.content.LoadingContent
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
@@ -213,6 +215,58 @@ fun RenderVideoCommentContent(
         ),
     )
     val scope = rememberCoroutineScope()
+    val canLoadMoreComments by viewModel.hasMoreCommentsFlow.collectAsStateWithLifecycle()
+
+    // 發評論/回覆成功的反饋與兜底刷新：
+    // 正常路徑下新評論由 ViewModel 本地插入（網站響應自帶渲染 HTML），
+    // 不重新拉取——評論超過一批（100 條）時新評論不一定在第一頁，
+    // 盲目刷新反而看不到自己的評論，還會丟掉已加載的分頁。
+    LaunchedEffect(Unit) {
+        viewModel.postCommentFlow.collect { state ->
+            when (state) {
+                is WebsiteState.Success -> {
+                    GlobalToasts.show(
+                        com.yenaly.han1meviewer.util.application.getString(R.string.comment_post_success),
+                        level = GlobalToasts.ToastLevel.SUCCESS,
+                    )
+                    if (state.info.comment == null) {
+                        viewModel.getComment(VIDEO_COMMENT_PREFIX, viewModel.code)
+                    }
+                }
+
+                is WebsiteState.Error -> GlobalToasts.show(
+                    state.throwable.message
+                        ?: com.yenaly.han1meviewer.util.application.getString(R.string.send_failed),
+                    level = GlobalToasts.ToastLevel.ERROR,
+                )
+
+                WebsiteState.Loading -> Unit
+            }
+        }
+    }
+    LaunchedEffect(Unit) {
+        viewModel.postReplyFlow.collect { state ->
+            when (state) {
+                is WebsiteState.Success -> {
+                    GlobalToasts.show(
+                        com.yenaly.han1meviewer.util.application.getString(R.string.reply_post_success),
+                        level = GlobalToasts.ToastLevel.SUCCESS,
+                    )
+                    if (state.info.comment == null) {
+                        viewModel.getComment(VIDEO_COMMENT_PREFIX, viewModel.code)
+                    }
+                }
+
+                is WebsiteState.Error -> GlobalToasts.show(
+                    state.throwable.message
+                        ?: com.yenaly.han1meviewer.util.application.getString(R.string.send_failed),
+                    level = GlobalToasts.ToastLevel.ERROR,
+                )
+
+                WebsiteState.Loading -> Unit
+            }
+        }
+    }
 
     HanimeTheme {
         // 评论数据请求与角标收集已上提到 VideoRouteContent：
@@ -377,6 +431,8 @@ fun RenderVideoCommentContent(
                     reportMessages.emit(CommentMessage(getMessageText(CommentViewModel.Message(R.string.there_is_a_small_issue))))
                 }
             },
+            canLoadMore = canLoadMoreComments,
+            onLoadMore = { viewModel.loadMoreComments() },
             initialFirstVisibleItemIndex = commentUiState.firstVisibleItemIndex,
             initialFirstVisibleItemScrollOffset = commentUiState.firstVisibleItemScrollOffset,
             onCommentScrollChange = { index, offset ->

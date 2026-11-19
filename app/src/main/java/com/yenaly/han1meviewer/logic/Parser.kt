@@ -20,6 +20,7 @@ import com.yenaly.han1meviewer.logic.model.HomePage
 import com.yenaly.han1meviewer.logic.model.MyListItems
 import com.yenaly.han1meviewer.logic.model.MySubscriptions
 import com.yenaly.han1meviewer.logic.model.Playlists
+import com.yenaly.han1meviewer.logic.model.PostCommentResult
 import com.yenaly.han1meviewer.logic.model.SubscriptionItem
 import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
 import com.yenaly.han1meviewer.logic.model.UserAccount
@@ -618,6 +619,9 @@ object Parser {
             )
         } else null
         val originalComic = parseBody.selectFirst("a.video-comic-btn")?.attr("href")
+        // 2025-11 改版後評論分批加載（每批 100 條），評論總數從影片頁的 tab 計數拿
+        val commentCount = parseBody.selectFirst("#tab-comments-count")
+            ?.text()?.trim()?.toIntOrNull()
 
         return VideoLoadingState.Success(
             HanimeVideo(
@@ -644,7 +648,8 @@ object Parser {
                 isUnlike = unlikeStatus == "1",
                 csrfToken = csrfToken,
                 currentUserId = currentUserId,
-                originalComic = originalComic
+                originalComic = originalComic,
+                commentCount = commentCount
             )
         )
     }
@@ -985,162 +990,246 @@ object Parser {
         val commentList = mutableListOf<VideoComments.VideoComment>()
         val allCommentsClass = parseBody.getElementById("comment-start")
 
-        buildList {
-            allCommentsClass?.children()?.chunked(4)?.forEach { elements ->
-                add(Element("div").apply { appendChildren(elements) })
+        // 2025-11 网站评论区改版：每条评论现在是一个完整的 div.comment-item-block
+        // （带 data-comment-id 属性），不再是旧版「每条评论 4 个兄弟节点」的结构。
+        // 旧逻辑 chunked(4) 会把 4 条评论并成 1 条（49 条只剩 13 条），
+        // 且评论 id 取的是每组第一条的，导致 loadReplies 拉取的是错误评论的回复。
+        val commentBlocks: List<Element> = allCommentsClass
+            ?.getElementsByClass("comment-item-block")
+            ?.takeIf { it.isNotEmpty() }
+            // 兼容旧版架构：每 4 个兄弟节点为一条评论
+            ?: buildList {
+                allCommentsClass?.children()?.chunked(4)?.forEach { elements ->
+                    add(Element("div").apply { appendChildren(elements) })
+                }
             }
-        }.forEach { child: Element ->
-            val avatarUrl = child.selectFirst("img")?.absUrl("src")
-                .throwIfParseNull(Parser::comments.name, "avatarUrl")
-            val textClass = child.getElementsByClass("comment-index-text")
-            val nameAndDateClass = textClass.firstOrNull()
-            val username = nameAndDateClass?.selectFirst("a")?.ownText()?.trim()
-                .throwIfParseNull(Parser::comments.name, "username")
-            val date = nameAndDateClass?.selectFirst("span")?.ownText()?.trim()
-                .throwIfParseNull(Parser::comments.name, "date")
-            val content = textClass.getOrNull(1)?.text()
-                .throwIfParseNull(Parser::comments.name, "content")
-            val hasMoreReplies = child.selectFirst("div[class^=load-replies-btn]") != null
-            val thumbUp = child.getElementById("comment-like-form-wrapper")
-                ?.select("span[style]")?.getOrNull(1)
-                ?.text()?.toIntOrNull()
-            val id = child.selectFirst("div[id^=reply-section-wrapper]")
-                ?.id()?.substringAfterLast("-")
 
-            val foreignId = child.getElementById("foreign_id")?.attr("value")
-            val isPositive = child.getElementById("is_positive")?.attr("value")
-            val likeUserId = child.selectFirst("input[name=comment-like-user-id]")?.attr("value")
-            val commentLikesCount =
-                child.selectFirst("input[name=comment-likes-count]")?.attr("value")
-            val commentLikesSum = child.selectFirst("input[name=comment-likes-sum]")?.attr("value")
-            val likeCommentStatus =
-                child.selectFirst("input[name=like-comment-status]")?.attr("value")
-            val unlikeCommentStatus =
-                child.selectFirst("input[name=unlike-comment-status]")?.attr("value")
-
-            val post = VideoComments.VideoComment.POST(
-                foreignId.logIfParseNull(Parser::comments.name, "foreignId", loginNeeded = true),
-                isPositive == "1",
-                likeUserId.logIfParseNull(Parser::comments.name, "likeUserId", loginNeeded = true),
-                commentLikesCount?.toIntOrNull().logIfParseNull(
-                    Parser::comments.name,
-                    "commentLikesCount", loginNeeded = true
-                ),
-                commentLikesSum?.toIntOrNull().logIfParseNull(
-                    Parser::comments.name,
-                    "commentLikesSum", loginNeeded = true
-                ),
-                likeCommentStatus == "1",
-                unlikeCommentStatus == "1",
-            )
-            val regex = """\d+""".toRegex()
-            val replyCountText = child.select("div.load-replies-btn").text()
-            val replyCount = regex.find(replyCountText)?.value?.toInt()
-            val reportRedirectUrl = ""
-            val reportableId = child.select("span.report-btn").first()?.attr("data-reportable-id")
-            val reportableType = child.select("span.report-btn").first()?.attr("data-reportable-type")
-
-            commentList.add(
-                VideoComments.VideoComment(
-                    avatar = avatarUrl, username = username, date = date,
-                    content = content, hasMoreReplies = hasMoreReplies, replyCount = replyCount,
-                    thumbUp = thumbUp.logIfParseNull(Parser::comments.name, "thumbUp"),
-                    id = id.logIfParseNull(Parser::comments.name, "id"),
-                    isChildComment = false, post = post,
-                    redirectUrl = reportRedirectUrl, reportableId = reportableId, reportableType = reportableType
-                )
-            )
+        commentBlocks.forEach { child: Element ->
+            commentList.add(parseCommentBlock(child, Parser::comments.name))
         }
+        // 2025-11 改版：评论分批加载，首屏响应尾部带 sentinel 分页信息
+        val sentinel = parseBody.getElementById("comment-scroll-sentinel")
+        val hasMoreComments = sentinel?.attr("data-has-more") == "1"
+        val nextCommentOffset = sentinel?.attr("data-next-offset")?.toIntOrNull()
         Log.d("commentList", commentList.toString())
+        Log.d("commentList", "first batch: ${commentList.size}, hasMore=$hasMoreComments, nextOffset=$nextCommentOffset")
         return WebsiteState.Success(
             VideoComments(
                 commentList,
                 currentUserId,
-                csrfToken
+                csrfToken,
+                hasMoreComments,
+                nextCommentOffset,
             )
+        )
+    }
+
+    /**
+     * 2025-11 改版：评论分批加载（每批 100 条）。
+     * 首屏之后的请求为 loadComment?type=&id=&offset=，响应为
+     * {items_html: "<div class=comment-item-block>…</div>…", has_more: bool, next_offset: int}。
+     */
+    fun commentsPage(body: String): WebsiteState<VideoComments> {
+        val jsonObject = JSONObject(body)
+        val itemsHtml = jsonObject.optString("items_html")
+        val hasMore = jsonObject.optBoolean("has_more", false)
+        val nextOffset = jsonObject.optInt("next_offset", -1).takeIf { it >= 0 }
+        val parseBody = Jsoup.parse(itemsHtml).body()
+        val commentList = parseBody.getElementsByClass("comment-item-block")
+            .map { parseCommentBlock(it, Parser::commentsPage.name) }
+            .toMutableList()
+        Log.d("commentList", "page: ${commentList.size}, hasMore=$hasMore, nextOffset=$nextOffset")
+        return WebsiteState.Success(
+            VideoComments(
+                commentList,
+                hasMoreComments = hasMore,
+                nextCommentOffset = nextOffset,
+            )
+        )
+    }
+
+    /**
+     * 解析单个评论块 div.comment-item-block（新旧架构共用）。
+     */
+    private fun parseCommentBlock(child: Element, funcName: String): VideoComments.VideoComment {
+        val avatarUrl = child.selectFirst("img")?.absUrl("src")
+            .throwIfParseNull(funcName, "avatarUrl")
+        val textClass = child.getElementsByClass("comment-index-text")
+        val nameAndDateClass = textClass.firstOrNull()
+        val username = nameAndDateClass?.selectFirst("a")?.ownText()?.trim()
+            .throwIfParseNull(funcName, "username")
+        val date = nameAndDateClass?.selectFirst("span")?.ownText()?.trim()
+            .throwIfParseNull(funcName, "date")
+        val content = textClass.getOrNull(1)?.text()
+            .throwIfParseNull(funcName, "content")
+        val hasMoreReplies = child.selectFirst("div[class^=load-replies-btn]") != null
+        val thumbUp = child.getElementById("comment-like-form-wrapper")
+            ?.select("span[style]")?.getOrNull(1)
+            ?.text()?.toIntOrNull()
+        val id = child.attr("data-comment-id").takeIf { it.isNotBlank() }
+            ?: child.selectFirst("div[id^=reply-section-wrapper]")
+                ?.id()?.substringAfterLast("-")
+
+        val foreignId = child.getElementById("foreign_id")?.attr("value")
+        val isPositive = child.getElementById("is_positive")?.attr("value")
+        val commentLikesCount =
+            child.selectFirst("input[name=comment-likes-count]")?.attr("value")
+        val commentLikesSum = child.selectFirst("input[name=comment-likes-sum]")?.attr("value")
+        val likeCommentStatus =
+            child.selectFirst("input[name=like-comment-status]")?.attr("value")
+        val unlikeCommentStatus =
+            child.selectFirst("input[name=unlike-comment-status]")?.attr("value")
+
+        val post = VideoComments.VideoComment.POST(
+            foreignId.logIfParseNull(funcName, "foreignId", loginNeeded = true),
+            isPositive == "1",
+            commentLikesCount?.toIntOrNull().logIfParseNull(
+                funcName,
+                "commentLikesCount", loginNeeded = true
+            ),
+            commentLikesSum?.toIntOrNull().logIfParseNull(
+                funcName,
+                "commentLikesSum", loginNeeded = true
+            ),
+            likeCommentStatus == "1",
+            unlikeCommentStatus == "1",
+        )
+        val regex = """\d+""".toRegex()
+        val replyCountText = child.select("div.load-replies-btn").text()
+        val replyCount = regex.find(replyCountText)?.value?.toInt()
+        val reportableId = child.select("span.report-btn").first()?.attr("data-reportable-id")
+        val reportableType = child.select("span.report-btn").first()?.attr("data-reportable-type")
+
+        return VideoComments.VideoComment(
+            avatar = avatarUrl, username = username, date = date,
+            content = content, hasMoreReplies = hasMoreReplies, replyCount = replyCount,
+            thumbUp = thumbUp.logIfParseNull(funcName, "thumbUp"),
+            id = id.logIfParseNull(funcName, "id"),
+            isChildComment = false, post = post,
+            redirectUrl = "", reportableId = reportableId, reportableType = reportableType
         )
     }
 
     fun commentReply(body: String): WebsiteState<VideoComments> {
         val jsonObject = JSONObject(body)
         val replyBody = jsonObject.get("replies").toString()
-        val replyList = mutableListOf<VideoComments.VideoComment>()
         val parseBody = Jsoup.parse(replyBody).body()
         val replyStart = parseBody.selectFirst("div[id^=reply-start]")
-        replyStart?.let {
-            val allRepliesClass = it.children()
-            for (i in allRepliesClass.indices step 2) {
-                val basicClass = allRepliesClass.getOrNull(i)
-                val postClass = allRepliesClass.getOrNull(i + 1)
-
-                val avatarUrl = basicClass?.selectFirst("img")?.absUrl("src")
-                    .throwIfParseNull(Parser::commentReply.name, "avatarUrl")
-                val textClass = basicClass?.getElementsByClass("comment-index-text")
-                val nameAndDateClass = textClass?.firstOrNull()
-                val username = nameAndDateClass?.selectFirst("a")?.ownText()?.trim()
-                    .throwIfParseNull(Parser::commentReply.name, "name")
-                val date = nameAndDateClass?.selectFirst("span")?.ownText()?.trim()
-                    .throwIfParseNull(Parser::commentReply.name, "date")
-                val content = textClass?.getOrNull(1)?.text()
-                    .throwIfParseNull(Parser::commentReply.name, "content")
-                val thumbUp = postClass
-                    ?.select("span[style]")?.getOrNull(1)
-                    ?.text()?.toIntOrNull()
-
-                val foreignId =
-                    postClass?.getElementById("foreign_id")?.attr("value")
-                val isPositive =
-                    postClass?.getElementById("is_positive")?.attr("value")
-                val likeUserId =
-                    postClass?.selectFirst("input[name=comment-like-user-id]")?.attr("value")
-                val commentLikesCount =
-                    postClass?.selectFirst("input[name=comment-likes-count]")?.attr("value")
-                val commentLikesSum =
-                    postClass?.selectFirst("input[name=comment-likes-sum]")?.attr("value")
-                val likeCommentStatus =
-                    postClass?.selectFirst("input[name=like-comment-status]")?.attr("value")
-                val unlikeCommentStatus =
-                    postClass?.selectFirst("input[name=unlike-comment-status]")?.attr("value")
-                val post = VideoComments.VideoComment.POST(
-                    foreignId.logIfParseNull(
-                        Parser::commentReply.name,
-                        "foreignId",
-                        loginNeeded = true
-                    ),
-                    isPositive == "1",
-                    likeUserId.logIfParseNull(
-                        Parser::commentReply.name,
-                        "likeUserId",
-                        loginNeeded = true
-                    ),
-                    commentLikesCount?.toIntOrNull().logIfParseNull(
-                        Parser::commentReply.name,
-                        "commentLikesCount", loginNeeded = true
-                    ),
-                    commentLikesSum?.toIntOrNull().logIfParseNull(
-                        Parser::commentReply.name,
-                        "commentLikesSum", loginNeeded = true
-                    ),
-                    likeCommentStatus == "1",
-                    unlikeCommentStatus == "1",
-                )
-                val reportRedirectUrl = ""
-                val reportableId = basicClass?.select("span.report-btn")?.first()?.attr("data-reportable-id")
-                val reportableType = basicClass?.select("span.report-btn")?.first()?.attr("data-reportable-type")
-                replyList.add(
-                    VideoComments.VideoComment(
-                        avatar = avatarUrl, username = username, date = date,
-                        content = content,
-                        thumbUp = thumbUp.logIfParseNull(Parser::commentReply.name, "thumbUp"),
-                        id = null,
-                        isChildComment = true, post = post, reportableId = reportableId,
-                        reportableType = reportableType, redirectUrl = reportRedirectUrl
-                    )
-                )
-            }
+        val replyList = mutableListOf<VideoComments.VideoComment>()
+        val allRepliesClass = replyStart?.children() ?: return WebsiteState.Success(VideoComments(replyList))
+        for (i in allRepliesClass.indices step 2) {
+            val basicClass = allRepliesClass.getOrNull(i)
+            val postClass = allRepliesClass.getOrNull(i + 1)
+            if (basicClass == null || postClass == null) continue
+            replyList.add(parseReplyPair(basicClass, postClass))
         }
 
         return WebsiteState.Success(VideoComments(replyList))
+    }
+
+    /**
+     * 解析一條回覆（「基本信息 + 點讚表單」成對節點），loadReplies 與 replyComment 響應共用。
+     */
+    private fun parseReplyPair(
+        basicClass: Element,
+        postClass: Element,
+    ): VideoComments.VideoComment {
+        val avatarUrl = basicClass.selectFirst("img")?.absUrl("src")
+            .throwIfParseNull(Parser::commentReply.name, "avatarUrl")
+        val textClass = basicClass.getElementsByClass("comment-index-text")
+        val nameAndDateClass = textClass.firstOrNull()
+        val username = nameAndDateClass?.selectFirst("a")?.ownText()?.trim()
+            .throwIfParseNull(Parser::commentReply.name, "name")
+        val date = nameAndDateClass?.selectFirst("span")?.ownText()?.trim()
+            .throwIfParseNull(Parser::commentReply.name, "date")
+        val content = textClass.getOrNull(1)?.text()
+            .throwIfParseNull(Parser::commentReply.name, "content")
+        val thumbUp = postClass
+            .select("span[style]")?.getOrNull(1)
+            ?.text()?.toIntOrNull()
+
+        val foreignId = postClass.getElementById("foreign_id")?.attr("value")
+        val isPositive = postClass.getElementById("is_positive")?.attr("value")
+        val commentLikesCount =
+            postClass.selectFirst("input[name=comment-likes-count]")?.attr("value")
+        val commentLikesSum =
+            postClass.selectFirst("input[name=comment-likes-sum]")?.attr("value")
+        val likeCommentStatus =
+            postClass.selectFirst("input[name=like-comment-status]")?.attr("value")
+        val unlikeCommentStatus =
+            postClass.selectFirst("input[name=unlike-comment-status]")?.attr("value")
+        val post = VideoComments.VideoComment.POST(
+            foreignId.logIfParseNull(
+                Parser::commentReply.name,
+                "foreignId",
+                loginNeeded = true
+            ),
+            isPositive == "1",
+            commentLikesCount?.toIntOrNull().logIfParseNull(
+                Parser::commentReply.name,
+                "commentLikesCount", loginNeeded = true
+            ),
+            commentLikesSum?.toIntOrNull().logIfParseNull(
+                Parser::commentReply.name,
+                "commentLikesSum", loginNeeded = true
+            ),
+            likeCommentStatus == "1",
+            unlikeCommentStatus == "1",
+        )
+        val reportableId = basicClass.select("span.report-btn").first()?.attr("data-reportable-id")
+        val reportableType = basicClass.select("span.report-btn").first()?.attr("data-reportable-type")
+        return VideoComments.VideoComment(
+            avatar = avatarUrl, username = username, date = date,
+            content = content,
+            thumbUp = thumbUp.logIfParseNull(Parser::commentReply.name, "thumbUp"),
+            id = null,
+            isChildComment = true, post = post, reportableId = reportableId,
+            reportableType = reportableType, redirectUrl = ""
+        )
+    }
+
+    /**
+     * 2025-11 改版後 createComment 響應：
+     * {single_video_comment: "<div class=comment-item-block>…</div>", comment_count: N}
+     * 網頁前端將新評論本地插入列表頂部並更新 tab 計數，不重新拉取列表。
+     */
+    fun postCommentResponse(body: String): WebsiteState<PostCommentResult> {
+        return runCatching {
+            val jsonObject = JSONObject(body)
+            val count = jsonObject.optInt("comment_count", -1).takeIf { it >= 0 }
+            val comment = Jsoup.parse(jsonObject.optString("single_video_comment")).body()
+                .selectFirst(".comment-item-block")
+                ?.let { parseCommentBlock(it, "postCommentResponse") }
+            WebsiteState.Success(PostCommentResult(comment = comment, commentCount = count))
+        }.getOrElse {
+            // HTTP 已成功；響應結構變化時不視為發送失敗，comment 為 null 由上層退回刷新
+            Log.e("Parse::postCommentResponse", "parse failed: ${it.message}")
+            WebsiteState.Success(PostCommentResult())
+        }
+    }
+
+    /**
+     * 2025-11 改版後 replyComment 響應：
+     * {comment_id: "父評論id", single_video_comment: "<成對回覆節點>…"}
+     */
+    fun postReplyResponse(body: String): WebsiteState<PostCommentResult> {
+        return runCatching {
+            val jsonObject = JSONObject(body)
+            val parentId = jsonObject.optString("comment_id").takeIf { it.isNotBlank() }
+            val replyBody = Jsoup.parse(jsonObject.optString("single_video_comment")).body()
+            // 新回覆與 loadReplies 相同，是「基本信息 + 點讚表單」成對節點
+            val basicClass = replyBody.children().firstOrNull()
+            val postClass = replyBody.children().getOrNull(1)
+            val reply = if (basicClass != null && postClass != null) {
+                runCatching { parseReplyPair(basicClass, postClass) }.getOrNull()
+            } else {
+                null
+            }
+            WebsiteState.Success(PostCommentResult(comment = reply, parentCommentId = parentId))
+        }.getOrElse {
+            Log.e("Parse::postReplyResponse", "parse failed: ${it.message}")
+            WebsiteState.Success(PostCommentResult())
+        }
     }
 
     fun reportCommentResponse(body: String): WebsiteState<String> {
