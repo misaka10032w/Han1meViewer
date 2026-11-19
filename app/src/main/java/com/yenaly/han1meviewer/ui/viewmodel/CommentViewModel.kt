@@ -9,6 +9,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.base.BaseViewModel
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.model.CommentPlace
+import com.yenaly.han1meviewer.logic.model.PostCommentResult
 import com.yenaly.han1meviewer.logic.model.ReportReason
 import com.yenaly.han1meviewer.logic.model.VideoCommentArgs
 import com.yenaly.han1meviewer.logic.model.VideoComments
@@ -68,6 +69,18 @@ class CommentViewModel(application: Application) : BaseViewModel(application) {
     private var commentRequestJob: Job? = null
 
     /**
+     * 2025-11 改版：评论分批加载（每批 100 条）。
+     * 首屏响应带分页信息，列表滚到底部时用 nextCommentOffset 拉取下一批。
+     */
+    private val _hasMoreComments = MutableStateFlow(false)
+    val hasMoreCommentsFlow = _hasMoreComments.asStateFlow()
+
+    private var nextCommentOffset: Int? = null
+    private var currentCommentType: String? = null
+    private var loadingMoreComments = false
+    private var loadMoreJob: Job? = null
+
+    /**
      * 最近一次請求的評論目標（影片代碼或預覽月份）。
      * 用於避免把上一個月份的預取評論誤用到新的月份。
      */
@@ -78,11 +91,11 @@ class CommentViewModel(application: Application) : BaseViewModel(application) {
     val videoReplyFlow = _videoReplyFlow.asStateFlow()
 
     private val _postCommentFlow =
-        MutableSharedFlow<WebsiteState<Unit>>(replay = 0)
+        MutableSharedFlow<WebsiteState<PostCommentResult>>(replay = 0)
     val postCommentFlow = _postCommentFlow.asSharedFlow()
 
     private val _postReplyFlow =
-        MutableSharedFlow<WebsiteState<Unit>>(replay = 0)
+        MutableSharedFlow<WebsiteState<PostCommentResult>>(replay = 0)
     val postReplyFlow = _postReplyFlow.asSharedFlow()
 
     private val _commentLikeFlow =
@@ -122,15 +135,27 @@ class CommentViewModel(application: Application) : BaseViewModel(application) {
     fun clearCommentData(){
         commentRequestJob?.cancel()
         commentRequestJob = null
+        loadMoreJob?.cancel()
+        loadMoreJob = null
+        _hasMoreComments.value = false
+        nextCommentOffset = null
         _videoCommentFlow.value = emptyList()
     }
     fun getComment(type: String, code: String) {
         lastCommentCode = code
+        currentCommentType = type
+        _hasMoreComments.value = false
+        nextCommentOffset = null
         commentRequestJob?.cancel()
+        loadMoreJob?.cancel()
         commentRequestJob = viewModelScope.launch {
             _videoCommentStateFlow.value = WebsiteState.Loading
             NetworkRepo.getComments(type, code).collect { state ->
                 _videoCommentStateFlow.value = state
+                if (state is WebsiteState.Success) {
+                    _hasMoreComments.value = state.info.hasMoreComments
+                    nextCommentOffset = state.info.nextCommentOffset
+                }
                 _videoCommentFlow.update { prevList ->
                     when (state) {
                         is WebsiteState.Success -> state.info.videoComment
@@ -138,6 +163,36 @@ class CommentViewModel(application: Application) : BaseViewModel(application) {
                         else -> prevList
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * 加载下一批评论（网站每批 100 条）。列表滚动接近底部时调用，
+     * 无更多分页或正在加载时为空操作；与网站一致按 data-comment-id 去重。
+     */
+    fun loadMoreComments() {
+        val type = currentCommentType ?: return
+        val code = lastCommentCode ?: return
+        if (!_hasMoreComments.value || loadingMoreComments) return
+        val offset = nextCommentOffset ?: return
+        loadingMoreComments = true
+        loadMoreJob = viewModelScope.launch {
+            try {
+                NetworkRepo.getComments(type, code, offset).collect { state ->
+                    if (state is WebsiteState.Success && lastCommentCode == code) {
+                        _videoCommentFlow.update { prevList ->
+                            val prevIds = prevList.mapNotNull { it.id }.toSet()
+                            prevList + state.info.videoComment.filter {
+                                it.id == null || it.id !in prevIds
+                            }
+                        }
+                        _hasMoreComments.value = state.info.hasMoreComments
+                        nextCommentOffset = state.info.nextCommentOffset
+                    }
+                }
+            } finally {
+                loadingMoreComments = false
             }
         }
     }
@@ -187,6 +242,20 @@ class CommentViewModel(application: Application) : BaseViewModel(application) {
                 .collect { state ->
                     _postCommentFlow.emit(state)
                     logCommentPostEvent(type = type, isReply = false, state = state)
+                    // 網站響應直接帶新評論，本地插入到列表頂部（與網頁前端一致），
+                    // 不再重新拉取——評論超過一批（100 條）時新評論不一定在第一頁，
+                    // 盲目刷新反而看不到自己的評論，還會丟掉已加載的分頁。
+                    val newComment = (state as? WebsiteState.Success)?.info?.comment
+                    if (newComment != null) {
+                        _videoCommentFlow.update { prev ->
+                            val key = newComment.id
+                            if (key != null && prev.any { it.id == key }) {
+                                prev
+                            } else {
+                                listOf(newComment) + prev
+                            }
+                        }
+                    }
                 }
         }
     }
@@ -200,6 +269,26 @@ class CommentViewModel(application: Application) : BaseViewModel(application) {
                 .collect { state ->
                     _postReplyFlow.emit(state)
                     logCommentPostEvent(type = null, isReply = true, state = state)
+                    val result = (state as? WebsiteState.Success)?.info ?: return@collect
+                    // 新回覆直接插入子評論列表末尾
+                    result.comment?.let { newReply ->
+                        _videoReplyFlow.update { prev -> prev + newReply }
+                    }
+                    // 父評論的「查看 N 則回覆」+1
+                    result.parentCommentId?.let { parentId ->
+                        _videoCommentFlow.update { prev ->
+                            prev.map { comment ->
+                                if (comment.replyTargetIdOrNull == parentId) {
+                                    comment.copy(
+                                        hasMoreReplies = true,
+                                        replyCount = (comment.replyCount ?: 0) + 1,
+                                    )
+                                } else {
+                                    comment
+                                }
+                            }
+                        }
+                    }
                 }
         }
     }
@@ -210,7 +299,7 @@ class CommentViewModel(application: Application) : BaseViewModel(application) {
     private fun logCommentPostEvent(
         type: String?,
         isReply: Boolean,
-        state: WebsiteState<Unit>,
+        state: WebsiteState<PostCommentResult>,
     ) {
         when (state) {
             is WebsiteState.Success -> HAnalytics.logEvent(
@@ -262,7 +351,6 @@ class CommentViewModel(application: Application) : BaseViewModel(application) {
                 commentPlace,
                 comment.post.foreignId,
                 isPositive,
-                comment.post.likeUserId,
                 comment.post.commentLikesCount ?: 0,
                 comment.post.commentLikesSum ?: 0,
                 likeCommentStatus,

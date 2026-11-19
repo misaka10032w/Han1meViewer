@@ -17,6 +17,7 @@ import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.application
+import kotlinx.coroutines.launch
 
 @Composable
 fun VideoRouteContent(
@@ -73,10 +74,35 @@ fun VideoRouteContent(
     // （同码已成功加载过即跳过），评论区不再闪加载。
     LaunchedEffect(commentViewModel.code) {
         commentViewModel.getCommentIfNeeded(VIDEO_COMMENT_PREFIX, commentViewModel.code)
+        // 角标优先取影片页解析出的评论总数（#tab-comments-count）：
+        // 2025-11 改版后评论分批加载（每批 100 条），列表大小只是已加载条数，
+        // 大于 100 时用 size 会错误地显示 100。
+        launch {
+            videoViewModel.hanimeVideoFlow.collect { video ->
+                val total = video?.commentCount
+                if (total != null && total > 0) {
+                    videoViewModel.setCommentBadgeCount(total)
+                }
+            }
+        }
         commentViewModel.videoCommentStateFlow.collect { state ->
             if (state is WebsiteState.Success) {
                 commentViewModel.currentUserId = state.info.currentUserId
-                videoViewModel.setCommentBadgeCount(state.info.videoComment.size)
+                // 影片页总数可用时不覆盖；下载播放等无总数的场景退回列表大小
+                val pageTotal = videoViewModel.hanimeVideoFlow.value?.commentCount
+                if (pageTotal == null || pageTotal <= 0) {
+                    videoViewModel.setCommentBadgeCount(state.info.videoComment.size)
+                }
+            }
+        }
+    }
+
+    // 發表評論成功後，響應帶新的評論總數，直接更新角標
+    LaunchedEffect(commentViewModel.code) {
+        commentViewModel.postCommentFlow.collect { state ->
+            val count = (state as? WebsiteState.Success)?.info?.commentCount
+            if (count != null && count > 0) {
+                videoViewModel.setCommentBadgeCount(count)
             }
         }
     }

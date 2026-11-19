@@ -671,6 +671,8 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="report_month_format">%1$d月</string>
     <string name="report_year_month_format">%1$d年%2$d月</string>
     <string name="comment_too_short">コメントが短すぎます、5文字以上入力</string>
+    <string name="comment_post_success">コメントを送信しました！</string>
+    <string name="reply_post_success">返信を送信しました！</string>
     <string name="sort_by_newest">最新</string>
     <string name="sort_by_oldest">最古</string>
     <string name="sort_by_replies">返信数順</string>

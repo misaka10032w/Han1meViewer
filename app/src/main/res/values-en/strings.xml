@@ -667,6 +667,8 @@ Recommendations are as follows:\n
     <string name="report_month_format">%1$d</string>
     <string name="report_year_month_format">%2$d/%1$d</string>
     <string name="comment_too_short">The comment is too short, please enter at least 5 characters</string>
+    <string name="comment_post_success">Comment posted successfully!</string>
+    <string name="reply_post_success">Reply posted successfully!</string>
     <string name="sort_by_newest">Newest</string>
     <string name="sort_by_oldest">Oldest</string>
     <string name="sort_by_replies">Most replies</string>

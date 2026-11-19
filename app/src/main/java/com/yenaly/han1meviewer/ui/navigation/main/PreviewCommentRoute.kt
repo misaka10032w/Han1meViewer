@@ -35,6 +35,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.screen.home.preview.shiftMonthCode
 import com.yenaly.han1meviewer.ui.screen.home.preview.toNormalDateLabel
 import com.yenaly.han1meviewer.ui.screen.video.ChildCommentScreen
@@ -93,6 +94,7 @@ fun PreviewCommentRouteScreen(
     val hasPrefetchedComments = prefetchedComments.isNotEmpty() &&
             viewModel.lastCommentCode == route.dateCode
     val reportMessages = remember { kotlinx.coroutines.flow.MutableSharedFlow<CommentMessage>() }
+    val canLoadMoreComments by viewModel.hasMoreCommentsFlow.collectAsStateWithLifecycle()
 
     LaunchedEffect(currentDateCode) {
         viewModel.code = currentDateCode
@@ -126,16 +128,47 @@ fun PreviewCommentRouteScreen(
 
     LaunchedEffect(currentDateCode) {
         viewModel.postCommentFlow.collect { state ->
-            if (state is WebsiteState.Success) {
-                viewModel.getComment(PREVIEW_COMMENT_PREFIX, currentDateCode)
+            when (state) {
+                is WebsiteState.Success -> {
+                    GlobalToasts.show(
+                        activity.getString(R.string.comment_post_success),
+                        level = GlobalToasts.ToastLevel.SUCCESS,
+                    )
+                    // 新評論已由 ViewModel 本地插入；僅當響應解析失敗時退回刷新
+                    if (state.info.comment == null) {
+                        viewModel.getComment(PREVIEW_COMMENT_PREFIX, currentDateCode)
+                    }
+                }
+
+                is WebsiteState.Error -> GlobalToasts.show(
+                    state.throwable.message ?: activity.getString(R.string.send_failed),
+                    level = GlobalToasts.ToastLevel.ERROR,
+                )
+
+                WebsiteState.Loading -> Unit
             }
         }
     }
 
     LaunchedEffect(currentDateCode) {
         viewModel.postReplyFlow.collect { state ->
-            if (state is WebsiteState.Success) {
-                viewModel.getComment(PREVIEW_COMMENT_PREFIX, currentDateCode)
+            when (state) {
+                is WebsiteState.Success -> {
+                    GlobalToasts.show(
+                        activity.getString(R.string.reply_post_success),
+                        level = GlobalToasts.ToastLevel.SUCCESS,
+                    )
+                    if (state.info.comment == null) {
+                        viewModel.getComment(PREVIEW_COMMENT_PREFIX, currentDateCode)
+                    }
+                }
+
+                is WebsiteState.Error -> GlobalToasts.show(
+                    state.throwable.message ?: activity.getString(R.string.send_failed),
+                    level = GlobalToasts.ToastLevel.ERROR,
+                )
+
+                WebsiteState.Loading -> Unit
             }
         }
     }
@@ -199,7 +232,8 @@ fun PreviewCommentRouteScreen(
                     viewModel.reportComment(
                         reason.reasonKey ?: reason.value,
                         viewModel.currentUserId,
-                        "${Preferences.baseUrl}watch?v=$currentDateCode",
+                        // 新番預告評論的檢舉應跳回對應月份的預告頁，而非 watch 頁
+                        "${Preferences.baseUrl}previews/$currentDateCode",
                         comment.reportableType,
                         comment.reportableId,
                     )
@@ -285,7 +319,8 @@ fun PreviewCommentRouteScreen(
                     viewModel.reportComment(
                         reason.reasonKey ?: reason.value,
                         viewModel.currentUserId,
-                        "${Preferences.baseUrl}watch?v=$currentDateCode",
+                        // 新番預告評論的檢舉應跳回對應月份的預告頁，而非 watch 頁
+                        "${Preferences.baseUrl}previews/$currentDateCode",
                         comment.reportableType,
                         comment.reportableId,
                     )
@@ -333,6 +368,8 @@ fun PreviewCommentRouteScreen(
                     }
                 },
                 onSortChange = viewModel::setSortType,
+                canLoadMore = canLoadMoreComments,
+                onLoadMore = { viewModel.loadMoreComments() },
                 onComposeComment = { text ->
                     viewModel.currentUserId?.let { id ->
                         viewModel.postComment(id, currentDateCode, PREVIEW_COMMENT_PREFIX, text)

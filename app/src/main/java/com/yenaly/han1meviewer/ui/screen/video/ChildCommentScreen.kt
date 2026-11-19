@@ -35,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.logic.model.PostCommentResult
 import com.yenaly.han1meviewer.logic.model.ReportReason
 import com.yenaly.han1meviewer.logic.model.VideoCommentArgs
 import com.yenaly.han1meviewer.logic.model.VideoComments
@@ -64,7 +65,7 @@ fun ChildCommentScreen(
     commentsFlow: StateFlow<List<VideoComments.VideoComment>>,
     commentStateFlow: StateFlow<WebsiteState<VideoComments>>,
     reportMessageFlow: Flow<CommentMessage>,
-    postReplyStateFlow: Flow<WebsiteState<Unit>>,
+    postReplyStateFlow: Flow<WebsiteState<PostCommentResult>>,
     commentLikeStateFlow: Flow<WebsiteState<VideoCommentArgs>>,
     reportReasons: List<ReportReason>,
     isAlreadyLogin: Boolean,
@@ -90,7 +91,6 @@ fun ChildCommentScreen(
 
     val loginFirstText = stringResource(R.string.login_first)
     val sendFailedText = stringResource(R.string.send_failed)
-    val sendSuccessText = stringResource(R.string.send_success)
     val sendingReplyText = stringResource(R.string.sending_reply)
     val commentTooShortText = stringResource(R.string.comment_too_short)
 
@@ -107,8 +107,8 @@ fun ChildCommentScreen(
             when (replyState) {
                 is WebsiteState.Error -> snackbarHostState.showSnackbar(sendFailedText)
                 WebsiteState.Loading -> snackbarHostState.showSnackbar(sendingReplyText)
+                // 成功提示由外層統一以 GlobalToasts 展示；這裡刷新子評論列表
                 is WebsiteState.Success -> {
-                    snackbarHostState.showSnackbar(sendSuccessText)
                     onRefresh()
                 }
             }
@@ -301,7 +301,7 @@ private fun ChildCommentScreenPreview() {
             commentsFlow = MutableStateFlow(fakeCommentList),
             commentStateFlow = MutableStateFlow(WebsiteState.Success(VideoComments(fakeCommentList.toMutableList()))),
             reportMessageFlow = flowOf(CommentMessage("")),
-            postReplyStateFlow = flowOf(WebsiteState.Success(Unit)),
+            postReplyStateFlow = flowOf(WebsiteState.Success(PostCommentResult())),
             commentLikeStateFlow = flowOf(
                 WebsiteState.Success(
                     VideoCommentArgs(

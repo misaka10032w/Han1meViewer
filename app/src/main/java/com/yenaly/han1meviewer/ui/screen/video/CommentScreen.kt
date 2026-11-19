@@ -72,6 +72,7 @@ import com.yenaly.han1meviewer.util.safeSortedBy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
@@ -94,6 +95,9 @@ fun CommentScreen(
     onViewMoreReplies: (VideoComments.VideoComment) -> Unit,
     onSortChange: (CommentSortType) -> Unit,
     onComposeComment: (String) -> Unit,
+    // 2025-11 改版：评论分批加载（每批 100 条），canLoadMore 为真时滚动到底部自动拉取下一批
+    canLoadMore: Boolean = false,
+    onLoadMore: () -> Unit = {},
     initialFirstVisibleItemIndex: Int = 0,
     initialFirstVisibleItemScrollOffset: Int = 0,
     onCommentScrollChange: (Int, Int) -> Unit = { _, _ -> },
@@ -134,6 +138,24 @@ fun CommentScreen(
         sortComments(comments, sortType)
     }
     val showCommentFab by rememberCommentFabVisibility(listState)
+
+    // 分批加载：滚动接近列表底部时自动拉取下一批评论。
+    // 状态里带上 totalItemsCount：append 新一批后若仍接近底部（比如快速 fling 到底
+    // 或列表本就滚不动），nearEnd 恒为 true 时布尔快照不会再次发射，
+    // 需要靠条目数变化再次触发（对齐网站 JS append 后的续拉检查）。
+    LaunchedEffect(canLoadMore, listState) {
+        if (!canLoadMore) return@LaunchedEffect
+        snapshotFlow {
+            val info = listState.layoutInfo
+            NearEndState(
+                nearEnd = info.totalItemsCount > 0 &&
+                        (info.visibleItemsInfo.lastOrNull()?.index ?: -1) >= info.totalItemsCount - 4,
+                totalItemsCount = info.totalItemsCount,
+            )
+        }.distinctUntilChanged().collect { state ->
+            if (state.nearEnd) onLoadMore()
+        }
+    }
 
     LaunchedEffect(listState) {
         snapshotFlow {
@@ -513,3 +535,12 @@ private fun CommentScreenEmptyPreview() {
         onComposeComment = {},
     )
 }
+
+/**
+ * 分批加载触发状态：nearEnd 表示视口接近列表底部；
+ * totalItemsCount 参与相等判断，append 新一批后仍处于底部时能再次触发加载。
+ */
+private data class NearEndState(
+    val nearEnd: Boolean,
+    val totalItemsCount: Int,
+)

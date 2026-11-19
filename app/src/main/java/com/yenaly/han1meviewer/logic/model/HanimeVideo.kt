@@ -41,6 +41,12 @@ data class HanimeVideo(
     @Transient val csrfToken: String? = null,
     @Transient val currentUserId: String? = null,
     @Transient val originalComic: String? = null,
+    /**
+     * 影片頁上的評論總數（#tab-comments-count）。
+     * 2025-11 改版後評論分批加載（每批 100 條），評論 tab 角標須用此總數，
+     * 不能用已加載的評論列表大小。
+     */
+    @Transient val commentCount: Int? = null,
 ) {
 
     val ratingCount: Int?

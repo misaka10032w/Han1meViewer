@@ -435,10 +435,10 @@ object NetworkRepo {
 
     //<editor-fold desc="Comment">
 
-    fun getComments(type: String, code: String) = websiteIOFlow(
-        source = "comments",
-        request = { HanimeNetwork.commentService.getComments(type, code) },
-        action = Parser::comments
+    fun getComments(type: String, code: String, offset: Int? = null) = websiteIOFlow(
+        source = if (offset == null) "comments" else "comments_page",
+        request = { HanimeNetwork.commentService.getComments(type, code, offset) },
+        action = if (offset == null) Parser::comments else Parser::commentsPage
     )
 
     fun getCommentReply(commentId: String) = websiteIOFlow(
@@ -463,7 +463,8 @@ object NetworkRepo {
         }
     ) {
         Log.d("post_comment_body", it)
-        return@websiteIOFlow WebsiteState.Success(Unit)
+        // 響應帶新評論渲染 HTML 與新總數，本地插入而不再盲目刷新
+        Parser.postCommentResponse(it)
     }
 
     fun postCommentReply(
@@ -479,7 +480,7 @@ object NetworkRepo {
         }
     ) {
         Log.d("post_comment_reply_body", it)
-        return@websiteIOFlow WebsiteState.Success(Unit)
+        Parser.postReplyResponse(it)
     }
 
     fun likeComment(
@@ -487,7 +488,6 @@ object NetworkRepo {
         commentPlace: CommentPlace,
         foreignId: String?,
         isPositive: Boolean, // 你選擇的是讚還是踩，1是讚，0是踩
-        likeUserId: String?,
         commentLikesCount: Int,
         commentLikesSum: Int,
         likeCommentStatus: Boolean, // 你之前有沒有點過讚，1是0否
@@ -499,7 +499,7 @@ object NetworkRepo {
             HanimeNetwork.commentService.likeComment(
                 csrfToken, commentPlace.value, foreignId,
                 if (isPositive) 1 else 0,
-                likeUserId, commentLikesCount, commentLikesSum,
+                commentLikesCount, commentLikesSum,
                 if (likeCommentStatus) 1 else 0,
                 if (unlikeCommentStatus) 1 else 0
             )

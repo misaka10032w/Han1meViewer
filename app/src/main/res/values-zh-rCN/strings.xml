@@ -672,6 +672,8 @@
     <string name="report_month_format">%1$d月</string>
     <string name="report_year_month_format">%1$d年%2$d月</string>
     <string name="comment_too_short">评论内容太短，请至少输入5个字符</string>
+    <string name="comment_post_success">评论发送成功！</string>
+    <string name="reply_post_success">回复发送成功！</string>
     <string name="sort_by_newest">最新</string>
     <string name="sort_by_oldest">最早</string>
     <string name="sort_by_replies">回复最多</string>
