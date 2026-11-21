@@ -86,7 +86,7 @@ import com.yenaly.han1meviewer.logic.model.HanimeInfo.Companion.NORMAL
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.ui.component.PaginationPager
-import com.yenaly.han1meviewer.ui.component.SittingCatAnimation
+import com.yenaly.han1meviewer.ui.component.animation.SittingCatLoadingAnimation
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
@@ -733,7 +733,7 @@ fun SearchStateIndicator(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.padding(horizontal = 32.dp)
             ) {
-                SittingCatAnimation(modifier = Modifier.size(70.dp))
+                SittingCatLoadingAnimation(modifier = Modifier.size(70.dp))
                 Text(
                     text = loadingHint,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.yenaly.han1meviewer.ui.component.SittingCatAnimation
+import com.yenaly.han1meviewer.ui.component.animation.SittingCatLoadingAnimation
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
 /**
@@ -37,7 +37,7 @@ fun LoadingContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        SittingCatAnimation(modifier = Modifier.size(70.dp))
+        SittingCatLoadingAnimation(modifier = Modifier.size(70.dp))
         Text(
             text = message,
             style = MaterialTheme.typography.bodyMedium,
