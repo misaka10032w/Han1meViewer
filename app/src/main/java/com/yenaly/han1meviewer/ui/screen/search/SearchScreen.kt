@@ -47,7 +47,6 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -87,6 +86,7 @@ import com.yenaly.han1meviewer.logic.model.HanimeInfo.Companion.NORMAL
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.ui.component.PaginationPager
+import com.yenaly.han1meviewer.ui.component.animation.SittingCatLoadingAnimation
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
@@ -733,7 +733,7 @@ fun SearchStateIndicator(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.padding(horizontal = 32.dp)
             ) {
-                LoadingIndicator()
+                SittingCatLoadingAnimation(modifier = Modifier.size(70.dp))
                 Text(
                     text = loadingHint,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

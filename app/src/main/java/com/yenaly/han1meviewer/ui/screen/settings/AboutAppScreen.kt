@@ -71,6 +71,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.SettingInfoItem
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
+import com.yenaly.han1meviewer.ui.component.SettingsGroupTitle
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.util.browse
 import kotlinx.coroutines.delay
@@ -122,7 +123,7 @@ fun AboutAppScreen() {
             )
         }
 
-        item { AboutGroupTitle(stringResource(R.string.about_app_info)) }
+        item { SettingsGroupTitle(stringResource(R.string.about_app_info)) }
         item {
             SettingInfoItem(
                 title = stringResource(R.string.about_build_type),
@@ -170,7 +171,7 @@ fun AboutAppScreen() {
             )
         }
 
-        item { AboutGroupTitle(stringResource(R.string.about_project_support)) }
+        item { SettingsGroupTitle(stringResource(R.string.about_project_support)) }
         item {
             SettingNavigationItem(
                 title = stringResource(R.string.about_github_repo),
@@ -197,7 +198,7 @@ fun AboutAppScreen() {
         }
 
         item(key = "about_disclaimer_title") {
-            AboutGroupTitle(stringResource(R.string.about_disclaimer_title))
+            SettingsGroupTitle(stringResource(R.string.about_disclaimer_title))
         }
 
         item(key = "about_disclaimer_group") {
@@ -564,19 +565,4 @@ private fun AboutHeaderCard(onClick: () -> Unit) {
             }
         }
     }
-}
-
-@Composable
-private fun AboutGroupTitle(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(
-            start = 8.dp,
-            end = 8.dp,
-            top = 16.dp,
-            bottom = 4.dp,
-        ),
-    )
 }

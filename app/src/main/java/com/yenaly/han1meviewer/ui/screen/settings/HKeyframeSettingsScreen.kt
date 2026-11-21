@@ -2,10 +2,7 @@ package com.yenaly.han1meviewer.ui.screen.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -13,6 +10,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SettingSliderItem
 import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
+import com.yenaly.han1meviewer.ui.component.SettingsGroupTitle
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
@@ -52,7 +50,7 @@ fun HKeyframeSettingsScreen(
         }
 
         if (state.hKeyframesEnable) {
-            item { HKeyframeGroupTitle(stringResource(R.string.manage)) }
+            item { SettingsGroupTitle(stringResource(R.string.manage)) }
             item {
                 SettingNavigationItem(
                     title = stringResource(R.string.h_keyframe_manage),
@@ -61,7 +59,7 @@ fun HKeyframeSettingsScreen(
                 )
             }
 
-            item { HKeyframeGroupTitle(stringResource(R.string.shared)) }
+            item { SettingsGroupTitle(stringResource(R.string.shared)) }
             item {
                 SettingSwitchItem(
                     title = stringResource(R.string.shared_h_keyframes_enable),
@@ -92,7 +90,7 @@ fun HKeyframeSettingsScreen(
                 }
             }
 
-            item { HKeyframeGroupTitle(stringResource(R.string.custom)) }
+            item { SettingsGroupTitle(stringResource(R.string.custom)) }
             item {
                 SettingSwitchItem(
                     title = stringResource(R.string.show_prompt_when_countdown),
@@ -113,16 +111,6 @@ fun HKeyframeSettingsScreen(
             }
         }
     }
-}
-
-@Composable
-private fun HKeyframeGroupTitle(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleMedium,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier,
-    )
 }
 
 @Preview(showBackground = true)

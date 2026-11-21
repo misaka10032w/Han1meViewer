@@ -28,7 +28,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -59,6 +58,7 @@ import com.yenaly.han1meviewer.logic.entity.HanimeAdvancedSearchHistoryEntity
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.logic.model.SearchOption.Companion.flatten
 import com.yenaly.han1meviewer.logic.model.SearchOption.Companion.get
+import com.yenaly.han1meviewer.ui.component.PawSwitch
 import com.yenaly.han1meviewer.ui.component.SelectableTag
 import com.yenaly.han1meviewer.ui.component.SettingChoiceItem
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
@@ -418,7 +418,7 @@ private fun AdvancedSearchMultiChoiceDialog(
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
-                    Switch(
+                    PawSwitch(
                         checked = broad,
                         onCheckedChange = { broad = it },
                     )

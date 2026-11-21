@@ -19,7 +19,6 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -39,6 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.PawSwitch
 import com.yenaly.han1meviewer.ui.component.verticalScrollbar
 import com.yenaly.han1meviewer.ui.screen.settings.model.HomeSettingsUiState
 import kotlinx.coroutines.launch
@@ -223,7 +223,7 @@ internal fun HomeCategoryLayoutDialog(
                             },
                         )
 
-                        Switch(
+                        PawSwitch(
                             modifier = Modifier.padding(end = 10.dp),
                             checked = key !in hiddenKeys,
                             onCheckedChange = { checked ->

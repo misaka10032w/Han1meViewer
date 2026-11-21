@@ -1,14 +1,8 @@
 package com.yenaly.han1meviewer.ui.screen.settings
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +18,7 @@ import com.yenaly.han1meviewer.ui.component.ChoiceDialog
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SettingSliderItem
 import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
+import com.yenaly.han1meviewer.ui.component.SettingsGroupTitle
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategory
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.HomeCategoryLayoutDialog
@@ -329,6 +324,13 @@ fun HomeSettingsScreen(
                     )
                 }
                 item {
+                    SettingNavigationItem(
+                        title = stringResource(R.string.player_settings),
+                        iconRes = R.drawable.ic_baseline_play_circle_outline_24,
+                        onClick = onOpenPlayerSettings,
+                    )
+                }
+                item {
                     SettingSwitchItem(
                         title = stringResource(R.string.allow_pip_title),
                         summary = stringResource(R.string.allow_pip_disc),
@@ -394,13 +396,6 @@ fun HomeSettingsScreen(
                         checked = state.disableComments,
                         iconRes = R.drawable.ic_comments,
                         onCheckedChange = onDisableCommentsChange,
-                    )
-                }
-                item {
-                    SettingNavigationItem(
-                        title = stringResource(R.string.player_settings),
-                        iconRes = R.drawable.ic_baseline_play_circle_outline_24,
-                        onClick = onOpenPlayerSettings,
                     )
                 }
             }
@@ -537,15 +532,3 @@ fun HomeSettingsScreen(
     }
 }
 
-@Composable
-private fun SettingsGroupTitle(title: String) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-        )
-        HorizontalDivider()
-    }
-}
