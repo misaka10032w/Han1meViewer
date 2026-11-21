@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -376,6 +377,20 @@ fun SettingChoiceItem(
     }
 }
 
+@Composable
+fun SettingsGroupTitle(title: String) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        )
+        HorizontalDivider()
+    }
+}
+
+
 @Preview(showBackground = true)
 @Composable
 private fun SettingSwitchItemPreview() {
@@ -436,6 +451,16 @@ private fun SettingChoiceItemPreview() {
             title = "跟随系统",
             selected = true,
             onClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SettingsGroupTitlePreview() {
+    ComponentPreview {
+        SettingsGroupTitle(
+            title = "系统"
         )
     }
 }

@@ -14,7 +14,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -38,6 +37,7 @@ import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.ui.component.ChoiceDialog
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
+import com.yenaly.han1meviewer.ui.component.SettingsGroupTitle
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
@@ -244,7 +244,7 @@ fun NetworkSettingsScreen(
             )
         }
 
-        item { NetworkGroupTitle(stringResource(R.string.builtin_dns)) }
+        item { SettingsGroupTitle(stringResource(R.string.builtin_dns)) }
 
         item {
             SettingSwitchItem(
@@ -274,7 +274,7 @@ fun NetworkSettingsScreen(
             )
         }
 
-        item { NetworkGroupTitle(stringResource(R.string.debug)) }
+        item { SettingsGroupTitle(stringResource(R.string.debug)) }
 
         item {
             SettingNavigationItem(
@@ -782,19 +782,6 @@ private fun CustomMirrorPathModeOption(
     }
 }
 
-@Composable
-private fun NetworkGroupTitle(title: String) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-        )
-        HorizontalDivider()
-    }
-}
-
 @Preview(showBackground = true, widthDp = 420, heightDp = 900)
 @Composable
 private fun NetworkSettingsScreenPreview() {
@@ -837,7 +824,7 @@ private fun NetworkSettingsScreenPreview() {
             proxyIp = "",
             proxyPort = -1,
             dohEnabled = false,
-            dohPreset = "cloudflare",
+            dohPreset = "Cloudflare",
             dohCustomUrl = "",
             dohBootstrapIps = "1.1.1.1, 8.8.8.8",
             dohTimeoutSeconds = 10,
