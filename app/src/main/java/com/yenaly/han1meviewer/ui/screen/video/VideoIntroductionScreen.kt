@@ -98,6 +98,7 @@ import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
 import com.yenaly.han1meviewer.ui.component.ExpandableRichText
+import com.yenaly.han1meviewer.ui.component.PawSwitch
 import com.yenaly.han1meviewer.ui.component.TagChipGroup
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
@@ -690,7 +691,7 @@ private fun DownloadConfirmDialog(
                                 )
                             }
                         }
-                        Switch(
+                        PawSwitch(
                             checked = autoGroup,
                             onCheckedChange = { checked ->
                                 autoGroup = checked
@@ -1070,7 +1071,7 @@ private fun PlaylistBottomSheet(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Switch(
+                    PawSwitch(
                         checked = autoPlayNext,
                         onCheckedChange = { checked ->
                             autoPlayNext = checked

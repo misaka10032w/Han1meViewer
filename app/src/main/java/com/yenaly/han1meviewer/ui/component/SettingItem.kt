@@ -1,5 +1,9 @@
 package com.yenaly.han1meviewer.ui.component
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -7,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CheckCircle
@@ -14,18 +19,76 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import kotlin.math.roundToInt
+
+/**
+ * 带猫爪图标的 M3 开关。
+ *
+ * 切换时猫爪会「撞墙摇晃」：先顺着拇指滑动的方向快速倾倒、撞上轨道边缘，
+ * 再高弹性地来回晃几下回正。
+ */
+@Composable
+fun PawSwitch(
+    checked: Boolean,
+    onCheckedChange: ((Boolean) -> Unit)?,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    val pawRotation = remember { Animatable(0f) }
+    // 首次组合时不播动画，只在用户切换时摇晃。
+    var settled by remember { mutableStateOf(false) }
+    LaunchedEffect(checked) {
+        if (!settled) {
+            settled = true
+            return@LaunchedEffect
+        }
+        // 开启时拇指向右滑（撞右墙、顺时针倾倒），关闭时相反。
+        val wall = if (checked) 50f else -50f
+        // 第一段：快速冲向墙。
+        pawRotation.animateTo(wall, tween(durationMillis = 70))
+        // 第二段：低阻尼弹性摇晃着回正。
+        pawRotation.animateTo(
+            targetValue = 0f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioHighBouncy,
+                stiffness = Spring.StiffnessMedium,
+            ),
+        )
+    }
+    Switch(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        modifier = modifier,
+        enabled = enabled,
+        thumbContent = {
+            Icon(
+                painter = painterResource(R.drawable.ic_baseline_paw_24),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(SwitchDefaults.IconSize)
+                    .graphicsLayer { rotationZ = pawRotation.value },
+            )
+        },
+    )
+}
 
 @Composable
 fun SettingSwitchItem(
@@ -68,10 +131,10 @@ fun SettingSwitchItem(
                 )
             }
         }
-        Switch(
+        PawSwitch(
             checked = checked,
             onCheckedChange = onCheckedChange,
-            enabled = enabled
+            enabled = enabled,
         )
     }
 }
@@ -174,6 +237,26 @@ fun SettingInfoItem(
     }
 }
 
+/**
+ * 猫头滑块拇指
+ */
+@Composable
+private fun CatHeadSliderThumb(modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier.size(30.dp),
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.primary,
+        shadowElevation = 4.dp,
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_baseline_cat_head_24),
+            contentDescription = null,
+            modifier = Modifier.padding(2.dp),
+        )
+    }
+}
+
 @Composable
 fun SettingSliderItem(
     title: String,
@@ -240,6 +323,7 @@ fun SettingSliderItem(
                 sliderState.value = it
                 onValueChange(it.roundToInt())
             },
+            thumb = { CatHeadSliderThumb() },
         )
     }
 }
