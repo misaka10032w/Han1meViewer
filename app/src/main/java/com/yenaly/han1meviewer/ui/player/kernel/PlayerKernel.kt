@@ -37,6 +37,7 @@ enum class KernelType {
  * @param looping 是否单视频循环。
  * @param startPositionMs 起播位置，内核准备完成后 seek 到该位置。
  * @param speed 起播倍速。
+ * @param startPaused true 表示加载完成后保持暂停（预加载：只预缓冲并回报时长）
  */
 data class MediaRequest(
     val url: String,
@@ -45,6 +46,7 @@ data class MediaRequest(
     val looping: Boolean = false,
     val startPositionMs: Long = 0L,
     val speed: Float = 1.0f,
+    val startPaused: Boolean = false,
 )
 
 /**

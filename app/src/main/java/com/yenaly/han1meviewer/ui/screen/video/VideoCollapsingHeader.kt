@@ -93,14 +93,6 @@ fun VideoCollapsingHeader(
     // 拖拽中每帧都会重组本组件；Animatable 只在 layout 阶段被读取。
     val lockAnimatable = remember { Animatable(if (initialCollapsed) 1f else 0f) }
     val currentScrollEnabled by rememberUpdatedState(scrollEnabled)
-    LaunchedEffect(scrollEnabled) {
-        if (!scrollEnabled && collapsedRatio > 0f) {
-            lockAnimatable.snapTo(collapsedRatio)
-            lockAnimatable.animateTo(0f, animationSpec = tween(durationMillis = 220))
-            // 锁定动画完成后同步用户态，解锁（暂停后）时从 0 开始
-            collapsedRatio = 0f
-        }
-    }
 
     /** 实际生效的折叠比例：仅 layout/draw 阶段读取，不参与组合。 */
     val effectiveRatio = remember {
@@ -110,6 +102,22 @@ fun VideoCollapsingHeader(
             } else {
                 lockAnimatable.value.coerceIn(0f, 1f)
             }
+        }
+    }
+
+    LaunchedEffect(scrollEnabled) {
+        if (!scrollEnabled) {
+            // 锁定（播放中）：平滑展开到 0
+            if (lockAnimatable.value > 0f) {
+                lockAnimatable.animateTo(0f, animationSpec = tween(durationMillis = 220))
+            }
+            // 完成后同步手势态，解锁（暂停）后从 0 开始
+            collapsedRatio = 0f
+        } else {
+            // 解锁期间 lockAnimatable 持续跟随手势比例：锁定瞬间数据源从
+            // collapsedRatio 切到 lockAnimatable 时数值无缝衔接（否则会以
+            // 滞留初值渲染，出现"先缩到最小再展开"甚至卡死）
+            snapshotFlow { collapsedRatio }.collect { lockAnimatable.snapTo(it) }
         }
     }
 

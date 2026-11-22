@@ -16,6 +16,9 @@ import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.util.AnimeShaders
 import com.yenaly.han1meviewer.util.AnimeShaders.getCert
 import `is`.xyz.mpv.MPVLib
+import java.util.Collections
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * 基于 libmpv 的播放内核。
@@ -39,7 +42,57 @@ class MpvKernel(
 
         /** END_FILE 位置启发式的容差（秒）：距结尾不足该值视为自然播完。 */
         private const val END_OF_FILE_TOLERANCE_SEC = 2.0
+
+        /**
+         * 进程级 [MPVLib] 的当前持有代次：MPVLib 是静态单例，多页内核共存时
+         * 只有最新持有者的 [release] 才允许执行全局破坏命令（`vo=null` 等），
+         * 否则会毒化正在使用的页面（画面死掉、只剩声音）。
+         */
+        private val mpvGeneration = AtomicLong(0)
+
+        /** 尚未 release 的内核实例；新内核 claim 时通知旧内核"退位"。 */
+        private val liveKernels = Collections.synchronizedList(arrayListOf<MpvKernel>())
+
+        /** mpv 控制线程：同步属性写在核心繁忙时会阻塞（足以 ANR），统一串行移出主线程。 */
+        private val mpvControlThread = Executors.newSingleThreadExecutor { r ->
+            Thread(r, "mpv-control").apply { priority = Thread.NORM_PRIORITY + 1 }
+        }
     }
+
+    init {
+        liveKernels.add(this)
+    }
+
+    /** 本内核持有全局 mpv 的代次；0 表示从未使用过（release 跳过全局命令）。 */
+    private var myGeneration = 0L
+
+    /** 本内核是否已真正下发过 loadfile（占用全局播放器）。 */
+    private var hasIssuedLoad = false
+
+    /** 是否已被更新代次的内核取代（取代后不再接收全局事件）。 */
+    private var superseded = false
+
+    /** 声明本内核接管全局 mpv（prepare 时调用；仅挂 surface 不算占用）。 */
+    private fun claimMpvOwnership() {
+        myGeneration = mpvGeneration.incrementAndGet()
+        // 退位通知：更早的内核摘掉 observer，避免把新内核的事件误当自己的
+        synchronized(liveKernels) {
+            for (k in liveKernels) {
+                if (k !== this && k.myGeneration < myGeneration) k.onSuperseded()
+            }
+        }
+    }
+
+    /** 被更新内核取代：停止接收全局事件（幂等）。 */
+    private fun onSuperseded() {
+        if (superseded) return
+        superseded = true
+        MPVLib.removeObserver(mpvEventObserver)
+    }
+
+    /** 释放时是否该执行全局破坏命令：最新持有者且确实下发过 loadfile。 */
+    private val shouldTearDownGlobalMpv: Boolean
+        get() = hasIssuedLoad && myGeneration > 0 && myGeneration == mpvGeneration.get()
 
     override val type = KernelType.MpvPlayer
 
@@ -69,9 +122,13 @@ class MpvKernel(
     @Volatile
     private var mpvDuration = 0.0
 
-    /** 用户暂停属性（区别于缓存暂停），卡顿看门狗用。 */
+    /**
+     * 内核 pause 属性最新值（事件线程写，主线程读）。语义是「核心处于暂停」
+     * （用户暂停、预加载暂停加载都算）。事件分类用它而非同步 getProperty——
+     * 同步读在 vo 重配风暴时会阻塞主线程到 ANR。
+     */
     @Volatile
-    private var pausedByUser = false
+    private var corePaused = false
 
     // ---------------- 卡顿看门狗 ----------------
     //
@@ -111,8 +168,8 @@ class MpvKernel(
             if (!fileActive) return
             val now = android.os.SystemClock.elapsedRealtime()
             when {
-                pausedByUser -> {
-                    // 用户暂停下 time-pos 本就不动，不视为卡顿
+                corePaused -> {
+                    // 暂停下 time-pos 本就不动，不视为卡顿
                     stallReported = false
                     stallCheckpointAtMs = now
                     stallCheckpointPos = mpvTimePos
@@ -392,6 +449,7 @@ class MpvKernel(
     }
 
     override fun prepare(request: MediaRequest) {
+        claimMpvOwnership()
         init()
         if (request.url.isEmpty()) {
             Log.e(TAG, "视频链接为空")
@@ -414,24 +472,28 @@ class MpvKernel(
     }
 
     private fun loadFile(path: String, request: MediaRequest) {
-        // 对齐 ExoPlayer 内核的 prepare 契约：加载即起播。
-        // 上一次 release() 会把 pause 属性置 true，而 mpv 的属性跨 loadfile
-        // 保留——新文件会以暂停态加载完成（画面冻结、进度不走，「暂停再播放」
-        // 翻转两次 pause 才真正起播），因此这里必须显式恢复非暂停，
-        // 并应用起播位置与倍速。
-        MPVLib.setPropertyBoolean("pause", false)
+        hasIssuedLoad = true
+        // pause 属性跨 loadfile 保留：正常起播须显式恢复，预加载（startPaused）保持暂停
+        MPVLib.setPropertyBoolean("pause", request.startPaused)
+        // --start 每次加载都生效、跨 loadfile 残留：无起播位置必须显式清除，
+        // 否则新视频会被 seek 到上一个视频的位置（超时长则无法播放）
         if (request.startPositionMs > 0) {
-            // mpv 的 start 选项只作用于下一次文件加载
             MPVLib.setOptionString("start", (request.startPositionMs / 1000.0).toString())
+        } else {
+            MPVLib.setOptionString("start", "none")
         }
         MPVLib.setPropertyDouble("speed", request.speed.toDouble())
         schedulePrepareTimeout()
         MPVLib.command(arrayOf("loadfile", path))
-        if (request.looping) setLooping(true)
+        // loop-file 同样跨 loadfile 残留，随每次加载重置
+        setLooping(request.looping)
     }
 
     override fun start() {
         MPVLib.setPropertyBoolean("pause", false)
+        // 已加载文件解除暂停不发 PLAYBACK_RESTART，须主动上报 onPlaying，
+        // 否则 UI 停在 BUFFERING 转圈（控制器侧幂等）
+        if (fileActive) listener?.onPlaying()
     }
 
     override fun pause() {
@@ -470,7 +532,10 @@ class MpvKernel(
 
     override fun onSurfaceSizeChanged(width: Int, height: Int) {
         Log.d(TAG, "onSurfaceSizeChanged ${width}x$height")
-        MPVLib.setPropertyString("android-surface-size", "${width}x$height")
+        // vo 渲染提示，允许延迟；同步写在核心繁忙时会阻塞到 ANR，移出主线程
+        mpvControlThread.execute {
+            MPVLib.setPropertyString("android-surface-size", "${width}x$height")
+        }
     }
 
     override val isPlaying: Boolean
@@ -479,11 +544,13 @@ class MpvKernel(
         // 暂停中的视频切倍速后意外开播；误报 false 仅多一次无害的 pause()。
         get() = MPVLib.getPropertyBoolean("pause") == false
 
+    // 位置与时长走观察者缓存（事件线程直写）：进度 ticker 每 100ms 在主线程读，
+    // 同步 JNI 属性读取在 vo 重配风暴时会阻塞核心导致 ANR
     override val currentPositionMs: Long
-        get() = ((MPVLib.getPropertyDouble("time-pos") ?: 0.0).toLong()) * 1000
+        get() = (mpvTimePos * 1000).toLong()
 
     override val durationMs: Long
-        get() = ((MPVLib.getPropertyDouble("duration") ?: 0.0).toLong()) * 1000
+        get() = (mpvDuration * 1000).toLong()
 
     private fun clearSuperResolution() {
         MPVLib.command(arrayOf("change-list", "glsl-shaders", "clr", ""))
@@ -506,13 +573,22 @@ class MpvKernel(
         cancelPrepareTimeout()
         fileActive = false
         pendingLoad = false
-        clearSuperResolution()
-        MPVLib.setPropertyBoolean("pause", true)
-        MPVLib.command(arrayOf("loadfile", "", "replace"))
-        MPVLib.setPropertyString("vo", "null")
-        MPVLib.setOptionString("force-window", "no")
-        MPVLib.detachSurface()
-        MPVLib.removeObserver(mpvEventObserver)
+        // 仅最新持有者且下发过 loadfile 才执行全局破坏命令，避免毒化
+        // 其他页面的播放（vo=null 纯音频等）；自身资源始终清理
+        if (shouldTearDownGlobalMpv) {
+            clearSuperResolution()
+            MPVLib.setPropertyBoolean("pause", true)
+            MPVLib.command(arrayOf("loadfile", "", "replace"))
+            MPVLib.setPropertyString("vo", "null")
+            MPVLib.setOptionString("force-window", "no")
+            MPVLib.detachSurface()
+        } else {
+            Log.i(TAG, "release: skip global teardown (gen=$myGeneration, loaded=$hasIssuedLoad)")
+        }
+        synchronized(liveKernels) { liveKernels.remove(this) }
+        if (!superseded) {
+            MPVLib.removeObserver(mpvEventObserver)
+        }
         mainHandler.postDelayed({ releaseCurrentPfd("mpv-release") }, 200)
         currentSurface = null
         pendingSurface = null
@@ -543,13 +619,17 @@ class MpvKernel(
 
         override fun eventProperty(property: String, value: Boolean) {
             when (property) {
-                // 用户暂停（区别于缓存暂停）：看门狗据此区分「暂停不动」与「卡顿不动」
-                "pause" -> pausedByUser = value
+                // 事件线程直写缓存（禁止主线程同步读属性，见 corePaused 注释）
+                "pause" -> corePaused = value
 
-                // 缓存耗尽暂停/恢复 → 对齐 ExoPlayer 的 BUFFERING/PLAYING 上报
-                // （cache-pause=no 时不触发，卡顿由看门狗兜底）
+                // 缓存恢复需核对未暂停：预加载暂停加载时缓存就绪也会置 false，
+                // 不能据此上报 onPlaying（cache-pause=no 时不触发）
                 "paused-for-cache" -> mainHandler.post {
-                    if (value) listener?.onBuffering() else listener?.onPlaying()
+                    if (value) {
+                        listener?.onBuffering()
+                    } else if (!corePaused) {
+                        listener?.onPlaying()
+                    }
                 }
             }
         }
@@ -584,7 +664,6 @@ class MpvKernel(
                         mpvTimePos = 0.0
                         mpvCacheDuration = 0.0
                         mpvDuration = 0.0
-                        pausedByUser = false
                         pendingLoad = true
                         fileActive = false
                         stopStallWatchdog()
@@ -601,8 +680,14 @@ class MpvKernel(
                     }
 
                     MPVLib.mpvEventId.MPV_EVENT_PLAYBACK_RESTART -> {
-                        // 播放（重新）开始
-                        listener?.onPlaying()
+                        // 暂停态也会发 RESTART（预加载初始化、暂停 seek、vo 重配）：
+                        // 暂停中视为就绪，只有真正在播才上报 onPlaying
+                        if (corePaused) {
+                            listener?.onPrepared()
+                        } else {
+                            // 播放（重新）开始
+                            listener?.onPlaying()
+                        }
                     }
 
                     MPVLib.mpvEventId.MPV_EVENT_END_FILE -> {

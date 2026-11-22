@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
@@ -99,6 +100,12 @@ class HanimePlayerController(
     /** 长按倍速前的基准速度。 */
     private var speedBoostBase = PlayerDefaults.DEF_SPEED
 
+    /** 预加载的媒体地址（[preload] 后非空；换源/起播/出错时清除）。 */
+    private var preloadedUrl: String? = null
+
+    /** 预加载的内核是否已就绪（可被 startVideo 直接续用）。 */
+    private var preloadedReady = false
+
     // ---------------- 音频焦点 ----------------
 
     private val audioManager = appContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -162,6 +169,8 @@ class HanimePlayerController(
     ) {
         this.savedProgressMs = savedProgressMs
         hasRestoredProgress = false
+        preloadedUrl = null
+        preloadedReady = false
         if (Preferences.disableMobileDataWarning) wifiTipShowed = true
 
         val links = videoUrls.entries.map { it.key to it.value.link }
@@ -215,6 +224,25 @@ class HanimePlayerController(
         startPlayback()
     }
 
+    /**
+     * 预加载当前清晰度（URL 就绪即调用）：暂停态构建内核并预缓冲，不起播。
+     *
+     * UI 保持 IDLE（海报 + 播放键）；就绪后回填时长，startVideo 命中时
+     * 直接续用该内核秒开。非 WiFi 未确认流量时跳过；失败静默放弃。
+     */
+    fun preload() {
+        val state = _uiState.value
+        if (!state.hasMedia || state.state != PlayerState.IDLE) return
+        if (preloadedUrl != null) return
+        if (!wifiTipShowed && !isWifiConnected()) return
+        val url = qualityLinks.getOrNull(state.currentQualityIndex)?.second ?: return
+        Log.i(TAG, "preload: $url")
+        // 不带历史位置起播：时长未知无法判别越界进度，就绪后再按钳制规则预定位
+        reprepareKernel(positionMs = 0L, startPaused = true)
+        // reprepareKernel 会清空预加载标记，这里在其后标记
+        preloadedUrl = url
+    }
+
     private fun startPlayback() {
         val quality = qualityLinks.getOrNull(_uiState.value.currentQualityIndex) ?: return
         Log.i(TAG, "startPlayback: ${quality.first} -> ${quality.second}")
@@ -225,6 +253,17 @@ class HanimePlayerController(
             FirebaseConstants.PARAM_KERNEL to kernelType.name,
             FirebaseConstants.PARAM_METHOD to "start",
         )
+        if (preloadedUrl == quality.second && preloadedReady) {
+            // 命中预加载：续用已就绪的内核（保留已缓冲数据）
+            preloadedUrl = null
+            preloadedReady = false
+            requestAudioFocus()
+            _uiState.update { it.copy(state = PlayerState.BUFFERING) }
+            kernel.start()
+            return
+        }
+        preloadedUrl = null
+        preloadedReady = false
         _uiState.update { it.copy(state = PlayerState.PREPARING) }
         reprepareKernel(positionMs = 0L)
     }
@@ -269,8 +308,12 @@ class HanimePlayerController(
      *
      * 重建后先把当前 surface 挂回新内核（MPV 必须在 loadfile 前 attach surface，
      * 否则 vo 初始化会原生崩溃）。
+     *
+     * @param startPaused true 表示加载完成后保持暂停（预加载用），默认起播
      */
-    private fun reprepareKernel(positionMs: Long) {
+    private fun reprepareKernel(positionMs: Long, startPaused: Boolean = false) {
+        preloadedUrl = null
+        preloadedReady = false
         kernel.release()
         kernel = PlayerKernelFactory.create(kernel.type, appContext)
         kernel.listener = this
@@ -284,6 +327,7 @@ class HanimePlayerController(
                 looping = state.isLooping,
                 startPositionMs = positionMs,
                 speed = PlayerDefaults.speedArray[state.speedIndex],
+                startPaused = startPaused,
             )
         )
     }
@@ -292,6 +336,8 @@ class HanimePlayerController(
      * 释放全部资源（内核、协程、音频焦点），页面销毁时调用，幂等。
      */
     fun release() {
+        preloadedUrl = null
+        preloadedReady = false
         stopTicker()
         abandonAudioFocus()
         kernel.release()
@@ -306,6 +352,13 @@ class HanimePlayerController(
     fun play() {
         requestAudioFocus()
         if (_uiState.value.state == PlayerState.COMPLETED) {
+            if (kernel.type == KernelType.MpvPlayer) {
+                // mpv 播完（EOF）后文件已卸载、fd 已释放，seek 回 0 不会
+                // 重新起播，必须重新加载（循环模式不触发 END_FILE 故无此问题）
+                _uiState.update { it.copy(state = PlayerState.PREPARING) }
+                reprepareKernel(positionMs = 0L)
+                return
+            }
             kernel.seekTo(0L)
         }
         kernel.start()
@@ -406,7 +459,65 @@ class HanimePlayerController(
 
     override fun onPreparing() = Unit
 
-    override fun onPrepared() = Unit
+    override fun onPrepared() {
+        if (preloadedUrl != null) {
+            // 预加载就绪：标记可续用，回填时长并按钳制规则预定位历史进度
+            preloadedReady = true
+            onPreloadReady()
+        }
+    }
+
+    /**
+     * 预加载就绪（后台等待时长就绪）：回填时长，历史进度可安全续播时在
+     * 暂停态预 seek（起播即位于续播位置）。时长未知不预定位，交给
+     * [maybeRestoreWatchProgress] 的守卫兜底。
+     */
+    private fun onPreloadReady() {
+        scope.launch(Dispatchers.Default) {
+            val duration = awaitKernelDuration()
+            if (duration > 0) {
+                _uiState.update { ui ->
+                    if (ui.durationMs != duration) ui.copy(durationMs = duration) else ui
+                }
+            }
+            val resumeTo = savedProgressMs
+            if (!Preferences.allowResumePlayback || !isResumableProgress(resumeTo, duration)) {
+                return@launch
+            }
+            withContext(Dispatchers.Main) {
+                // 仍处于预加载暂停态才预定位；onPrepared 可能触发两次
+                // （mpv 的 FILE_LOADED 与暂停态 RESTART 各一次），防重入
+                if (preloadedUrl != null && _uiState.value.state == PlayerState.IDLE &&
+                    !hasRestoredProgress
+                ) {
+                    hasRestoredProgress = true
+                    kernel.seekTo(resumeTo)
+                    _events.tryEmit(PlayerEvent.ShowResumeButton(resumeTo))
+                    Log.i(TAG, "preload pre-seek to ${resumeTo}ms (duration=${duration}ms)")
+                }
+            }
+        }
+    }
+
+    /** 等待内核总时长就绪（就绪时机不定，ExoPlayer 同步查询带超时，故在 Default 线程轮询）。 */
+    private suspend fun awaitKernelDuration(): Long {
+        for (i in 0 until 25) {
+            val duration = kernel.durationMs
+            if (duration > 0) return duration
+            delay(300.milliseconds)
+        }
+        return 0L
+    }
+
+    /**
+     * 历史进度是否可安全续播：距结尾须多于 [RESUME_THRESHOLD_MS]——
+     * 到达/超过结尾的进度可能已被越界 seek 污染，续播会"打开即播完"。
+     */
+    private fun isResumableProgress(progressMs: Long, durationMs: Long): Boolean {
+        return progressMs > RESUME_THRESHOLD_MS &&
+                durationMs > 0 &&
+                progressMs < durationMs - RESUME_THRESHOLD_MS
+    }
 
     override fun onBuffering() {
         _uiState.update { state ->
@@ -447,6 +558,13 @@ class HanimePlayerController(
     }
 
     override fun onError(error: Throwable?) {
+        if (preloadedUrl != null && _uiState.value.state == PlayerState.IDLE) {
+            // 预加载失败：静默放弃，用户点播放时走正常起播
+            Log.w(TAG, "preload failed, ignore: $error")
+            preloadedUrl = null
+            preloadedReady = false
+            return
+        }
         stopTicker()
         abandonAudioFocus()
         Log.e(TAG, "onError: $error")
@@ -468,6 +586,16 @@ class HanimePlayerController(
         if (hasRestoredProgress || !_uiState.value.hasMedia) return
         if (savedProgressMs <= RESUME_THRESHOLD_MS) return
         if (!Preferences.allowResumePlayback) return
+        // 进度越界（见 isResumableProgress）不续播，从头开始
+        val duration = kernel.durationMs
+        if (duration > 0 && !isResumableProgress(savedProgressMs, duration)) {
+            hasRestoredProgress = true
+            Log.w(
+                TAG,
+                "saved progress ${savedProgressMs}ms out of range (duration=${duration}ms), skip resume",
+            )
+            return
+        }
         hasRestoredProgress = true
         kernel.seekTo(savedProgressMs)
         _events.tryEmit(PlayerEvent.ShowResumeButton(savedProgressMs))
