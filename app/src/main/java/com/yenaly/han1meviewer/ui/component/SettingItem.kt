@@ -78,6 +78,9 @@ fun PawSwitch(
         onCheckedChange = onCheckedChange,
         modifier = modifier,
         enabled = enabled,
+        colors = SwitchDefaults.colors(
+            checkedIconColor = MaterialTheme.colorScheme.primary,
+        ),
         thumbContent = {
             Icon(
                 painter = painterResource(R.drawable.ic_baseline_paw_24),
