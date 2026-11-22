@@ -191,6 +191,18 @@ fun VideoRouteHostScreen(
     }
     val playerUiState by controller.uiState.collectAsStateWithLifecycle()
 
+    // Nav3 转场期间新旧视频页同时组合且旧页生命周期不降级（不会自动暂停），
+    // 双播放器并存会引发声音重叠与内核竞态：本页一旦不是返回栈顶立即暂停
+    val navigatorState = runCatching { activity.navigator.state }.getOrNull()
+    val isBackStackTop = navigatorState?.let { st ->
+        st.backStacks[st.topLevelRoute]?.lastOrNull() == route
+    } ?: true
+    LaunchedEffect(isBackStackTop, playerUiState.state) {
+        if (!isBackStackTop && playerUiState.state == PlayerState.PLAYING) {
+            controller.pause()
+        }
+    }
+
     DisposableEffect(controller) {
         onDispose { controller.release() }
     }
@@ -460,7 +472,11 @@ fun VideoRouteHostScreen(
 
     DisposableEffect(activity, pageHost) {
         activity.registerCurrentVideoHost(pageHost)
-        onDispose { activity.registerCurrentVideoHost(null) }
+        onDispose {
+            // 条件注销：旧页销毁不能覆盖新页的注册（否则 PiP 事件无人接收）
+            activity.unregisterVideoHost(pageHost)
+            viewModel.setPipMode(false)
+        }
     }
 
     // ---------------- 媒体加载与进度恢复 ----------------
@@ -472,6 +488,9 @@ fun VideoRouteHostScreen(
         )
         activity.browse(getHanimeVideoLink(route.videoCode))
     }
+
+    // 被覆盖的页面不预加载（避免其内核抢占全局 mpv、毒化可见页）
+    val currentIsBackStackTop by rememberUpdatedState(isBackStackTop)
 
     LaunchedEffect(route.videoCode, route.localUri, viewModel.fromDownload) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
@@ -510,6 +529,9 @@ fun VideoRouteHostScreen(
                         }
                         if (route.autoPlay) {
                             controller.startVideo()
+                        } else if (currentIsBackStackTop) {
+                            // URL 就绪即预加载：预缓冲 + 回填时长，点播放秒开
+                            controller.preload()
                         }
                     }
 

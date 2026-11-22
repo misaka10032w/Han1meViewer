@@ -72,12 +72,11 @@ class Navigator(val state: NavigationState) {
         }
     }
 
-    /**
-     * 带节流的安全导航（吸收 450ms 页面转场内的重复点击）。
-     */
+    /** 带节流的安全导航：吸收 450ms 转场内的重复点击，并跳过与栈顶相同的目标。 */
     fun navigateSafely(route: NavKey) {
         val now = System.currentTimeMillis()
         if (now - lastNavigateAtMillis < NAVIGATE_THROTTLE_MILLIS) return
+        if (route == state.currentStack.lastOrNull()) return
         lastNavigateAtMillis = now
         navigate(route)
     }

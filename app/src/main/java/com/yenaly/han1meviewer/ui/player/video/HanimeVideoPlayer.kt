@@ -70,7 +70,14 @@ import com.yenaly.han1meviewer.ui.player.PlayerState
 import com.yenaly.han1meviewer.ui.player.PlayerUtils
 import com.yenaly.han1meviewer.ui.player.kernel.KernelType
 import kotlinx.coroutines.delay
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.time.Duration.Companion.milliseconds
+
+/**
+ * keepScreenOn 的最后写入者：多个播放页共享 Activity 根 View，转场期间同时
+ * 组合，只有当前持有者才能把标记清零。
+ */
+private val KeepScreenOnOwner = AtomicReference<Any?>(null)
 
 /**
  * Compose 视频播放器主组件。
@@ -176,12 +183,24 @@ fun HanimeVideoPlayer(
     /** 进度条拖动中的最新值（0..1），松手时 seek。 */
     var sliderDragValue by remember { mutableFloatStateOf(0f) }
 
-    // 播放中（含准备/缓冲）保持屏幕常亮，暂停/结束/出错后恢复
-    DisposableEffect(uiState.state) {
-        view.keepScreenOn = uiState.state == PlayerState.PLAYING ||
+    // 播放中（含准备/缓冲）保持屏幕常亮；view 为 Activity 共享根 View，
+    // 用"最后写入者"所有权避免旧页 onDispose 覆盖新页的常亮标记
+    DisposableEffect(controller, uiState.state) {
+        val needKeepOn = uiState.state == PlayerState.PLAYING ||
                 uiState.state == PlayerState.BUFFERING ||
                 uiState.state == PlayerState.PREPARING
-        onDispose { view.keepScreenOn = false }
+        if (needKeepOn) {
+            KeepScreenOnOwner.set(controller)
+            view.keepScreenOn = true
+        } else if (KeepScreenOnOwner.get() === controller) {
+            KeepScreenOnOwner.set(null)
+            view.keepScreenOn = false
+        }
+        onDispose {
+            if (KeepScreenOnOwner.compareAndSet(controller, null)) {
+                view.keepScreenOn = false
+            }
+        }
     }
 
     // 控件自动隐藏：播放中且无弹窗/气泡/拖动时 3 秒后隐藏
@@ -233,7 +252,8 @@ fun HanimeVideoPlayer(
     }
 
     val controlsVisible = showControls && !uiState.isGestureLocked
-    val duration = progress.durationMs
+    // 总时长：起播后走 ticker（progress），起播前回退到预加载回填的 uiState.durationMs
+    val duration = progress.durationMs.takeIf { it > 0 } ?: uiState.durationMs
     val sliderValue = if (duration > 0) {
         progress.positionMs.toFloat() / duration
     } else {

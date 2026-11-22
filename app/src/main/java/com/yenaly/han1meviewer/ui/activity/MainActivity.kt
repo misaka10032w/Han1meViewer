@@ -318,11 +318,19 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
     }
 
     fun showVideoDetailFragment(videoCode: String, fileUri: String? = null) {
-        navigator.navigate(VideoRoute(videoCode, fileUri))
+        // 走节流 + 去重的安全导航：连点系列列表会叠加压栈并制造多页并存窗口
+        navigator.navigateSafely(VideoRoute(videoCode, fileUri))
     }
 
     fun registerCurrentVideoHost(host: VideoPageHost?) {
         currentVideoHost = host
+    }
+
+    /** 条件注销视频页宿主：仅当 [host] 仍是当前注册者时置空（转场中旧页先于新页销毁）。 */
+    fun unregisterVideoHost(host: VideoPageHost) {
+        if (currentVideoHost === host) {
+            currentVideoHost = null
+        }
     }
 
     private var onGranted: (() -> Unit)? = null
