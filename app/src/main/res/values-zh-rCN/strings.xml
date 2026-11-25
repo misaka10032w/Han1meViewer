@@ -481,6 +481,14 @@
     <string name="usage_notice_decline">不同意并退出</string>
     <string name="app_lang">语言</string>
     <string name="app_lang_sum">选择应用语言</string>
+    <string name="app_font_scale">字体大小</string>
+    <string name="app_font_scale_summary">跟随系统时最高放大至 120%，避免布局错乱；也可在此固定应用内字体大小</string>
+    <string name="font_scale_small">小</string>
+    <string name="font_scale_normal">标准</string>
+    <string name="font_scale_large">大</string>
+    <string name="font_scale_xlarge">特大</string>
+    <string name="ignore_system_display_size">忽略系统显示大小</string>
+    <string name="ignore_system_display_size_summary">系统「显示大小」调大导致界面被挤压时，保证界面逻辑宽度不小于 360dp（仅全屏时生效）</string>
     <string name="auth_request">请验证身份🥵</string>
     <string name="unlock_method">使用指纹、PIN 或图案解锁</string>
     <string name="unlock_desc">我们需要确认开〇的是你本人🍄💦</string>

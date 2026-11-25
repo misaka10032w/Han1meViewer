@@ -476,6 +476,14 @@ Recommendations are as follows:\n
     <string name="usage_notice_decline">Disagree and exit</string>
     <string name="app_lang">Language</string>
     <string name="app_lang_sum">Select the application language</string>
+    <string name="app_font_scale">Font size</string>
+    <string name="app_font_scale_summary">Follows the system up to 120% to keep layouts intact, or pin a fixed size for this app</string>
+    <string name="font_scale_small">Small</string>
+    <string name="font_scale_normal">Normal</string>
+    <string name="font_scale_large">Large</string>
+    <string name="font_scale_xlarge">Extra large</string>
+    <string name="ignore_system_display_size">Ignore system display size</string>
+    <string name="ignore_system_display_size_summary">When a larger system \"Display size\" squeezes the UI, keep the logical width at 360dp or more (full-screen only)</string>
     <string name="auth_request">Verify Your Identity🥵</string>
     <string name="unlock_method">Use fingerprint, PIN, or pattern to unlock</string>
     <string name="unlock_desc">We need to confirm it\'s really you Mast****tion🍄💦</string>

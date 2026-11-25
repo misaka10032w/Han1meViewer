@@ -484,6 +484,14 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="usage_notice_decline">同意せず終了</string>
     <string name="app_lang">言語</string>
     <string name="app_lang_sum">アプリの言語を選択</string>
+    <string name="app_font_scale">文字サイズ</string>
+    <string name="app_font_scale_summary">システムに従う場合はレイアウト崩れを防ぐため最大 120% まで。アプリ内で固定サイズも選択できます</string>
+    <string name="font_scale_small">小</string>
+    <string name="font_scale_normal">標準</string>
+    <string name="font_scale_large">大</string>
+    <string name="font_scale_xlarge">特大</string>
+    <string name="ignore_system_display_size">システムの表示サイズを無視</string>
+    <string name="ignore_system_display_size_summary">システムの「表示サイズ」拡大でUIが圧縮される場合、論理幅を 360dp 以上に保ちます（全画面時のみ）</string>
     <string name="auth_request">本人確認🥵</string>
     <string name="unlock_method">指紋、PINまたはパターンロックを使用</string>
     <string name="unlock_desc">〇いているのがあなた本人か確認必要🍄💦</string>
