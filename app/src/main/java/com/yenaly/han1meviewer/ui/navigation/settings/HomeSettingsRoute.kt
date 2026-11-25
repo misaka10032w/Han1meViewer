@@ -51,6 +51,7 @@ import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.BackupManager
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.base.AppFontScale
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
@@ -391,6 +392,23 @@ fun SettingsCategoryRouteScreen(
                 recreateAfterDialogDismiss()
             }
         },
+        onAppFontScaleChange = { key ->
+            val pref = AppFontScale.fromKey(key)
+            if (pref != Preferences.appFontScale) {
+                Preferences.preferenceSp.edit {
+                    putString(SettingsPreferenceKeys.APP_FONT_SCALE, pref.key)
+                }
+                refreshKey++
+                recreateAfterDialogDismiss()
+            }
+        },
+        onIgnoreSystemDisplaySizeChange = { enabled ->
+            if (enabled != Preferences.ignoreSystemDisplaySize) {
+                saveBoolean(SettingsPreferenceKeys.IGNORE_SYSTEM_DISPLAY_SIZE, enabled)
+                refreshKey++
+                recreateAfterDialogDismiss()
+            }
+        },
         onCheckUpdate = {
             val currentVersion = versionState
             if (currentVersion is WebsiteState.Success && currentVersion.info != null) {
@@ -627,6 +645,9 @@ private fun buildHomeSettingsUiState(
         darkModeLabel = darkModeLabel,
         appLanguage = appLanguageValue,
         appLanguageLabel = appLanguageLabel,
+        appFontScaleKey = Preferences.appFontScale.key,
+        appFontScaleLabel = context.getString(Preferences.appFontScale.displayNameRes),
+        ignoreSystemDisplaySize = Preferences.ignoreSystemDisplaySize,
         allowPipMode = Preferences.allowPipMode,
         allowResumePlayback = Preferences.allowResumePlayback,
         showPlayedIndicator = Preferences.showPlayedIndicator,

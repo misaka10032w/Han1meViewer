@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.HorizontalCardCountConfig
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SearchGridColumnsConfig
+import com.yenaly.han1meviewer.base.AppFontScale
 import com.yenaly.han1meviewer.ui.component.ChoiceDialog
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SettingSliderItem
@@ -33,6 +34,7 @@ private enum class HomeSettingsChoiceDialog {
     VideoQuality,
     DarkMode,
     AppLanguage,
+    AppFontScale,
     ThemeColor,
 }
 
@@ -69,6 +71,8 @@ fun HomeSettingsScreen(
     onHomeCategoryPreferencesChange: (List<String>, Set<String>) -> Unit,
     onOpenPlayerSettings: () -> Unit,
     onOpenAppLanguageSettings: (String) -> Unit,
+    onAppFontScaleChange: (String) -> Unit,
+    onIgnoreSystemDisplaySizeChange: (Boolean) -> Unit,
     onCheckUpdate: () -> Unit,
     onUpdatePopupIntervalDaysChange: (Int) -> Unit,
     onOpenFakeLauncherIcon: () -> Unit,
@@ -143,6 +147,20 @@ fun HomeSettingsScreen(
         onSelect = {
             activeDialog = null
             onOpenAppLanguageSettings(it)
+        },
+    )
+
+    ChoiceDialog(
+        visible = activeDialog == HomeSettingsChoiceDialog.AppFontScale,
+        title = stringResource(R.string.app_font_scale),
+        options = AppFontScale.entries.map { scale ->
+            stringResource(scale.displayNameRes) to scale.key
+        },
+        selectedValue = state.appFontScaleKey,
+        onDismiss = { activeDialog = null },
+        onSelect = {
+            activeDialog = null
+            onAppFontScaleChange(it)
         },
     )
 
@@ -226,6 +244,24 @@ fun HomeSettingsScreen(
                 }
 
                 item { SettingsGroupTitle(stringResource(R.string.settings_group_interface)) }
+                item {
+                    SettingNavigationItem(
+                        title = stringResource(R.string.app_font_scale),
+                        summary = stringResource(R.string.app_font_scale_summary),
+                        valueText = state.appFontScaleLabel,
+                        iconRes = R.drawable.baseline_format_size_24,
+                        onClick = { activeDialog = HomeSettingsChoiceDialog.AppFontScale },
+                    )
+                }
+                item {
+                    SettingSwitchItem(
+                        title = stringResource(R.string.ignore_system_display_size),
+                        summary = stringResource(R.string.ignore_system_display_size_summary),
+                        checked = state.ignoreSystemDisplaySize,
+                        iconRes = R.drawable.baseline_aspect_ratio_24,
+                        onCheckedChange = onIgnoreSystemDisplaySizeChange,
+                    )
+                }
                 item {
                     SettingNavigationItem(
                         title = stringResource(R.string.home_category_layout),

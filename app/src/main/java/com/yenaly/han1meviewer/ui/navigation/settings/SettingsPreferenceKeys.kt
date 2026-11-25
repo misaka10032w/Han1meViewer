@@ -35,6 +35,8 @@ object SettingsPreferenceKeys {
     const val HORIZONTAL_CARD_COUNT_EXPANDED = "horizontal_card_count_expanded"
     const val HOME_CATEGORY_ORDER = "home_category_order"
     const val HOME_CATEGORY_HIDDEN = "home_category_hidden"
+    const val APP_FONT_SCALE = "app_font_scale"
+    const val IGNORE_SYSTEM_DISPLAY_SIZE = "ignore_system_display_size"
     const val SHOW_BOTTOM_PROGRESS = "show_bottom_progress"
     const val SWITCH_PLAYER_KERNEL = "switch_player_kernel"
     const val PLAYER_SPEED = "player_speed"
