@@ -48,6 +48,7 @@ import com.yenaly.han1meviewer.util.ActivityManager
 import com.yenaly.han1meviewer.util.ClipboardVideoLinkGuard
 import com.yenaly.han1meviewer.util.HAnalytics
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -149,7 +150,11 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
             showAuthGuard = false
             initData()
         }
-        pendingNavigationRequests.tryEmit(intent)
+        val launchIntent = intent
+        lifecycleScope.launch {
+            pendingNavigationRequests.subscriptionCount.first { it > 0 }
+            pendingNavigationRequests.emit(launchIntent)
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
